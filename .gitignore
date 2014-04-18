@@ -1,0 +1,23 @@
+# OS X
+.DS_Store
+
+# IntelliJ
+/.idea
+*.iml
+
+# eclipse
+.settings/*
+
+# python
+*.egg-info
+
+# build products
+src/main/python/kinetic/kinetic_pb2.py
+/*/doc
+/*/target
+
+/tmp
+database.db
+*.pid
+*.swp
+*.log

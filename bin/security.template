@@ -1,0 +1,9 @@
+{"acl":[{"userId":1,
+         "key":"asdfasdf",
+         "algorithm":"HmacSHA1",
+         "domains":[{"offset":0,
+                     "value":"",
+                     "roles":["READ","WRITE","DELETE","RANGE","SETUP","P2POP","GETLOG","SECURITY"]
+                    }]
+        }]
+}

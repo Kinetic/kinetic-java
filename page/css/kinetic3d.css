@@ -1,0 +1,312 @@
+#nodeInfo{
+    background: rgba(0,255,255,0.75);
+    width: 790px;
+    height: 460px;
+}
+
+.capacity{
+	 min-width: 200px; 
+	 margin-top: 5px;
+	 width: 250px;
+	 height: 200px;
+     margin-left: 10px;
+	 float:left;
+	 display: inline;
+}
+
+.temperature{
+	 min-width: 200px; 
+	 margin-top: 5px;
+	 width: 250px; 
+	 height: 200px; 
+	 margin-left: 10px;
+	 float:left;
+	 display: inline;
+    background-color: #ffffff;
+}
+
+.utilizations{
+	 min-width: 200px; 
+	 margin-top: 5px;
+	 width: 250px; 
+	 height: 200px; 
+	 margin-left: 10px;
+	 float:left;
+	 display: inline;
+}
+
+.counters{
+	 min-width: 200px; 
+	 margin-top: 5px;
+	 width: 770px;
+	 height: 200px; 
+	 margin-left: 10px;
+	 float:left;
+	 display: inline;
+}
+
+
+a.button, #content a.button, .button, input[type="submit"] {
+    background-color: rgba(127,255,255,0.75);
+    border: 1px solid #999999;
+    margin-left: 10px;
+    margin-top: 3px;
+    width: 738px;
+    border-radius: 5px 5px 5px 5px;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.28), 0 1px 0 rgba(255, 255, 255, 0.45) inset, 0 -1px 0 rgba(255, 255, 255, 0.45) inset, 1px 0 0 rgba(255, 255, 255, 0.45) inset, -1px 1px 0 rgba(255, 255, 255, 0.45) inset;
+    color: #000000 !important;
+    float: left;
+    font: bold 16px/16px "klavika-web","Helvetica Neue",Helvetica,Arial,Geneva,sans-serif;
+    padding: 8px 15px;
+    text-decoration: none;
+    text-align: center;
+    text-shadow: 0 -1px 1px rgba(0, 0, 0, 0.35);
+    transition: all 0.2s ease 0s;
+}
+
+html, body {
+    height: 100%;
+}
+
+body {
+    background-color: rgba(92, 143, 196, 0.58);
+    /*background-image: url("img/kinetic-platform-gallery.png");*/
+    background-repeat:no-repeat;
+    background-position:right top;
+
+    margin: 0;
+    font-family: Arial;
+    overflow: hidden;
+}
+
+a {
+    color: #ffffff;
+}
+
+#info {
+    position: absolute;
+    width: 100%;
+    color: #ffffff;
+    padding: 5px;
+    font-family: Monospace;
+    font-size: 11px;
+    font-weight: bold;
+    text-align: center;
+    z-index: 1;
+    bottom: 0px;
+}
+
+#menu {
+    position: absolute;
+    bottom: 20px;
+    width: 100%;
+    text-align: center;
+}
+
+.element {
+    width: 360px;
+    height: 80px;
+    box-shadow: 0px 0px 12px rgba(0,255,255,0.5);
+    border: 1px solid rgba(127,255,255,0.25);
+    text-align: center;
+    cursor: default;
+}
+
+.element:hover {
+    box-shadow: 0px 0px 12px rgba(0,255,255,0.75);
+    border: 1px solid rgba(127,255,255,0.75);
+}
+
+.element .symbol {
+    position: absolute;
+    top: 20px;
+    left: 0px;
+    right: 0px;
+    font-size: 36px;
+    font-weight: bold;
+    color: rgba(255,255,255,0.75);
+
+    -webkit-filter: drop-shadow(0px 0px 20px rgba(0,255,255,0.95));
+    -moz-filter: drop-shadow(0px 0px 20px rgba(0,255,255,0.95));
+    -o-filter: drop-shadow(0px 0px 20px rgba(0,255,255,0.95));
+    -ms-filter: drop-shadow(0px 0px 20px rgba(0,255,255,0.95));
+    filter: drop-shadow(0px 0px 20px rgba(0,255,255,0.95));
+}
+
+.element .details {
+    position: absolute;
+    bottom: 15px;
+    left: 0px;
+    right: 0px;
+    font-size: 12px;
+    color: rgba(127,255,255,0.75);
+}
+
+button {
+    color: rgba(127,255,255,0.75);
+    background: transparent;
+    outline: 1px solid rgba(127,255,255,0.75);
+    border: 0px;
+    padding: 5px 10px;
+    cursor: pointer;
+}
+button:hover {
+    background-color: rgba(0,255,255,0.5);
+}
+button:active {
+    color: #000000;
+    background-color: rgba(0,255,255,0.75);
+}
+
+#show-title { color:#fff;cursor:pointer}
+#evenmorelinks {
+    /*margin: 20px 0px 10px;*/
+    /*border-bottom: 1px solid #ccc;*/
+    text-align: center;
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    float: left;
+}
+#evenmorelinks h1 {
+    font-family: DiamantiCondEF-Medium;
+    letter-spacing: 0.02em;
+}
+#evenmorelinks h1 {
+    position: relative;
+    margin: 0 auto;
+    /*border: 1px solid #CCC;*/
+    /*border-bottom: 1px solid white;*/
+    font-size: 1em;
+    width: 300px;
+    line-height: 2em;
+    text-align: center;
+    cursor: pointer;
+    padding-left: 0px;
+    display: inline-block;
+    top: 1px;
+    letter-spacing: 0.03em;
+}
+#evenmorelinks a {
+    cursor: pointer;
+    letter-spacing: 0.02em;
+}
+#evenmorelinks > h1 > .arrow.before {
+    left: 10px;
+}
+#evenmorelinks > h1 > .arrow.after {
+    right: 10px;
+}
+#evenmorelinks > h1 > .arrow {
+    position: absolute;
+    top: 16px;
+    background-position: -61px -4px;
+    -webkit-transition: all .25s ease-in-out;
+    -moz-transition: all .25s ease-in-out;
+    -o-transition: all .25s ease-in-out;
+    transition: all .25s ease-in-out;
+}
+#evenmorelinks.expanded > h1 > .arrow, #evenmorelinks > h1.expanded > .arrow {
+    transform: rotate(180deg);
+    -ms-transform: rotate(180deg);
+    -moz-transform: rotate(180deg);
+    -webkit-transform: rotate(180deg);
+    -o-transform: rotate(180deg);
+}
+.arrow {
+    content: '';
+    height: 10px;
+    width: 12px;
+    display: block;
+    position: relative;
+    background-image: url(http://www.roadandtrack.com/cm/roadandtrack/site_images/sprites/RT_Icons.png);
+    background-position: -61px -5px;
+    background-size: 157px 157px;
+    margin-top: -5px;
+}
+#cnt{
+    width: 600px;
+    margin:0px auto;
+    text-align:center;
+    /*border:1px solid #CCC;*/
+    padding-bottom:10px;
+    padding-top: 30px;
+    /*z-index: 2;*/
+}
+#evenmorelinks > .fcolcontainer2 {
+    display: block;
+}
+.fcolcontainer2 {
+    text-align: left;
+    height: 120px;
+    width: 200px;
+}
+.f2segment {
+    float:left;
+    width:15%;
+    height:auto;
+    border-right: 1px dashed #ccc;
+    padding:0 5px;
+}
+
+#searchBox{
+    position: relative;
+    left: 32%;
+    /*width: 100%;*/
+    /*z-index: 2;*/
+}
+
+#modeRadioGroup {
+    position: relative;
+    width: 200px;
+    left: 30%;
+    top: 10px;
+}
+
+#targetRadioGroup{
+    position: relative;
+    width: 500px;
+    left: 6%;
+    top: 15px;
+}
+
+#search {
+    text-align: center;
+}
+
+#search input[type="text"] {
+    background: url(../img/search-white.png) no-repeat 10px 6px #fcfcfc;
+    border: 1px solid #d1d1d1;
+    font: bold 12px Arial,Helvetica,Sans-serif;
+    color: #bebebe;
+    width: 150px;
+    padding: 6px 15px 6px 35px;
+    -webkit-border-radius: 20px;
+    -moz-border-radius: 20px;
+    border-radius: 20px;
+    text-shadow: 0 2px 3px rgba(0, 0, 0, 0.1);
+    -webkit-box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15) inset;
+    -moz-box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15) inset;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15) inset;
+    -webkit-transition: all 0.7s ease 0s;
+    -moz-transition: all 0.7s ease 0s;
+    -o-transition: all 0.7s ease 0s;
+    transition: all 0.7s ease 0s;
+}
+
+
+#temperature.temperature table
+{
+	position: absolute;
+	left: 25px;
+	
+}
+
+#temperature.temperature table tbody tr td div div svg g text
+{
+	font-size: 12px;
+}
+
+/*#search input[type="text"]:focus {*/
+    /*width: 200px;*/
+/*}*/

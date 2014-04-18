@@ -1,0 +1,18 @@
+Maven command line for kinetic
+==================================
+Run maven commond line in <Kinetic-Folder> or in <Kinetic-Folder>/"submodule-name"
+
+1, Run "mvn clean install" firstly
+
+2, Build kinetic:
+   mvn clean compile
+
+3, Execute unit test cases:
+   mvn clean test
+   
+4, Build kinetic package:
+   mvn clean package
+   
+   If you want to skip test cases:
+   mvn clean package -Dmaven.test.skip=true or mvn clean package -DskipTests
+    

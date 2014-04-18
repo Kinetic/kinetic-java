@@ -1,0 +1,46 @@
+/** Do NOT modify or remove this copyright and confidentiality notice!
+ *
+ * Copyright (c) 2001 - $Date: 2012/06/27 $ Seagate Technology, LLC.
+ *
+ * The code contained herein is CONFIDENTIAL to Seagate Technology, LLC.
+ * Portions are also trade secret. Any use, duplication, derivation, distribution
+ * or disclosure of this code, for any reason, not expressly authorized is
+ * prohibited. All other rights are expressly reserved by Seagate Technology, LLC.
+ */
+import "kinetic.proto";
+
+package com.seagate.kinetic.proto;
+
+option java_outer_classname = "KineticDb";
+
+/**
+ * persisted entry value message format.
+ * <p>
+ * db persisted entry (KVValue)
+ */
+ message Versioned {
+
+//metadata
+  optional Metadata metadata = 1;
+  //entry value/data
+  optional bytes value = 2;
+
+  //key/value entry op metadata
+  message Metadata {
+  //entry key
+    optional bytes key = 1;
+
+    //entry version in store
+    optional bytes dbVersion = 2;
+
+    // this is the integrity value of the data. This may or may not be in the clear, depending on the algorithm
+    // used.
+    optional bytes tag = 3;
+
+    // The following is for the protection of the data. If the data is protected with a hash or CRC, then
+    // the algorithm will be negative. If the data protection algorithm is not a standard unkeyed algorithm
+    // then  a positive number is used and the drive has no idea what the key is. See the discussion of
+    // encrypted key/value store.(See security document).
+    optional Message.Algorithm algorithm = 4;
+    }
+  }

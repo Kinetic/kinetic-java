@@ -1,0 +1,110 @@
+/** Do NOT modify or remove this copyright and confidentiality notice!
+ *
+ * Copyright (c) 2001 - $Date: 2012/06/27 $ Seagate Technology, LLC.
+ *
+ * The code contained herein is CONFIDENTIAL to Seagate Technology, LLC.
+ * Portions are also trade secret. Any use, duplication, derivation, distribution
+ * or disclosure of this code, for any reason, not expressly authorized is
+ * prohibited. All other rights are expressly reserved by Seagate Technology, LLC.
+ */
+package kinetic.admin;
+
+import java.util.List;
+
+import kinetic.client.KineticException;
+
+/**
+ * 
+ * Kinetic drive information log data container.
+ * 
+ * @see KineticAdminClient#getLog()
+ */
+public interface KineticLog {
+
+	/**
+	 * 
+	 * Get the utilization information of the drive
+	 * <p>
+	 * 
+	 * @return a List of utilization information from the drive.
+	 * 
+	 * @throws KineticException
+	 *             if any internal error occurred.
+	 * @see Utilization
+	 */
+	public List<Utilization> getUtilization() throws KineticException;
+
+	/**
+	 * 
+	 * Get the temperature information of the drive
+	 * <p>
+	 * 
+	 * @return a List of temperature information from the drive.
+	 * 
+	 * @throws KineticException
+	 *             if any internal error occurred.
+	 * @see Temperature
+	 */
+	public List<Temperature> getTemperature() throws KineticException;
+
+	/**
+	 * 
+	 * Get the capacity information of the drive
+	 * <p>
+	 * 
+	 * @return the capacity information from the drive.
+	 * 
+	 * @throws KineticException
+	 *             if any internal error occurred.
+	 * @see Capacity
+	 */
+	public Capacity getCapacity() throws KineticException;
+
+	/**
+	 * 
+	 * Get the configuration information of the drive
+	 * <p>
+	 * 
+	 * @return the configuration information from the drive.
+	 * 
+	 * @throws KineticException
+	 *             if any internal error occurred.
+	 * @see Configuration
+	 */
+	public Configuration getConfiguration() throws KineticException;
+
+	/**
+	 * 
+	 * Get the statistics information of the drive
+	 * <p>
+	 * 
+	 * @return a List of statistic information from the drive.
+	 * 
+	 * @throws KineticException
+	 *             if any internal error occurred.
+	 * @see Statistics
+	 */
+	public List<Statistics> getStatistics() throws KineticException;
+
+	/**
+	 * 
+	 * Get Kinetic log messages.
+	 * 
+	 * @return Kinetic log messages from the drive.
+	 * 
+	 * @throws KineticException
+	 *             if any internal error occurred.
+	 */
+	public byte[] getMessages() throws KineticException;
+
+	/**
+	 * Get Kinetic log type values set in this log instance.
+	 * 
+	 * @return an array of KineticLogType information contains in this instance.
+	 * 
+	 * @throws KineticException
+	 *             if any internal errors occur
+	 */
+	public KineticLogType[] getContainedLogTypes() throws KineticException;
+
+}
