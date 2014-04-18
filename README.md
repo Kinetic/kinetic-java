@@ -9,8 +9,6 @@ Suggested Development Environments
 
 * Maven 3.0.3 or later: [http://maven.apache.org/download.cgi](http://maven.apache.org/download.cgi)
 
-* PyDev - Python IDE for Eclipse: [http://pydev.org/download.html](http://pydev.org/download.html)
-
 * For Windows 7 system, install the system patch package for jni:
   32 bit: [http://www.microsoft.com/en-us/download/details.aspx?id=5555](http://www.microsoft.com/en-us/download/details.aspx?id=5555)
   64 bit: [http://www.microsoft.com/en-us/download/details.aspx?id=14632](http://www.microsoft.com/en-us/download/details.aspx?id=14632 )
@@ -18,7 +16,7 @@ Suggested Development Environments
 
 Getting Started With Development
 ================================
-1. Clone the code: `git clone git@github.com:Seagate/LC2.git`
+1. Clone the code: `git clone https://github.com/Seagate/kinetic-java`
 1. Run the integration tests against the Java Simulator: `mvn test -DargLine="-Xmx500M"`
 1. Run the integration tests but exclude specific files: `mvn test -Dmaven.test.excludes="**/File.java,**/OtherFile.java"
 1. Run the integration tests against the skinny waist implementation at a particular path: `mvn test -DRUN_AGAINST_EXTERNAL=true -DKINETIC_PATH=/path/to/kinetic_home`
