@@ -22,8 +22,27 @@
 	 margin-left: 10px;
 	 float:left;
 	 display: inline;
-    background-color: #ffffff;
+     background-color: #ffffff;
 }
+
+.temperature_hda{
+	 min-width: 100px; 
+	 margin-top: 5px;
+	 width: 100px; 
+	 height: 100px; 
+	 margin-left: 2px;
+	 float:left;
+	 display: inline;
+     background-color: #ffffff;
+}
+
+.temperature_cpu{
+	 margin-top: 5px;
+	 float:left;
+	 display: inline;
+     background-color: #ffffff;
+}
+
 
 .utilizations{
 	 min-width: 200px; 
@@ -299,14 +318,49 @@ button:active {
 {
 	position: absolute;
 	left: 25px;
-	
+	top: 36px;
 }
+
 
 #temperature.temperature table tbody tr td div div svg g text
 {
 	font-size: 12px;
 }
 
-/*#search input[type="text"]:focus {*/
-    /*width: 200px;*/
-/*}*/
+#temperature_title
+{
+	position: absolute;
+	left: 300px;
+	top: 54px;
+	font-family: Arial;
+	font-size: 10px; 
+	font-weight: bold; 
+	stroke: none; 
+	stroke-width: 0;
+	fill: #000000;
+	z-index: 2;
+}
+
+#temperature_hda_comments
+{
+	position: absolute;
+	left: 45px;
+	top: 145px;
+	font-family: Arial;
+	font-size: 10px;  
+	stroke: none; 
+	stroke-width: 0;
+	fill: #000000
+}
+
+#temperature_cpu_comments
+{
+	position: absolute;
+	left: 45px;
+	top: 145px;
+	font-family: Arial;
+	font-size: 10px;  
+	stroke: none; 
+	stroke-width: 0;
+	fill: #000000
+}

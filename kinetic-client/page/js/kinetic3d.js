@@ -25,6 +25,8 @@ $(function() {
 	init();
 
 	$("#nodeInfo").hide();
+	$("#temperature_title").hide();
+
 	$("#nodeInfo").click(function() {
 		$("#nodeInfo").slideUp();
 		currentNode = "";
@@ -134,12 +136,6 @@ function init() {
 
 						var table = [];
 
-						//        var table = [
-						//            "192.168.244.1", "1131",0,1, 1,
-						//            "192.168.244.1", "1132",0,1, 2,
-						//            "192.168.244.1", "1133",0,1, 3
-						//        ];
-
 						var j = 0;
 						for ( var i = 0; i < length; i++) {
 							table[j++] = nodes[i].host;
@@ -149,12 +145,6 @@ function init() {
 							table[j++] = i % tableTows + 1;
 						}
 
-						//        var camera, scene, renderer;
-						//        var controls;
-
-						//        var objects = [];
-						//        var targets = { table: [], sphere: [], helix: [], grid: [] };
-
 						init();
 						animate();
 
@@ -163,7 +153,6 @@ function init() {
 							camera = new THREE.PerspectiveCamera(75,
 									window.innerWidth / window.innerHeight, 1,
 									5000);
-							//            camera.position.z = 1200;
 							camera.position.z = tableZoom;
 
 							scene = new THREE.Scene();
@@ -208,10 +197,8 @@ function init() {
 								var object = new THREE.Object3D();
 								object.position.x = (table[i + 3] * tableXGap)
 										- tableXOffset;
-								//                object.position.x = ( table[i + 2] * 380) - xOffset;
 								object.position.y = -(table[i + 4] * tableYGap)
 										+ tableYOffset;
-								//                object.position.y = - ( table[ i + 3 ] * 100 ) + 900;
 
 								targets.table.push(object);
 
@@ -279,17 +266,13 @@ function init() {
 								targets.grid.push(object);
 
 							}
-
-							//
-
+							
 							renderer = new THREE.CSS3DRenderer();
 							renderer.setSize(window.innerWidth,
 									window.innerHeight);
 							renderer.domElement.style.position = 'absolute';
 							document.getElementById('container').appendChild(
 									renderer.domElement);
-
-							//
 
 							controls = new THREE.TrackballControls(camera,
 									renderer.domElement);
@@ -325,9 +308,7 @@ function init() {
 							}, false);
 
 							transform(targets.table, 3000);
-
-							//
-
+							
 							window.addEventListener('resize', onWindowResize,
 									false);
 
@@ -349,7 +330,6 @@ function init() {
 										y : target.position.y,
 										z : target.position.z
 									}, 0)
-									//                        .to( { x: target.position.x, y: target.position.y, z: target.position.z }, Math.random() * duration + duration )
 									.easing(TWEEN.Easing.Exponential.InOut)
 											.start();
 
@@ -358,12 +338,10 @@ function init() {
 										y : target.rotation.y,
 										z : target.rotation.z
 									}, 0)
-									//                        .to( { x: target.rotation.x, y: target.rotation.y, z: target.rotation.z }, Math.random() * duration + duration )
 									.easing(TWEEN.Easing.Exponential.InOut)
 											.start();
 								} else {
 									new TWEEN.Tween(object.position)
-											//                    .to( { x: target.position.x, y: target.position.y, z: target.position.z }, 0)
 											.to(
 													{
 														x : target.position.x,
@@ -377,7 +355,6 @@ function init() {
 											.start();
 
 									new TWEEN.Tween(object.rotation)
-											//                    .to( { x: target.rotation.x, y: target.rotation.y, z: target.rotation.z }, 0 )
 											.to(
 													{
 														x : target.rotation.x,
@@ -429,10 +406,7 @@ function init() {
 
 function autoUpdate() {
 	setInterval(function() {
-		//      if (!stopAddingNodes)
-		//      {
 		init();
-		//      }
 	}, 8000);
 
 	setInterval(
@@ -504,15 +478,17 @@ function showNodeInfo(node) {
 										+ "<a class='button'>" + data.host
 										+ ":" + data.port + "  (tlsPort: "
 										+ data.tlsPort + ")" + "</a>"
-										+ "<div id=\"capacity"
-										+ "\" class=\"capacity\"></div>"
-										+ "<div id=\"temperature"
-										+ "\" class=\"temperature\"></div>"
-										+ "<div id=\"utilizations"
-										+ "\" class=\"utilizations\"></div>"
-										+ "<div id=\"counters"
-										+ "\" class=\"counters\"></div>"
+										+ "<div id='capacity' class='capacity'></div>"
+										+ "<div id='temperature' class='temperature'>"
+										+ "<text id='temperature_title'>Temperature(℃)</text>"
+										+ "<div id='temperature_hda' class='temperature_hda'></div>"
+										+ "<div id='temperature_cpu' class='temperature_cpu'></div>"
+										+ "</div>"
+										+ "<div id='utilizations' class='utilizations'></div>"
+										+ "<div id='counters' class='counters'></div>"
 										+ "</div>");
+						
+						$("#temperature_title").hide();
 
 						var key;
 						for ( var i = 0; i < currNodesAvailability.length; i++) {
@@ -553,7 +529,6 @@ function renderCapacity(nodeInfo) {
     var used = nodeInfo.capacity.total - nodeInfo.capacity.remaining;
     var remaining = nodeInfo.capacity.remaining;
     var freePercentage = nodeInfo.capacity.remaining / nodeInfo.capacity.total;
-//    $("#capacity").empty();
 
     if ($('#capacity').length > 0) {
         $.getScript('https://www.google.com/jsapi', function (data, textStatus) {
@@ -579,25 +554,69 @@ function renderCapacity(nodeInfo) {
 }
 
 function renderTemperature(nodeInfo) {
-//    $("#temperature").empty();
-    if ($('#temperature').length > 0) {
+	$("#temperature_title").show();
+	
+    if ($('#temperature_hda').length > 0) {
         $.getScript('https://www.google.com/jsapi', function (data, textStatus) {
             google.load('visualization', '1.0', { 'packages': ['gauge'], 'callback': function () {
-                var data = google.visualization.arrayToDataTable([
+                var tMax = nodeInfo.temperatures[0].max;
+                var tMin = nodeInfo.temperatures[0].min;
+                var tTarget = nodeInfo.temperatures[0].target;
+            	
+            	var data = google.visualization.arrayToDataTable([
                     ['Label', 'Value'],
-                    ['Temperature (℃)', nodeInfo.temperatures[0].current]
+                    ['HDA', nodeInfo.temperatures[0].current]
                 ]);
 
                 var options = {
-                    width: 250, height: 200,
-                    redFrom: 25, redTo: 100,
-                    yellowFrom:5, yellowTo: 25,
-                    greenFrom: 0, greenTo: 5,
+                    width: 125, height: 100,
+                    redFrom: tTarget, redTo: tMax,
+                    yellowFrom:tMin, yellowTo: tTarget,
+                    greenFrom: 0, greenTo: tMin,
                     minorTicks: 5
                 };
 
-                var chart = new google.visualization.Gauge(document.getElementById('temperature'));
+                var chart = new google.visualization.Gauge(document.getElementById('temperature_hda'));
                 chart.draw(data, options);
+
+            	$('#temperature_hda_comments').remove();
+            	$('#temperature_hda').append("<text id='temperature_hda_comments'>Min:&nbsp;"
+            			+ tMin + "℃<br>Tgt:&nbsp;"
+            			+ tTarget + "℃<br>Max:&nbsp;"
+            			+ tMax + "℃</text>");
+            }
+            });
+        });
+    }
+    
+    if ($('#temperature_cpu').length > 0) {
+        $.getScript('https://www.google.com/jsapi', function (data, textStatus) {
+            google.load('visualization', '1.0', { 'packages': ['gauge'], 'callback': function () {
+                var tMax = nodeInfo.temperatures[1].max;
+                var tMin = nodeInfo.temperatures[1].min;
+                var tTarget = nodeInfo.temperatures[1].target;
+            	
+            	var data = google.visualization.arrayToDataTable([
+                    ['Label', 'Value'],
+                    ['CPU', nodeInfo.temperatures[1].current]
+                ]);
+
+                var options = {
+                    width: 125, height: 100,
+                    redFrom: tTarget, redTo: tMax,
+                    yellowFrom:tMin, yellowTo: tTarget,
+                    greenFrom: 0, greenTo: tMin,
+                    minorTicks: 5
+                };
+
+                var chart = new google.visualization.Gauge(document.getElementById('temperature_cpu'));
+                chart.draw(data, options);
+                
+            	$('#temperature_cpu_comments').remove();
+            	$('#temperature_cpu').append("<text id='temperature_cpu_comments'>Min:&nbsp;"
+            			+ tMin + "℃<br>Tgt:&nbsp;"
+            			+ tTarget + "℃<br>Max:&nbsp;"
+            			+ tMax + "℃</text>");
             }
             });
         });
@@ -605,23 +624,17 @@ function renderTemperature(nodeInfo) {
 }
 
 function renderUtilizations(nodeInfo) {
-//    $("#utilizations").empty();
     if ($('#utilizations').length > 0) {
         $.getScript('https://www.google.com/jsapi', function (data, textStatus) {
-            google.load("visualization", "1.0", { packages: ["corechart"], "callback": function () {
-//                var data = google.visualization.arrayToDataTable([
-//                    ["Type", "Utilizations (%)", { role: "style" } ],
-//                    ["HDA", Math.floor(nodeInfo.utilizations[0].utility * 100), "gold"],
-//                    ["EN0", Math.floor(nodeInfo.utilizations[1].utility * 100), "silver"]
-//                ]);
-                
+            google.load("visualization", "1.0", { packages: ["corechart"], "callback": function () {                
                 var data = google.visualization.arrayToDataTable([
                                                                   ["Type", "Utilizations (%)"],
                                                                   ["HDA", Math.floor(nodeInfo.utilizations[0].utility * 100)],
-                                                                  ["EN0", Math.floor(nodeInfo.utilizations[1].utility * 100)]
+                                                                  ["EN0", Math.floor(nodeInfo.utilizations[1].utility * 100)],
+                                                                  ["EN1", Math.floor(nodeInfo.utilizations[2].utility * 100)],
+                                                                  ["CPU", Math.floor(nodeInfo.utilizations[3].utility * 100)],
                                                               ]);
 
-//                alert(Math.floor(nodeInfo.utilizations[0].utility * 100));
                 var view = new google.visualization.DataView(data);
                 view.setColumns([0, 1,
                     { calc: "stringify",
@@ -646,7 +659,6 @@ function renderUtilizations(nodeInfo) {
 }
 
 function renderCounters(nodeInfo) {
-//    $("#counters").empty();
     var operationCounters = {};
     var bytesCounters = {};
     var counter;
@@ -719,10 +731,8 @@ function renderCounters(nodeInfo) {
 
                 var options = {
                     title: 'Operation and Bytes Counters',
-//                    hAxis: {title: 'Statistics', titleTextStyle: {color: 'red'}},
                     legend : {alignment : 'center', position: 'bottom'},
                     hAxis: {minTextSpacing: 6, textStyle: {fontSize: 8}},
-//                    fontSize: '6',
                     chartArea: {height: '50%'}
                 };
 
