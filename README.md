@@ -13,6 +13,11 @@ Suggested Development Environments
   32 bit: [http://www.microsoft.com/en-us/download/details.aspx?id=5555](http://www.microsoft.com/en-us/download/details.aspx?id=5555)
   64 bit: [http://www.microsoft.com/en-us/download/details.aspx?id=14632](http://www.microsoft.com/en-us/download/details.aspx?id=14632 )
 
+Getting Started With Kinetic drives
+===================================
+* The 4-bay developer kit: 
+[https://developers.seagate.com/display/KV/Kinetic+Developer+Kit+Connection+Guide](https://developers.seagate.com/display/KV/Kinetic+Developer+Kit+Connection+Guide)
+[https://developers.seagate.com/display/KV/Development+Chassis](https://developers.seagate.com/display/KV/Development+Chassis)
 
 Getting Started With Development
 ================================
