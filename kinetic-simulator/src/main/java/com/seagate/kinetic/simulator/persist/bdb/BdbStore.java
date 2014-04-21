@@ -17,7 +17,6 @@ import kinetic.simulator.SimulatorConfiguration;
 
 import com.google.protobuf.ByteString;
 import com.seagate.kinetic.simulator.internal.KVStoreException;
-import com.seagate.kinetic.simulator.persist.KVStore;
 import com.seagate.kinetic.simulator.persist.KVValue;
 import com.seagate.kinetic.simulator.persist.PersistOption;
 import com.seagate.kinetic.simulator.persist.Store;

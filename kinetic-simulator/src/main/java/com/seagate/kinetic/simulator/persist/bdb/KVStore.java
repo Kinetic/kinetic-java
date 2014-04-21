@@ -7,7 +7,7 @@
 // or disclosure of this code, for any reason, not expressly authorized is
 // prohibited. All other rights are expressly reserved by Seagate Technology, LLC.
 
-package com.seagate.kinetic.simulator.persist;
+package com.seagate.kinetic.simulator.persist.bdb;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -25,6 +25,8 @@ import com.seagate.kinetic.simulator.internal.KVStoreException;
 import com.seagate.kinetic.simulator.internal.KVStoreNotFound;
 import com.seagate.kinetic.simulator.internal.KVStoreVersionMismatch;
 import com.seagate.kinetic.simulator.internal.SimulatorEngine;
+import com.seagate.kinetic.simulator.persist.KVKey;
+import com.seagate.kinetic.simulator.persist.KVValue;
 import com.sleepycat.bind.EntryBinding;
 import com.sleepycat.collections.StoredSortedMap;
 import com.sleepycat.je.Database;
