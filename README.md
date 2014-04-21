@@ -13,6 +13,19 @@ Suggested Development Environments
   32 bit: [http://www.microsoft.com/en-us/download/details.aspx?id=5555](http://www.microsoft.com/en-us/download/details.aspx?id=5555)
   64 bit: [http://www.microsoft.com/en-us/download/details.aspx?id=14632](http://www.microsoft.com/en-us/download/details.aspx?id=14632 )
 
+Project components
+===================================
+The kinetic-java project contains:
+
+- kinetic-client      (kinetic java client API and implementation)
+
+- kinetic-simulator   (kinetic simulator API and implementation)
+
+- kinetic-common      (common library for kinetic-client and kinetic-simulator)
+
+- kinetic-test        (test suite for the kinetic-java and kinetic drive implementation) 
+ 
+
 Getting Started With Kinetic drives
 ===================================
 * The 4-bay developer kit: 
@@ -24,9 +37,9 @@ Getting Started With Development
 1. Clone the code: `git clone https://github.com/Seagate/kinetic-java`
 1. Run the integration tests against the Java Simulator: `mvn test -DargLine="-Xmx500M"`
 1. Run the integration tests but exclude specific files: `mvn test -Dmaven.test.excludes="**/File.java,**/OtherFile.java"
-1. Run the integration tests against the skinny waist implementation at a particular path: `mvn test -DRUN_AGAINST_EXTERNAL=true -DKINETIC_PATH=/path/to/kinetic_home`
-1. Run the integration tests against the skinny waist implementation at a particular host: `mvn test -DRUN_AGAINST_EXTERNAL=true -DKINETIC_HOST=1.2.3.4`
-1. Run the integration tests against the skinny waist implementation at a particular host using SSH to reset state before runs: `mvn test -DRUN_AGAINST_EXTERNAL=true -DKINETIC_HOST=1.2.3.4 -DFAST_CLEAN_UP=true`
+1. Run the integration tests against the remote instance at a particular path: `mvn test -DRUN_AGAINST_EXTERNAL=true -DKINETIC_PATH=/path/to/kinetic_home`
+1. Run the integration tests against the remote instance at a particular host: `mvn test -DRUN_AGAINST_EXTERNAL=true -DKINETIC_HOST=1.2.3.4`
+1. Run the integration tests against the remote instance at a particular host using SSH to reset state before runs: `mvn test -DRUN_AGAINST_EXTERNAL=true -DKINETIC_HOST=1.2.3.4 -DFAST_CLEAN_UP=true`
 
 Getting Started With Simulator
 ================================
