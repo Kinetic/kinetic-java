@@ -41,7 +41,8 @@ public class SslKineticServer {
 		serverConfig.setStartSsl(true);
 		serverConfig.setSslPort(8443);
 
-		KineticSimulator lcs = new KineticSimulator(serverConfig);
+		@SuppressWarnings("unused")
+        KineticSimulator lcs = new KineticSimulator(serverConfig);
 
 	}
 

@@ -34,7 +34,6 @@ import com.seagate.kinetic.client.internal.async.GetMetadataAsyncCallbackHandler
 import com.seagate.kinetic.client.internal.async.PutAsyncCallbackHandler;
 import com.seagate.kinetic.client.io.provider.spi.ClientMessageService;
 import com.seagate.kinetic.common.lib.KineticMessage;
-import com.seagate.kinetic.proto.Kinetic.Message;
 import com.seagate.kinetic.proto.Kinetic.Message.MessageType;
 
 /**
@@ -256,15 +255,6 @@ public class MessageHandler implements ClientMessageService, Runnable {
 
 		// this.iohandler.write(message);
 		this.doWrite(message);
-	}
-
-	/**
-	 * check if there is a thread running.
-	 *
-	 * @return true if the thread is polling the message.
-	 */
-	private boolean isRunning() {
-		return isRunning;
 	}
 
 	@SuppressWarnings("rawtypes")

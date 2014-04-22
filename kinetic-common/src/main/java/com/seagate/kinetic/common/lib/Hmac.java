@@ -169,18 +169,18 @@ public class Hmac {
 		return result;
 	}
 
-	private static ByteString getTag(Message.Builder message) {
-
-		ByteString tag = null;
-
-		try {
-			tag = message.getCommand().getBody().getKeyValue().getTag();
-		} catch (Exception e) {
-			LOG.warning(e.getMessage());
-		}
-
-		return tag;
-	}
+//	private static ByteString getTag(Message.Builder message) {
+//
+//		ByteString tag = null;
+//
+//		try {
+//			tag = message.getCommand().getBody().getKeyValue().getTag();
+//		} catch (Exception e) {
+//			LOG.warning(e.getMessage());
+//		}
+//
+//		return tag;
+//	}
 
 	public static boolean check(KineticMessage km, Key key)
 			throws HmacException {

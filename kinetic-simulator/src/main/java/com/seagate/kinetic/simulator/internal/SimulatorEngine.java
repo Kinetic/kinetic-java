@@ -28,8 +28,6 @@ import com.seagate.kinetic.proto.Kinetic.Message.Security.ACL;
 import com.seagate.kinetic.simulator.heartbeat.Heartbeat;
 import com.seagate.kinetic.simulator.internal.p2p.P2POperationHandler;
 import com.seagate.kinetic.simulator.io.provider.nio.NioEventLoopGroupManager;
-import com.seagate.kinetic.simulator.io.provider.nio.http.HttpTransportProvider;
-import com.seagate.kinetic.simulator.io.provider.nio.udt.UdtTransportProvider;
 import com.seagate.kinetic.simulator.io.provider.spi.MessageService;
 import com.seagate.kinetic.simulator.io.provider.spi.TransportProvider;
 import com.seagate.kinetic.simulator.lib.HeaderOp;
@@ -78,16 +76,7 @@ public class SimulatorEngine implements MessageService {
 
     private final ArrayList<TransportProvider> transports = new ArrayList<TransportProvider>();
 
-    private final TransportProvider ioService = null;
-
-    private final TransportProvider nioService = null;
-
     private final TransportProvider sslService = null;
-
-    private final HttpTransportProvider httpService = null;
-
-    // UDT service
-    private final UdtTransportProvider udtService = null;
 
     // ack map
     private Map<Long, ACL> aclmap = null;

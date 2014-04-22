@@ -155,6 +155,8 @@ public class RangeOp {
                 respond.getCommandBuilder().getHeaderBuilder()
                 .setMessageType(MessageType.GETKEYRANGE_RESPONSE);
                 break;
+            default:
+                break;
             }
         }
     }

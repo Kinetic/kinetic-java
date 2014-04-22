@@ -123,7 +123,8 @@ public class SslNioTransportProvider implements TransportProvider, Runnable {
 		}
 	}
 
-	@Override
+	@SuppressWarnings("deprecation")
+    @Override
 	public void stop() {
 		try {
 

@@ -125,6 +125,7 @@ public class HeartbeatListener implements Runnable {
     }
 
     public static void main(String[] args) throws IOException {
+        @SuppressWarnings("unused")
         HeartbeatListener listener = new HeartbeatListener();
     }
 }

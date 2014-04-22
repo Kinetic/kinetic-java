@@ -120,7 +120,7 @@ public class KVOp {
                         // respond value
                         if (!metadataOnly) {
                             // respond.setValue(storeEntry.getData());
-                            byte[] bytes = storeEntry.getData().toByteArray();
+                            //byte[] bytes = storeEntry.getData().toByteArray();
                             kmresp.setValue(storeEntry.getData().toByteArray());
                         }
 

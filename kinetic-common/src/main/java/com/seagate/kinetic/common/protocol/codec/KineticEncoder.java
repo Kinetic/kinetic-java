@@ -60,7 +60,7 @@ public class KineticEncoder extends MessageToByteEncoder<KineticMessage> {
 
 		try {
 
-			int valueLength = 0;
+			//int valueLength = 0;
 
 			// get value to write separately
 			// byte[] value = builder.getValue().toByteArray();

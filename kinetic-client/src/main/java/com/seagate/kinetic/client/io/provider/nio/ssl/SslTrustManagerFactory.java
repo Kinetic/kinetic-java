@@ -13,8 +13,6 @@ import java.security.InvalidAlgorithmParameterException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.cert.X509Certificate;
-import java.util.logging.Logger;
-
 import javax.net.ssl.ManagerFactoryParameters;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactorySpi;
@@ -27,9 +25,6 @@ import javax.net.ssl.X509TrustManager;
  *
  */
 public class SslTrustManagerFactory extends TrustManagerFactorySpi {
-
-	private final Logger logger = Logger.getLogger(SslTrustManagerFactory.class
-			.getName());
 
 	private static final TrustManager TRUST_MANAGER = new X509TrustManager() {
 		@Override

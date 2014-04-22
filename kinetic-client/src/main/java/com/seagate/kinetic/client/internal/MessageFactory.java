@@ -9,8 +9,6 @@
  */
 package com.seagate.kinetic.client.internal;
 
-import java.util.logging.Logger;
-
 import kinetic.client.Entry;
 import kinetic.client.EntryMetadata;
 import kinetic.client.KineticException;
@@ -35,9 +33,6 @@ import com.seagate.kinetic.proto.Kinetic.MessageOrBuilder;
  *
  */
 public class MessageFactory {
-
-    private final static Logger logger = Logger.getLogger(MessageFactory.class
-            .getName());
 
     // persist synchronization mode
     private static Synchronization synchronization = Synchronization.WRITEBACK;
