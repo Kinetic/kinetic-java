@@ -140,42 +140,43 @@ public class MessageHandler implements ClientMessageService, Runnable {
 	}
 
 	@Override
-	public void run() {
+    public void run() {
 
-		try {
+        try {
+            if (logger.isLoggable(Level.FINEST)) {
+                logger.finest("thread started, name=" + this.myThread.getName());
+            }
 
-			if (logger.isLoggable(Level.FINEST)) {
-				logger.finest("thread started, name=" + this.myThread.getName());
-			}
+            while (isRunning && !isClosed) {
+                // poll message from queue
+                KineticMessage msg;
+                try {
+                    msg = this.asyncQueue.poll(7000, TimeUnit.MILLISECONDS);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    logger.info("Interrupted");
+                    isClosed = true;
+                    exitRunning();
+                    break;
+                }
 
-			while (isRunning && (isClosed == false)) {
-
-				// poll message from queue
-				KineticMessage msg = this.asyncQueue.poll(7000,
-						TimeUnit.MILLISECONDS);
-
-				if (msg != null) {
-					// process message
-					doProcessMessage(msg);
-				} else {
-					// exit thread
-					this.exitRunning();
-				}
-
-			}
-		} catch (Exception e) {
-
-			// conservative behaver, no retry.
-			this.isClosed = true;
-
-			logger.warning(e.getMessage());
-		} finally {
-			if (logger.isLoggable(Level.FINEST)) {
-				logger.finest("thread exited ." + this.myThread.getName());
-			}
-		}
-
-	}
+                if (msg != null) {
+                    // process message
+                    doProcessMessage(msg);
+                } else {
+                    // exit thread
+                    exitRunning();
+                }
+            }
+        } catch (Throwable t) {
+            logger.log(Level.WARNING, "Main run loop failed", t);
+            isClosed = true;
+        } finally {
+            if (logger.isLoggable(Level.FINEST)) {
+                logger.finest("thread exited ." + this.myThread.getName());
+            }
+        }
+    }
 
 	/**
 	 * process message.
@@ -487,8 +488,7 @@ public class MessageHandler implements ClientMessageService, Runnable {
 			try {
 				if (obj instanceof LinkedBlockingQueue) {
 					// the connection is closed, unblock callers
-					((LinkedBlockingQueue<Message>) obj).put(Message.newBuilder()
-							.build());
+				    ((LinkedBlockingQueue<KineticMessage>) obj).put(new KineticMessage());
 				}
 			} catch (Exception e) {
 				logger.log(Level.WARNING, e.getMessage(), e);
