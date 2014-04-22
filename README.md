@@ -24,7 +24,15 @@ The kinetic-java project contains:
 - kinetic-common      (common library for kinetic-client and kinetic-simulator)
 
 - kinetic-test        (test suite for the kinetic-java and kinetic drive implementation) 
+
+kinetic-java provides the Java API and Simulator for the Kinetic Open Storage Platform:
+[https://developers.seagate.com/display/KV/Kinetic+Open+Storage+Documentation+Wiki] (https://developers.seagate.com/display/KV/Kinetic+Open+Storage+Documentation+Wiki)  
  
+Client bootstrap class: 
+[https://github.com/Seagate/kinetic-java/blob/master/kinetic-client/src/main/java/kinetic/client/KineticClientFactory.java] (https://github.com/Seagate/kinetic-java/blob/master/kinetic-client/src/main/java/kinetic/client/KineticClientFactory.java)
+
+Simulator bootstrap class:
+[https://github.com/Seagate/kinetic-java/blob/master/kinetic-simulator/src/main/java/kinetic/simulator/KineticSimulator.java](https://github.com/Seagate/kinetic-java/blob/master/kinetic-simulator/src/main/java/kinetic/simulator/KineticSimulator.java)
 
 Getting Started With Kinetic drives
 ===================================
