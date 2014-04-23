@@ -37,6 +37,7 @@ Simulator bootstrap class:
 Getting Started With Kinetic drives
 ===================================
 * The 4-bay developer kit: 
+[http://youtu.be/2UOepUmAJ3o] (http://youtu.be/2UOepUmAJ3o)
 [https://developers.seagate.com/display/KV/Kinetic+Developer+Kit+Connection+Guide](https://developers.seagate.com/display/KV/Kinetic+Developer+Kit+Connection+Guide)
 [https://developers.seagate.com/display/KV/Development+Chassis](https://developers.seagate.com/display/KV/Development+Chassis)
 
