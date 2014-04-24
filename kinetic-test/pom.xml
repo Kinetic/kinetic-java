@@ -95,6 +95,34 @@
 					</execution>
 				</executions>
 			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<version>2.9.1</version>
+				<executions>
+					<execution>
+						<configuration>
+							<detectOfflineLinks>false</detectOfflineLinks>
+							<breakiterator>true</breakiterator>
+							<version>false</version>
+							<author>false</author>
+							<keywords>true</keywords>
+							<charset>UTF-8</charset>
+							<notimestamp>true</notimestamp>
+							<outputDirectory>${basedir}/doc/kinetic-test-javadoc</outputDirectory>
+							<jarOutputDirectory>${basedir}/doc</jarOutputDirectory>
+							<finalName>Kinetic-test-${project.version}</finalName>
+							<sourcepath>${basedir}/src/test/java</sourcepath>
+							<subpackages>com.seagate.kinetic.adminAPI:com.seagate.kinetic.advancedAPI:com.seagate.kinetic.allTests:com.seagate.kinetic.asyncAPI:com.seagate.kinetic.basicAPI:com.seagate.kinetic.boundary:com.seagate.kinetic.concurrent:com.seagate.kinetic.performance:com.seagate.kinetic.monitor:com.seagate.kinetic.duriablity:com.seagate.kinetic.stress</subpackages>
+						</configuration>
+						<id>test-javadocs</id>
+						<phase>package</phase>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
 		</plugins>
 	</build>
 	<profiles>
@@ -103,39 +131,9 @@
 			<activation>
 				<jdk>[1.8,</jdk>
 			</activation>
-			<build>
-				<plugins>
-					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-javadoc-plugin</artifactId>
-						<version>2.9.1</version>
-						<executions>
-							<execution>
-								<configuration>
-									<detectOfflineLinks>false</detectOfflineLinks>
-									<breakiterator>true</breakiterator>
-									<version>false</version>
-									<author>false</author>
-									<keywords>true</keywords>
-									<charset>UTF-8</charset>
-									<notimestamp>true</notimestamp>
-									<outputDirectory>${basedir}/doc/kinetic-test-javadoc</outputDirectory>
-									<jarOutputDirectory>${basedir}/doc</jarOutputDirectory>
-									<finalName>Kinetic-test-${project.version}</finalName>
-									<sourcepath>${basedir}/src/test/java</sourcepath>
-									<additionalparam>-Xdoclint:none</additionalparam>
-									<subpackages>com.seagate.kinetic.adminAPI:com.seagate.kinetic.advancedAPI:com.seagate.kinetic.allTests:com.seagate.kinetic.asyncAPI:com.seagate.kinetic.basicAPI:com.seagate.kinetic.boundary:com.seagate.kinetic.concurrent:com.seagate.kinetic.performance:com.seagate.kinetic.monitor:com.seagate.kinetic.duriablity:com.seagate.kinetic.stress</subpackages>
-								</configuration>
-								<id>test-javadocs</id>
-								<phase>package</phase>
-								<goals>
-									<goal>jar</goal>
-								</goals>
-							</execution>
-						</executions>
-					</plugin>
-				</plugins>
-			</build>
+			<properties>
+				<additionalparam>-Xdoclint:none</additionalparam>
+			</properties>
 		</profile>
 	</profiles>
 	<dependencies>

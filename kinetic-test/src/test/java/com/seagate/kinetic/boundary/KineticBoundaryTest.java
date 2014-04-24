@@ -2281,7 +2281,7 @@ public class KineticBoundaryTest extends IntegrationTestCase {
      *            A map of List of entries (to put) to the List of roles to set
      *            for the client on those entries
      *
-     * @return
+     * @return DefaultKineticClient
      * @throws KineticException
      */
     private DefaultKineticClient createClientWithSpecifiedRolesForEntries(
