@@ -2,8 +2,7 @@ Suggested Development Environments
 ==================================
 * Latest version of Git for your OS: [http://git-scm.com/downloads](http://git-scm.com/downloads)
 
-* JDK 1.7: [http://www.oracle.com/technetwork/java/javase/downloads/index.html](http://www.oracle.com/technetwork/java/javase/downloads/index.html)
-  (Please note that JDK 1.8 is not officially supported yet due to Javadoc incompatibility issues.)
+* JDK 1.7 or above: [http://www.oracle.com/technetwork/java/javase/downloads/index.html](http://www.oracle.com/technetwork/java/javase/downloads/index.html)
 
 * Eclipse IDE For Java Developers. Version 4.2 (Juno) or later: [http://www.eclipse.org/downloads/](http://www.eclipse.org/downloads/)
 
@@ -43,7 +42,7 @@ Getting Started With Kinetic drives
 
 Getting Started With Development
 ================================
-1. Clone the code: `git clone https://github.com/Seagate/kinetic-java`
+1. Clone the code: `git clone https://github.com/Seagate/kinetic-java.git`
 1. Run the integration tests against the Java Simulator: `mvn test -DargLine="-Xmx500M"`
 1. Run the integration tests but exclude specific files: `mvn test -Dmaven.test.excludes="**/File.java,**/OtherFile.java"
 1. Run the integration tests against the remote instance at a particular path: `mvn test -DRUN_AGAINST_EXTERNAL=true -DKINETIC_PATH=/path/to/kinetic_home`
