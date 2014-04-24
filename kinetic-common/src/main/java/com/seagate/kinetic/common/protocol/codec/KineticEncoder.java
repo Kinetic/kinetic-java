@@ -102,9 +102,13 @@ public class KineticEncoder extends MessageToByteEncoder<KineticMessage> {
 			if (printMessage) {
 
 				logger.info("outbound protocol message:");
-
-				String printMsg = ProtocolMessageUtil.toString(msg,
-						value.length);
+				
+				int len = 0;
+				if (value != null) {
+				    len = value.length;
+				}
+				
+				String printMsg = ProtocolMessageUtil.toString(msg, len);
 
 				logger.info(printMsg);
 			}
