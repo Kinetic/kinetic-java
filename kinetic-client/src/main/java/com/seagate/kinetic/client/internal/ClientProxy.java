@@ -76,7 +76,7 @@ public class ClientProxy {
     private final Map<Long, Key> hmacKeyMap = new HashMap<Long, Key>();
 
     // use protocol v2
-    private boolean useV2Protocol = false;
+    private boolean useV2Protocol = true;
 
     /**
      * Construct a new instance of client proxy
@@ -92,7 +92,7 @@ public class ClientProxy {
         this.config = config;
 
         // set to true if v2 protocol is used
-        this.useV2Protocol = config.getUseV2Protocol();
+        this.useV2Protocol = true;
 
         // get user principal from client config
         user = config.getUserId();

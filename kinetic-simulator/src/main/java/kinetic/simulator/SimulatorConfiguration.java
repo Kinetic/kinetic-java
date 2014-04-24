@@ -60,11 +60,6 @@ public class SimulatorConfiguration extends Properties {
 	private final boolean useSslAsDefault = Boolean
 			.getBoolean("kinetic.io.ssl");
 
-	// private boolean useV2Protocol = Boolean
-	// .getBoolean("kinetic.protocol.v2");
-
-	private boolean useV2Protocol = true;
-
 	/**
 	 * Start SSL transport service.
 	 */
@@ -484,26 +479,6 @@ public class SimulatorConfiguration extends Properties {
 	 */
 	public int getHeartbeatPort() {
 		return this.mcastPort;
-	}
-
-	/**
-	 * Get if v2 protocol is used to established the connection.
-	 * <p>
-	 * 
-	 * @return true if v2 protocol is used.
-	 */
-	public boolean getUseV2Protocol() {
-		return this.useV2Protocol;
-	}
-
-	/**
-	 * Set if v2 protocol is to be used to communicate with the simulator/drive.
-	 * 
-	 * @param flag
-	 *            true if v2 protocol is used.
-	 */
-	public void setUseV2Protocol(boolean flag) {
-		this.useV2Protocol = flag;
 	}
 
 	/**

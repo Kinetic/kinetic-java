@@ -32,7 +32,6 @@ public class KineticSimulatorConsole {
 			serverConfig.setStartSsl(true);
 			serverConfig.setTickTime(0);
 			serverConfig.setUseMemoryStore(true);
-			serverConfig.setUseV2Protocol(true);
 			serverConfig.put(SimulatorConfiguration.PERSIST_HOME, "instance_"
 					+ port);
 			@SuppressWarnings("unused")

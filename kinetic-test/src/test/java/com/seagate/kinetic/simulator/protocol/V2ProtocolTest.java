@@ -390,21 +390,24 @@ public class V2ProtocolTest {
 	}
 
 	private KineticClient startV2TcpClient() throws KineticException {
-		clientConfiguration.setUseV2Protocol(true);
+	    //only support v2 protocol
+		//clientConfiguration.setUseV2Protocol(true);
 		clientConfiguration.setUseNio(false);
 
 		return KineticClientFactory.createInstance(clientConfiguration);
 	}
 
 	private KineticClient startV2NioClient() throws KineticException {
-		clientConfiguration.setUseV2Protocol(true);
+	    //only support v2 protocol
+        //clientConfiguration.setUseV2Protocol(true);
 		clientConfiguration.setUseNio(true);
 
 		return KineticClientFactory.createInstance(clientConfiguration);
 	}
 
 	private KineticClient startV2SslClient() throws KineticException {
-		clientConfiguration.setUseV2Protocol(true);
+	    //only support v2 protocol
+        //clientConfiguration.setUseV2Protocol(true);
 		clientConfiguration.setUseSsl(true);
 		clientConfiguration.setPort(sslPort);
 
@@ -413,19 +416,21 @@ public class V2ProtocolTest {
 
 	private KineticClient startV1TcpClient() throws KineticException {
 		clientConfiguration.setUseNio(false);
-		clientConfiguration.setUseV2Protocol(false);
-
+		 //only support v2 protocol
+        //clientConfiguration.setUseV2Protocol(true);
 		return KineticClientFactory.createInstance(clientConfiguration);
 	}
 
 	private KineticClient startV1NioClient() throws KineticException {
-		clientConfiguration.setUseV2Protocol(false);
+	    //only support v2 protocol
+        //clientConfiguration.setUseV2Protocol(true);
 
 		return KineticClientFactory.createInstance(clientConfiguration);
 	}
 
 	private KineticClient startV1SslClient() throws KineticException {
-		clientConfiguration.setUseV2Protocol(false);
+	    //only support v2 protocol
+        //clientConfiguration.setUseV2Protocol(true);
 		clientConfiguration.setUseSsl(true);
 		clientConfiguration.setPort(sslPort);
 
@@ -433,14 +438,14 @@ public class V2ProtocolTest {
 	}
 
 	private KineticSimulator startV2NioSimulator() {
-		simulatorConfiguration.setUseV2Protocol(true);
+		//simulatorConfiguration.setUseV2Protocol(true);
 		simulatorConfiguration.setStartSsl(false);
 
 		return new KineticSimulator(simulatorConfiguration);
 	}
 
 	private KineticSimulator startV2TcpSimulator() {
-		simulatorConfiguration.setUseV2Protocol(true);
+		//simulatorConfiguration.setUseV2Protocol(true);
 		simulatorConfiguration.setUseNio(false);
 		simulatorConfiguration.setStartSsl(false);
 
@@ -448,7 +453,7 @@ public class V2ProtocolTest {
 	}
 
 	private KineticSimulator startV2SslSimulator() {
-		simulatorConfiguration.setUseV2Protocol(true);
+		//simulatorConfiguration.setUseV2Protocol(true);
 		simulatorConfiguration.setUseNio(true);
 		simulatorConfiguration.setStartSsl(true);
 
@@ -457,7 +462,7 @@ public class V2ProtocolTest {
 
 	private KineticSimulator startV1NioSimulator() {
 		simulatorConfiguration.setStartSsl(false);
-		simulatorConfiguration.setUseV2Protocol(false);
+		//simulatorConfiguration.setUseV2Protocol(false);
 
 		return new KineticSimulator(simulatorConfiguration);
 	}
@@ -465,7 +470,7 @@ public class V2ProtocolTest {
 	private KineticSimulator startV1TcpSimulator() {
 		simulatorConfiguration.setUseNio(false);
 		simulatorConfiguration.setStartSsl(false);
-		simulatorConfiguration.setUseV2Protocol(false);
+		//simulatorConfiguration.setUseV2Protocol(false);
 
 		return new KineticSimulator(simulatorConfiguration);
 	}
@@ -473,7 +478,7 @@ public class V2ProtocolTest {
 	private KineticSimulator startV1SslSimulator() {
 		simulatorConfiguration.setUseNio(true);
 		simulatorConfiguration.setStartSsl(true);
-		simulatorConfiguration.setUseV2Protocol(false);
+		//simulatorConfiguration.setUseV2Protocol(false);
 
 		return new KineticSimulator(simulatorConfiguration);
 	}

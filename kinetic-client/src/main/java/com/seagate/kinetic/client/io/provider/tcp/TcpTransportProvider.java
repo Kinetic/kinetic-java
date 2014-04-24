@@ -50,7 +50,7 @@ public class TcpTransportProvider implements ClientTransportProvider, Runnable {
 	private final Logger logger = Logger
 			.getLogger(TcpTransportProvider.class.getName());
 
-	private boolean useV2Protocol = false;
+	private boolean useV2Protocol = true;
 
 	// input socket read thread
 	private Thread myThread = null;
@@ -85,7 +85,7 @@ public class TcpTransportProvider implements ClientTransportProvider, Runnable {
 
 		ClientConfiguration config = mservice.getConfiguration();
 
-		this.useV2Protocol = config.getUseV2Protocol();
+		this.useV2Protocol = true;
 
 		this.mservice = mservice;
 

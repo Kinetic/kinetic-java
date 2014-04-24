@@ -41,7 +41,7 @@ public class IoHandler implements Runnable {
 	private final static Logger logger = Logger.getLogger(IoHandler.class
 			.getName());
 
-	private boolean useV2Protocol = false;
+	private boolean useV2Protocol = true;
 
 	// client paired socket
 	private Socket socket = null;
@@ -70,8 +70,7 @@ public class IoHandler implements Runnable {
 		this.socket = s;
 		this.ioService = ioService;
 
-		this.useV2Protocol = ioService.getMessageService().getServiceConfiguration()
-				.getUseV2Protocol();
+		this.useV2Protocol = true;
 	}
 
 	/**

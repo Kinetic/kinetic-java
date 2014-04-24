@@ -66,11 +66,7 @@ public class ClientConfiguration extends Properties {
 	 */
 	private volatile boolean useSsl = Boolean.getBoolean("kinetic.io.ssl");
 
-	// private volatile boolean useV2Protocol = Boolean
-	// .getBoolean("kinetic.protocol.v2");
-
-	private volatile boolean useV2Protocol = true;
-
+	
 	/**
 	 * ssl default port if useSsl is set to true.
 	 */
@@ -419,9 +415,9 @@ public class ClientConfiguration extends Properties {
 	 * 
 	 * @return true if v2 protocol is used.
 	 */
-	public boolean getUseV2Protocol() {
-		return this.useV2Protocol;
-	}
+	//public boolean getUseV2Protocol() {
+	//	return this.useV2Protocol;
+	//}
 
 	/**
 	 * Set if v2 protocol is to be used to communicate with the simulator/drive.
@@ -429,8 +425,8 @@ public class ClientConfiguration extends Properties {
 	 * @param flag
 	 *            true if v2 protocol is used.
 	 */
-	public void setUseV2Protocol(boolean flag) {
-		this.useV2Protocol = flag;
-	}
+	//public void setUseV2Protocol(boolean flag) {
+	//	this.useV2Protocol = flag;
+	//}
 
 }

@@ -30,7 +30,7 @@ public class SimulatorTestTarget extends AbstractIntegrationTestTarget {
         SimulatorConfiguration simulatorConfiguration = new SimulatorConfiguration();
         simulatorConfiguration.setPort(port);
         simulatorConfiguration.setSslPort(tlsPort);
-        simulatorConfiguration.setUseV2Protocol(true);
+        //simulatorConfiguration.setUseV2Protocol(true);
         simulatorConfiguration.setNioServiceBossThreads(1);
         simulatorConfiguration.setNioServiceWorkerThreads(1);
 
