@@ -8,6 +8,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
+import kinetic.admin.AdminClientConfiguration;
 import kinetic.client.ClientConfiguration;
 import kinetic.client.Entry;
 import kinetic.client.KineticClient;
@@ -55,7 +56,7 @@ public class IntegrationTestCase {
      */
     @Before
     public void startTestServer() throws InterruptedException,
-    KineticException, IOException, JSchException, ExecutionException {
+            KineticException, IOException, JSchException, ExecutionException {
         testTarget = IntegrationTestTargetFactory.createTestTarget(true);
         kineticClient = KineticP2PClientFactory
                 .createP2pClient(getClientConfig());
@@ -129,6 +130,17 @@ public class IntegrationTestCase {
     }
 
     /**
+     * Get a Kinetic client configuration with setting cluster version flexible.
+     * <p>
+     */
+    protected AdminClientConfiguration getAdminClientConfig(long clusterVersion) {
+        AdminClientConfiguration clientConfiguration = testTarget
+                .getAdminClientConfig();
+        clientConfiguration.setClusterVersion(clusterVersion);
+        return clientConfiguration;
+    }
+
+    /**
      * Restart the server and the Kinetic client.
      * <p>
      */
@@ -163,10 +175,9 @@ public class IntegrationTestCase {
         return ("status=success");
     }
 
-
     /**
-     * Useful for writing tests which exercise permissions corner cases.
-     * Creates a new client and adds the given roles to the client's ACL
+     * Useful for writing tests which exercise permissions corner cases. Creates
+     * a new client and adds the given roles to the client's ACL
      *
      * @param clientId
      * @param clientKeyString
@@ -183,12 +194,13 @@ public class IntegrationTestCase {
             domain.addPermission(role);
         }
 
-        createClientAclWithDomains(clientId, clientKeyString, Collections.singletonList(domain.build()));
+        createClientAclWithDomains(clientId, clientKeyString,
+                Collections.singletonList(domain.build()));
     }
 
     /**
-     * Useful for writing tests which exercise permissions corner cases.
-     * Creates a new client and adds the given domains to the client's ACL
+     * Useful for writing tests which exercise permissions corner cases. Creates
+     * a new client and adds the given domains to the client's ACL
      *
      * @param clientId
      * @param clientKeyString
@@ -201,13 +213,15 @@ public class IntegrationTestCase {
             throws KineticException {
         Kinetic.Message.Builder request = Kinetic.Message.newBuilder();
 
-        Kinetic.Message.Header.Builder header = request.getCommandBuilder().getHeaderBuilder();
+        Kinetic.Message.Header.Builder header = request.getCommandBuilder()
+                .getHeaderBuilder();
         header.setMessageType(Kinetic.Message.MessageType.SECURITY);
 
         Kinetic.Message.Security.Builder security = request.getCommandBuilder()
                 .getBodyBuilder().getSecurityBuilder();
 
-        Kinetic.Message.Security.ACL.Builder acl = Kinetic.Message.Security.ACL.newBuilder();
+        Kinetic.Message.Security.ACL.Builder acl = Kinetic.Message.Security.ACL
+                .newBuilder();
         acl.setIdentity(clientId);
         acl.setKey(ByteString.copyFromUtf8(clientKeyString));
         acl.setHmacAlgorithm(Kinetic.Message.Security.ACL.HMACAlgorithm.HmacSHA1);
@@ -224,20 +238,25 @@ public class IntegrationTestCase {
                 .getMessage();
 
         // Ensure setup succeeded, or else fail the calling test.
-        assertEquals(Kinetic.Message.Status.StatusCode.SUCCESS, response.getCommand().getStatus().getCode());
+        assertEquals(Kinetic.Message.Status.StatusCode.SUCCESS, response
+                .getCommand().getStatus().getCode());
     }
 
     /**
-     * Utility method to reduce duplicated test code. Creates a new entry for the given key/value pair, and executes
-     * a PUT using the given client.
+     * Utility method to reduce duplicated test code. Creates a new entry for
+     * the given key/value pair, and executes a PUT using the given client.
      *
-     * @param key The string representation of the key to put
-     * @param value The string representation of the value to put
-     * @param client The client used to put
+     * @param key
+     *            The string representation of the key to put
+     * @param value
+     *            The string representation of the value to put
+     * @param client
+     *            The client used to put
      * @return The entry created from the key/value pair
      * @throws kinetic.client.KineticException
      */
-    protected Entry buildAndPutEntry(String key, String value, KineticClient client) throws KineticException {
+    protected Entry buildAndPutEntry(String key, String value,
+            KineticClient client) throws KineticException {
         Entry entry = new Entry(toByteArray(key), toByteArray(value));
         client.put(entry, null);
         return entry;

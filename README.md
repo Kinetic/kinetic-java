@@ -120,8 +120,8 @@ Make sure one instance of simulator or kinetic drive is running.
 
 2. cd "Kinetic-Folder"/bin
 
-3. sh runSmokeTests.sh [-host host_ip] [-port port] [-home kinetic_home]
+3. sh runSmokeTests.sh [-host host_ip] [-port port] [-tlsport tlsport] [-home kinetic_home]
    or
-   python runSmokeTests.py [-host host_ip] [-port port] [-home kinetic_home]
+   python runSmokeTests.py [-host host_ip] [-port port] [-tlsport tlsport] [-home kinetic_home]
             
             

@@ -9,7 +9,6 @@
  */
 package kinetic.admin;
 
-import kinetic.client.ClientConfiguration;
 import kinetic.client.KineticException;
 
 import com.seagate.kinetic.admin.impl.DefaultAdminClient;
@@ -25,18 +24,18 @@ import com.seagate.kinetic.admin.impl.DefaultAdminClient;
  */
 public class KineticAdminClientFactory {
 
-	/**
-	 * Construct a new instance of the <code>KineticAdminClient</code>.
-	 * 
-	 * @param config
-	 *            configuration used to create a new instance of admin client.
-	 * @return a KineticAdminClient instance that is connected to the server.
-	 * 
-	 * @throws KineticException
-	 *             if any internal errors occur.
-	 */
-	public static KineticAdminClient createInstance(ClientConfiguration config)
-			throws KineticException {
-		return new DefaultAdminClient(config);
-	}
+    /**
+     * Construct a new instance of the <code>KineticAdminClient</code>.
+     * 
+     * @param config
+     *            configuration used to create a new instance of admin client.
+     * @return a KineticAdminClient instance that is connected to the server.
+     * 
+     * @throws KineticException
+     *             if any internal errors occur.
+     */
+    public static KineticAdminClient createInstance(
+            AdminClientConfiguration config) throws KineticException {
+        return new DefaultAdminClient(config);
+    }
 }

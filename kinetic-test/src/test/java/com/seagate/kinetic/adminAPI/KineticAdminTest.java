@@ -271,7 +271,7 @@ public class KineticAdminTest extends IntegrationTestCase {
         restartServer();
 
         final KineticAdminClient adminClient = KineticAdminClientFactory
-                .createInstance(getClientConfig(1));
+                .createInstance(getAdminClientConfig(1));
 
         adminClient.setup(null, null, 2, false);
         adminClient.close();
@@ -623,7 +623,8 @@ public class KineticAdminTest extends IntegrationTestCase {
                 .getBodyBuilder().getSecurityBuilder();
 
         // client 1 has all roles
-        com.seagate.kinetic.proto.Kinetic.Message.Security.ACL.Builder acl1 = com.seagate.kinetic.proto.Kinetic.Message.Security.ACL.newBuilder();
+        com.seagate.kinetic.proto.Kinetic.Message.Security.ACL.Builder acl1 = com.seagate.kinetic.proto.Kinetic.Message.Security.ACL
+                .newBuilder();
         acl1.setIdentity(1);
         acl1.setKey(ByteString.copyFromUtf8("asdfasdf"));
         acl1.setHmacAlgorithm(HMACAlgorithm.HmacSHA1);
@@ -637,7 +638,8 @@ public class KineticAdminTest extends IntegrationTestCase {
         security.addAcl(acl1);
 
         // client 2 only has read permission
-        com.seagate.kinetic.proto.Kinetic.Message.Security.ACL.Builder acl2 = com.seagate.kinetic.proto.Kinetic.Message.Security.ACL.newBuilder();
+        com.seagate.kinetic.proto.Kinetic.Message.Security.ACL.Builder acl2 = com.seagate.kinetic.proto.Kinetic.Message.Security.ACL
+                .newBuilder();
         acl2.setIdentity(2);
         acl2.setKey(ByteString.copyFromUtf8("asdfasdf2"));
         acl2.setHmacAlgorithm(HMACAlgorithm.HmacSHA1);
@@ -647,7 +649,8 @@ public class KineticAdminTest extends IntegrationTestCase {
         security.addAcl(acl2);
 
         // client 3 only has write permission
-        com.seagate.kinetic.proto.Kinetic.Message.Security.ACL.Builder acl3 = com.seagate.kinetic.proto.Kinetic.Message.Security.ACL.newBuilder();
+        com.seagate.kinetic.proto.Kinetic.Message.Security.ACL.Builder acl3 = com.seagate.kinetic.proto.Kinetic.Message.Security.ACL
+                .newBuilder();
         acl3.setIdentity(3);
         acl3.setKey(ByteString.copyFromUtf8("asdfasdf3"));
         acl3.setHmacAlgorithm(HMACAlgorithm.HmacSHA1);
@@ -657,7 +660,8 @@ public class KineticAdminTest extends IntegrationTestCase {
         security.addAcl(acl3);
 
         // client 4 only has delete permission
-        com.seagate.kinetic.proto.Kinetic.Message.Security.ACL.Builder acl4 = com.seagate.kinetic.proto.Kinetic.Message.Security.ACL.newBuilder();
+        com.seagate.kinetic.proto.Kinetic.Message.Security.ACL.Builder acl4 = com.seagate.kinetic.proto.Kinetic.Message.Security.ACL
+                .newBuilder();
         acl4.setIdentity(4);
         acl4.setKey(ByteString.copyFromUtf8("asdfasdf4"));
         acl4.setHmacAlgorithm(HMACAlgorithm.HmacSHA1);
@@ -667,7 +671,8 @@ public class KineticAdminTest extends IntegrationTestCase {
         security.addAcl(acl4);
 
         // client 5 only has read and write permission
-        com.seagate.kinetic.proto.Kinetic.Message.Security.ACL.Builder acl5 = com.seagate.kinetic.proto.Kinetic.Message.Security.ACL.newBuilder();
+        com.seagate.kinetic.proto.Kinetic.Message.Security.ACL.Builder acl5 = com.seagate.kinetic.proto.Kinetic.Message.Security.ACL
+                .newBuilder();
         acl5.setIdentity(5);
         acl5.setKey(ByteString.copyFromUtf8("asdfasdf5"));
         acl5.setHmacAlgorithm(HMACAlgorithm.HmacSHA1);
@@ -678,7 +683,8 @@ public class KineticAdminTest extends IntegrationTestCase {
         security.addAcl(acl5);
 
         // client 6 only has read and delete permission
-        com.seagate.kinetic.proto.Kinetic.Message.Security.ACL.Builder acl6 = com.seagate.kinetic.proto.Kinetic.Message.Security.ACL.newBuilder();
+        com.seagate.kinetic.proto.Kinetic.Message.Security.ACL.Builder acl6 = com.seagate.kinetic.proto.Kinetic.Message.Security.ACL
+                .newBuilder();
         acl6.setIdentity(6);
         acl6.setKey(ByteString.copyFromUtf8("asdfasdf6"));
         acl6.setHmacAlgorithm(HMACAlgorithm.HmacSHA1);
@@ -689,7 +695,8 @@ public class KineticAdminTest extends IntegrationTestCase {
         security.addAcl(acl6);
 
         // client 7 only has write and delete permission
-        com.seagate.kinetic.proto.Kinetic.Message.Security.ACL.Builder acl7 = com.seagate.kinetic.proto.Kinetic.Message.Security.ACL.newBuilder();
+        com.seagate.kinetic.proto.Kinetic.Message.Security.ACL.Builder acl7 = com.seagate.kinetic.proto.Kinetic.Message.Security.ACL
+                .newBuilder();
         acl7.setIdentity(7);
         acl7.setKey(ByteString.copyFromUtf8("asdfasdf7"));
         acl7.setHmacAlgorithm(HMACAlgorithm.HmacSHA1);
@@ -910,7 +917,8 @@ public class KineticAdminTest extends IntegrationTestCase {
                 .getSecurityBuilder();
 
         // add admin acl info
-        com.seagate.kinetic.proto.Kinetic.Message.Security.ACL.Builder aclAdmin = com.seagate.kinetic.proto.Kinetic.Message.Security.ACL.newBuilder();
+        com.seagate.kinetic.proto.Kinetic.Message.Security.ACL.Builder aclAdmin = com.seagate.kinetic.proto.Kinetic.Message.Security.ACL
+                .newBuilder();
         aclAdmin.setIdentity(1);
         aclAdmin.setKey(ByteString.copyFromUtf8("asdfasdf"));
         aclAdmin.setHmacAlgorithm(HMACAlgorithm.HmacSHA1);
@@ -923,7 +931,8 @@ public class KineticAdminTest extends IntegrationTestCase {
         aclAdmin.addScope(domainAdmin);
         security.addAcl(aclAdmin);
 
-        acl = com.seagate.kinetic.proto.Kinetic.Message.Security.ACL.newBuilder();
+        acl = com.seagate.kinetic.proto.Kinetic.Message.Security.ACL
+                .newBuilder();
         acl.setIdentity(2);
         acl.setKey(ByteString.copyFromUtf8("asdfasdf2"));
         acl.setHmacAlgorithm(HMACAlgorithm.HmacSHA1);
@@ -1193,7 +1202,8 @@ public class KineticAdminTest extends IntegrationTestCase {
 
     @Test
     public void testNegativeDomainOffset() throws KineticException {
-        com.seagate.kinetic.proto.Kinetic.Message.Security.ACL.Builder acl = com.seagate.kinetic.proto.Kinetic.Message.Security.ACL.newBuilder();
+        com.seagate.kinetic.proto.Kinetic.Message.Security.ACL.Builder acl = com.seagate.kinetic.proto.Kinetic.Message.Security.ACL
+                .newBuilder();
         acl.setIdentity(2);
         acl.setKey(ByteString.copyFromUtf8("asdfasdf2"));
         acl.setHmacAlgorithm(HMACAlgorithm.HmacSHA1);
@@ -1220,7 +1230,8 @@ public class KineticAdminTest extends IntegrationTestCase {
                 .getBodyBuilder().getSecurityBuilder();
 
         // client 1 has all roles
-        com.seagate.kinetic.proto.Kinetic.Message.Security.ACL.Builder acl1 = com.seagate.kinetic.proto.Kinetic.Message.Security.ACL.newBuilder();
+        com.seagate.kinetic.proto.Kinetic.Message.Security.ACL.Builder acl1 = com.seagate.kinetic.proto.Kinetic.Message.Security.ACL
+                .newBuilder();
         acl1.setIdentity(1);
         acl1.setKey(ByteString.copyFromUtf8("asdfasdf"));
         acl1.setHmacAlgorithm(HMACAlgorithm.HmacSHA1);
@@ -1515,7 +1526,7 @@ public class KineticAdminTest extends IntegrationTestCase {
     private void resetClusterVersion(int currentClusterVersion)
             throws KineticException {
         final KineticAdminClient client = KineticAdminClientFactory
-                .createInstance(getClientConfig(currentClusterVersion));
+                .createInstance(getAdminClientConfig(currentClusterVersion));
         client.setup(null, null, 0, false);
         client.close();
     }

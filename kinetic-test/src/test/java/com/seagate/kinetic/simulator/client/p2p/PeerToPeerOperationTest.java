@@ -34,115 +34,116 @@ import com.seagate.kinetic.SimulatorOnly;
  */
 @RunWith(KineticTestRunner.class)
 public class PeerToPeerOperationTest extends IntegrationTestCase {
-	private AbstractIntegrationTestTarget secondaryTestTarget;
-	private KineticP2pClient secondaryClient;
+    private AbstractIntegrationTestTarget secondaryTestTarget;
+    private KineticP2pClient secondaryClient;
 
-	@Before
-	public void setUp() throws Exception {
-		secondaryTestTarget = IntegrationTestTargetFactory.createAlternateTestTarget();
+    @Before
+    public void setUp() throws Exception {
+        secondaryTestTarget = IntegrationTestTargetFactory
+                .createAlternateTestTarget();
 
-		KineticAdminClient adminClient = KineticAdminClientFactory.createInstance(secondaryTestTarget.getClientConfig());
-		adminClient.setup(null, null, 0, true);
-		adminClient.close();
+        KineticAdminClient adminClient = KineticAdminClientFactory
+                .createInstance(secondaryTestTarget.getAdminClientConfig());
+        adminClient.setup(null, null, 0, true);
+        adminClient.close();
 
-		secondaryClient = secondaryTestTarget.createKineticClient();
-	}
+        secondaryClient = secondaryTestTarget.createKineticClient();
+    }
 
-	@After
-	public void tearDown() throws Exception {
-		secondaryClient.close();
-		secondaryTestTarget.shutdown();
-	}
+    @After
+    public void tearDown() throws Exception {
+        secondaryClient.close();
+        secondaryTestTarget.shutdown();
+    }
 
-	@Test
-	public void testP2PPut_WorksOverPlainConnection() throws Exception {
-		byte[] key = "an awesome key!".getBytes(Charsets.UTF_8);
-		byte[] value = "an awesome value!".getBytes(Charsets.UTF_8);
+    @Test
+    public void testP2PPut_WorksOverPlainConnection() throws Exception {
+        byte[] key = "an awesome key!".getBytes(Charsets.UTF_8);
+        byte[] value = "an awesome value!".getBytes(Charsets.UTF_8);
 
-		Entry entry = new Entry(key, value);
-		getClient().putForced(entry);
+        Entry entry = new Entry(key, value);
+        getClient().putForced(entry);
 
-		PeerToPeerOperation p2p = new PeerToPeerOperation();
-		p2p.setPeer(secondaryTestTarget.getPeer());
-		Operation op = new Operation();
-		op.setKey(key);
-		op.setForced(true);
-		p2p.addOperation(op);
+        PeerToPeerOperation p2p = new PeerToPeerOperation();
+        p2p.setPeer(secondaryTestTarget.getPeer());
+        Operation op = new Operation();
+        op.setKey(key);
+        op.setForced(true);
+        p2p.addOperation(op);
 
-		PeerToPeerOperation p2pResp = getClient().PeerToPeerPush(p2p);
+        PeerToPeerOperation p2pResp = getClient().PeerToPeerPush(p2p);
 
-		assertTrue(p2pResp.getStatus());
+        assertTrue(p2pResp.getStatus());
 
-		Entry peerEntry = secondaryClient.get(key);
+        Entry peerEntry = secondaryClient.get(key);
 
-		assertArrayEquals(value, peerEntry.getValue());
-	}
+        assertArrayEquals(value, peerEntry.getValue());
+    }
 
-	@Test
-	@SimulatorOnly
-	public void testP2PPut_WorksOverTlsConnection() throws Exception {
-		byte[] key = "an awesome key!".getBytes(Charsets.UTF_8);
-		byte[] value = "an awesome value!".getBytes(Charsets.UTF_8);
+    @Test
+    @SimulatorOnly
+    public void testP2PPut_WorksOverTlsConnection() throws Exception {
+        byte[] key = "an awesome key!".getBytes(Charsets.UTF_8);
+        byte[] value = "an awesome value!".getBytes(Charsets.UTF_8);
 
-		Entry entry = new Entry(key, value);
-		getClient().putForced(entry);
+        Entry entry = new Entry(key, value);
+        getClient().putForced(entry);
 
-		PeerToPeerOperation p2p = new PeerToPeerOperation();
-		p2p.setPeer(secondaryTestTarget.getTlsPeer());
-		Operation op = new Operation();
-		op.setKey(key);
-		op.setForced(true);
-		p2p.addOperation(op);
+        PeerToPeerOperation p2p = new PeerToPeerOperation();
+        p2p.setPeer(secondaryTestTarget.getTlsPeer());
+        Operation op = new Operation();
+        op.setKey(key);
+        op.setForced(true);
+        p2p.addOperation(op);
 
-		PeerToPeerOperation p2pResp = getClient().PeerToPeerPush(p2p);
+        PeerToPeerOperation p2pResp = getClient().PeerToPeerPush(p2p);
 
-		assertTrue(p2pResp.getStatus());
+        assertTrue(p2pResp.getStatus());
 
-		Entry peerEntry = secondaryClient.get(key);
+        Entry peerEntry = secondaryClient.get(key);
 
-		assertArrayEquals(value, peerEntry.getValue());
-	}
+        assertArrayEquals(value, peerEntry.getValue());
+    }
 
-	@Test
-	public void testP2PPut_Fails_ForVersionMismatch() throws Exception {
-		byte[] key = "an awesome key!".getBytes(Charsets.UTF_8);
-		byte[] value = "an awesome value!".getBytes(Charsets.UTF_8);
+    @Test
+    public void testP2PPut_Fails_ForVersionMismatch() throws Exception {
+        byte[] key = "an awesome key!".getBytes(Charsets.UTF_8);
+        byte[] value = "an awesome value!".getBytes(Charsets.UTF_8);
 
-		Entry entry = new Entry(key, value);
-		getClient().putForced(entry);
+        Entry entry = new Entry(key, value);
+        getClient().putForced(entry);
 
-		PeerToPeerOperation p2p = new PeerToPeerOperation();
-		p2p.setPeer(secondaryTestTarget.getTlsPeer());
-		Operation op = new Operation();
-		op.setKey(key);
-		op.setVersion(key);
-		p2p.addOperation(op);
+        PeerToPeerOperation p2p = new PeerToPeerOperation();
+        p2p.setPeer(secondaryTestTarget.getTlsPeer());
+        Operation op = new Operation();
+        op.setKey(key);
+        op.setVersion(key);
+        p2p.addOperation(op);
 
-		PeerToPeerOperation p2pResp = getClient().PeerToPeerPush(p2p);
+        PeerToPeerOperation p2pResp = getClient().PeerToPeerPush(p2p);
 
-		assertFalse(p2pResp.getOperationList().get(0).getStatus());
-		assertTrue(p2pResp.getStatus());
-	}
+        assertFalse(p2pResp.getOperationList().get(0).getStatus());
+        assertTrue(p2pResp.getStatus());
+    }
 
+    @Test
+    public void testP2PPut_Fails_ForInvalidPeer() throws Exception {
+        PeerToPeerOperation p2pop = new PeerToPeerOperation();
+        Peer peer = new Peer();
+        peer.setHost("localhost");
+        peer.setPort(1);
+        p2pop.setPeer(peer);
+        Operation op = new Operation();
+        op.setKey("foo".getBytes(Charsets.UTF_8));
+        p2pop.addOperation(op);
 
-	@Test
-	public void testP2PPut_Fails_ForInvalidPeer() throws Exception {
-		PeerToPeerOperation p2pop = new PeerToPeerOperation();
-		Peer peer = new Peer();
-		peer.setHost("localhost");
-		peer.setPort(1);
-		p2pop.setPeer(peer);
-		Operation op = new Operation();
-		op.setKey("foo".getBytes(Charsets.UTF_8));
-		p2pop.addOperation(op);
-
-		// the client should surface connection errors in a machine-readable way
-		try {
-			getClient().PeerToPeerPush(p2pop);
-			fail("Should have thrown KineticException");
-		} catch (KineticException e) {
-			// expected exception should be caught here.
-			;
-		}
-	}
+        // the client should surface connection errors in a machine-readable way
+        try {
+            getClient().PeerToPeerPush(p2pop);
+            fail("Should have thrown KineticException");
+        } catch (KineticException e) {
+            // expected exception should be caught here.
+            ;
+        }
+    }
 }

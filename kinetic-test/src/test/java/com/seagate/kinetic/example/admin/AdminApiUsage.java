@@ -45,6 +45,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import kinetic.admin.ACL;
+import kinetic.admin.AdminClientConfiguration;
 import kinetic.admin.Capacity;
 import kinetic.admin.Domain;
 import kinetic.admin.KineticAdminClient;
@@ -53,7 +54,6 @@ import kinetic.admin.KineticLog;
 import kinetic.admin.Role;
 import kinetic.admin.Temperature;
 import kinetic.admin.Utilization;
-import kinetic.client.ClientConfiguration;
 import kinetic.client.KineticException;
 
 /**
@@ -95,15 +95,9 @@ public class AdminApiUsage {
 	 *             if any error of getBytes() to utf8 format occurred.
 	 */
 	public void setup() throws UnsupportedEncodingException, KineticException {
-
-		// client configuration
-		ClientConfiguration adminClientConfig = new ClientConfiguration();
-		adminClientConfig.setUseSsl(true);
-		adminClientConfig.setPort(8443);
-
 		// get admin client instance
 		KineticAdminClient adminClient = KineticAdminClientFactory
-				.createInstance(adminClientConfig);
+				.createInstance(new AdminClientConfiguration());
 
 		// pin on drive
 		byte[] pin = null;
@@ -142,9 +136,7 @@ public class AdminApiUsage {
 	public void setSecurity() throws KineticException {
 
 		// client configuration
-		ClientConfiguration adminClientConfig = new ClientConfiguration();
-		adminClientConfig.setUseSsl(true);
-		adminClientConfig.setPort(8443);
+		AdminClientConfiguration adminClientConfig = new AdminClientConfiguration();
 		adminClientConfig.setClusterVersion(1);
 
 		// get admin client instance
@@ -217,10 +209,8 @@ public class AdminApiUsage {
 	public KineticLog getLog() throws KineticException {
 
 		// admin client configuration
-		ClientConfiguration adminClientConfig = new ClientConfiguration();
-		adminClientConfig.setUseSsl(true);
-		adminClientConfig.setPort(8443);
-
+		AdminClientConfiguration adminClientConfig = new AdminClientConfiguration();
+		
 		// set cluster version
 		adminClientConfig.setClusterVersion(1);
 
@@ -290,9 +280,7 @@ public class AdminApiUsage {
 	KineticException {
 
 		// admin client config
-		ClientConfiguration adminClientConfig = new ClientConfiguration();
-		adminClientConfig.setUseSsl(true);
-		adminClientConfig.setPort(8443);
+		AdminClientConfiguration adminClientConfig = new AdminClientConfiguration();
 		adminClientConfig.setClusterVersion(1);
 		adminClientConfig.setUserId(1);
 		adminClientConfig.setKey("asdfasdf");
@@ -341,11 +329,9 @@ public class AdminApiUsage {
 	KineticException {
 
 		// admi client config
-		ClientConfiguration adminClientConfig = new ClientConfiguration();
+		AdminClientConfiguration adminClientConfig = new AdminClientConfiguration();
 
 		// set configs
-		adminClientConfig.setUseSsl(true);
-		adminClientConfig.setPort(8443);
 		adminClientConfig.setClusterVersion(1);
 		adminClientConfig.setUserId(1);
 		adminClientConfig.setKey("asdfasdf");
@@ -395,9 +381,7 @@ public class AdminApiUsage {
 	KineticException {
 
 		// admin client configuration
-		ClientConfiguration adminClientConfig = new ClientConfiguration();
-		adminClientConfig.setUseSsl(true);
-		adminClientConfig.setPort(8443);
+		AdminClientConfiguration adminClientConfig = new AdminClientConfiguration();
 		adminClientConfig.setClusterVersion(0);
 		adminClientConfig.setUserId(1);
 		adminClientConfig.setKey("asdfasdf");

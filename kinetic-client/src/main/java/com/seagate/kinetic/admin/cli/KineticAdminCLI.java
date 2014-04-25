@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import kinetic.admin.AdminClientConfiguration;
 import kinetic.client.ClientConfiguration;
 import kinetic.client.KineticClient;
 import kinetic.client.KineticClientFactory;
@@ -55,10 +56,8 @@ public class KineticAdminCLI {
     private static final String CONFIGURATION = "configuration";
     private static final String MESSAGES = "message";
     private static final String STATISTICS = "statistic";
-    private static final int DEFAULT_PORT = 8123;
     private static final int DEFAULT_SSL_PORT = 8443;
     private static final String DEFAULT_HOST = "localhost";
-    private static final boolean DEFAULT_USE_SSL = false;
     private static final long CLUSTERVERSION = 0;
     private static final int OK = 0;
     private static final int ERROR = 1;
@@ -104,9 +103,9 @@ public class KineticAdminCLI {
     /*
      * init Kinetic client
      */
-    public void init(String host, String port, String tls, String clusterVersion)
+    public void init(String host, String tlsPort, String clusterVersion)
             throws KineticException {
-        ClientConfiguration clientConfig = new ClientConfiguration();
+        ClientConfiguration clientConfig = new AdminClientConfiguration();
         if (host != null && !host.isEmpty()) {
             validateHost(host);
             clientConfig.setHost(host);
@@ -114,21 +113,10 @@ public class KineticAdminCLI {
             clientConfig.setHost(DEFAULT_HOST);
         }
 
-        if (tls != null && !tls.isEmpty()) {
-            validateTls(tls);
-            clientConfig.setUseSsl(Boolean.parseBoolean(tls));
+        if (tlsPort != null && !tlsPort.isEmpty()) {
+            validatePort(tlsPort);
+            clientConfig.setPort(Integer.parseInt(tlsPort));
         } else {
-            clientConfig.setUseSsl(DEFAULT_USE_SSL);
-        }
-
-        if (port != null && !port.isEmpty()) {
-            validatePort(port);
-            clientConfig.setPort(Integer.parseInt(port));
-        } else {
-            clientConfig.setPort(DEFAULT_PORT);
-        }
-
-        if (Boolean.parseBoolean(tls) && port == null) {
             clientConfig.setPort(DEFAULT_SSL_PORT);
         }
 
@@ -148,7 +136,7 @@ public class KineticAdminCLI {
     }
 
     public KineticMessage security(String securityFile) throws IOException,
-    KineticException {
+            KineticException {
         byte[] content = readFile(securityFile);
 
         KineticMessage km = MessageFactory.createKineticMessageWithBuilder();
@@ -165,7 +153,7 @@ public class KineticAdminCLI {
     }
 
     private byte[] readFile(String securityFile) throws FileNotFoundException,
-    IOException {
+            IOException {
         File file = new File(securityFile);
         if (!file.exists()) {
             throw new FileNotFoundException();
@@ -221,8 +209,7 @@ public class KineticAdminCLI {
      * Parse the setup argument
      */
     public KineticMessage setup(String pin, String setPin,
-            String newClusterVersion,
-            String erase) throws KineticException {
+            String newClusterVersion, String erase) throws KineticException {
 
         KineticMessage km = MessageFactory.createKineticMessageWithBuilder();
         Message.Builder request = (Builder) km.getMessage();
@@ -275,7 +262,6 @@ public class KineticAdminCLI {
         request.getCommandBuilder().getBodyBuilder().setSetup(setup);
 
         if (null != content && content.length > 0) {
-            // request.setValue(ByteString.copyFrom(content));
             km.setValue(content);
         }
 
@@ -286,10 +272,10 @@ public class KineticAdminCLI {
         StringBuffer sb = new StringBuffer();
         sb.append("Usage: kineticAdmin <-setup|-security|-getlog|-firmware>\n");
         sb.append("kineticAdmin -h|-help\n");
-        sb.append("kineticAdmin -setup [-host <ip|hostname>] [-port <port>] [-tls <true|false>] [-clversion <clusterversion>] [-pin <pin>] [-newclversion <newclusterversion>] [-setpin <setpin>] [-erase <true|false>]\n");
-        sb.append("kineticAdmin -security <file> [-host <ip|hostname>] [-port <port>] [-clversion <clusterversion>] [-tls <true|false>]\n");
-        sb.append("kineticAdmin -getlog [-host <ip|hostname>] [-port <port>] [-tls <true|false>] [-clversion <clusterversion>] [-type <utilization|temperature|capacity|configuration|message|statistic|all>]\n");
-        sb.append("kineticAdmin -firmware <file> [-host <ip|hostname>] [-port <port>] [-tls <true|false>] [-clversion <clusterversion>] [-pin <pin>]");
+        sb.append("kineticAdmin -setup [-host <ip|hostname>] [-tlsport <tlsport>] [-clversion <clusterversion>] [-pin <pin>] [-newclversion <newclusterversion>] [-setpin <setpin>] [-erase <true|false>]\n");
+        sb.append("kineticAdmin -security <file> [-host <ip|hostname>] [-tlsport <tlsport>] [-clversion <clusterversion>]\n");
+        sb.append("kineticAdmin -getlog [-host <ip|hostname>] [-tlsport <tlsport>] [-clversion <clusterversion>] [-type <utilization|temperature|capacity|configuration|message|statistic|all>]\n");
+        sb.append("kineticAdmin -firmware <file> [-host <ip|hostname>] [-tlsport <tlsport>] [-clversion <clusterversion>] [-pin <pin>]");
         System.out.println(sb.toString());
     }
 
@@ -452,21 +438,18 @@ public class KineticAdminCLI {
             KineticAdminCLI kineticAdminCLI) throws KineticException {
         String host;
         String port;
-        String tls;
         String clusterVersion;
         host = kineticAdminCLI.getArgValue("-host", args);
-        port = kineticAdminCLI.getArgValue("-port", args);
-        tls = kineticAdminCLI.getArgValue("-tls", args);
+        port = kineticAdminCLI.getArgValue("-tlsport", args);
         clusterVersion = kineticAdminCLI.getArgValue("-clversion", args);
-        kineticAdminCLI.init(host, port, tls, clusterVersion);
+        kineticAdminCLI.init(host, port, clusterVersion);
     }
 
     private List<String> initSubArgs() {
         List<String> subArgs;
         subArgs = new ArrayList<String>();
         subArgs.add("-host");
-        subArgs.add("-port");
-        subArgs.add("-tls");
+        subArgs.add("-tlsport");
         subArgs.add("-clversion");
         return subArgs;
     }
@@ -512,16 +495,6 @@ public class KineticAdminCLI {
         Matcher matcher = pattern.matcher(port);
         if (!matcher.find()) {
             throw new IllegalArgumentException("Illegal port");
-        }
-    }
-
-    private void validateTls(String tls) throws IllegalArgumentException {
-        if (tls == null || tls.isEmpty()) {
-            throw new IllegalArgumentException("TLS can not be empty");
-        }
-
-        if (!tls.equalsIgnoreCase("true") && !tls.equalsIgnoreCase("false")) {
-            throw new IllegalArgumentException("Illegal TLS");
         }
     }
 

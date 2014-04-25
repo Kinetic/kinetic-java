@@ -1,12 +1,12 @@
 Kinetic Simulator/Admin Command Line Interface (CLI).
 
-0. Assume you have at least Java SE 1.6 or 1.7 installed on your machine.
+0. Assume you have at least Java SE 1.6 or 1.7 or 1.8 installed on your machine.
  
 1. Define JAVA_HOME environment variable (example: google 'how to set JAVA_HOME on Mac).
 
 2. Run "mvn clean package" in <Kinetic-Folder>, verify 
-   <Kinetic-Folder>/kinetic-simulator/target/kinetic-simulator-0.5.0.1-SNAPSHOT-jar-with-dependencies.jar 
-   <Kinetic-Folder>/kinetic-client/target/kinetic-client-0.5.0.1-SNAPSHOT-jar-with-dependencies.jar
+   <Kinetic-Folder>/kinetic-simulator/target/kinetic-simulator-0.6.0.1-SNAPSHOT-jar-with-dependencies.jar 
+   <Kinetic-Folder>/kinetic-client/target/kinetic-client-0.6.0.1-SNAPSHOT-jar-with-dependencies.jar
    exist.
 
 3. To start Kinetic simulator:
@@ -47,15 +47,15 @@ Run smoke test against simulator or kinetic drive
 Make sure one instance of simulator or kinetic drive is running.
 
 1. Run "mvn clean package" in <Kinetic-Folder> or <Kinetic-Folder>/kinetic-test, verify 
-   <Kinetic-Folder>/kinetic-test/target/kinetic-test-0.5.0.1-SNAPSHOT-jar-with-dependencies.jar 
+   <Kinetic-Folder>/kinetic-test/target/kinetic-test-0.6.0.1-SNAPSHOT-jar-with-dependencies.jar 
    <Kinetic-Folder>/kinetic-test/target/smoke-tests.jar
    exist.
 
 2. cd <Kinetic-Folder>/bin
 
-3. sh runSmokeTests.sh [-host host_ip] [-port port] [-home kinetic_home]
+3. sh runSmokeTests.sh [-host host_ip] [-port port] [-tlsport tlsport] [-home kinetic_home]
    or
-   python runSmokeTests.py [-host host_ip] [-port port] [-home kinetic_home]
+   python runSmokeTests.py [-host host_ip] [-port port] [-tlsport tlsport] [-home kinetic_home]
    
 Usage of Kinetic Admin API script
 ==================================
@@ -63,18 +63,17 @@ Usage of Kinetic Admin API script
    
    Usage: kineticAdmin <-setup|-security|-getlog|-firmware>
           kineticAdmin -h|-help
-          kineticAdmin -setup [-host <ip|hostname>] [-port <port>] [-tls <true|false>] [-clversion <clusterversion>] [-pin <pin>] [-newclversion <newclusterversion>] [-setpin <setpin>] [-erase <true|false>]
-          kineticAdmin -security <file> [-host <ip|hostname>] [-port <port>] [-clversion <clusterversion>] [-tls <true|false>]
-          kineticAdmin -getlog [-host <ip|hostname>] [-port <port>] [-tls <true|false>] [-clversion <clusterversion>] [-type <utilization|temperature|capacity|configuration|message|statistic|all>]
-          kineticAdmin -firmware <file> [-host <ip|hostname>] [-port <port>] [-tls <true|false>] [-clversion <clusterversion>] [-pin <pin>]
+          kineticAdmin -setup [-host <ip|hostname>] [-tlsport <tlsport>] [-clversion <clusterversion>] [-pin <pin>] [-newclversion <newclusterversion>] [-setpin <setpin>] [-erase <true|false>]
+          kineticAdmin -security <file> [-host <ip|hostname>] [-tlsport <tlsport>] [-clversion <clusterversion>]
+          kineticAdmin -getlog [-host <ip|hostname>] [-tlsport <tlsport>] [-clversion <clusterversion>] [-type <utilization|temperature|capacity|configuration|message|statistic|all>]
+          kineticAdmin -firmware <file> [-host <ip|hostname>] [-tlsport <tlsport>] [-clversion <clusterversion>] [-pin <pin>]
 
 2. setup:
-   sh kineticAdmin.sh -setup [-host <ip|hostname>] [-port <port>] [-tls <true|false>] [-clversion <clusterversion>] [-pin <pin>] [-newclversion <newclusterversion>] [-setpin <setpin>] [-erase <true|false>]
+   sh kineticAdmin.sh -setup [-host <ip|hostname>] [-tlsport <tlsport>] [-clversion <clusterversion>] [-pin <pin>] [-newclversion <newclusterversion>] [-setpin <setpin>] [-erase <true|false>]
    
    Parameters are optional, the default values are set as below: 
    host=127.0.0.1    simulator/drive's ipaddress
-   port=8123         admin client connect to simulator/drive via this port
-   tls=false         whether using ssl/tls to connect simulator
+   tlsport=8443      admin client connect to simulator/drive via this port
    clversion=0       admin client connect to simulator/drive within this cluster version
    
    For example,
@@ -129,12 +128,11 @@ Usage of Kinetic Admin API script
                    sh kineticAdmin.sh -setup -host 10.24.70.123 -clversion 1 -pin 123 -erase true
                    
 3. set security                   
-   sh kineticAdmin.sh -security <file> [-host <ip|hostname>] [-port <port>] [-clversion <clusterversion>] [-tls <true|false>]                
+   sh kineticAdmin.sh -security <file> [-host <ip|hostname>] [-tlsport <tlsport>] [-clversion <clusterversion>]               
    
    Parameters are optional, the default values are set as below: 
    host=127.0.0.1
-   port=8123
-   tls=false
+   tlsport=8443
    clversion=0               
                    
    For example,
@@ -150,12 +148,11 @@ Usage of Kinetic Admin API script
          sh kineticAdmin.sh -security security.template -host 10.24.70.123 -clversion 1
          
 4. get log
-   kineticAdmin -getlog [-host <ip|hostname>] [-port <port>] [-tls <true|false>] [-clversion <clusterversion>] [-type <utilization|temperature|capacity|configuration|message|statistic|all>]
+   kineticAdmin -getlog [-host <ip|hostname>] [-tlsport <tlsport>] [-clversion <clusterversion>] [-type <utilization|temperature|capacity|configuration|message|statistic|all>]
    
    Parameters are optional, the default values are set as below: 
    host=127.0.0.1
-   port=8123
-   tls=false
+   tlsport=8443
    clversion=0
    
    For example,
@@ -207,12 +204,11 @@ Usage of Kinetic Admin API script
    Get statistic     log info: sh kineticAdmin.sh -getlog -host 10.24.70.123 -clversion 1 -type statistic
    
 5. firmware download
-   kineticAdmin -firmware <file> [-host <ip|hostname>] [-port <port>] [-tls <true|false>] [-clversion <clusterversion>] [-pin <pin>]
+   kineticAdmin -firmware <file> [-host <ip|hostname>] [-tlsport <tlsport>] [-clversion <clusterversion>] [-pin <pin>]
    
    Parameters are optional, the default values are set as below: 
    host=127.0.0.1
-   port=8123
-   tls=false
+   tlsport=8443
    clversion=0            
    
    For example,

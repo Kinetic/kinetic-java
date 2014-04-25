@@ -1,5 +1,6 @@
 package com.seagate.kinetic;
 
+import kinetic.admin.AdminClientConfiguration;
 import kinetic.admin.KineticAdminClient;
 import kinetic.admin.KineticAdminClientFactory;
 import kinetic.client.ClientConfiguration;
@@ -23,7 +24,7 @@ public abstract class AbstractIntegrationTestTarget {
     public abstract void shutdown() throws Exception;
 
     public KineticP2pClient createKineticClient() throws KineticException {
-        return KineticP2PClientFactory.createP2pClient(getClientConfig());
+        return KineticP2PClientFactory.createP2pClient(getAdminClientConfig());
     }
 
     protected void waitForServerReady() throws InterruptedException {
@@ -45,14 +46,24 @@ public abstract class AbstractIntegrationTestTarget {
                 kineticClient.close();
                 break;
             } catch (KineticException e) {
-                // Since all exceptions get turned into KineticException we have to manually check the message
+                // Since all exceptions get turned into KineticException we have
+                // to manually check the message
                 if (e.getMessage().contains("Kinetic Command Exception: ")) {
                     break;
                 }
-                // Ignore this exception because it probably means that the server isn't ready yet so
+                // Ignore this exception because it probably means that the
+                // server isn't ready yet so
                 // we'll just take a brief nap and try again in a bit
             }
         }
+    }
+
+    public AdminClientConfiguration getAdminClientConfig() {
+        AdminClientConfiguration clientConfiguration = new AdminClientConfiguration();
+        clientConfiguration.setHost(host);
+        clientConfiguration.setPort(tlsPort);
+        clientConfiguration.setNioServiceThreads(1);
+        return clientConfiguration;
     }
 
     public ClientConfiguration getClientConfig() {
@@ -79,7 +90,8 @@ public abstract class AbstractIntegrationTestTarget {
     }
 
     protected void performISE() throws KineticException {
-        KineticAdminClient kineticAdminClient = KineticAdminClientFactory.createInstance(getClientConfig());
+        KineticAdminClient kineticAdminClient = KineticAdminClientFactory
+                .createInstance(getAdminClientConfig());
         kineticAdminClient.setup(null, null, 0, true);
         kineticAdminClient.close();
     }
