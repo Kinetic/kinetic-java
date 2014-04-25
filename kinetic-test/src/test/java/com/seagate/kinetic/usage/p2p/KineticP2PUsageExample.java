@@ -35,6 +35,7 @@ public class KineticP2PUsageExample {
 	KineticSimulator newSimulator(int port) throws KineticException {
 		SimulatorConfiguration sConfig = new SimulatorConfiguration();
 		sConfig.setPort(port);
+		sConfig.setStartSsl(false);
 		sConfig.put(SimulatorConfiguration.PERSIST_HOME, "instance_" + port);
 		return new KineticSimulator(sConfig);
 	}
