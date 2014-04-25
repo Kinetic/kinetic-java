@@ -42,8 +42,6 @@ public class IntegrationTestCase {
     private DefaultAdminClient adminClient;
     private AbstractIntegrationTestTarget testTarget;
 
-    // private KineticTestSimulator kineticTestServer;
-
     /**
      * Initialize a test server and a Kinetic client.
      * <p>
@@ -162,11 +160,6 @@ public class IntegrationTestCase {
      * <p>
      */
     protected String testEndInfo() {
-        //		String className = Thread.currentThread().getStackTrace()[2]
-        //				.getClassName();
-        //		String methodName = Thread.currentThread().getStackTrace()[2]
-        //				.getMethodName();
-        //		return (className + "#" + methodName + " test finished and passed.");
         return ("status=success");
     }
 

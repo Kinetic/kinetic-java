@@ -77,7 +77,7 @@ public class DefaultAdminClient implements KineticAdminClient {
 
         // set request message type
         request.getCommandBuilder().getHeaderBuilder()
-        .setMessageType(MessageType.SECURITY);
+                .setMessageType(MessageType.SECURITY);
 
         // send security request to server.
         KineticMessage respond = this.kineticClient.request(km);
@@ -113,7 +113,7 @@ public class DefaultAdminClient implements KineticAdminClient {
         Message.Builder request = (Builder) km.getMessage();
 
         request.getCommandBuilder().getHeaderBuilder()
-        .setMessageType(MessageType.SETUP);
+                .setMessageType(MessageType.SETUP);
 
         KineticMessage response = this.kineticClient.request(km);
         return response;
@@ -133,7 +133,7 @@ public class DefaultAdminClient implements KineticAdminClient {
         Message.Builder request = (Builder) km.getMessage();
 
         request.getCommandBuilder().getHeaderBuilder()
-        .setMessageType(MessageType.GETLOG);
+                .setMessageType(MessageType.GETLOG);
         KineticMessage response = this.kineticClient.request(km);
 
         return response;
@@ -144,7 +144,8 @@ public class DefaultAdminClient implements KineticAdminClient {
         this.kineticClient.close();
     }
 
-    public void SecureErase(byte[] pin) throws KineticException {
+    @Override
+    public void instantErase(byte[] pin) throws KineticException {
 
         KineticMessage km = MessageFactory.createKineticMessageWithBuilder();
 
@@ -171,7 +172,7 @@ public class DefaultAdminClient implements KineticAdminClient {
                     + response.getMessage().getCommand().getStatus().getCode()
                     + ": "
                     + response.getMessage().getCommand().getStatus()
-                    .getStatusMessage());
+                            .getStatusMessage());
         }
 
         if (response.getMessage().getCommand().getStatus().getCode() != Status.StatusCode.SUCCESS) {
@@ -179,7 +180,7 @@ public class DefaultAdminClient implements KineticAdminClient {
                     + response.getMessage().getCommand().getStatus().getCode()
                     + ": "
                     + response.getMessage().getCommand().getStatus()
-                    .getStatusMessage());
+                            .getStatusMessage());
         }
 
     }
@@ -258,8 +259,7 @@ public class DefaultAdminClient implements KineticAdminClient {
                         .newBuilder();
                 scope.setOffset(domainInfo.getOffset());
                 scope.setValue(ByteString.copyFromUtf8(domainInfo.getValue()));
-                for (kinetic.admin.Role role : domainInfo
-                        .getRoles()) {
+                for (kinetic.admin.Role role : domainInfo.getRoles()) {
                     scope.addPermission(com.seagate.kinetic.proto.Kinetic.Message.Security.ACL.Permission
                             .valueOf(role.toString()));
                 }
@@ -281,7 +281,7 @@ public class DefaultAdminClient implements KineticAdminClient {
                     + response.getMessage().getCommand().getStatus().getCode()
                     + ": "
                     + response.getMessage().getCommand().getStatus()
-                    .getStatusMessage());
+                            .getStatusMessage());
         }
 
         if (response.getMessage().getCommand().getStatus().getCode() == Status.StatusCode.NO_SUCH_HMAC_ALGORITHM) {
@@ -290,7 +290,7 @@ public class DefaultAdminClient implements KineticAdminClient {
                     + response.getMessage().getCommand().getStatus().getCode()
                     + ": "
                     + response.getMessage().getCommand().getStatus()
-                    .getStatusMessage());
+                            .getStatusMessage());
         }
 
         if (response.getMessage().getCommand().getStatus().getCode() != Status.StatusCode.SUCCESS) {
@@ -298,7 +298,7 @@ public class DefaultAdminClient implements KineticAdminClient {
                     + response.getMessage().getCommand().getStatus().getCode()
                     + ": "
                     + response.getMessage().getCommand().getStatus()
-                    .getStatusMessage());
+                            .getStatusMessage());
         }
 
     }
@@ -488,7 +488,7 @@ public class DefaultAdminClient implements KineticAdminClient {
         }
 
         request.getCommandBuilder().getHeaderBuilder()
-        .setMessageType(MessageType.SETUP);
+                .setMessageType(MessageType.SETUP);
 
         KineticMessage kmresp = this.kineticClient.request(km);
         Message response = (Message) kmresp.getMessage();

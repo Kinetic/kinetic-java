@@ -19,84 +19,91 @@ import com.seagate.kinetic.proto.Kinetic.Message.Setup;
 
 public class SecurityEraseTest extends IntegrationTestCase {
 
-	String pin = "pin001";
+    String pin = "pin001";
 
-	@After
-	public void tearDown() throws Exception {
-		cleanPin(pin, getAdminClient());
-	}
+    @After
+    public void tearDown() throws Exception {
+        cleanPin(pin, getAdminClient());
+    }
 
-	@Test
-	public void testSecureErase_NoPinSetForDrive() throws KineticException {
-		byte[] pin = null;
-		getAdminClient().SecureErase(pin);
-	}
+    @Test
+    public void testSecureErase_NoPinSetForDrive() throws KineticException {
+        byte[] pin = null;
+        getAdminClient().instantErase(pin);
+    }
 
-	@Test
-	public void testSecureErase_WithWrongPinOFDrive() throws KineticException {
-		Message.Builder request = Message.newBuilder();
-		Setup.Builder setup = request.getCommandBuilder().getBodyBuilder()
-				.getSetupBuilder();
-		setup.setSetPin(ByteString.copyFromUtf8(pin));
+    @Test
+    public void testSecureErase_WithWrongPinOFDrive() throws KineticException {
+        Message.Builder request = Message.newBuilder();
+        Setup.Builder setup = request.getCommandBuilder().getBodyBuilder()
+                .getSetupBuilder();
+        setup.setSetPin(ByteString.copyFromUtf8(pin));
 
-		KineticMessage km = new KineticMessage();
-		km.setMessage(request);
-		getAdminClient().configureSetupPolicy(km);
+        KineticMessage km = new KineticMessage();
+        km.setMessage(request);
+        getAdminClient().configureSetupPolicy(km);
 
-		try {
-			getAdminClient().SecureErase(null);
-			fail();
-		} catch (KineticException e) {
-		}
-	}
+        try {
+            getAdminClient().instantErase(null);
+            fail();
+        } catch (KineticException e) {
+        }
+    }
 
-	@Test
-	public void testSecureErase_WithRightPinOFDrive() throws KineticException, UnsupportedEncodingException {
-		Message.Builder request = Message.newBuilder();
-		Setup.Builder setup = request.getCommandBuilder().getBodyBuilder()
-				.getSetupBuilder();
-		setup.setSetPin(ByteString.copyFromUtf8(pin));
+    @Test
+    public void testSecureErase_WithRightPinOFDrive() throws KineticException,
+            UnsupportedEncodingException {
+        Message.Builder request = Message.newBuilder();
+        Setup.Builder setup = request.getCommandBuilder().getBodyBuilder()
+                .getSetupBuilder();
+        setup.setSetPin(ByteString.copyFromUtf8(pin));
 
-		KineticMessage km = new KineticMessage();
-		km.setMessage(request);
+        KineticMessage km = new KineticMessage();
+        km.setMessage(request);
 
-		getAdminClient().configureSetupPolicy(km);
+        getAdminClient().configureSetupPolicy(km);
 
-		getAdminClient().SecureErase(pin.getBytes("UTF-8"));
-	}
+        getAdminClient().instantErase(pin.getBytes("UTF-8"));
+    }
 
-	@Test
-	public void testSecureErase_WithRightACL() throws KineticException, UnsupportedEncodingException {
-		DefaultAdminClient adminClient = new DefaultAdminClient(getClientConfig(1, "asdfasdf"));
+    @Test
+    public void testSecureErase_WithRightACL() throws KineticException,
+            UnsupportedEncodingException {
+        DefaultAdminClient adminClient = new DefaultAdminClient(
+                getClientConfig(1, "asdfasdf"));
 
-		getAdminClient().SecureErase(pin.getBytes("UTF-8"));
-		adminClient.close();
-	}
+        getAdminClient().instantErase(pin.getBytes("UTF-8"));
+        adminClient.close();
+    }
 
-	@Test
-	public void testSecureErase_WithWrongClientID() throws KineticException, UnsupportedEncodingException {
-		DefaultAdminClient adminClient = new DefaultAdminClient(getClientConfig(2, "asdfasdf"));
+    @Test
+    public void testSecureErase_WithWrongClientID() throws KineticException,
+            UnsupportedEncodingException {
+        DefaultAdminClient adminClient = new DefaultAdminClient(
+                getClientConfig(2, "asdfasdf"));
 
-		try {
-			adminClient.SecureErase(pin.getBytes("UTF-8"));
-			fail();
-		} catch (KineticException e) {
-		} finally {
-			adminClient.close();
-		}
-	}
+        try {
+            adminClient.instantErase(pin.getBytes("UTF-8"));
+            fail();
+        } catch (KineticException e) {
+        } finally {
+            adminClient.close();
+        }
+    }
 
-	@Test
-	public void testSecureErase_WithWrongClientKey() throws KineticException, UnsupportedEncodingException {
-		DefaultAdminClient adminClient = new DefaultAdminClient(getClientConfig(1, "asdfasdf1"));
+    @Test
+    public void testSecureErase_WithWrongClientKey() throws KineticException,
+            UnsupportedEncodingException {
+        DefaultAdminClient adminClient = new DefaultAdminClient(
+                getClientConfig(1, "asdfasdf1"));
 
-		try {
-			adminClient.SecureErase(pin.getBytes("UTF-8"));
-			fail();
-		} catch (KineticException e) {
-		} finally {
-			adminClient.close();
-		}
-	}
+        try {
+            adminClient.instantErase(pin.getBytes("UTF-8"));
+            fail();
+        } catch (KineticException e) {
+        } finally {
+            adminClient.close();
+        }
+    }
 
 }

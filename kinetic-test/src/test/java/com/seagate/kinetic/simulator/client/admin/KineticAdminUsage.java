@@ -43,14 +43,12 @@ public class KineticAdminUsage {
 
 		List<Role> roles = new ArrayList<Role>();
 		roles.add(Role.DELETE);
-		// roles.add(Role.DONOR);
 		roles.add(Role.GETLOG);
 		roles.add(Role.READ);
 		roles.add(Role.RANGE);
 		roles.add(Role.SECURITY);
 		roles.add(Role.SETUP);
 		roles.add(Role.WRITE);
-		// roles.add(Role.STEALER);
 
 		Domain domain = new Domain();
 		domain.setRoles(roles);

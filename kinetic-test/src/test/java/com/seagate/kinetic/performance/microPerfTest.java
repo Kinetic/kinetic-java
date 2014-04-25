@@ -72,26 +72,12 @@ public class microPerfTest extends IntegrationTestCase {
 		microAsync("Async Run1", op_count, 1024);
 		microAsync("Async Run2", op_count, 16 * 1024);
 		microAsync("Async Run3", op_count, 32 * 1024);
-		// microAsync("Async Run4", op_count, 1024 * 1024);
-
-		// System.out.println("");
-		//
-		// microAsyncWithTag("Async with tag Run1", 1000, 1024);
-		// microAsyncWithTag("Async with tag Run2", 1000, 16 * 1024);
-		// microAsyncWithTag("Async with tag Run3", 1000, 32 * 1024);
 
 		System.out.println("");
 
 		microSync("Sync Run1", op_count, 1024);
 		microSync("Sync Run2", op_count, 16 * 1024);
 		microSync("Sync Run3", op_count, 32 * 1024);
-		// microSync("Sync Run4", op_count, 1024 * 1024);
-
-		// System.out.println("");
-		//
-		// microSyncWithTag("Sync with tag Run1", 1000, 1024);
-		// microSyncWithTag("Sync with tag Run2", 1000, 16 * 1024);
-		// microSyncWithTag("Sync with tag Run3", 1000, 32 * 1024);
 
 		System.out.println("");
 
@@ -100,8 +86,6 @@ public class microPerfTest extends IntegrationTestCase {
 				16 * 1024);
 		microAsyncWithPersistOption("Async Persist_ASYNC Run3", op_count,
 				32 * 1024);
-		// microAsyncWithPersistOption("Async option_ASYNC Run4", op_count,
-		// 1024 * 1024);
 
 		System.out.println("");
 
@@ -110,8 +94,7 @@ public class microPerfTest extends IntegrationTestCase {
 				16 * 1024);
 		microSyncWithPersistOption("Sync Persist_ASYNC Run3", op_count,
 				32 * 1024);
-		// microSyncWithPersistOption("Sync option_ASYNC Run4", op_count,
-		// 1024 * 1024);
+		
 		logger.info(this.testEndInfo());
 
 	}

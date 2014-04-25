@@ -8,7 +8,7 @@ import com.seagate.kinetic.proto.Kinetic.Message;
 import com.seagate.kinetic.proto.Kinetic.Message.GetLog.Type;
 import com.seagate.kinetic.proto.Kinetic.Message.Security.ACL.Permission;
 
-public class JsonUtilTest {
+public class GenerateJsonUtilForAdminScript {
 
     /*
      * Generate security setup temperature json files
