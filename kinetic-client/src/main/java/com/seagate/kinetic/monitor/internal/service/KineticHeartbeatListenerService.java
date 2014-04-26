@@ -56,7 +56,7 @@ public class KineticHeartbeatListenerService extends HeartbeatListener {
         HeartbeatMessage msg = HeartbeatMessage.fromJson(new String(data)
                 .trim());
         String host = msg.getNetworkInterfaces().get(0).getIpV4Address();
-        int port = msg.getPort();
+        int port = msg.getTlsPort();
         String key = host + ":" + port;
         NodeInfo nodeInfo = null;
         if (!nodesInfo.containsKey(key)) {
