@@ -23,6 +23,7 @@ import static com.seagate.kinetic.KineticTestHelpers.toByteArray;
 import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -44,6 +45,7 @@ import com.seagate.kinetic.admin.impl.DefaultAdminClient;
 import com.seagate.kinetic.common.lib.KineticMessage;
 import com.seagate.kinetic.proto.Kinetic;
 import com.seagate.kinetic.proto.Kinetic.Message;
+import com.seagate.kinetic.proto.Kinetic.Message.Security.ACL.Permission;
 
 /**
  * Kinetic client integration test case.
@@ -215,6 +217,28 @@ public class IntegrationTestCase {
 
         createClientAclWithDomains(clientId, clientKeyString,
                 Collections.singletonList(domain.build()));
+
+        // create a admin clientId with all permission to avoid user nor found.
+        List<Kinetic.Message.Security.ACL.Permission> rolesAll = new ArrayList<Kinetic.Message.Security.ACL.Permission>();
+        rolesAll.add(Permission.DELETE);
+        rolesAll.add(Permission.GETLOG);
+        rolesAll.add(Permission.P2POP);
+        rolesAll.add(Permission.RANGE);
+        rolesAll.add(Permission.READ);
+        rolesAll.add(Permission.SECURITY);
+        rolesAll.add(Permission.SETUP);
+        rolesAll.add(Permission.WRITE);
+
+        int clientIdAdmin = 1;
+        String clientIdAdminKey = "asdfasdf";
+        Kinetic.Message.Security.ACL.Scope.Builder domainAll = Kinetic.Message.Security.ACL.Scope
+                .newBuilder();
+        for (Kinetic.Message.Security.ACL.Permission role : rolesAll) {
+            domainAll.addPermission(role);
+        }
+        createClientAclWithDomains(clientIdAdmin, clientIdAdminKey,
+                Collections.singletonList(domainAll.build()));
+
     }
 
     /**
