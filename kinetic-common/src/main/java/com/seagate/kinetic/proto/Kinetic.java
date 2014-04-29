@@ -17,7 +17,7 @@ public final class Kinetic {
      *
      * <pre>
      * The command contains the header, body and status as a single
-     * unit that will be used to calculate the hmac.
+     * unit that will be used to calculate the HMAC.
      * </pre>
      */
     boolean hasCommand();
@@ -26,7 +26,7 @@ public final class Kinetic {
      *
      * <pre>
      * The command contains the header, body and status as a single
-     * unit that will be used to calculate the hmac.
+     * unit that will be used to calculate the HMAC.
      * </pre>
      */
     com.seagate.kinetic.proto.Kinetic.Message.Command getCommand();
@@ -35,7 +35,7 @@ public final class Kinetic {
      *
      * <pre>
      * The command contains the header, body and status as a single
-     * unit that will be used to calculate the hmac.
+     * unit that will be used to calculate the HMAC.
      * </pre>
      */
     com.seagate.kinetic.proto.Kinetic.Message.CommandOrBuilder getCommandOrBuilder();
@@ -45,7 +45,7 @@ public final class Kinetic {
      * <code>optional bytes hmac = 3;</code>
      *
      * <pre>
-     *hmac
+     *HMAC
      * </pre>
      */
     boolean hasHmac();
@@ -53,13 +53,26 @@ public final class Kinetic {
      * <code>optional bytes hmac = 3;</code>
      *
      * <pre>
-     *hmac
+     *HMAC
      * </pre>
      */
     com.google.protobuf.ByteString getHmac();
   }
   /**
    * Protobuf type {@code com.seagate.kinetic.proto.Message}
+   *
+   * <pre>
+   **
+   * Update summary:
+   *
+   * 1. Message is divided into the following logical sections.
+   *
+   * 1.1 Header.
+   * 1.2 Body.
+   * 1.3 Status.
+   * 1.4 value.
+   * 1.5 HMAC.
+   * </pre>
    */
   public static final class Message extends
       com.google.protobuf.GeneratedMessage
@@ -311,7 +324,7 @@ public final class Kinetic {
        * <code>SHA3 = 3;</code>
        *
        * <pre>
-       * see NIST. The length of the tag determined the lenth of the hash
+       * see NIST. The length of the tag determined the length of the hash
        * </pre>
        */
       SHA3(3, 3),
@@ -319,7 +332,7 @@ public final class Kinetic {
        * <code>CRC32 = 4;</code>
        *
        * <pre>
-       * the CRC32 is the standard ethernet CRC32. See IEEE
+       * the CRC32 is the standard Ethernet CRC32. See IEEE
        * </pre>
        */
       CRC32(4, 4),
@@ -361,7 +374,7 @@ public final class Kinetic {
        * <code>SHA3 = 3;</code>
        *
        * <pre>
-       * see NIST. The length of the tag determined the lenth of the hash
+       * see NIST. The length of the tag determined the length of the hash
        * </pre>
        */
       public static final int SHA3_VALUE = 3;
@@ -369,7 +382,7 @@ public final class Kinetic {
        * <code>CRC32 = 4;</code>
        *
        * <pre>
-       * the CRC32 is the standard ethernet CRC32. See IEEE
+       * the CRC32 is the standard Ethernet CRC32. See IEEE
        * </pre>
        */
       public static final int CRC32_VALUE = 4;
@@ -471,10 +484,6 @@ public final class Kinetic {
       GET(1, 2),
       /**
        * <code>GET_RESPONSE = 1;</code>
-       *
-       * <pre>
-       *get response
-       * </pre>
        */
       GET_RESPONSE(2, 1),
       /**
@@ -531,10 +540,6 @@ public final class Kinetic {
       GETVERSION_RESPONSE(14, 15),
       /**
        * <code>SETUP = 22;</code>
-       *
-       * <pre>
-       * 17, 18, 19, and 20 are reserved, do not use
-       * </pre>
        */
       SETUP(15, 22),
       /**
@@ -597,10 +602,6 @@ public final class Kinetic {
       public static final int GET_VALUE = 2;
       /**
        * <code>GET_RESPONSE = 1;</code>
-       *
-       * <pre>
-       *get response
-       * </pre>
        */
       public static final int GET_RESPONSE_VALUE = 1;
       /**
@@ -657,10 +658,6 @@ public final class Kinetic {
       public static final int GETVERSION_RESPONSE_VALUE = 15;
       /**
        * <code>SETUP = 22;</code>
-       *
-       * <pre>
-       * 17, 18, 19, and 20 are reserved, do not use
-       * </pre>
        */
       public static final int SETUP_VALUE = 22;
       /**
@@ -2016,7 +2013,7 @@ public final class Kinetic {
        * <code>optional bool earlyExit = 10;</code>
        *
        * <pre>
-       * If true, equests will not attempt multi revolution recoveries even if the timeout has not occurred.
+       * If true, requests will not attempt multi revolution recoveries even if the timeout has not occurred.
        * In this case the result will be DATA_ERROR. To have the drive exhaust all possible error recovery, leave
        * this field off or set to false, and make sure that the timeout is set to be longer than any possible queue
        * time and error recovery time. On a disk drive, the maximum error recovery time could be seconds.
@@ -2029,7 +2026,7 @@ public final class Kinetic {
        * <code>optional bool earlyExit = 10;</code>
        *
        * <pre>
-       * If true, equests will not attempt multi revolution recoveries even if the timeout has not occurred.
+       * If true, requests will not attempt multi revolution recoveries even if the timeout has not occurred.
        * In this case the result will be DATA_ERROR. To have the drive exhaust all possible error recovery, leave
        * this field off or set to false, and make sure that the timeout is set to be longer than any possible queue
        * time and error recovery time. On a disk drive, the maximum error recovery time could be seconds.
@@ -2408,7 +2405,7 @@ public final class Kinetic {
        * <code>optional bool earlyExit = 10;</code>
        *
        * <pre>
-       * If true, equests will not attempt multi revolution recoveries even if the timeout has not occurred.
+       * If true, requests will not attempt multi revolution recoveries even if the timeout has not occurred.
        * In this case the result will be DATA_ERROR. To have the drive exhaust all possible error recovery, leave
        * this field off or set to false, and make sure that the timeout is set to be longer than any possible queue
        * time and error recovery time. On a disk drive, the maximum error recovery time could be seconds.
@@ -2423,7 +2420,7 @@ public final class Kinetic {
        * <code>optional bool earlyExit = 10;</code>
        *
        * <pre>
-       * If true, equests will not attempt multi revolution recoveries even if the timeout has not occurred.
+       * If true, requests will not attempt multi revolution recoveries even if the timeout has not occurred.
        * In this case the result will be DATA_ERROR. To have the drive exhaust all possible error recovery, leave
        * this field off or set to false, and make sure that the timeout is set to be longer than any possible queue
        * time and error recovery time. On a disk drive, the maximum error recovery time could be seconds.
@@ -3234,7 +3231,7 @@ public final class Kinetic {
          * <code>optional bool earlyExit = 10;</code>
          *
          * <pre>
-         * If true, equests will not attempt multi revolution recoveries even if the timeout has not occurred.
+         * If true, requests will not attempt multi revolution recoveries even if the timeout has not occurred.
          * In this case the result will be DATA_ERROR. To have the drive exhaust all possible error recovery, leave
          * this field off or set to false, and make sure that the timeout is set to be longer than any possible queue
          * time and error recovery time. On a disk drive, the maximum error recovery time could be seconds.
@@ -3249,7 +3246,7 @@ public final class Kinetic {
          * <code>optional bool earlyExit = 10;</code>
          *
          * <pre>
-         * If true, equests will not attempt multi revolution recoveries even if the timeout has not occurred.
+         * If true, requests will not attempt multi revolution recoveries even if the timeout has not occurred.
          * In this case the result will be DATA_ERROR. To have the drive exhaust all possible error recovery, leave
          * this field off or set to false, and make sure that the timeout is set to be longer than any possible queue
          * time and error recovery time. On a disk drive, the maximum error recovery time could be seconds.
@@ -3264,7 +3261,7 @@ public final class Kinetic {
          * <code>optional bool earlyExit = 10;</code>
          *
          * <pre>
-         * If true, equests will not attempt multi revolution recoveries even if the timeout has not occurred.
+         * If true, requests will not attempt multi revolution recoveries even if the timeout has not occurred.
          * In this case the result will be DATA_ERROR. To have the drive exhaust all possible error recovery, leave
          * this field off or set to false, and make sure that the timeout is set to be longer than any possible queue
          * time and error recovery time. On a disk drive, the maximum error recovery time could be seconds.
@@ -3282,7 +3279,7 @@ public final class Kinetic {
          * <code>optional bool earlyExit = 10;</code>
          *
          * <pre>
-         * If true, equests will not attempt multi revolution recoveries even if the timeout has not occurred.
+         * If true, requests will not attempt multi revolution recoveries even if the timeout has not occurred.
          * In this case the result will be DATA_ERROR. To have the drive exhaust all possible error recovery, leave
          * this field off or set to false, and make sure that the timeout is set to be longer than any possible queue
          * time and error recovery time. On a disk drive, the maximum error recovery time could be seconds.
@@ -3425,7 +3422,7 @@ public final class Kinetic {
        * <code>optional .com.seagate.kinetic.proto.Message.Setup setup = 3;</code>
        *
        * <pre>
-       *set up opeartion
+       *set up operation
        * </pre>
        */
       boolean hasSetup();
@@ -3433,7 +3430,7 @@ public final class Kinetic {
        * <code>optional .com.seagate.kinetic.proto.Message.Setup setup = 3;</code>
        *
        * <pre>
-       *set up opeartion
+       *set up operation
        * </pre>
        */
       com.seagate.kinetic.proto.Kinetic.Message.Setup getSetup();
@@ -3441,7 +3438,7 @@ public final class Kinetic {
        * <code>optional .com.seagate.kinetic.proto.Message.Setup setup = 3;</code>
        *
        * <pre>
-       *set up opeartion
+       *set up operation
        * </pre>
        */
       com.seagate.kinetic.proto.Kinetic.Message.SetupOrBuilder getSetupOrBuilder();
@@ -3451,10 +3448,6 @@ public final class Kinetic {
        * <code>optional .com.seagate.kinetic.proto.Message.P2POperation p2pOperation = 4;</code>
        *
        * <pre>
-       * EXPERIMENTAL!
-       *
-       * The following is incomplete and evolving. Implement at your own risk.
-       *
        * Peer to Peer operations.
        * </pre>
        */
@@ -3463,10 +3456,6 @@ public final class Kinetic {
        * <code>optional .com.seagate.kinetic.proto.Message.P2POperation p2pOperation = 4;</code>
        *
        * <pre>
-       * EXPERIMENTAL!
-       *
-       * The following is incomplete and evolving. Implement at your own risk.
-       *
        * Peer to Peer operations.
        * </pre>
        */
@@ -3475,10 +3464,6 @@ public final class Kinetic {
        * <code>optional .com.seagate.kinetic.proto.Message.P2POperation p2pOperation = 4;</code>
        *
        * <pre>
-       * EXPERIMENTAL!
-       *
-       * The following is incomplete and evolving. Implement at your own risk.
-       *
        * Peer to Peer operations.
        * </pre>
        */
@@ -3784,7 +3769,7 @@ public final class Kinetic {
        * <code>optional .com.seagate.kinetic.proto.Message.Setup setup = 3;</code>
        *
        * <pre>
-       *set up opeartion
+       *set up operation
        * </pre>
        */
       public boolean hasSetup() {
@@ -3794,7 +3779,7 @@ public final class Kinetic {
        * <code>optional .com.seagate.kinetic.proto.Message.Setup setup = 3;</code>
        *
        * <pre>
-       *set up opeartion
+       *set up operation
        * </pre>
        */
       public com.seagate.kinetic.proto.Kinetic.Message.Setup getSetup() {
@@ -3804,7 +3789,7 @@ public final class Kinetic {
        * <code>optional .com.seagate.kinetic.proto.Message.Setup setup = 3;</code>
        *
        * <pre>
-       *set up opeartion
+       *set up operation
        * </pre>
        */
       public com.seagate.kinetic.proto.Kinetic.Message.SetupOrBuilder getSetupOrBuilder() {
@@ -3818,10 +3803,6 @@ public final class Kinetic {
        * <code>optional .com.seagate.kinetic.proto.Message.P2POperation p2pOperation = 4;</code>
        *
        * <pre>
-       * EXPERIMENTAL!
-       *
-       * The following is incomplete and evolving. Implement at your own risk.
-       *
        * Peer to Peer operations.
        * </pre>
        */
@@ -3832,10 +3813,6 @@ public final class Kinetic {
        * <code>optional .com.seagate.kinetic.proto.Message.P2POperation p2pOperation = 4;</code>
        *
        * <pre>
-       * EXPERIMENTAL!
-       *
-       * The following is incomplete and evolving. Implement at your own risk.
-       *
        * Peer to Peer operations.
        * </pre>
        */
@@ -3846,10 +3823,6 @@ public final class Kinetic {
        * <code>optional .com.seagate.kinetic.proto.Message.P2POperation p2pOperation = 4;</code>
        *
        * <pre>
-       * EXPERIMENTAL!
-       *
-       * The following is incomplete and evolving. Implement at your own risk.
-       *
        * Peer to Peer operations.
        * </pre>
        */
@@ -4609,7 +4582,7 @@ public final class Kinetic {
          * <code>optional .com.seagate.kinetic.proto.Message.Setup setup = 3;</code>
          *
          * <pre>
-         *set up opeartion
+         *set up operation
          * </pre>
          */
         public boolean hasSetup() {
@@ -4619,7 +4592,7 @@ public final class Kinetic {
          * <code>optional .com.seagate.kinetic.proto.Message.Setup setup = 3;</code>
          *
          * <pre>
-         *set up opeartion
+         *set up operation
          * </pre>
          */
         public com.seagate.kinetic.proto.Kinetic.Message.Setup getSetup() {
@@ -4633,7 +4606,7 @@ public final class Kinetic {
          * <code>optional .com.seagate.kinetic.proto.Message.Setup setup = 3;</code>
          *
          * <pre>
-         *set up opeartion
+         *set up operation
          * </pre>
          */
         public Builder setSetup(com.seagate.kinetic.proto.Kinetic.Message.Setup value) {
@@ -4653,7 +4626,7 @@ public final class Kinetic {
          * <code>optional .com.seagate.kinetic.proto.Message.Setup setup = 3;</code>
          *
          * <pre>
-         *set up opeartion
+         *set up operation
          * </pre>
          */
         public Builder setSetup(
@@ -4671,7 +4644,7 @@ public final class Kinetic {
          * <code>optional .com.seagate.kinetic.proto.Message.Setup setup = 3;</code>
          *
          * <pre>
-         *set up opeartion
+         *set up operation
          * </pre>
          */
         public Builder mergeSetup(com.seagate.kinetic.proto.Kinetic.Message.Setup value) {
@@ -4694,7 +4667,7 @@ public final class Kinetic {
          * <code>optional .com.seagate.kinetic.proto.Message.Setup setup = 3;</code>
          *
          * <pre>
-         *set up opeartion
+         *set up operation
          * </pre>
          */
         public Builder clearSetup() {
@@ -4711,7 +4684,7 @@ public final class Kinetic {
          * <code>optional .com.seagate.kinetic.proto.Message.Setup setup = 3;</code>
          *
          * <pre>
-         *set up opeartion
+         *set up operation
          * </pre>
          */
         public com.seagate.kinetic.proto.Kinetic.Message.Setup.Builder getSetupBuilder() {
@@ -4723,7 +4696,7 @@ public final class Kinetic {
          * <code>optional .com.seagate.kinetic.proto.Message.Setup setup = 3;</code>
          *
          * <pre>
-         *set up opeartion
+         *set up operation
          * </pre>
          */
         public com.seagate.kinetic.proto.Kinetic.Message.SetupOrBuilder getSetupOrBuilder() {
@@ -4737,7 +4710,7 @@ public final class Kinetic {
          * <code>optional .com.seagate.kinetic.proto.Message.Setup setup = 3;</code>
          *
          * <pre>
-         *set up opeartion
+         *set up operation
          * </pre>
          */
         private com.google.protobuf.SingleFieldBuilder<
@@ -4762,10 +4735,6 @@ public final class Kinetic {
          * <code>optional .com.seagate.kinetic.proto.Message.P2POperation p2pOperation = 4;</code>
          *
          * <pre>
-         * EXPERIMENTAL!
-         *
-         * The following is incomplete and evolving. Implement at your own risk.
-         *
          * Peer to Peer operations.
          * </pre>
          */
@@ -4776,10 +4745,6 @@ public final class Kinetic {
          * <code>optional .com.seagate.kinetic.proto.Message.P2POperation p2pOperation = 4;</code>
          *
          * <pre>
-         * EXPERIMENTAL!
-         *
-         * The following is incomplete and evolving. Implement at your own risk.
-         *
          * Peer to Peer operations.
          * </pre>
          */
@@ -4794,10 +4759,6 @@ public final class Kinetic {
          * <code>optional .com.seagate.kinetic.proto.Message.P2POperation p2pOperation = 4;</code>
          *
          * <pre>
-         * EXPERIMENTAL!
-         *
-         * The following is incomplete and evolving. Implement at your own risk.
-         *
          * Peer to Peer operations.
          * </pre>
          */
@@ -4818,10 +4779,6 @@ public final class Kinetic {
          * <code>optional .com.seagate.kinetic.proto.Message.P2POperation p2pOperation = 4;</code>
          *
          * <pre>
-         * EXPERIMENTAL!
-         *
-         * The following is incomplete and evolving. Implement at your own risk.
-         *
          * Peer to Peer operations.
          * </pre>
          */
@@ -4840,10 +4797,6 @@ public final class Kinetic {
          * <code>optional .com.seagate.kinetic.proto.Message.P2POperation p2pOperation = 4;</code>
          *
          * <pre>
-         * EXPERIMENTAL!
-         *
-         * The following is incomplete and evolving. Implement at your own risk.
-         *
          * Peer to Peer operations.
          * </pre>
          */
@@ -4867,10 +4820,6 @@ public final class Kinetic {
          * <code>optional .com.seagate.kinetic.proto.Message.P2POperation p2pOperation = 4;</code>
          *
          * <pre>
-         * EXPERIMENTAL!
-         *
-         * The following is incomplete and evolving. Implement at your own risk.
-         *
          * Peer to Peer operations.
          * </pre>
          */
@@ -4888,10 +4837,6 @@ public final class Kinetic {
          * <code>optional .com.seagate.kinetic.proto.Message.P2POperation p2pOperation = 4;</code>
          *
          * <pre>
-         * EXPERIMENTAL!
-         *
-         * The following is incomplete and evolving. Implement at your own risk.
-         *
          * Peer to Peer operations.
          * </pre>
          */
@@ -4904,10 +4849,6 @@ public final class Kinetic {
          * <code>optional .com.seagate.kinetic.proto.Message.P2POperation p2pOperation = 4;</code>
          *
          * <pre>
-         * EXPERIMENTAL!
-         *
-         * The following is incomplete and evolving. Implement at your own risk.
-         *
          * Peer to Peer operations.
          * </pre>
          */
@@ -4922,10 +4863,6 @@ public final class Kinetic {
          * <code>optional .com.seagate.kinetic.proto.Message.P2POperation p2pOperation = 4;</code>
          *
          * <pre>
-         * EXPERIMENTAL!
-         *
-         * The following is incomplete and evolving. Implement at your own risk.
-         *
          * Peer to Peer operations.
          * </pre>
          */
@@ -15353,9 +15290,8 @@ public final class Kinetic {
          * <code>optional string model = 6;</code>
          *
          * <pre>
-         * name of the device. Have no clue what this should be...
-         * "TBD" for the drive?
-         * "Simulator" for the simulator?
+         * The model of the device.
+         * "Simulator" for the simulator.
          * </pre>
          */
         boolean hasModel();
@@ -15363,9 +15299,8 @@ public final class Kinetic {
          * <code>optional string model = 6;</code>
          *
          * <pre>
-         * name of the device. Have no clue what this should be...
-         * "TBD" for the drive?
-         * "Simulator" for the simulator?
+         * The model of the device.
+         * "Simulator" for the simulator.
          * </pre>
          */
         java.lang.String getModel();
@@ -15373,9 +15308,8 @@ public final class Kinetic {
          * <code>optional string model = 6;</code>
          *
          * <pre>
-         * name of the device. Have no clue what this should be...
-         * "TBD" for the drive?
-         * "Simulator" for the simulator?
+         * The model of the device.
+         * "Simulator" for the simulator.
          * </pre>
          */
         com.google.protobuf.ByteString
@@ -15386,7 +15320,7 @@ public final class Kinetic {
          * <code>optional bytes serialNumber = 7;</code>
          *
          * <pre>
-         * Device Serial number (SN) from the underlying drive
+         * Device Serial number (SN)
          * </pre>
          */
         boolean hasSerialNumber();
@@ -15394,7 +15328,7 @@ public final class Kinetic {
          * <code>optional bytes serialNumber = 7;</code>
          *
          * <pre>
-         * Device Serial number (SN) from the underlying drive
+         * Device Serial number (SN)
          * </pre>
          */
         com.google.protobuf.ByteString getSerialNumber();
@@ -15404,7 +15338,7 @@ public final class Kinetic {
          * <code>optional bytes worldWideName = 14;</code>
          *
          * <pre>
-         * Device world wide name (WWN) from the underlying drive
+         * Device world wide name (WWN)
          * </pre>
          */
         boolean hasWorldWideName();
@@ -15412,7 +15346,7 @@ public final class Kinetic {
          * <code>optional bytes worldWideName = 14;</code>
          *
          * <pre>
-         * Device world wide name (WWN) from the underlying drive
+         * Device world wide name (WWN)
          * </pre>
          */
         com.google.protobuf.ByteString getWorldWideName();
@@ -16560,9 +16494,8 @@ public final class Kinetic {
          * <code>optional string model = 6;</code>
          *
          * <pre>
-         * name of the device. Have no clue what this should be...
-         * "TBD" for the drive?
-         * "Simulator" for the simulator?
+         * The model of the device.
+         * "Simulator" for the simulator.
          * </pre>
          */
         public boolean hasModel() {
@@ -16572,9 +16505,8 @@ public final class Kinetic {
          * <code>optional string model = 6;</code>
          *
          * <pre>
-         * name of the device. Have no clue what this should be...
-         * "TBD" for the drive?
-         * "Simulator" for the simulator?
+         * The model of the device.
+         * "Simulator" for the simulator.
          * </pre>
          */
         public java.lang.String getModel() {
@@ -16595,9 +16527,8 @@ public final class Kinetic {
          * <code>optional string model = 6;</code>
          *
          * <pre>
-         * name of the device. Have no clue what this should be...
-         * "TBD" for the drive?
-         * "Simulator" for the simulator?
+         * The model of the device.
+         * "Simulator" for the simulator.
          * </pre>
          */
         public com.google.protobuf.ByteString
@@ -16621,7 +16552,7 @@ public final class Kinetic {
          * <code>optional bytes serialNumber = 7;</code>
          *
          * <pre>
-         * Device Serial number (SN) from the underlying drive
+         * Device Serial number (SN)
          * </pre>
          */
         public boolean hasSerialNumber() {
@@ -16631,7 +16562,7 @@ public final class Kinetic {
          * <code>optional bytes serialNumber = 7;</code>
          *
          * <pre>
-         * Device Serial number (SN) from the underlying drive
+         * Device Serial number (SN)
          * </pre>
          */
         public com.google.protobuf.ByteString getSerialNumber() {
@@ -16645,7 +16576,7 @@ public final class Kinetic {
          * <code>optional bytes worldWideName = 14;</code>
          *
          * <pre>
-         * Device world wide name (WWN) from the underlying drive
+         * Device world wide name (WWN)
          * </pre>
          */
         public boolean hasWorldWideName() {
@@ -16655,7 +16586,7 @@ public final class Kinetic {
          * <code>optional bytes worldWideName = 14;</code>
          *
          * <pre>
-         * Device world wide name (WWN) from the underlying drive
+         * Device world wide name (WWN)
          * </pre>
          */
         public com.google.protobuf.ByteString getWorldWideName() {
@@ -17633,9 +17564,8 @@ public final class Kinetic {
            * <code>optional string model = 6;</code>
            *
            * <pre>
-           * name of the device. Have no clue what this should be...
-           * "TBD" for the drive?
-           * "Simulator" for the simulator?
+           * The model of the device.
+           * "Simulator" for the simulator.
            * </pre>
            */
           public boolean hasModel() {
@@ -17645,9 +17575,8 @@ public final class Kinetic {
            * <code>optional string model = 6;</code>
            *
            * <pre>
-           * name of the device. Have no clue what this should be...
-           * "TBD" for the drive?
-           * "Simulator" for the simulator?
+           * The model of the device.
+           * "Simulator" for the simulator.
            * </pre>
            */
           public java.lang.String getModel() {
@@ -17665,9 +17594,8 @@ public final class Kinetic {
            * <code>optional string model = 6;</code>
            *
            * <pre>
-           * name of the device. Have no clue what this should be...
-           * "TBD" for the drive?
-           * "Simulator" for the simulator?
+           * The model of the device.
+           * "Simulator" for the simulator.
            * </pre>
            */
           public com.google.protobuf.ByteString
@@ -17687,9 +17615,8 @@ public final class Kinetic {
            * <code>optional string model = 6;</code>
            *
            * <pre>
-           * name of the device. Have no clue what this should be...
-           * "TBD" for the drive?
-           * "Simulator" for the simulator?
+           * The model of the device.
+           * "Simulator" for the simulator.
            * </pre>
            */
           public Builder setModel(
@@ -17706,9 +17633,8 @@ public final class Kinetic {
            * <code>optional string model = 6;</code>
            *
            * <pre>
-           * name of the device. Have no clue what this should be...
-           * "TBD" for the drive?
-           * "Simulator" for the simulator?
+           * The model of the device.
+           * "Simulator" for the simulator.
            * </pre>
            */
           public Builder clearModel() {
@@ -17721,9 +17647,8 @@ public final class Kinetic {
            * <code>optional string model = 6;</code>
            *
            * <pre>
-           * name of the device. Have no clue what this should be...
-           * "TBD" for the drive?
-           * "Simulator" for the simulator?
+           * The model of the device.
+           * "Simulator" for the simulator.
            * </pre>
            */
           public Builder setModelBytes(
@@ -17743,7 +17668,7 @@ public final class Kinetic {
            * <code>optional bytes serialNumber = 7;</code>
            *
            * <pre>
-           * Device Serial number (SN) from the underlying drive
+           * Device Serial number (SN)
            * </pre>
            */
           public boolean hasSerialNumber() {
@@ -17753,7 +17678,7 @@ public final class Kinetic {
            * <code>optional bytes serialNumber = 7;</code>
            *
            * <pre>
-           * Device Serial number (SN) from the underlying drive
+           * Device Serial number (SN)
            * </pre>
            */
           public com.google.protobuf.ByteString getSerialNumber() {
@@ -17763,7 +17688,7 @@ public final class Kinetic {
            * <code>optional bytes serialNumber = 7;</code>
            *
            * <pre>
-           * Device Serial number (SN) from the underlying drive
+           * Device Serial number (SN)
            * </pre>
            */
           public Builder setSerialNumber(com.google.protobuf.ByteString value) {
@@ -17779,7 +17704,7 @@ public final class Kinetic {
            * <code>optional bytes serialNumber = 7;</code>
            *
            * <pre>
-           * Device Serial number (SN) from the underlying drive
+           * Device Serial number (SN)
            * </pre>
            */
           public Builder clearSerialNumber() {
@@ -17795,7 +17720,7 @@ public final class Kinetic {
            * <code>optional bytes worldWideName = 14;</code>
            *
            * <pre>
-           * Device world wide name (WWN) from the underlying drive
+           * Device world wide name (WWN)
            * </pre>
            */
           public boolean hasWorldWideName() {
@@ -17805,7 +17730,7 @@ public final class Kinetic {
            * <code>optional bytes worldWideName = 14;</code>
            *
            * <pre>
-           * Device world wide name (WWN) from the underlying drive
+           * Device world wide name (WWN)
            * </pre>
            */
           public com.google.protobuf.ByteString getWorldWideName() {
@@ -17815,7 +17740,7 @@ public final class Kinetic {
            * <code>optional bytes worldWideName = 14;</code>
            *
            * <pre>
-           * Device world wide name (WWN) from the underlying drive
+           * Device world wide name (WWN)
            * </pre>
            */
           public Builder setWorldWideName(com.google.protobuf.ByteString value) {
@@ -17831,7 +17756,7 @@ public final class Kinetic {
            * <code>optional bytes worldWideName = 14;</code>
            *
            * <pre>
-           * Device world wide name (WWN) from the underlying drive
+           * Device world wide name (WWN)
            * </pre>
            */
           public Builder clearWorldWideName() {
@@ -21305,7 +21230,7 @@ public final class Kinetic {
          * <code>optional bytes key = 2;</code>
          *
          * <pre>
-         * the hmac key
+         * the HMAC key
          * </pre>
          */
         boolean hasKey();
@@ -21313,7 +21238,7 @@ public final class Kinetic {
          * <code>optional bytes key = 2;</code>
          *
          * <pre>
-         * the hmac key
+         * the HMAC key
          * </pre>
          */
         com.google.protobuf.ByteString getKey();
@@ -22672,7 +22597,7 @@ public final class Kinetic {
          * <code>optional bytes key = 2;</code>
          *
          * <pre>
-         * the hmac key
+         * the HMAC key
          * </pre>
          */
         public boolean hasKey() {
@@ -22682,7 +22607,7 @@ public final class Kinetic {
          * <code>optional bytes key = 2;</code>
          *
          * <pre>
-         * the hmac key
+         * the HMAC key
          * </pre>
          */
         public com.google.protobuf.ByteString getKey() {
@@ -23121,7 +23046,7 @@ public final class Kinetic {
            * <code>optional bytes key = 2;</code>
            *
            * <pre>
-           * the hmac key
+           * the HMAC key
            * </pre>
            */
           public boolean hasKey() {
@@ -23131,7 +23056,7 @@ public final class Kinetic {
            * <code>optional bytes key = 2;</code>
            *
            * <pre>
-           * the hmac key
+           * the HMAC key
            * </pre>
            */
           public com.google.protobuf.ByteString getKey() {
@@ -23141,7 +23066,7 @@ public final class Kinetic {
            * <code>optional bytes key = 2;</code>
            *
            * <pre>
-           * the hmac key
+           * the HMAC key
            * </pre>
            */
           public Builder setKey(com.google.protobuf.ByteString value) {
@@ -23157,7 +23082,7 @@ public final class Kinetic {
            * <code>optional bytes key = 2;</code>
            *
            * <pre>
-           * the hmac key
+           * the HMAC key
            * </pre>
            */
           public Builder clearKey() {
@@ -24208,7 +24133,7 @@ public final class Kinetic {
      *
      * <pre>
      * The command contains the header, body and status as a single
-     * unit that will be used to calculate the hmac.
+     * unit that will be used to calculate the HMAC.
      * </pre>
      */
     public boolean hasCommand() {
@@ -24219,7 +24144,7 @@ public final class Kinetic {
      *
      * <pre>
      * The command contains the header, body and status as a single
-     * unit that will be used to calculate the hmac.
+     * unit that will be used to calculate the HMAC.
      * </pre>
      */
     public com.seagate.kinetic.proto.Kinetic.Message.Command getCommand() {
@@ -24230,7 +24155,7 @@ public final class Kinetic {
      *
      * <pre>
      * The command contains the header, body and status as a single
-     * unit that will be used to calculate the hmac.
+     * unit that will be used to calculate the HMAC.
      * </pre>
      */
     public com.seagate.kinetic.proto.Kinetic.Message.CommandOrBuilder getCommandOrBuilder() {
@@ -24244,7 +24169,7 @@ public final class Kinetic {
      * <code>optional bytes hmac = 3;</code>
      *
      * <pre>
-     *hmac
+     *HMAC
      * </pre>
      */
     public boolean hasHmac() {
@@ -24254,7 +24179,7 @@ public final class Kinetic {
      * <code>optional bytes hmac = 3;</code>
      *
      * <pre>
-     *hmac
+     *HMAC
      * </pre>
      */
     public com.google.protobuf.ByteString getHmac() {
@@ -24380,6 +24305,19 @@ public final class Kinetic {
     }
     /**
      * Protobuf type {@code com.seagate.kinetic.proto.Message}
+     *
+     * <pre>
+     **
+     * Update summary:
+     *
+     * 1. Message is divided into the following logical sections.
+     *
+     * 1.1 Header.
+     * 1.2 Body.
+     * 1.3 Status.
+     * 1.4 value.
+     * 1.5 HMAC.
+     * </pre>
      */
     public static final class Builder extends
         com.google.protobuf.GeneratedMessage.Builder<Builder>
@@ -24523,7 +24461,7 @@ public final class Kinetic {
        *
        * <pre>
        * The command contains the header, body and status as a single
-       * unit that will be used to calculate the hmac.
+       * unit that will be used to calculate the HMAC.
        * </pre>
        */
       public boolean hasCommand() {
@@ -24534,7 +24472,7 @@ public final class Kinetic {
        *
        * <pre>
        * The command contains the header, body and status as a single
-       * unit that will be used to calculate the hmac.
+       * unit that will be used to calculate the HMAC.
        * </pre>
        */
       public com.seagate.kinetic.proto.Kinetic.Message.Command getCommand() {
@@ -24549,7 +24487,7 @@ public final class Kinetic {
        *
        * <pre>
        * The command contains the header, body and status as a single
-       * unit that will be used to calculate the hmac.
+       * unit that will be used to calculate the HMAC.
        * </pre>
        */
       public Builder setCommand(com.seagate.kinetic.proto.Kinetic.Message.Command value) {
@@ -24570,7 +24508,7 @@ public final class Kinetic {
        *
        * <pre>
        * The command contains the header, body and status as a single
-       * unit that will be used to calculate the hmac.
+       * unit that will be used to calculate the HMAC.
        * </pre>
        */
       public Builder setCommand(
@@ -24589,7 +24527,7 @@ public final class Kinetic {
        *
        * <pre>
        * The command contains the header, body and status as a single
-       * unit that will be used to calculate the hmac.
+       * unit that will be used to calculate the HMAC.
        * </pre>
        */
       public Builder mergeCommand(com.seagate.kinetic.proto.Kinetic.Message.Command value) {
@@ -24613,7 +24551,7 @@ public final class Kinetic {
        *
        * <pre>
        * The command contains the header, body and status as a single
-       * unit that will be used to calculate the hmac.
+       * unit that will be used to calculate the HMAC.
        * </pre>
        */
       public Builder clearCommand() {
@@ -24631,7 +24569,7 @@ public final class Kinetic {
        *
        * <pre>
        * The command contains the header, body and status as a single
-       * unit that will be used to calculate the hmac.
+       * unit that will be used to calculate the HMAC.
        * </pre>
        */
       public com.seagate.kinetic.proto.Kinetic.Message.Command.Builder getCommandBuilder() {
@@ -24644,7 +24582,7 @@ public final class Kinetic {
        *
        * <pre>
        * The command contains the header, body and status as a single
-       * unit that will be used to calculate the hmac.
+       * unit that will be used to calculate the HMAC.
        * </pre>
        */
       public com.seagate.kinetic.proto.Kinetic.Message.CommandOrBuilder getCommandOrBuilder() {
@@ -24659,7 +24597,7 @@ public final class Kinetic {
        *
        * <pre>
        * The command contains the header, body and status as a single
-       * unit that will be used to calculate the hmac.
+       * unit that will be used to calculate the HMAC.
        * </pre>
        */
       private com.google.protobuf.SingleFieldBuilder<
@@ -24682,7 +24620,7 @@ public final class Kinetic {
        * <code>optional bytes hmac = 3;</code>
        *
        * <pre>
-       *hmac
+       *HMAC
        * </pre>
        */
       public boolean hasHmac() {
@@ -24692,7 +24630,7 @@ public final class Kinetic {
        * <code>optional bytes hmac = 3;</code>
        *
        * <pre>
-       *hmac
+       *HMAC
        * </pre>
        */
       public com.google.protobuf.ByteString getHmac() {
@@ -24702,7 +24640,7 @@ public final class Kinetic {
        * <code>optional bytes hmac = 3;</code>
        *
        * <pre>
-       *hmac
+       *HMAC
        * </pre>
        */
       public Builder setHmac(com.google.protobuf.ByteString value) {
@@ -24718,7 +24656,7 @@ public final class Kinetic {
        * <code>optional bytes hmac = 3;</code>
        *
        * <pre>
-       *hmac
+       *HMAC
        * </pre>
        */
       public Builder clearHmac() {
