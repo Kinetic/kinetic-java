@@ -44,22 +44,20 @@ public abstract class CapacityUtil {
     private static long MB = 1000000;
 
     public static Capacity getCapacity() {
-        // return CapacityGenerator.generate();
 
         Capacity capacity = null;
 
         try {
-            // XXX 10/18/2013 chiaming: use db file path
             File file = new File("/");
 
-            float total = (float) Double.parseDouble(format.format(file
+            long total = (long)Double.parseDouble(format.format(file
                     .getTotalSpace() / MB));
 
-            float remaining = (float) Double.parseDouble(format.format(file
+            long remaining = (long) Double.parseDouble(format.format(file
                     .getFreeSpace() / MB));
 
-            capacity = Capacity.newBuilder().setTotal((long) total)
-                    .setRemaining((long) remaining).build();
+            capacity = Capacity.newBuilder().setTotal(total)
+                    .setRemaining(remaining).build();
 
         } catch (Exception e) {
 
@@ -74,19 +72,16 @@ public abstract class CapacityUtil {
 
 class CapacityGenerator {
     private static final Random random = new Random();
-    private static final float TB = 1024 * 1024; // Unit: MB
+    private static final long TB = 1024 * 1024; // Unit: MB
 
     public static Capacity generate() {
-        float total = 4 * TB;
-        float remaining = total * random.nextFloat();
-        DecimalFormat df = new DecimalFormat("########.00");
-        double remainValue = Double.parseDouble(df.format(remaining));
+        long total = 4 * TB;
+        long remaining = total * random.nextLong();
 
         Capacity capacity = null;
-        capacity = Capacity.newBuilder().setTotal((long) total)
-                .setRemaining((long) remainValue).build();
+        capacity = Capacity.newBuilder().setTotal(total)
+                .setRemaining(remaining).build();
 
         return capacity;
     }
-
 }

@@ -221,5 +221,27 @@ Usage of Kinetic Admin API script
    Simulator/drive remotely(IP:10.24.70.123):
    Before setup new cluster version：sh kineticAdmin.sh -firmware /Users/Emma/123.run -host 10.24.70.123
    After setup new cluster version (sh kineticAdmin.sh -setup -newclversion 1) for the simulator/drive
-         sh kineticAdmin.sh -firmware /Users/Emma/123.run -host 10.24.70.123 -clversion 1                      
+         sh kineticAdmin.sh -firmware /Users/Emma/123.run -host 10.24.70.123 -clversion 1  
+         
+Usage of proto scripts
+===========================
+1. Sync protocol file from Kinetic-Protocol github repo [https://github.com/Seagate/Kinetic-Protocol.git] to local.
+   $sh syncProtoFromRepo.sh  to get the latest version.
+   $sh syncProtoFromRepo.sh $commitHash to get the commit hash version. 
+   For example,
+   $sh syncProtoFromRepo.sh c4c95530b099c4882f3229560038e427e85fe219
+   
+2. Build protocol file locally, including compile kinetic.proto, kineticDb.proto, kineticIo.proto.
+   $sh buildProto.sh
+
+
+
+
+
+
+
+
+
+
+                    
        

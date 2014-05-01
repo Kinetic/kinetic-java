@@ -46,7 +46,7 @@ public abstract class ConfigurationUtil {
     private final static String MODEL = "Simulator";
     private final static byte[] SERIAL_NUMBER = "93C3DAFD-C894-3C88-A4B0-632A90D2A04B"
             .getBytes(Charset.forName("UTF-8"));
-    private final static String VERSION = "0.5.0.1-SNAPSHOT";
+    private final static String VERSION = "0.6.0.1-SNAPSHOT";
     private final static String COMPILATION_DATE = new Date().toString();
     private final static String SOURCE_HASH = "aee0d511896d85da71eb24e1d148fba1";
 
