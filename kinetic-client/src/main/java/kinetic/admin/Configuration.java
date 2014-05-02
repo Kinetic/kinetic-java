@@ -39,6 +39,15 @@ public class Configuration {
 
 	// This is the git hash of the source tree so that the exact code can be determined.
 	private String sourceHash;
+	
+	// This is the protocol version of the software on the drive in dot notation
+	private String protocolVersion;
+
+    // This is the date/time string of when the protocol source was compiled
+	private String protocolCompilationDate;
+	
+	// This is the git hash of the protocol source tree so that the exact code can be determined.
+	private String protocolSourceHash;
 
 	// the interfaces for this device. one per interface.
 	private List<Interface> interfaces;
@@ -99,6 +108,30 @@ public class Configuration {
 	public List<Interface> getInterfaces() {
 		return interfaces;
 	}
+	
+    public String getProtocolVersion() {
+        return protocolVersion;
+    }
+
+    public void setProtocolVersion(String protocolVersion) {
+        this.protocolVersion = protocolVersion;
+    }
+
+    public String getProtocolCompilationDate() {
+        return protocolCompilationDate;
+    }
+
+    public void setProtocolCompilationDate(String protocolCompilationDate) {
+        this.protocolCompilationDate = protocolCompilationDate;
+    }
+
+    public String getProtocolSourceHash() {
+        return protocolSourceHash;
+    }
+
+    public void setProtocolSourceHash(String protocolSourceHash) {
+        this.protocolSourceHash = protocolSourceHash;
+    }
 
 	public void setInterfaces(List<Interface> interfaces) {
 		this.interfaces = interfaces;

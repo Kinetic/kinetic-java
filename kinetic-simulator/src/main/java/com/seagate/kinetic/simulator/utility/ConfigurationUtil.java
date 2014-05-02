@@ -19,6 +19,9 @@
  */
 package com.seagate.kinetic.simulator.utility;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
@@ -29,6 +32,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -39,16 +43,23 @@ import com.seagate.kinetic.proto.Kinetic.Message.GetLog.Configuration;
 import com.seagate.kinetic.proto.Kinetic.Message.GetLog.Configuration.Interface;
 
 public abstract class ConfigurationUtil {
+
     private final static Logger logger = Logger
             .getLogger(ConfigurationUtil.class.getName());
-
+    private static final String SIMULATOR_BUILD_INFO = "simulator.build.info";
     private final static String VENDER = "Seagate";
     private final static String MODEL = "Simulator";
     private final static byte[] SERIAL_NUMBER = "93C3DAFD-C894-3C88-A4B0-632A90D2A04B"
             .getBytes(Charset.forName("UTF-8"));
-    private final static String VERSION = "0.6.0.1-SNAPSHOT";
     private final static String COMPILATION_DATE = new Date().toString();
-    private final static String SOURCE_HASH = "aee0d511896d85da71eb24e1d148fba1";
+    private final static String PROTOCOL_COMPILATION_DATE = new Date()
+            .toString();
+
+    private static String VERSION = "unknown";
+    private static String SOURCE_HASH = "unknown";
+    private static String PROTOCOL_VERSION = "unknown";
+    private static String PROTOCOL_SOURCE_HASH = "unknown";
+    private static Properties prop = loadSimulatorBuildInfo();
 
     public static Configuration getConfiguration(SimulatorConfiguration config)
             throws UnknownHostException {
@@ -56,9 +67,15 @@ public abstract class ConfigurationUtil {
         configuration.setVendor(VENDER);
         configuration.setModel(MODEL);
         configuration.setSerialNumber(ByteString.copyFrom(SERIAL_NUMBER));
-        configuration.setVersion(VERSION);
+        configuration.setVersion(prop.getProperty("simulatorVersion", VERSION));
         configuration.setCompilationDate(COMPILATION_DATE);
-        configuration.setSourceHash(SOURCE_HASH);
+        configuration.setSourceHash(prop.getProperty("simulatorSourceHash",
+                SOURCE_HASH));
+        configuration.setProtocolVersion(prop.getProperty("protocolVersion",
+                PROTOCOL_VERSION));
+        configuration.setProtocolCompilationDate(PROTOCOL_COMPILATION_DATE);
+        configuration.setProtocolSourceHash(prop.getProperty(
+                "protocolSourceHash", PROTOCOL_SOURCE_HASH));
 
         List<Interface> interfaces = new ArrayList<Interface>();
         Interface.Builder itf1 = null;
@@ -126,5 +143,25 @@ public abstract class ConfigurationUtil {
         }
 
         return sb.toString();
+    }
+
+    private static Properties loadSimulatorBuildInfo() {
+        Properties prop = new Properties();
+        String propFileName = SIMULATOR_BUILD_INFO;
+
+        InputStream inputStream;
+        try {
+            inputStream = Thread.currentThread().getContextClassLoader()
+                    .getResourceAsStream(propFileName);
+            prop.load(inputStream);
+        } catch (FileNotFoundException e) {
+            logger.warning("simulator build info file '" + propFileName
+                    + "' not found in the classpath, use default setting");
+        } catch (IOException e) {
+            logger.warning("can't load simulator build info file '"
+                    + propFileName);
+        }
+
+        return prop;
     }
 }

@@ -18,6 +18,7 @@
 				<directory>src/main/java</directory>
 				<includes>
 					<include>**/*.jks</include>
+					<include>**/simulator.build.info</include>
 				</includes>
 			</resource>
 		</resources>

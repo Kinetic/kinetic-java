@@ -1,0 +1,5 @@
+#simulator build properties
+simulatorVersion=0.6.0.1-SNAPSHOT
+simulatorSourceHash=0fbf0e099037bc4b3dd72c5a2a611fd397a6d65d
+protocolVersion=0.6.0.1-SNAPSHOT
+protocolSourceHash=9c6b4a180a70f8488c5d8ec8e8a6464c4ff63f84

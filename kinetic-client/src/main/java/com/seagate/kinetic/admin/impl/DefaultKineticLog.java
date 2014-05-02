@@ -301,6 +301,21 @@ public class DefaultKineticLog implements KineticLog {
             configurationInfo.setSourceHash(configuration.getSourceHash());
         }
 
+        if (configuration.hasProtocolVersion()) {
+            configurationInfo.setProtocolVersion(configuration
+                    .getProtocolVersion());
+        }
+
+        if (configuration.hasProtocolCompilationDate()) {
+            configurationInfo.setProtocolCompilationDate(configuration
+                    .getProtocolCompilationDate());
+        }
+
+        if (configuration.hasProtocolSourceHash()) {
+            configurationInfo.setProtocolSourceHash(configuration
+                    .getProtocolSourceHash());
+        }
+
         if (configuration.hasTlsPort()) {
             configurationInfo.setTlsPort(configuration.getTlsPort());
         }
