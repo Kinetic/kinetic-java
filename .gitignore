@@ -21,3 +21,8 @@ database.db
 *.pid
 *.swp
 *.log
+/target
+
+/kinetic-common/src/main/java/com/seagate/kinetic/proto/kinetic.proto
+/kinetic-common/src/main/java/com/seagate/kinetic/proto/Kinetic.java
+
