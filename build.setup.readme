@@ -1,0 +1,31 @@
+Prerequisite to build kinetic-java projects.
+
+The kinetic-java projects depends on kinetic.proto file that hosted on https://github.com/Seagate/kinetic-protocol.git. 
+The file is required to be down-loaded to your local development environment and compiled into Java files before the 
+projects can be built.
+
+1. You must have protocol buffer installed on your development environment:
+
+https://code.google.com/p/protobuf/
+
+https://developers.google.com/protocol-buffers/docs/javatutorial
+
+2. Obtain a copy of kinetic.proto from https://github.com/Seagate/kinetic-protocol.git repository.  
+
+"syncProtoFromRepo.sh" script is provided to facilitate the work:
+
+//cd to project root
+2.1 cd <kinetic-java>
+
+//run syncProtoFromRepo.sh to get the latest kinetic.proto file.
+2.2 sh ./bin/syncProtoFromRepo.sh
+
+3. Compile protocol buffer files and generate Java files into com.seagate.kinetic.proto package. 
+The package is under <kinetic-java>/kinetic-common/src/main/java folder.  
+
+"buildProto.sh" script is provided to facilitate the work:
+
+//run protocol buffer compiler script and generate protocol buffer files.
+ 3.1 sh ./bin/buildProto.sh 
+
+4. Proceed to normal maven build process (see kinetic.maven.readme). 
