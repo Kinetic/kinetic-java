@@ -233,3 +233,6 @@ Usage of proto scripts
    
 2. Build protocol file locally, including compile kinetic.proto, kineticDb.proto, kineticIo.proto.
    $sh buildProto.sh
+   
+3. Sync protocol file from Kinetic-Protocol github repo and then build proto file.
+   $sh syncProtoFromRepoAndBuild.sh
