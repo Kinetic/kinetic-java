@@ -11,12 +11,12 @@ fi
 
 if [ $# -eq 0 ]; then
     echo "Clone protocol file from github:"
-    git clone https://github.com/Seagate/Kinetic-Protocol.git $CLONE_DIR
+    git clone https://github.com/Seagate/kinetic-protocol.git $CLONE_DIR
 fi
 
 if [ $# -eq 1 ]; then
     echo "Clone protocol file $1 from github:"
-    git clone https://github.com/Seagate/Kinetic-Protocol.git $CLONE_DIR
+    git clone https://github.com/Seagate/kinetic-protocol.git $CLONE_DIR
     cd $CLONE_DIR
     git checkout $1
     echo "$1"
