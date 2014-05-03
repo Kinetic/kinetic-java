@@ -8,6 +8,8 @@ Suggested Development Environments
 
 * Maven 3.0.3 or later: [http://maven.apache.org/download.cgi](http://maven.apache.org/download.cgi)
 
+* Protocol buffer 2.5 [https://code.google.com/p/protobuf/downloads/list] (https://code.google.com/p/protobuf/downloads/list)
+
 * For Windows 7 system, install the system patch package for jni:
   32 bit: [http://www.microsoft.com/en-us/download/details.aspx?id=5555](http://www.microsoft.com/en-us/download/details.aspx?id=5555)
   64 bit: [http://www.microsoft.com/en-us/download/details.aspx?id=14632](http://www.microsoft.com/en-us/download/details.aspx?id=14632 )
