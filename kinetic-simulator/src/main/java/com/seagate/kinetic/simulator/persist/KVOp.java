@@ -37,12 +37,12 @@ import com.seagate.kinetic.proto.Kinetic.Message.Status;
 import com.seagate.kinetic.proto.Kinetic.Message.Status.StatusCode;
 import com.seagate.kinetic.proto.Kinetic.Message.Synchronization;
 import com.seagate.kinetic.simulator.internal.Authorizer;
+import com.seagate.kinetic.simulator.internal.InvalidRequestException;
 import com.seagate.kinetic.simulator.internal.KVSecurityException;
 import com.seagate.kinetic.simulator.internal.KVStoreException;
 import com.seagate.kinetic.simulator.internal.KVStoreNotFound;
 import com.seagate.kinetic.simulator.internal.KVStoreVersionMismatch;
 import com.seagate.kinetic.simulator.lib.MyLogger;
-//import kinetic.common.PersistOption;
 
 class KvException extends Exception {
     private static final long serialVersionUID = -6541517825715118652L;
@@ -58,14 +58,25 @@ public class KVOp {
 
     private final static Logger LOG = MyLogger.get();
 
-    private static long maxSize = SimulatorConfiguration
+    //max value size
+    private static long maxValueSize = SimulatorConfiguration
             .getMaxSupportedValueSize();
 
+    //max key size
+    private static int maxKeySize = SimulatorConfiguration.getMaxSupportedKeySize();
+    
+    //max key range size
+    //private static final int MAX_KEY_RANGE_SIZE = 1024;
+    
+   //max version size
+    //private static int MAX_VERSION_SIZE = 2048;
+    
     static void oops(String s) throws KvException {
         oops(Status.StatusCode.INTERNAL_ERROR, s);
     }
 
     static void oops(Status.StatusCode status, String s) throws KvException {
+        //LOG.warning("throwing exception., status code = " + status + ", msg = " +s);
         throw new KvException(status, s);
     }
 
@@ -114,7 +125,10 @@ public class KVOp {
                 case GET:
                     // get entry from store
                     try {
-
+                        
+                        //check max key length
+                        checkMaxKeyLenth (key.size());
+                        
                         Authorizer.checkPermission(aclmap, request.getCommand()
                                 .getHeader().getIdentity(), Permission.READ,
                                 key);
@@ -144,11 +158,14 @@ public class KVOp {
                 case PUT:
 
                     try {
+                        
+                      //check max key length
+                       checkMaxKeyLenth (key.size());
 
                         if (isSupportedValueSize(kmreq) == false) {
-                            throw new KvException(StatusCode.INTERNAL_ERROR,
+                            throw new KvException(StatusCode.INVALID_REQUEST,
                                     "value size exceeded max supported size. Supported size: "
-                                            + maxSize + ", received size="
+                                            + maxValueSize + ", received size="
                                             + kmreq.getValue().length
                                             + " (in bytes)");
                         }
@@ -190,7 +207,10 @@ public class KVOp {
                 case DELETE:
 
                     try {
-
+                        
+                        //check max key length
+                        checkMaxKeyLenth (key.size());
+                        
                         Authorizer.checkPermission(aclmap, request.getCommand()
                                 .getHeader().getIdentity(), Permission.DELETE,
                                 key);
@@ -210,6 +230,10 @@ public class KVOp {
                     break;
                 case GETVERSION:
                     try {
+                        
+                        //check max key length
+                        checkMaxKeyLenth (key.size());
+                        
                         Authorizer.checkPermission(aclmap, request.getCommand()
                                 .getHeader().getIdentity(), Permission.READ,
                                 key);
@@ -225,6 +249,10 @@ public class KVOp {
                     break;
                 case GETNEXT:
                     try {
+                        
+                        //check max key length
+                        checkMaxKeyLenth (key.size());
+                        
                         storeEntry = store.getNext(key);
                         ByteString nextKey = storeEntry.getKeyOf();
 
@@ -252,6 +280,10 @@ public class KVOp {
                     break;
                 case GETPREVIOUS:
                     try {
+                        
+                        //check max key length
+                        checkMaxKeyLenth (key.size());
+                        
                         storeEntry = store.getPrevious(key);
                         ByteString previousKey = storeEntry.getKeyOf();
 
@@ -283,11 +315,6 @@ public class KVOp {
                     oops("Unknown request");
                 }
 
-                // TODO check user authorizations.
-
-                // TODO check multi-tenant key prefix
-
-                // the information should be good at this point, we're done.
             } catch (KVStoreNotFound e) {
                 oops(Status.StatusCode.NOT_FOUND);
             } catch (KVStoreVersionMismatch e) {
@@ -297,6 +324,8 @@ public class KVOp {
                         "Opps1: " + e.getMessage());
             } catch (KVSecurityException e) {
                 oops(StatusCode.NOT_AUTHORIZED, e.getMessage());
+            } catch (InvalidRequestException e) {
+                oops(StatusCode.INVALID_REQUEST, e.getMessage());
             } catch (Exception e) {
                 oops(Status.StatusCode.INTERNAL_ERROR, e.getMessage());
             }
@@ -329,7 +358,7 @@ public class KVOp {
 
         byte[] value = km.getValue();
 
-        if (value == null || value.length <= maxSize) {
+        if (value == null || value.length <= maxValueSize) {
             // value not set, this may happen if client library did not set
             // value as EMPTY for null value.
             supported = true;
@@ -370,5 +399,23 @@ public class KVOp {
 
         return option;
     }
+    
+    private static void checkMaxKeyLenth (int len) throws InvalidRequestException {
+        if (len > maxKeySize) {
+            throw new InvalidRequestException ("key length exceeds max size, size=" + maxKeySize);
+        }
+    }
+    
+//    private static void checkMaxKeyRange (int len) throws InvalidRequestException {
+//        if (len > MAX_KEY_RANGE_SIZE) {
+//            throw new InvalidRequestException ("max key range exceeds " + MAX_KEY_RANGE_SIZE);
+//        }
+//    }
+//    
+//    private static void checkMaxVersion (int len) throws InvalidRequestException {
+//        if (len > MAX_VERSION_SIZE) {
+//            throw new InvalidRequestException ("max version exceeds " + MAX_VERSION_SIZE);
+//        }
+//    }
 
 }

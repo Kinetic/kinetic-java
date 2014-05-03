@@ -142,6 +142,11 @@ public class SimulatorConfiguration extends Properties {
 	 * max supported value size in bytes
 	 */
 	private static long maxSupportedValueSize = 1024 * 1024;
+	
+	/**
+	 * max supported key size in bytes.
+	 */
+    private static int maxSupportedKeySize = 4096;
 
 	private HeartbeatProvider heartbeatProvider = null;
 
@@ -560,6 +565,26 @@ public class SimulatorConfiguration extends Properties {
 	public static void setMaxSupportedValueSize(long size) {
 		maxSupportedValueSize = size;
 	}
+	
+	/**
+     * Get max supported key size in bytes. Default is set to 4096 bytes.
+     * 
+     * @return max supported value size for the simulator.
+     */
+    public static int getMaxSupportedKeySize() {
+        return maxSupportedKeySize;
+    }
+
+    /**
+     * Set max supported key size, in bytes.
+     * 
+     * @param size
+     *            set max supported key size.
+     * @see #getMaxSupportedValueSize()
+     */
+    public static void setMaxSupportedKeySize(int size) {
+        maxSupportedKeySize = size;
+    }
 
 	/**
 	 * Set the heartbeat provider for the simulator.
