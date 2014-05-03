@@ -445,7 +445,7 @@ option java_outer_classname = "Kinetic";
 
 			enum HMACAlgorithm {
                 INVALID_HMAC_ALGORITHM = -1; // Must come first, so default is invalid
-                Unknown = 0; // Added to allow additional HmacAlgorithms without breaking backward compatibility.
+                // 0 is reserved; do not use
                 HmacSHA1 = 1; // this is the default
             }
 

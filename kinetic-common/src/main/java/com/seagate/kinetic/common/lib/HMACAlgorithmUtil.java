@@ -50,7 +50,7 @@ public abstract class HMACAlgorithmUtil {
 
         for (HMACAlgorithm hmacAlgorithm : algoOfArray) {
             if (hmacAlgorithm == algorithm
-                    && HMACAlgorithm.Unknown != algorithm) {
+                    && HMACAlgorithm.INVALID_HMAC_ALGORITHM != algorithm) {
                 return true;
             }
         }

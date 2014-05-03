@@ -307,7 +307,7 @@ public class SecurityPersistTest extends IntegrationTestCase {
         ACL.Builder acl1 = ACL.newBuilder();
         acl1.setIdentity(1);
         acl1.setKey(ByteString.copyFromUtf8("asdfasdf"));
-        acl1.setHmacAlgorithm(HMACAlgorithm.Unknown);
+        acl1.setHmacAlgorithm(HMACAlgorithm.INVALID_HMAC_ALGORITHM);
         Scope.Builder domain = Scope.newBuilder();
         for (Permission role : Permission.values()) {
             if (!role.equals(Permission.INVALID_PERMISSION)) {

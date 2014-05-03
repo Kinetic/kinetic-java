@@ -21444,21 +21444,13 @@ public final class Kinetic {
            */
           INVALID_HMAC_ALGORITHM(0, -1),
           /**
-           * <code>Unknown = 0;</code>
-           *
-           * <pre>
-           * Added to allow additional HmacAlgorithms without breaking backward compatibility.
-           * </pre>
-           */
-          Unknown(1, 0),
-          /**
            * <code>HmacSHA1 = 1;</code>
            *
            * <pre>
-           * this is the default
+           * 0 is reserved; do not use
            * </pre>
            */
-          HmacSHA1(2, 1),
+          HmacSHA1(1, 1),
           ;
 
           /**
@@ -21470,18 +21462,10 @@ public final class Kinetic {
            */
           public static final int INVALID_HMAC_ALGORITHM_VALUE = -1;
           /**
-           * <code>Unknown = 0;</code>
-           *
-           * <pre>
-           * Added to allow additional HmacAlgorithms without breaking backward compatibility.
-           * </pre>
-           */
-          public static final int Unknown_VALUE = 0;
-          /**
            * <code>HmacSHA1 = 1;</code>
            *
            * <pre>
-           * this is the default
+           * 0 is reserved; do not use
            * </pre>
            */
           public static final int HmacSHA1_VALUE = 1;
@@ -21492,7 +21476,6 @@ public final class Kinetic {
           public static HMACAlgorithm valueOf(int value) {
             switch (value) {
               case -1: return INVALID_HMAC_ALGORITHM;
-              case 0: return Unknown;
               case 1: return HmacSHA1;
               default: return null;
             }
@@ -24792,7 +24775,7 @@ public final class Kinetic {
   static {
     java.lang.String[] descriptorData = {
       "\n\rkinetic.proto\022\031com.seagate.kinetic.pro" +
-      "to\"\371&\n\007Message\022;\n\007command\030\001 \001(\0132*.com.se" +
+      "to\"\354&\n\007Message\022;\n\007command\030\001 \001(\0132*.com.se" +
       "agate.kinetic.proto.Message.Command\022\014\n\004h" +
       "mac\030\003 \001(\014\032\266\001\n\007Command\0229\n\006header\030\001 \001(\0132)." +
       "com.seagate.kinetic.proto.Message.Header" +
@@ -24884,8 +24867,8 @@ public final class Kinetic {
       "VALID_TYPE\020\377\377\377\377\377\377\377\377\377\001\022\020\n\014UTILIZATIONS\020\000\022" +
       "\020\n\014TEMPERATURES\020\001\022\016\n\nCAPACITIES\020\002\022\021\n\rCON" +
       "FIGURATION\020\003\022\016\n\nSTATISTICS\020\004\022\014\n\010MESSAGES" +
-      "\020\005\032\366\004\n\010Security\022<\n\003acl\030\002 \003(\0132/.com.seaga" +
-      "te.kinetic.proto.Message.Security.ACL\032\253\004" +
+      "\020\005\032\351\004\n\010Security\022<\n\003acl\030\002 \003(\0132/.com.seaga" +
+      "te.kinetic.proto.Message.Security.ACL\032\236\004" +
       "\n\003ACL\022\020\n\010identity\030\001 \001(\003\022\013\n\003key\030\002 \001(\014\022T\n\r" +
       "hmacAlgorithm\030\003 \001(\0162=.com.seagate.kineti" +
       "c.proto.Message.Security.ACL.HMACAlgorit" +
@@ -24894,30 +24877,29 @@ public final class Kinetic {
       "pe\022\016\n\006offset\030\001 \001(\003\022\r\n\005value\030\002 \001(\014\022N\n\nper" +
       "mission\030\003 \003(\0162:.com.seagate.kinetic.prot" +
       "o.Message.Security.ACL.Permission\022\023\n\013Tls" +
-      "Required\030\004 \001(\010\"O\n\rHMACAlgorithm\022#\n\026INVAL" +
-      "ID_HMAC_ALGORITHM\020\377\377\377\377\377\377\377\377\377\001\022\013\n\007Unknown\020" +
-      "\000\022\014\n\010HmacSHA1\020\001\"\211\001\n\nPermission\022\037\n\022INVALI" +
-      "D_PERMISSION\020\377\377\377\377\377\377\377\377\377\001\022\010\n\004READ\020\000\022\t\n\005WRI" +
-      "TE\020\001\022\n\n\006DELETE\020\002\022\t\n\005RANGE\020\003\022\t\n\005SETUP\020\004\022\t" +
-      "\n\005P2POP\020\005\022\n\n\006GETLOG\020\007\022\014\n\010SECURITY\020\010\"c\n\017S" +
-      "ynchronization\022$\n\027INVALID_SYNCHRONIZATIO",
-      "N\020\377\377\377\377\377\377\377\377\377\001\022\020\n\014WRITETHROUGH\020\001\022\r\n\tWRITEB" +
-      "ACK\020\002\022\t\n\005FLUSH\020\003\"_\n\tAlgorithm\022\036\n\021INVALID" +
-      "_ALGORITHM\020\377\377\377\377\377\377\377\377\377\001\022\010\n\004SHA1\020\001\022\010\n\004SHA2\020" +
-      "\002\022\010\n\004SHA3\020\003\022\t\n\005CRC32\020\004\022\t\n\005CRC64\020\005\"\332\003\n\013Me" +
-      "ssageType\022!\n\024INVALID_MESSAGE_TYPE\020\377\377\377\377\377\377" +
-      "\377\377\377\001\022\007\n\003GET\020\002\022\020\n\014GET_RESPONSE\020\001\022\007\n\003PUT\020\004" +
-      "\022\020\n\014PUT_RESPONSE\020\003\022\n\n\006DELETE\020\006\022\023\n\017DELETE" +
-      "_RESPONSE\020\005\022\013\n\007GETNEXT\020\010\022\024\n\020GETNEXT_RESP" +
-      "ONSE\020\007\022\017\n\013GETPREVIOUS\020\n\022\030\n\024GETPREVIOUS_R" +
-      "ESPONSE\020\t\022\017\n\013GETKEYRANGE\020\014\022\030\n\024GETKEYRANG",
-      "E_RESPONSE\020\013\022\016\n\nGETVERSION\020\020\022\027\n\023GETVERSI" +
-      "ON_RESPONSE\020\017\022\t\n\005SETUP\020\026\022\022\n\016SETUP_RESPON" +
-      "SE\020\025\022\n\n\006GETLOG\020\030\022\023\n\017GETLOG_RESPONSE\020\027\022\014\n" +
-      "\010SECURITY\020\032\022\025\n\021SECURITY_RESPONSE\020\031\022\021\n\rPE" +
-      "ER2PEERPUSH\020\034\022\032\n\026PEER2PEERPUSH_RESPONSE\020" +
-      "\033\022\010\n\004NOOP\020\036\022\021\n\rNOOP_RESPONSE\020\035B\tB\007Kineti" +
-      "c"
+      "Required\030\004 \001(\010\"B\n\rHMACAlgorithm\022#\n\026INVAL" +
+      "ID_HMAC_ALGORITHM\020\377\377\377\377\377\377\377\377\377\001\022\014\n\010HmacSHA1" +
+      "\020\001\"\211\001\n\nPermission\022\037\n\022INVALID_PERMISSION\020" +
+      "\377\377\377\377\377\377\377\377\377\001\022\010\n\004READ\020\000\022\t\n\005WRITE\020\001\022\n\n\006DELET" +
+      "E\020\002\022\t\n\005RANGE\020\003\022\t\n\005SETUP\020\004\022\t\n\005P2POP\020\005\022\n\n\006" +
+      "GETLOG\020\007\022\014\n\010SECURITY\020\010\"c\n\017Synchronizatio" +
+      "n\022$\n\027INVALID_SYNCHRONIZATION\020\377\377\377\377\377\377\377\377\377\001\022",
+      "\020\n\014WRITETHROUGH\020\001\022\r\n\tWRITEBACK\020\002\022\t\n\005FLUS" +
+      "H\020\003\"_\n\tAlgorithm\022\036\n\021INVALID_ALGORITHM\020\377\377" +
+      "\377\377\377\377\377\377\377\001\022\010\n\004SHA1\020\001\022\010\n\004SHA2\020\002\022\010\n\004SHA3\020\003\022\t" +
+      "\n\005CRC32\020\004\022\t\n\005CRC64\020\005\"\332\003\n\013MessageType\022!\n\024" +
+      "INVALID_MESSAGE_TYPE\020\377\377\377\377\377\377\377\377\377\001\022\007\n\003GET\020\002" +
+      "\022\020\n\014GET_RESPONSE\020\001\022\007\n\003PUT\020\004\022\020\n\014PUT_RESPO" +
+      "NSE\020\003\022\n\n\006DELETE\020\006\022\023\n\017DELETE_RESPONSE\020\005\022\013" +
+      "\n\007GETNEXT\020\010\022\024\n\020GETNEXT_RESPONSE\020\007\022\017\n\013GET" +
+      "PREVIOUS\020\n\022\030\n\024GETPREVIOUS_RESPONSE\020\t\022\017\n\013" +
+      "GETKEYRANGE\020\014\022\030\n\024GETKEYRANGE_RESPONSE\020\013\022",
+      "\016\n\nGETVERSION\020\020\022\027\n\023GETVERSION_RESPONSE\020\017" +
+      "\022\t\n\005SETUP\020\026\022\022\n\016SETUP_RESPONSE\020\025\022\n\n\006GETLO" +
+      "G\020\030\022\023\n\017GETLOG_RESPONSE\020\027\022\014\n\010SECURITY\020\032\022\025" +
+      "\n\021SECURITY_RESPONSE\020\031\022\021\n\rPEER2PEERPUSH\020\034" +
+      "\022\032\n\026PEER2PEERPUSH_RESPONSE\020\033\022\010\n\004NOOP\020\036\022\021" +
+      "\n\rNOOP_RESPONSE\020\035B\tB\007Kinetic"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
