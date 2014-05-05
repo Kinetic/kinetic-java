@@ -55,7 +55,7 @@
 							<goal>exec</goal>
 						</goals>
 						<configuration>
-							<executable>${project.parent.basedir}/bin/syncProtoFromRepoAndbuild.sh</executable>
+							<executable>${project.parent.basedir}/bin/syncProtoFromRepoAndBuild.sh</executable>
 						</configuration>
 					</execution>
 				</executions>
