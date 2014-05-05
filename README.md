@@ -55,7 +55,7 @@ Getting Started With Simulator
 ================================
 1. Run "mvn clean package" in "Kinetic-Folder"
 2. Start with java CLI: 
-       java -jar in "Kinetic-Folder"/kinetic-simulator/target/kinetic-simulator-0.6.0.1-SNAPSHOT-jar-with-dependencies.jar
+       java -jar in "Kinetic-Folder"/kinetic-simulator/target/kinetic-simulator-0.6.0.2-SNAPSHOT-jar-with-dependencies.jar
    
    or Start with script (If configuration tcp_port, tls_port and Kinetic_home, use script -help):
        Windows: 
@@ -68,8 +68,8 @@ Getting Started With Simulator
 
 Admin command line Usage
 ==============================
-1, make sure "Kinetic-Folder"/kinetic-simulator/target/kinetic-simulator-0.6.0.1-SNAPSHOT-jar-with-dependencies.jar 
-             "Kinetic-Folder"/kinetic-client/target/kinetic-client-0.6.0.1-SNAPSHOT-jar-with-dependencies.jar
+1, make sure "Kinetic-Folder"/kinetic-simulator/target/kinetic-simulator-0.6.0.2-SNAPSHOT-jar-with-dependencies.jar 
+             "Kinetic-Folder"/kinetic-client/target/kinetic-client-0.6.0.2-SNAPSHOT-jar-with-dependencies.jar
    exist
 
 2, start simulator
@@ -116,7 +116,7 @@ Run smoke test against simulator or kinetic drive
 Make sure one instance of simulator or kinetic drive is running.
 
 1.  Run "mvn clean package" in "Kinetic-Folder" or "Kinetic-Folder"/kinetic-test, verify that
-   "Kinetic-Folder"/kinetic-test/target/kinetic-test-0.6.0.1-SNAPSHOT-jar-with-dependencies.jar 
+   "Kinetic-Folder"/kinetic-test/target/kinetic-test-0.6.0.2-SNAPSHOT-jar-with-dependencies.jar 
    "Kinetic-Folder"/kinetic-test/target/smoke-tests.jar
    exist.
 
