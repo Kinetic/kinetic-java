@@ -65,6 +65,9 @@ public class KVOp {
     //max key size
     private static int maxKeySize = SimulatorConfiguration.getMaxSupportedKeySize();
     
+   //max version size
+    private static int maxVersionSize = SimulatorConfiguration.getMaxSupportedVersionSize();
+    
     //max key range size
     //private static final int MAX_KEY_RANGE_SIZE = 1024;
     
@@ -161,6 +164,10 @@ public class KVOp {
                         
                       //check max key length
                        checkMaxKeyLenth (key.size());
+                       
+                       //check max version size
+                       ByteString bs = requestKeyValue.getNewVersion();
+                       checkMaxVersionLength (bs);
 
                         if (isSupportedValueSize(kmreq) == false) {
                             throw new KvException(StatusCode.INVALID_REQUEST,
@@ -210,6 +217,10 @@ public class KVOp {
                         
                         //check max key length
                         checkMaxKeyLenth (key.size());
+                        
+                        //check max version size
+                        ByteString bs = requestKeyValue.getDbVersion();
+                        checkMaxVersionLength (bs);
                         
                         Authorizer.checkPermission(aclmap, request.getCommand()
                                 .getHeader().getIdentity(), Permission.DELETE,
@@ -402,20 +413,21 @@ public class KVOp {
     
     private static void checkMaxKeyLenth (int len) throws InvalidRequestException {
         if (len > maxKeySize) {
-            throw new InvalidRequestException ("key length exceeds max size, size=" + maxKeySize);
+            throw new InvalidRequestException ("key length exceeds max size, size=" + maxKeySize + ", request size=" + len);
         }
     }
     
-//    private static void checkMaxKeyRange (int len) throws InvalidRequestException {
-//        if (len > MAX_KEY_RANGE_SIZE) {
-//            throw new InvalidRequestException ("max key range exceeds " + MAX_KEY_RANGE_SIZE);
-//        }
-//    }
-//    
-//    private static void checkMaxVersion (int len) throws InvalidRequestException {
-//        if (len > MAX_VERSION_SIZE) {
-//            throw new InvalidRequestException ("max version exceeds " + MAX_VERSION_SIZE);
-//        }
-//    }
+    private static void checkMaxVersionLength (ByteString bs) throws InvalidRequestException {
+   
+        int len = 0;
+        if (bs != null) {
+            len = bs.size();
+        }
+        
+        if ( len > maxVersionSize) {
+            throw new InvalidRequestException ("max version exceeds max allowed size " + maxVersionSize + ", request version size=" + len);
+        }
+    }
+    
 
 }

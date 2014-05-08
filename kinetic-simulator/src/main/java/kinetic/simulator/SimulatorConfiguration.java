@@ -147,6 +147,16 @@ public class SimulatorConfiguration extends Properties {
 	 * max supported key size in bytes.
 	 */
     private static int maxSupportedKeySize = 4096;
+    
+    /**
+     * max supported version size in bytes
+     */
+    private static int maxSupportedVersionSize = 2048;
+    
+    /**
+     * max key range size.
+     */
+    private static int maxSupportedKeyRangeSize = 1024;
 
 	private HeartbeatProvider heartbeatProvider = null;
 
@@ -569,7 +579,7 @@ public class SimulatorConfiguration extends Properties {
 	/**
      * Get max supported key size in bytes. Default is set to 4096 bytes.
      * 
-     * @return max supported value size for the simulator.
+     * @return max supported key size for the simulator.
      */
     public static int getMaxSupportedKeySize() {
         return maxSupportedKeySize;
@@ -580,11 +590,51 @@ public class SimulatorConfiguration extends Properties {
      * 
      * @param size
      *            set max supported key size.
-     * @see #getMaxSupportedValueSize()
+     * @see #getMaxSupportedKeySize()
      */
     public static void setMaxSupportedKeySize(int size) {
         maxSupportedKeySize = size;
     }
+    
+    /**
+     * Get max supported version size in bytes. Default is set to 2048 bytes.
+     * 
+     * @return max supported key size for the simulator.
+     */
+    public static int getMaxSupportedVersionSize() {
+        return maxSupportedVersionSize;
+    }
+
+    /**
+     * Set max supported version size, in bytes.
+     * 
+     * @param size
+     *            set max supported version size.
+     * @see #getMaxSupportedVersionSize()
+     */
+    public static void setMaxSupportedVersionSize(int size) {
+        maxSupportedVersionSize = size;
+    }
+    
+    /**
+     * Get max supported key range size. Default is set to 1024.
+     *
+     * @return max supported key range size for the simulator.
+     */
+    public static int getMaxSupportedKeyRangeSize() {
+        return maxSupportedKeyRangeSize;
+    }
+
+    /**
+     * Set max supported key range size, in bytes.
+     *
+     * @param size
+     *            set max supported key range size.
+     */
+    public static void setMaxSupportedKeyRangeSize(int size) {
+        maxSupportedKeyRangeSize = size;
+    }
+
 
 	/**
 	 * Set the heartbeat provider for the simulator.

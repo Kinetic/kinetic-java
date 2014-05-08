@@ -29,6 +29,8 @@ import java.util.Map;
 import java.util.SortedMap;
 import java.util.logging.Logger;
 
+import kinetic.simulator.SimulatorConfiguration;
+
 import com.google.common.collect.Lists;
 import com.google.protobuf.ByteString;
 import com.seagate.kinetic.common.lib.Hmac;
@@ -37,6 +39,7 @@ import com.seagate.kinetic.proto.Kinetic.Message.MessageType;
 import com.seagate.kinetic.proto.Kinetic.Message.Range;
 import com.seagate.kinetic.proto.Kinetic.Message.Status;
 import com.seagate.kinetic.simulator.internal.Authorizer;
+import com.seagate.kinetic.simulator.internal.InvalidRequestException;
 import com.seagate.kinetic.simulator.internal.KVSecurityException;
 import com.seagate.kinetic.simulator.lib.MyLogger;
 
@@ -54,6 +57,9 @@ class RangeException extends Exception {
 public class RangeOp {
 
     private final static Logger LOG = MyLogger.get();
+    
+    //max key range size.  
+    private static int maxRangeSize = SimulatorConfiguration.getMaxSupportedKeyRangeSize();
 
     static void oops(String s) throws RangeException {
         oops(Status.StatusCode.INTERNAL_ERROR, s);
@@ -76,6 +82,7 @@ public class RangeOp {
         int n;
 
         try {
+             
             try {
 
                 // XXX need to add support for multiple ranges in getKeyRange
@@ -93,6 +100,9 @@ public class RangeOp {
 
                 i2 = r.getEndKeyInclusive();
                 n = r.getMaxReturned();
+                
+                //check max key range size
+                checkMaxKeyRange (n);
 
                 reverse = r.getReverse();
 
@@ -146,6 +156,9 @@ public class RangeOp {
                 .setCode(Status.StatusCode.SUCCESS);
 
                 // TODO check multi-tenant key prefix
+            } catch (InvalidRequestException  ire) {
+                oops(Status.StatusCode.INVALID_REQUEST,
+                        ire.getMessage());
             } catch (Exception e) {
                 LOG.fine(e.toString());
                 Writer writer = new StringWriter();
@@ -155,6 +168,8 @@ public class RangeOp {
                 oops(Status.StatusCode.INTERNAL_ERROR,
                         "Opps2: " + e.getMessage() + "--" + e.toString());
             }
+       
+            
         } catch (RangeException e) {
             respond.getCommandBuilder().getStatusBuilder().setCode(e.status);
             respond.getCommandBuilder().getStatusBuilder()
@@ -202,5 +217,11 @@ public class RangeOp {
 
         return rangeAllowedKeys;
     }
+    
+  private static void checkMaxKeyRange (int len) throws InvalidRequestException {
+  if (len > maxRangeSize) {
+      throw new InvalidRequestException ("request key range exceeds allowed size " + maxRangeSize + ", request size = " + len);
+  }
+}
 
 }

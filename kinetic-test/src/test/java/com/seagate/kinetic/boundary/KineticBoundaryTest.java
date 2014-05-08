@@ -43,6 +43,7 @@ import kinetic.client.KineticClient;
 import kinetic.client.KineticClientFactory;
 import kinetic.client.KineticException;
 import kinetic.client.advanced.AdvancedKineticClient;
+import kinetic.simulator.SimulatorConfiguration;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -2367,5 +2368,112 @@ public class KineticBoundaryTest extends IntegrationTestCase {
         }
 
         return domains;
+    }
+    
+    /**
+     * Test max key range request size cannot exceed max supported size (1024).
+     */
+    @Test
+    public void testGetRangeExceedMaxSize() {
+        
+        byte[] key0 = toByteArray("key00000000000");
+        byte[] key1 = toByteArray("key00000000001");
+        
+        try {
+            int max = SimulatorConfiguration.getMaxSupportedKeyRangeSize();
+            getClient().getKeyRange(key0, true, key1, true,  (max +1));
+            fail("did not receive expected exception: request key range exceeds max allowed size " + max);
+        } catch (KineticException e) {
+            logger.info("caught expected exception: " + e.getMessage());
+        }
+
+        logger.info(this.testEndInfo());
+    }
+    
+    /**
+     * Test max key request size cannot exceed max supported size (4096).
+     */
+    @Test
+    public void testMaxKeyLength() {
+        
+        int size = SimulatorConfiguration.getMaxSupportedKeySize();
+        byte[] key0 = new byte[size];
+        try {
+            getClient().get(key0);    
+        } catch (KineticException e) {
+            fail("received unexpected exception: " + e);
+        }
+        
+        byte[] key1 = new byte[size+1];
+        
+        try {
+            getClient().get(key1);
+            fail("did not receive expected exception: request key exceeds max allowed size " + size);
+        } catch (KineticException e) {
+            logger.info("caught expected exception: " + e.getMessage());
+        }
+
+        logger.info(this.testEndInfo());
+    }
+    
+    /**
+     * Test max version length cannot exceed max supported size (2048).
+     */
+    @Test
+    public void testMaxVersionLength() {
+        
+        byte[] key = toByteArray("key00000000000");
+        byte[] value = toByteArray("value00000000000");
+        
+        int vlen = SimulatorConfiguration.getMaxSupportedVersionSize();
+        
+        byte[] version = new byte[vlen];
+        Entry entry = new Entry();
+        entry.setKey(key);
+        entry.setValue(value);
+        entry.getEntryMetadata().setVersion(version);
+        
+        // expect to succeed - allowed version size
+        try {
+            getClient().putForced(entry);
+        } catch (KineticException e) {
+            fail("received unexpected exception: " + e);
+        }
+        
+        //expect to fail: exceed max version size to put
+        try {
+            byte[] version2 = new byte[vlen + 1];
+            entry.getEntryMetadata().setVersion(version2);
+            
+            getClient().putForced(entry);
+            fail("did not receive expected exception: request key exceeds max allowed size " + vlen);
+        } catch (KineticException e) {
+            logger.info("caught expected exception: " + e.getMessage());
+        }
+        
+        //expect fail to delete: exceed max version size
+        try {
+            byte[] version2 = new byte[vlen + 1];
+            entry.getEntryMetadata().setVersion(version2);
+           
+            getClient().delete(entry);
+            fail("did not receive expected exception: request key exceeds max allowed size " + vlen);
+        } catch (KineticException e) {
+            logger.info("caught expected exception: " + e.getMessage());
+        }
+        
+        //expect succeed to delete.
+        try {
+            
+            entry.getEntryMetadata().setVersion(version);
+            //expect succeed
+            boolean deleted = getClient().delete(entry);
+            
+            assertTrue (deleted);
+        } catch (KineticException e) {
+            fail("received unexpected exception: " + e);
+        }
+        
+        logger.info(this.testEndInfo());
     }
 }
