@@ -6,11 +6,43 @@
 	<packaging>pom</packaging>
 	<version>0.6.0.2-SNAPSHOT</version>
 	<name>Kinetic</name>
-	<url>http://maven.apache.org</url>
+	<description>Seagate kinetic open source storage platform</description>
+	<url>https://github.com/Seagate/kinetic-java</url>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<maven.test.excludes />
 	</properties>
+
+	<parent>
+		<groupId>org.sonatype.oss</groupId>
+		<artifactId>oss-parent</artifactId>
+		<version>7</version>
+	</parent>
+
+	<licenses>
+		<license>
+			<name>GPL2.0/LGPL2.1</name>
+			<url>https://github.com/Seagate/kinetic-java/tree/master/LICENSES</url>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
+
+	<scm>
+		<developerConnection>scm:git:git@github.com:Seagate/kinetic-java.git</developerConnection>
+		<connection>scm:git:git@github.com:Seagate/kinetic-java.git</connection>
+		<url>https://github.com/Seagate/kinetic-java</url>
+	</scm>
+
+	<developers>
+		<developer>
+			<id>seagate.com</id>
+			<name>The Kinetic Project Contributors</name>
+			<email>kinetic@seagate.com/</email>
+			<url>http://seagate.com</url>
+			<organization>The Kinetic Project</organization>
+			<organizationUrl>http://seagate.com/</organizationUrl>
+		</developer>
+	</developers>
 
 	<modules>
 		<module>kinetic-common</module>
