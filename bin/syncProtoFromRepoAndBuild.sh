@@ -8,6 +8,7 @@ PROTO_DIR=$BASE_DIR/kinetic-common/src/main/java/com/seagate/kinetic/proto/
 PROTO_FILE=$BASE_DIR/kinetic-common/src/main/java/com/seagate/kinetic/proto/kinetic.proto
 CLONE_DIR=$BASE_DIR/bin/Kinetic-ProtocoL
 PROTO_COMPILE_DIR=$BASE_DIR/kinetic-common/src/main/java/
+PROTO_COMMIT_HASH=9c6b4a180a70f8488c5d8ec8e8a6464c4ff63f84
 
 function syncFromProtoRepo(){
     if [ -d "$CLONE_DIR" ]; then
@@ -17,13 +18,8 @@ function syncFromProtoRepo(){
     if [ $# -eq 0 ]; then
         echo "Clone protocol file from github:"
         git clone $PROTO_REPO_URL $CLONE_DIR
-    fi
-
-    if [ $# -eq 1 ]; then
-        echo "Clone protocol file $1 from github:"
-        git clone $PROTO_REPO_URL $CLONE_DIR
         cd $CLONE_DIR
-        git checkout $1
+        git checkout $PROTO_COMMIT_HASH
     fi
 
     cp $CLONE_DIR/kinetic.proto $PROTO_FILE
