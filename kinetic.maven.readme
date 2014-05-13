@@ -9,6 +9,9 @@ To build kinetic-java projects, run maven commond line in <Kinetic-Folder> or in
 
 2, Build kinetic:
    mvn clean compile
+   
+   If don't want to sync protocol file from protocol repo, the maven command line is:
+   mvn clean compile -DskipProtoSync
 
 3, Execute unit test cases:
    mvn clean test

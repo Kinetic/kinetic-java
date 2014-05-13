@@ -15,13 +15,13 @@ https://developers.google.com/protocol-buffers/docs/javatutorial
 
 2. Obtain a copy of kinetic.proto from https://github.com/Seagate/kinetic-protocol.git repository.  
 
-"syncProtoFromRepo.sh" script is provided to facilitate the work:
+"forceSyncLatestProtoFromRepo.sh" script is provided to facilitate the work:
 
 //cd to project root
 2.1 cd <kinetic-java>
 
 //run syncProtoFromRepo.sh to get the latest kinetic.proto file.
-2.2 sh ./bin/syncProtoFromRepo.sh
+2.2 sh ./bin/forceSyncLatestProtoFromRepo.sh
 
 3. Compile protocol buffer files and generate Java files into com.seagate.kinetic.proto package. 
 The package is under <kinetic-java>/kinetic-common/src/main/java folder.  
