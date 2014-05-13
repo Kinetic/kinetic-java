@@ -1406,7 +1406,7 @@ public class KineticAdminTest extends IntegrationTestCase {
         assertTrue(respond1.getCommand().getStatus().getCode()
                 .equals(Status.StatusCode.SUCCESS));
         assertTrue(0 <= respond1.getCommand().getBody().getGetLog()
-                .getCapacity().getTotal());
+                .getCapacity().getNominalCapacityInBytes());
     }
 
     @Test
@@ -1451,7 +1451,7 @@ public class KineticAdminTest extends IntegrationTestCase {
         assertEquals("EN0", respond3.getCommand().getBody().getGetLog()
                 .getUtilizationList().get(1).getName());
         assertTrue(0 <= respond3.getCommand().getBody().getGetLog()
-                .getCapacity().getTotal());
+                .getCapacity().getNominalCapacityInBytes());
         assertTrue(0 < respond3.getCommand().getBody().getGetLog()
                 .getTemperatureList().get(0).getMaximum());
     }
@@ -1473,7 +1473,7 @@ public class KineticAdminTest extends IntegrationTestCase {
         assertTrue(respond4.getCommand().getStatus().getCode()
                 .equals(Status.StatusCode.SUCCESS));
         assertTrue(0 <= respond4.getCommand().getBody().getGetLog()
-                .getCapacity().getTotal());
+                .getCapacity().getNominalCapacityInBytes());
         assertTrue(0 <= respond4.getCommand().getBody().getGetLog()
                 .getTemperatureList().get(0).getMaximum());
         assertTrue(0 <= respond4.getCommand().getBody().getGetLog()
@@ -1531,7 +1531,7 @@ public class KineticAdminTest extends IntegrationTestCase {
         assertEquals("EN0", respond6.getCommand().getBody().getGetLog()
                 .getUtilizationList().get(1).getName());
         assertTrue(0 <= respond6.getCommand().getBody().getGetLog()
-                .getCapacity().getTotal());
+                .getCapacity().getNominalCapacityInBytes());
     }
 
     /**

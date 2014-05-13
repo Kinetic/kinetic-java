@@ -39,9 +39,9 @@ public abstract class CapacityUtil {
     private final static Logger logger = Logger.getLogger(CapacityUtil.class
             .getName());
 
-    private static DecimalFormat format = new DecimalFormat("########.00");
+    //private static DecimalFormat format = new DecimalFormat("########.00");
 
-    private static long MB = 1000000;
+    //private static long MB = 1000000;
 
     public static Capacity getCapacity() {
 
@@ -50,14 +50,14 @@ public abstract class CapacityUtil {
         try {
             File file = new File("/");
 
-            long total = (long)Double.parseDouble(format.format(file
-                    .getTotalSpace() / MB));
+            long total = file.getTotalSpace();
 
-            long remaining = (long) Double.parseDouble(format.format(file
-                    .getFreeSpace() / MB));
+            float remaining = (float) file.getFreeSpace();
+            
+            float portionFull = (remaining/total);
 
-            capacity = Capacity.newBuilder().setTotal(total)
-                    .setRemaining(remaining).build();
+            capacity = Capacity.newBuilder().setNominalCapacityInBytes(total)
+                    .setPortionFull(portionFull).build();
 
         } catch (Exception e) {
 
@@ -71,16 +71,16 @@ public abstract class CapacityUtil {
 }
 
 class CapacityGenerator {
-    private static final Random random = new Random();
-    private static final long TB = 1024 * 1024; // Unit: MB
+    //private static final Random random = new Random();
+    private static final long TB = 1024 * 1024 * 1024 * 1024; // Unit: bytes
 
     public static Capacity generate() {
         long total = 4 * TB;
-        long remaining = total * random.nextLong();
+        float remaining = (float) 0.5;
 
         Capacity capacity = null;
-        capacity = Capacity.newBuilder().setTotal(total)
-                .setRemaining(remaining).build();
+        capacity = Capacity.newBuilder().setNominalCapacityInBytes((total))
+                .setPortionFull(remaining).build();
 
         return capacity;
     }

@@ -120,12 +120,12 @@ public class DefaultKineticLog implements KineticLog {
 
         Capacity capacInfo = new Capacity();
 
-        if (capacity.hasTotal()) {
-            capacInfo.setTotal(capacity.getTotal());
+        if (capacity.hasNominalCapacityInBytes()) {
+            capacInfo.setTotal(capacity.getNominalCapacityInBytes());
         }
 
-        if (capacity.hasRemaining()) {
-            capacInfo.setRemaining(capacity.getRemaining());
+        if (capacity.hasPortionFull()) {
+            capacInfo.setRemaining(capacity.getPortionFull());
         }
 
         return capacInfo;

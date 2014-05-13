@@ -8,7 +8,7 @@ PROTO_DIR=$BASE_DIR/kinetic-common/src/main/java/com/seagate/kinetic/proto/
 PROTO_FILE=$BASE_DIR/kinetic-common/src/main/java/com/seagate/kinetic/proto/kinetic.proto
 CLONE_DIR=$BASE_DIR/bin/Kinetic-ProtocoL
 PROTO_COMPILE_DIR=$BASE_DIR/kinetic-common/src/main/java/
-PROTO_COMMIT_HASH=9c6b4a180a70f8488c5d8ec8e8a6464c4ff63f84
+PROTO_COMMIT_HASH=bdfe223648ca13df2db0dabe328980025b8278e4
 
 function syncFromProtoRepo(){
     if [ -d "$CLONE_DIR" ]; then

@@ -22,7 +22,7 @@ public class Capacity {
 	private long total;
 
 	// remaining capacity of hard disk
-	private long remaining;
+	private float remaining;
 
 	public long getTotal() {
 		return total;
@@ -32,11 +32,11 @@ public class Capacity {
 		this.total = total;
 	}
 
-	public long getRemaining() {
+	public float getRemaining() {
 		return remaining;
 	}
 
-	public void setRemaining(long remaining) {
+	public void setRemaining(float remaining) {
 		this.remaining = remaining;
 	}
 }
