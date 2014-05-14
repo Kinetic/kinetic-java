@@ -526,9 +526,9 @@ function showNodeInfo(node) {
 }
 
 function renderCapacity(nodeInfo) {
-    var used = nodeInfo.capacity.total - nodeInfo.capacity.remaining;
-    var remaining = nodeInfo.capacity.remaining;
-    var freePercentage = nodeInfo.capacity.remaining / nodeInfo.capacity.total;
+	var remaining = nodeInfo.capacity.remaining * nodeInfo.capacity.total;
+    var used = nodeInfo.capacity.total - remaining;
+    var freePercentage = nodeInfo.capacity.remaining;
 
     if ($('#capacity').length > 0) {
         $.getScript('https://www.google.com/jsapi', function (data, textStatus) {
@@ -540,7 +540,7 @@ function renderCapacity(nodeInfo) {
                 ]);
 
                 var options = {
-                    title: 'Capacity (MB)',
+                    title: 'Capacity (B)',
                     is3D: true,
                     legend : {alignment : 'center', position: 'bottom'}
                 };
