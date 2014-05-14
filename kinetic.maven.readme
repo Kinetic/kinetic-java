@@ -1,24 +1,25 @@
 Maven command line for kinetic
 ==================================
 
-NOTE: please see build.setup.read for Prerequisite to build kinetic-java projects. 
+NOTE: please verify all the required "Suggested Development Environments" are satisfied as stated at the link (README.md):
+https://github.com/Seagate/kinetic-java 
 
-To build kinetic-java projects, run maven commond line in <Kinetic-Folder> or in <Kinetic-Folder>/"submodule-name":
+NOTE: Please also verify that JAVA_HOME is defined in your development environment:
+http://maven.apache.org/download.cgi
 
-1, Run "mvn clean install". 
+To build kinetic-java projects, run maven command line in <Kinetic-Folder>:
 
-2, Build kinetic:
+1. Build/compile kinetic:
    mvn clean compile
    
-   If don't want to sync protocol file from protocol repo, the maven command line is:
-   mvn clean compile -DskipProtoSync
-
-3, Execute unit test cases:
+2. Execute unit test cases:
    mvn clean test
    
-4, Build kinetic package:
+3. Build kinetic package:
    mvn clean package
    
    To skip test cases:
    mvn clean package -Dmaven.test.skip=true or mvn clean package -DskipTests
-    
+   
+   To skip sync kinetic.proto file with kinetic-protocol repository (for example, no Internet connections, etc): 
+   mvn clean compile -DskipProtoSync
