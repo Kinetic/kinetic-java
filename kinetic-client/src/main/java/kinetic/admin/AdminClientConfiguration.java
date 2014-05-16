@@ -26,6 +26,7 @@ import kinetic.client.ClientConfiguration;
  * appropriate configurations. Application then calls
  * {@link KineticAdminClientFactory#createInstance(AdminClientConfiguration)} to
  * create a new instance of {@link KineticAdminClient}
+ * </p>
  * 
  * @author James Hughes.
  * @author Chiaming Yang
@@ -47,11 +48,13 @@ public class AdminClientConfiguration extends ClientConfiguration {
     }
 
     /**
-     * Set if using ssl, admin client must use ssl to connect with dirve.
+     * Admin client only supports SSL connections. The default port is set to 8123.
      * 
      * @param flag
-     *            Support set true, if set false, throw
-     *            UnsupportedOperationException.
+     *            The admin client only supports SSL. Throws
+     *            UnsupportedOperationException if attempted to set to false.
+     *            
+     * @see ClientConfiguration#getSSLDefaultPort()
      */
     @Override
     public void setUseSsl(boolean flag) {

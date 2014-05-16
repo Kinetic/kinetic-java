@@ -27,6 +27,9 @@ import kinetic.client.KineticException;
  * <p>
  * Kinetic administrators use this interface to setup kinetic drives. such as
  * set up access control list for the drives.
+ * <p>
+ * All administrative operations by default use SSL connections to connect to the Drive or Simulator. 
+ * And this is the only supported transport for all administrative operations.
  * 
  * @author James Hughes.
  * @author Chiaming Yang
