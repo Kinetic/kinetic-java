@@ -101,7 +101,6 @@ Examples are located at the following directory.
 
 "Kinetic-Folder"/kinetic-test/src/test/java/com/seagate/kinetic/example
 
-
 Kinetic Javadoc location
 =================================
 1. Run "mvn clean package" in "Kinetic-Folder".
@@ -110,6 +109,11 @@ Kinetic Javadoc location
 
 2. Javadoc will be generated for modules in directory of "Kinetic-Folder"/kinetic-client/doc, "Kinetic-Folder"/kinetic-simulator/doc and "Kinetic-Folder"/kinetic-test/doc.
 
+Latest Kinetic runtime dependencies on maven central
+=================================
+* kinetic-simulator: [http://mvnrepository.com/artifact/com.seagate.kinetic/kinetic-simulator/0.6.0.2] (http://mvnrepository.com/artifact/com.seagate.kinetic/kinetic-simulator/0.6.0.2)
+
+* kinetic-client: [http://mvnrepository.com/artifact/com.seagate.kinetic/kinetic-client/0.6.0.2] (http://mvnrepository.com/artifact/com.seagate.kinetic/kinetic-client/0.6.0.2)
 
 Run smoke test against simulator or kinetic drive
 ==================================
