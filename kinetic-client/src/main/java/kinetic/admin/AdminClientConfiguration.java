@@ -46,20 +46,4 @@ public class AdminClientConfiguration extends ClientConfiguration {
         super.setUseSsl(true);
         setPort(getSSLDefaultPort());
     }
-
-    /**
-     * Admin client only supports SSL connections. The default port is set to 8123.
-     * 
-     * @param flag
-     *            The admin client only supports SSL. Throws
-     *            UnsupportedOperationException if attempted to set to false.
-     *            
-     * @see ClientConfiguration#getSSLDefaultPort()
-     */
-    @Override
-    public void setUseSsl(boolean flag) {
-        if (!flag)
-            throw new java.lang.UnsupportedOperationException(
-                    "cannot disable SSL usage for admin client");
-    }
 }
