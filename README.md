@@ -103,9 +103,13 @@ Examples are located at the following directory.
 
 Kinetic Javadoc location
 =================================
-1. Run "mvn clean package" in "Kinetic-Folder".
+To browse Javadoc: [http://seagate.github.io/kinetic-java/] (http://seagate.github.io/kinetic-java/)
 
-1. Run "mvn clean package" in "Kinetic-Folder"/kinetic-client, "Kinetic-Folder"/kinetic-simulator and "Kinetic-Folder"/kinetic-test.
+To generate Javadoc:
+
+1. Run "mvn clean package" in "Kinetic-Folder". 
+
+1. Or run "mvn clean package" in "Kinetic-Folder"/kinetic-client, "Kinetic-Folder"/kinetic-simulator and "Kinetic-Folder"/kinetic-test.
 
 2. Javadoc will be generated for modules in directory of "Kinetic-Folder"/kinetic-client/doc, "Kinetic-Folder"/kinetic-simulator/doc and "Kinetic-Folder"/kinetic-test/doc.
 
