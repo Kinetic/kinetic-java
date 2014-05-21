@@ -154,10 +154,43 @@ public class SimulatorConfiguration extends Properties {
     private static int maxSupportedVersionSize = 2048;
     
     /**
-     * max key range size.
+     * max supported key range size.
      */
     private static int maxSupportedKeyRangeSize = 1024;
 
+    /**
+     * max supported tag size.
+     * -1 means not enforced (yet).
+     */
+    private static int maxSupportedTagSize = -1;
+    
+    /**
+     * max supported concurrent connections to the simulator.
+     * -1 means not enforced (yet).
+     */
+    private static int maxConnections = -1;
+    
+    /**
+     * max supported outstanding read request.
+     * -1 means not enforced (yet).
+     */
+    private static int maxOutstandingReadRequests = -1;
+    
+    /**
+     * max supported outstanding write request.
+     * -1 means not enforced (yet).
+     */
+    private static int maxOutstandingWriteRequests = -1;
+    
+    /**
+     * max supported message size.
+     * -1 means not enforced (yet).
+     */
+    private static int maxMessageSize = -1;
+    
+    /**
+     * heart beat provider.
+     */
 	private HeartbeatProvider heartbeatProvider = null;
 
 	/**
@@ -624,7 +657,7 @@ public class SimulatorConfiguration extends Properties {
     public static int getMaxSupportedKeyRangeSize() {
         return maxSupportedKeyRangeSize;
     }
-
+    
     /**
      * Set max supported key range size, in bytes.
      *
@@ -633,6 +666,66 @@ public class SimulatorConfiguration extends Properties {
      */
     public static void setMaxSupportedKeyRangeSize(int size) {
         maxSupportedKeyRangeSize = size;
+    }
+    
+    /**
+     * Get max supported concurrent connections. There is no enforcement for the simulator at this time.
+     * 
+     * Returns -1 means no limit is enforced for the current implementation. 
+     * The number will be adjusted when the limit is enforced.
+     *
+     * @return default value (-1)  
+     */
+    public static int getMaxConnections() {
+        return maxConnections;
+    }
+    
+    /**
+     * Get max supported message size. There is no enforcement for the simulator at this time.
+     * 
+     * Returns -1 means no limit is enforced for the current implementation.
+     * The number will be adjusted when the limit is enforced.
+     *
+     * @return default value (-1) 
+     */
+    public static int getMaxMessageSize() {
+        return maxMessageSize;
+    }
+    
+    /**
+     * Get max outstanding read requests. There is no enforcement for the simulator at this time.
+     * 
+     * Returns -1 means no limit is enforced for the current implementation.
+     * The number will be adjusted when the limit is enforced.
+     *
+     * @return default value (-1) 
+     */
+    public static int getMaxOutstandingReadRequests() {
+        return maxOutstandingReadRequests;
+    }
+    
+    /**
+     * Get max outstanding write requests. There is no enforcement for the simulator at this time.
+     * 
+     * Returns -1 means no limit is enforced for the current implementation.
+     * The number will be adjusted when the limit is enforced.
+     *
+     * @return default value (-1) 
+     */
+    public static int getMaxOutstandingWriteRequests() {
+        return maxOutstandingWriteRequests;
+    }
+    
+    /**
+     * Get max supported tag size. There is no enforcement for the simulator at this time.
+     * 
+     * Returns -1 means no limit is enforced for the current implementation.
+     * The number will be adjusted when the limit is enforced.
+     *
+     * @return default value (-1) 
+     */
+    public static int getMaxSupportedTagSize() {
+        return maxSupportedTagSize;
     }
 
 
