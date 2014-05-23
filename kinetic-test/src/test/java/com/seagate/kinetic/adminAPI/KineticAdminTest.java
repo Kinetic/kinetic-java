@@ -40,6 +40,7 @@ import kinetic.admin.KineticAdminClient;
 import kinetic.admin.KineticAdminClientFactory;
 import kinetic.admin.KineticLog;
 import kinetic.admin.KineticLogType;
+import kinetic.admin.Limits;
 import kinetic.admin.Role;
 import kinetic.admin.Statistics;
 import kinetic.admin.Temperature;
@@ -319,6 +320,18 @@ public class KineticAdminTest extends IntegrationTestCase {
 
         assertTrue(log.getCapacity().getRemaining() >= 0);
         assertTrue(log.getCapacity().getTotal() >= 0);
+
+        assertTrue(log.getLimits().getMaxKeySize() == 4096);
+        assertTrue(log.getLimits().getMaxValueSize() == 1024 * 1024);
+        assertTrue(log.getLimits().getMaxVersionSize() == 2048);
+        assertTrue(log.getLimits().getMaxKeyRangeCount() == 1024);
+        // // TODO: To be validated
+        // assertTrue(log.getLimits().getMaxTagSize() >= 0);
+        // assertTrue(log.getLimits().getMaxOutstandingReadRequests() >= 0);
+        // assertTrue(log.getLimits().getMaxOutstandingWriteRequests() >= 0);
+        // assertTrue(log.getLimits().getMaxConnections() >= 0);
+        // assertTrue(log.getLimits().getMaxMessageSize() >= 0);
+        // assertTrue(log.getLimits().getMaxKeyRangeCount() >= 0);
 
         logger.info(this.testEndInfo());
     }
@@ -1310,6 +1323,7 @@ public class KineticAdminTest extends IntegrationTestCase {
         listOfLogType.add(KineticLogType.STATISTICS);
         listOfLogType.add(KineticLogType.TEMPERATURES);
         listOfLogType.add(KineticLogType.UTILIZATIONS);
+        listOfLogType.add(KineticLogType.LIMITS);
 
         KineticLog log = getAdminClient().getLog(listOfLogType);
 
@@ -1365,6 +1379,18 @@ public class KineticAdminTest extends IntegrationTestCase {
         for (int i = 0; i < logTypes.length; i++) {
             assertTrue(listOfLogType.contains(logTypes[i]));
         }
+
+        Limits limits = log.getLimits();
+        assertTrue(limits.getMaxKeySize() == 4096);
+        assertTrue(limits.getMaxValueSize() == 1024 * 1024);
+        assertTrue(limits.getMaxVersionSize() == 2048);
+        assertTrue(limits.getMaxKeyRangeCount() == 1024);
+        // // TODO: To be validated
+        // assertTrue(limits.getMaxTagSize() >= 0);
+        // assertTrue(limits.getMaxOutstandingReadRequests() >= 0);
+        // assertTrue(limits.getMaxOutstandingWriteRequests() >= 0);
+        // assertTrue(limits.getMaxConnections() >= 0);
+        // assertTrue(limits.getMaxMessageSize() >= 0);
 
         logger.info(this.testEndInfo());
     }
@@ -1454,6 +1480,38 @@ public class KineticAdminTest extends IntegrationTestCase {
                 .getCapacity().getNominalCapacityInBytes());
         assertTrue(0 < respond3.getCommand().getBody().getGetLog()
                 .getTemperatureList().get(0).getMaximum());
+    }
+
+    @Test
+    public void testGetLimits() throws KineticException {
+
+        Message.Builder request1 = Message.newBuilder();
+        GetLog.Builder getLog1 = request1.getCommandBuilder().getBodyBuilder()
+                .getGetLogBuilder();
+        getLog1.addType(Type.LIMITS);
+
+        KineticMessage km1 = new KineticMessage();
+        km1.setMessage(request1);
+
+        Message respond1 = (Message) getAdminClient().getLog(km1).getMessage();
+
+        assertTrue(respond1.getCommand().getStatus().getCode()
+                .equals(Status.StatusCode.SUCCESS));
+        assertTrue(4096 == respond1.getCommand().getBody().getGetLog()
+                .getLimits().getMaxKeySize());
+        assertTrue(1024 * 1024 == respond1.getCommand().getBody().getGetLog()
+                .getLimits().getMaxValueSize());
+        assertTrue(2048 == respond1.getCommand().getBody().getGetLog()
+                .getLimits().getMaxVersionSize());
+        assertTrue(1024 == respond1.getCommand().getBody().getGetLog()
+                .getLimits().getMaxKeyRangeCount());
+        // // TODO: To be validated
+        // assertTrue(log.getLimits().getMaxTagSize() >= 0);
+        // assertTrue(log.getLimits().getMaxOutstandingReadRequests() >= 0);
+        // assertTrue(log.getLimits().getMaxOutstandingWriteRequests() >= 0);
+        // assertTrue(log.getLimits().getMaxConnections() >= 0);
+        // assertTrue(log.getLimits().getMaxMessageSize() >= 0);
+        // assertTrue(log.getLimits().getMaxKeyRangeCount() >= 0);
     }
 
     @Test

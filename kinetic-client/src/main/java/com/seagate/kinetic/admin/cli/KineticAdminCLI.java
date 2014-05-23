@@ -64,6 +64,7 @@ public class KineticAdminCLI {
     private static final String CONFIGURATION = "configuration";
     private static final String MESSAGES = "message";
     private static final String STATISTICS = "statistic";
+    private static final String LIMITS = "limits";
     private static final int DEFAULT_SSL_PORT = 8443;
     private static final String DEFAULT_HOST = "localhost";
     private static final long CLUSTERVERSION = 0;
@@ -193,6 +194,7 @@ public class KineticAdminCLI {
             getLog.addType(Type.CONFIGURATION);
             getLog.addType(Type.MESSAGES);
             getLog.addType(Type.STATISTICS);
+            getLog.addType(Type.LIMITS);
 
         } else if (type.equalsIgnoreCase(UTILIZATION)) {
             getLog.addType(Type.UTILIZATIONS);
@@ -206,9 +208,11 @@ public class KineticAdminCLI {
             getLog.addType(Type.MESSAGES);
         } else if (type.equalsIgnoreCase(STATISTICS)) {
             getLog.addType(Type.STATISTICS);
-        } else {
+        } else if (type.equalsIgnoreCase(LIMITS)) {
+            getLog.addType(Type.LIMITS);
+        }else {
             throw new IllegalArgumentException(
-                    "Type should be utilization, capacity, temperature, configuration, message, statistic or all");
+                    "Type should be utilization, capacity, temperature, configuration, message, statistic, limits or all");
         }
         return kineticClient.request(km);
     }
@@ -282,7 +286,7 @@ public class KineticAdminCLI {
         sb.append("kineticAdmin -h|-help\n");
         sb.append("kineticAdmin -setup [-host <ip|hostname>] [-tlsport <tlsport>] [-clversion <clusterversion>] [-pin <pin>] [-newclversion <newclusterversion>] [-setpin <setpin>] [-erase <true|false>]\n");
         sb.append("kineticAdmin -security <file> [-host <ip|hostname>] [-tlsport <tlsport>] [-clversion <clusterversion>]\n");
-        sb.append("kineticAdmin -getlog [-host <ip|hostname>] [-tlsport <tlsport>] [-clversion <clusterversion>] [-type <utilization|temperature|capacity|configuration|message|statistic|all>]\n");
+        sb.append("kineticAdmin -getlog [-host <ip|hostname>] [-tlsport <tlsport>] [-clversion <clusterversion>] [-type <utilization|temperature|capacity|configuration|message|statistic|limits|all>]\n");
         sb.append("kineticAdmin -firmware <file> [-host <ip|hostname>] [-tlsport <tlsport>] [-clversion <clusterversion>] [-pin <pin>]");
         System.out.println(sb.toString());
     }
@@ -518,9 +522,10 @@ public class KineticAdminCLI {
                 && !logType.equalsIgnoreCase(CONFIGURATION)
                 && !logType.equalsIgnoreCase(MESSAGES)
                 && !logType.equalsIgnoreCase(STATISTICS)
+                && !logType.equalsIgnoreCase(LIMITS)
                 && !logType.equalsIgnoreCase(ALL)) {
             throw new IllegalArgumentException(
-                    "Type should be utilization, capacity, temperature, configuration, message, statistic or all");
+                    "Type should be utilization, capacity, temperature, configuration, message, statistic, limits or all");
         }
     }
 

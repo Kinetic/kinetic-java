@@ -26,6 +26,7 @@ import kinetic.admin.Interface;
 import kinetic.admin.KineticAdminClient;
 import kinetic.admin.KineticLog;
 import kinetic.admin.KineticLogType;
+import kinetic.admin.Limits;
 import kinetic.admin.MessageType;
 import kinetic.admin.Statistics;
 import kinetic.admin.Temperature;
@@ -195,6 +196,9 @@ public class DefaultKineticLog implements KineticLog {
                 break;
             case MESSAGES:
                 types[i] = KineticLogType.MESSAGES;
+                break;
+            case LIMITS:
+                types[i] = KineticLogType.LIMITS;
                 break;
             default:
                 ;
@@ -400,5 +404,60 @@ public class DefaultKineticLog implements KineticLog {
         }
 
         return statisticOfList;
+    }
+
+    @Override
+    public Limits getLimits() throws KineticException {
+        validate(response);
+
+        com.seagate.kinetic.proto.Kinetic.Message.GetLog.Limits limits = response
+                .getCommand().getBody().getGetLog().getLimits();
+
+        if (null == response.getCommand().getBody().getGetLog().getLimits()) {
+            throw new KineticException(
+                    "Response message error: limits is null.");
+        }
+
+        Limits LimitsInfo = new Limits();
+
+        if (limits.hasMaxKeySize()) {
+            LimitsInfo.setMaxKeySize(limits.getMaxKeySize());
+        }
+
+        if (limits.hasMaxValueSize()) {
+            LimitsInfo.setMaxValueSize(limits.getMaxValueSize());
+        }
+
+        if (limits.hasMaxVersionSize()) {
+            LimitsInfo.setMaxVersionSize(limits.getMaxVersionSize());
+        }
+
+        if (limits.hasMaxTagSize()) {
+            LimitsInfo.setMaxTagSize(limits.getMaxTagSize());
+        }
+
+        if (limits.hasMaxConnections()) {
+            LimitsInfo.setMaxConnections(limits.getMaxConnections());
+        }
+
+        if (limits.hasMaxOutstandingReadRequests()) {
+            LimitsInfo.setMaxOutstandingReadRequests(limits
+                    .getMaxOutstandingReadRequests());
+        }
+
+        if (limits.hasMaxOutstandingWriteRequests()) {
+            LimitsInfo.setMaxOutstandingWriteRequests(limits
+                    .getMaxOutstandingWriteRequests());
+        }
+
+        if (limits.hasMaxMessageSize()) {
+            LimitsInfo.setMaxMessageSize(limits.getMaxMessageSize());
+        }
+
+        if (limits.hasMaxKeyRangeCount()) {
+            LimitsInfo.setMaxKeyRangeCount(limits.getMaxKeyRangeCount());
+        }
+
+        return LimitsInfo;
     }
 }

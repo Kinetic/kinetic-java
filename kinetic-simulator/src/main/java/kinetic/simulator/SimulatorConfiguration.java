@@ -141,7 +141,7 @@ public class SimulatorConfiguration extends Properties {
 	/**
 	 * max supported value size in bytes
 	 */
-	private static long maxSupportedValueSize = 1024 * 1024;
+	private static int maxSupportedValueSize = 1024 * 1024;
 	
 	/**
 	 * max supported key size in bytes.
@@ -187,6 +187,26 @@ public class SimulatorConfiguration extends Properties {
      * -1 means not enforced (yet).
      */
     private static int maxMessageSize = -1;
+    
+    /**
+     * simulator version.
+     */
+    private static String simulatorVersion = "0.6.0.3-SNAPSHOT";
+    
+    /**
+     * simulator source commit hash.
+     */
+    private static String simulatorSourceHash = "e012f899368372a958f3962bd75bd87becbc35b1";
+    
+    /**
+     * protocol version.
+     */
+    private static String protocolVersion = "2.0.2";
+    
+    /**
+     * protocol source commit hash.
+     */
+    private static String protocolSourceHash = "f6e21e281272b46c620284781cdb3a36a6c7a564";
     
     /**
      * heart beat provider.
@@ -594,7 +614,7 @@ public class SimulatorConfiguration extends Properties {
 	 * 
 	 * @return max supported value size for the simulator.
 	 */
-	public static long getMaxSupportedValueSize() {
+	public static int getMaxSupportedValueSize() {
 		return maxSupportedValueSize;
 	}
 
@@ -605,7 +625,7 @@ public class SimulatorConfiguration extends Properties {
 	 *            set max supported value size.
 	 * @see #getMaxSupportedValueSize()
 	 */
-	public static void setMaxSupportedValueSize(long size) {
+	public static void setMaxSupportedValueSize(int size) {
 		maxSupportedValueSize = size;
 	}
 	
@@ -728,6 +748,90 @@ public class SimulatorConfiguration extends Properties {
         return maxSupportedTagSize;
     }
 
+    /**
+     * Get simulator version.
+     * 
+     * Returns simulator version now.
+     *
+     * @return default value
+     */
+    public static String getSimulatorVersion() {
+        return simulatorVersion;
+    }
+
+    /**
+     * Set simulator version now, in string.
+     *
+     * @param simulatorVersion
+     *            set simulator version.
+     */
+    public static void setSimulatorVersion(String simulatorVersion) {
+        SimulatorConfiguration.simulatorVersion = simulatorVersion;
+    }
+
+    /**
+     * Get simulator source hash.
+     * 
+     * Returns simulator source hash now.
+     *
+     * @return default value 
+     */
+    public static String getSimulatorSourceHash() {
+        return simulatorSourceHash;
+    }
+
+    /**
+     * Set simulator source hash now, in string.
+     *
+     * @param simulatorSourceHash
+     *            set simulator source hash.
+     */
+    public static void setSimulatorSourceHash(String simulatorSourceHash) {
+        SimulatorConfiguration.simulatorSourceHash = simulatorSourceHash;
+    }
+
+    /**
+     * Get protocol file version.
+     * 
+     * Returns protocol file now.
+     *
+     * @return default value 
+     */
+    public static String getProtocolVersion() {
+        return protocolVersion;
+    }
+
+    /**
+     * Set protocol file version now, in string.
+     *
+     * @param protocolVersion
+     *            set protocol file version.
+     */
+    public static void setProtocolVersion(String protocolVersion) {
+        SimulatorConfiguration.protocolVersion = protocolVersion;
+    }
+
+    /**
+     * Get protocol file source hash.
+     * 
+     * Returns protocol file source hash now.
+     *
+     * @return default value 
+     */
+    public static String getProtocolSourceHash() {
+        return protocolSourceHash;
+    }
+
+    /**
+     * Set protocol source hash now, in string.
+     *
+     * @param protocolSourceHash
+     *            set protocol source hash.
+     */
+    public static void setProtocolSourceHash(String protocolSourceHash) {
+        SimulatorConfiguration.protocolSourceHash = protocolSourceHash;
+    }
+
 
 	/**
 	 * Set the heartbeat provider for the simulator.
@@ -757,5 +861,4 @@ public class SimulatorConfiguration extends Properties {
 
 		return this.heartbeatProvider;
 	}
-
 }

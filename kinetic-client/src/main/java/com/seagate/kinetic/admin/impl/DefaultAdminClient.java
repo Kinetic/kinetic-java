@@ -375,6 +375,7 @@ public class DefaultAdminClient implements KineticAdminClient {
         getLog.addType(Type.STATISTICS);
         getLog.addType(Type.TEMPERATURES);
         getLog.addType(Type.UTILIZATIONS);
+        getLog.addType(Type.LIMITS);
 
         KineticMessage kmresp = getLog(km);
 
@@ -439,6 +440,10 @@ public class DefaultAdminClient implements KineticAdminClient {
 
             case STATISTICS:
                 getLog.addType(Type.STATISTICS);
+                break;
+                
+            case LIMITS:
+                getLog.addType(Type.LIMITS);
                 break;
 
             default:

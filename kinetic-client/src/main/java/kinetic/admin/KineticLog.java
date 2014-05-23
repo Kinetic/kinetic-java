@@ -114,5 +114,18 @@ public interface KineticLog {
 	 *             if any internal errors occur
 	 */
 	public KineticLogType[] getContainedLogTypes() throws KineticException;
+	
+	   /**
+     * 
+     * Get the limits information of the drive
+     * <p>
+     * 
+     * @return the limits information from the drive.
+     * 
+     * @throws KineticException
+     *             if any internal error occurred.
+     * @see Limits
+     */
+    public Limits getLimits() throws KineticException;
 
 }

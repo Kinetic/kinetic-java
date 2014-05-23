@@ -29,6 +29,7 @@ import com.seagate.kinetic.heartbeat.message.OperationCounter;
 import com.seagate.kinetic.proto.Kinetic.Message;
 import com.seagate.kinetic.proto.Kinetic.Message.GetLog.Capacity;
 import com.seagate.kinetic.proto.Kinetic.Message.GetLog.Configuration;
+import com.seagate.kinetic.proto.Kinetic.Message.GetLog.Limits;
 import com.seagate.kinetic.proto.Kinetic.Message.GetLog.Statistics;
 import com.seagate.kinetic.proto.Kinetic.Message.GetLog.Temperature;
 import com.seagate.kinetic.proto.Kinetic.Message.GetLog.Type;
@@ -39,6 +40,7 @@ import com.seagate.kinetic.proto.Kinetic.Message.Security.ACL.Permission;
 import com.seagate.kinetic.proto.Kinetic.Message.Status.StatusCode;
 import com.seagate.kinetic.simulator.utility.CapacityUtil;
 import com.seagate.kinetic.simulator.utility.ConfigurationUtil;
+import com.seagate.kinetic.simulator.utility.LimitsUtil;
 import com.seagate.kinetic.simulator.utility.TemperatureUtil;
 import com.seagate.kinetic.simulator.utility.UtilizationUtil;
 
@@ -67,13 +69,8 @@ public class GetLogHandler {
             hasPermission = true;
         } else {
             try {
-                // check if client has permission
-                // Authorizer.checkPermission(currentMap, request.getCommand()
-                // .getHeader().getUser(), Role.GETLOG);
-
                 Authorizer.checkPermission(currentMap, request.getCommand()
                         .getHeader().getIdentity(), Permission.GETLOG);
-
                 hasPermission = true;
             } catch (KVSecurityException e) {
                 respond.getCommandBuilder().getStatusBuilder()
@@ -197,6 +194,10 @@ public class GetLogHandler {
 
                 break;
 
+            case LIMITS:
+                Limits limits = LimitsUtil.getLimits(engine.getServiceConfiguration());
+                getLog.setLimits(limits);
+                break;
             default:
                 ;
             }
