@@ -43,6 +43,16 @@ public class ClientConfiguration extends Properties {
 
 	// default request timeout is set to 30000 milli seconds
 	private static final long DEFAULT_REQUEST_TIMEOUT = 30000L;
+	
+	 /**
+     * current supported kinetic protocol version on kinetic-protocol repo.
+     */
+    public static final String PROTOCOL_VERSION = "2.0.2";
+    
+    /**
+     * current supported protocol source commit hash on kinetic-protocol repo.
+     */
+    public static final String PROTOCOL_SOURCE_HASH = "f6e21e281272b46c620284781cdb3a36a6c7a564";
 
 	// kinetic server host
 	private String host = "localhost";
@@ -418,23 +428,26 @@ public class ClientConfiguration extends Properties {
 	}
 
 	/**
-	 * Get if v2 protocol is used to established the connection.
-	 * <p>
-	 * 
-	 * @return true if v2 protocol is used.
-	 */
-	//public boolean getUseV2Protocol() {
-	//	return this.useV2Protocol;
-	//}
+     * Get Kinetic protocol version supported by the current API implementation.  
+     * The protocol version is defined at the kinetic-protocol repository.
+     *
+     * @return Kinetic protocol version supported by the current API implementation. 
+     * 
+     * @see <a href="https://github.com/Seagate/kinetic-protocol">kinetic-protocol</a>
+     */
+    public static String getProtocolVersion() {
+        return PROTOCOL_VERSION;
+    }
 
-	/**
-	 * Set if v2 protocol is to be used to communicate with the simulator/drive.
-	 * 
-	 * @param flag
-	 *            true if v2 protocol is used.
-	 */
-	//public void setUseV2Protocol(boolean flag) {
-	//	this.useV2Protocol = flag;
-	//}
+    /**
+     * Get the supported protocol source commit hash at the kinetic-protocol repository.
+     * 
+     * @return protocol source commit hash value at the kinetic-protocol repository.
+     * 
+     * @see <a href="https://github.com/Seagate/kinetic-protocol">kinetic-protocol</a>
+     */
+    public static String getProtocolSourceHash() {
+        return PROTOCOL_SOURCE_HASH;
+    }
 
 }

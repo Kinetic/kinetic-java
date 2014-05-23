@@ -189,24 +189,24 @@ public class SimulatorConfiguration extends Properties {
     private static int maxMessageSize = -1;
     
     /**
-     * simulator version.
+     * current simulator version.
      */
-    private static String simulatorVersion = "0.6.0.3-SNAPSHOT";
+    public static final String SIMULATOR_VERSION = "0.6.0.3-SNAPSHOT";
     
     /**
      * simulator source commit hash.
      */
-    private static String simulatorSourceHash = "e012f899368372a958f3962bd75bd87becbc35b1";
+    public static final String SIMULATOR_SOURCE_HASH = "e012f899368372a958f3962bd75bd87becbc35b1";
     
     /**
-     * protocol version.
+     * current supported protocol version defined at kinetic-protocol repository.
      */
-    private static String protocolVersion = "2.0.2";
+    public static final String PROTOCOL_VERSION = "2.0.2";
     
     /**
-     * protocol source commit hash.
+     * current supported protocol source commit hash value obtained from kinetic-protocol repository.
      */
-    private static String protocolSourceHash = "f6e21e281272b46c620284781cdb3a36a6c7a564";
+    public static final String PROTOCOL_SOURCE_HASH = "f6e21e281272b46c620284781cdb3a36a6c7a564";
     
     /**
      * heart beat provider.
@@ -749,89 +749,49 @@ public class SimulatorConfiguration extends Properties {
     }
 
     /**
-     * Get simulator version.
-     * 
-     * Returns simulator version now.
+     * Get the current simulator version.
      *
-     * @return default value
+     * @return current simulator version.
      */
     public static String getSimulatorVersion() {
-        return simulatorVersion;
+        return SIMULATOR_VERSION;
     }
 
     /**
-     * Set simulator version now, in string.
+     * Get the simulator source commit hash at he github repository.
      *
-     * @param simulatorVersion
-     *            set simulator version.
-     */
-    public static void setSimulatorVersion(String simulatorVersion) {
-        SimulatorConfiguration.simulatorVersion = simulatorVersion;
-    }
-
-    /**
-     * Get simulator source hash.
-     * 
-     * Returns simulator source hash now.
-     *
-     * @return default value 
+     * @return simulator source hash commit value
+     * @see <a href="https://github.com/Seagate/kinetic-protocol">kinetic-java</a>
      */
     public static String getSimulatorSourceHash() {
-        return simulatorSourceHash;
+        return SIMULATOR_SOURCE_HASH;
     }
 
     /**
-     * Set simulator source hash now, in string.
+     * Get Kinetic protocol version supported by the current API implementation.  
+     * The protocol version is defined at the kinetic-protocol repository.
+     * <p>
+     * <a href="https://github.com/Seagate/kinetic-protocol">kinetic-protocol</a>
+     * <p>
      *
-     * @param simulatorSourceHash
-     *            set simulator source hash.
-     */
-    public static void setSimulatorSourceHash(String simulatorSourceHash) {
-        SimulatorConfiguration.simulatorSourceHash = simulatorSourceHash;
-    }
-
-    /**
-     * Get protocol file version.
+     * @return Kinetic protocol version supported by the current API implementation. 
      * 
-     * Returns protocol file now.
-     *
-     * @return default value 
+     * @see <a href="https://github.com/Seagate/kinetic-protocol">kinetic-protocol</a>
      */
     public static String getProtocolVersion() {
-        return protocolVersion;
+        return PROTOCOL_VERSION;
     }
 
     /**
-     * Set protocol file version now, in string.
-     *
-     * @param protocolVersion
-     *            set protocol file version.
-     */
-    public static void setProtocolVersion(String protocolVersion) {
-        SimulatorConfiguration.protocolVersion = protocolVersion;
-    }
-
-    /**
-     * Get protocol file source hash.
+     * Get the supported protocol source commit hash at the kinetic-protocol repository.
      * 
-     * Returns protocol file source hash now.
-     *
-     * @return default value 
+     * @return protocol source commit hash value at the kinetic-protocol repository.
+     * 
+     * @see <a href="https://github.com/Seagate/kinetic-protocol">kinetic-protocol</a>
      */
     public static String getProtocolSourceHash() {
-        return protocolSourceHash;
+        return PROTOCOL_SOURCE_HASH;
     }
-
-    /**
-     * Set protocol source hash now, in string.
-     *
-     * @param protocolSourceHash
-     *            set protocol source hash.
-     */
-    public static void setProtocolSourceHash(String protocolSourceHash) {
-        SimulatorConfiguration.protocolSourceHash = protocolSourceHash;
-    }
-
 
 	/**
 	 * Set the heartbeat provider for the simulator.
