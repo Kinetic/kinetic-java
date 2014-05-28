@@ -196,17 +196,17 @@ public class SimulatorConfiguration extends Properties {
     /**
      * simulator source commit hash.
      */
-    public static final String SIMULATOR_SOURCE_HASH = "e012f899368372a958f3962bd75bd87becbc35b1";
+    public static final String SIMULATOR_SOURCE_HASH = "b1badd928fc2ee618ecbde8be0fbadd0aac447fe";
     
     /**
      * current supported protocol version defined at kinetic-protocol repository.
      */
-    public static final String PROTOCOL_VERSION = "2.0.2";
+    public static final String PROTOCOL_VERSION = "2.0.3";
     
     /**
      * current supported protocol source commit hash value obtained from kinetic-protocol repository.
      */
-    public static final String PROTOCOL_SOURCE_HASH = "f6e21e281272b46c620284781cdb3a36a6c7a564";
+    public static final String PROTOCOL_SOURCE_HASH = "389e63f814cc0b5d699104c08854b5b9c1abab38";
     
     /**
      * heart beat provider.

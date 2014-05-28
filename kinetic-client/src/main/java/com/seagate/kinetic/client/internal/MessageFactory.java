@@ -469,6 +469,41 @@ public class MessageFactory {
         }
 
     }
+    
+    public static KineticMessage createFlushDataRequestMessage()
+            throws KineticException {
+
+        KineticMessage im = createKineticMessageWithBuilder();
+
+        Message.Builder request = (Builder) im.getMessage();
+
+        request.getCommandBuilder().getHeaderBuilder()
+        .setMessageType(MessageType.FLUSHALLDATA);
+
+        return im;
+    }
+    
+    public static void checkFushDataReply(KineticMessage reply)
+            throws KineticException {
+
+        if (StatusCode.SUCCESS != reply.getMessage().getCommand().getStatus()
+                .getCode()) {
+            throw new KineticException("Kinetic Command Exception: "
+                    + reply.getMessage().getCommand().getStatus().getCode()
+                    + ": "
+                    + reply.getMessage().getCommand().getStatus()
+                    .getStatusMessage());
+        }
+
+        if (reply.getMessage().getCommand().getHeader().getMessageType() != MessageType.FLUSHALLDATA_RESPONSE) {
+            throw new KineticException(
+                    "Received wrong message type., received="
+                            + reply.getMessage().getCommand().getHeader()
+                            .getMessageType()
+                            + ", expected=" + MessageType.FLUSHALLDATA_RESPONSE);
+        }
+
+    }
 
     /**
      * create an internal message with empty builder message.

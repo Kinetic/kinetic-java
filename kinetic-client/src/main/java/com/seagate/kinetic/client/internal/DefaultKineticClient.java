@@ -791,6 +791,32 @@ public class DefaultKineticClient implements AdvancedKineticClient {
 
         return time;
     }
+    
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void flush() throws KineticException {
+
+        try {
+
+            // create get request message
+            KineticMessage request = MessageFactory.createFlushDataRequestMessage();
+
+            // send request
+            KineticMessage response = this.client.request(request);
+
+            // check response
+            MessageFactory.checkFushDataReply(response);
+
+        } catch (KineticException ke) {
+            throw ke;
+        } catch (Exception e) {
+            KineticException lce = new KineticException(e.getMessage(), e);
+            throw lce;
+        }
+
+    }
 
     /**
      * Set persist option flag to the protocol buffer message.

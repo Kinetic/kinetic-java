@@ -404,7 +404,11 @@ public class SimulatorEngine implements MessageService {
         try {
             HeaderOp.checkHeader(kmreq, response, key, clusterVersion);
 
-            if (request.getCommand().getHeader().getMessageType() == MessageType.NOOP) {
+            if (request.getCommand().getHeader().getMessageType() == MessageType.FLUSHALLDATA) {
+                response.getCommandBuilder().getHeaderBuilder()
+                .setMessageType(MessageType.FLUSHALLDATA_RESPONSE);
+                logger.warning("received flush data command, this is a no op on simulator at this time ...");
+            } else if (request.getCommand().getHeader().getMessageType() == MessageType.NOOP) {
                 response.getCommandBuilder().getHeaderBuilder()
                 .setMessageType(MessageType.NOOP_RESPONSE);
             } else if (request.getCommand().getBody()

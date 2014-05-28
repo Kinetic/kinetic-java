@@ -65,6 +65,17 @@ public interface KineticClient extends GenericKineticClient {
 	 *             if any internal error occurred.
 	 */
 	public long noop() throws KineticException;
+	
+	/**
+	 * The flush operation flushes any outstanding PUTs or DELETEs on the device.
+	 * <p>
+	 * Currently only Kinetic drive supports this operation.  This command has no effect on the simulator. 
+	 * 
+	 * @throws KineticException 
+	 *             if any internal error occurred.
+	 *             
+	 */
+	 public void flush() throws KineticException;
 
 	/**
 	 * Put the specified <code>Entry</code> entry to the persistent store.
