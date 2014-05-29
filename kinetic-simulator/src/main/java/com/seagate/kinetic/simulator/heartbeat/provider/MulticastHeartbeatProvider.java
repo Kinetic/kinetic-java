@@ -63,10 +63,10 @@ public class MulticastHeartbeatProvider implements HeartbeatProvider {
 	private int mcastPort = 8123;
 
 	// host ip
-	private String thisHostIp = "localhost";
+	//private String thisHostIp = "127.0.0.1";
 
 	// host port
-	private String thisHostPort = "localhost:8123";
+	//private String thisHostPort = thisHostIp + ":8123";
 
 	// gson instance
 	private static Gson gson = new Gson();
@@ -125,11 +125,11 @@ public class MulticastHeartbeatProvider implements HeartbeatProvider {
 
 		try {
 			// this host name
-			this.thisHostIp = InetAddress.getLocalHost().getHostAddress();
+		    //this.thisHostIp = InetAddress.getByName(thisHostIp).getHostAddress();
 
 			// this host address
-			this.thisHostPort = this.thisHostIp + ":" + config.getPort() + ":"
-					+ config.getSslPort();
+			//this.thisHostPort = this.thisHostIp + ":" + config.getPort() + ":"
+			//		+ config.getSslPort();
 
 			// multicast socket
 			mcastSocket = new MulticastSocket();
@@ -143,13 +143,13 @@ public class MulticastHeartbeatProvider implements HeartbeatProvider {
 			// init heart beat message
 			this.initHeartbeatMessage();
 
-			logger.info("heart beat initialized., my address="
-					+ this.thisHostPort + ", tick time=" + config.getTickTime()
-					+ " milli-secs, mcast Address=" + this.mcastDestination
-					+ ":" + this.mcastPort);
+//			logger.info("Heart beat initialized., my address="
+//					+ this.thisHostPort + ", tick time=" + config.getTickTime()
+//					+ " milli-secs, mcast Address=" + this.mcastDestination
+//					+ ":" + this.mcastPort);
 
 		} catch (Exception e) {
-			logger.warning(e.getMessage());
+		    logger.log(Level.WARNING, e.getMessage(), e);
 		}
 	}
 
