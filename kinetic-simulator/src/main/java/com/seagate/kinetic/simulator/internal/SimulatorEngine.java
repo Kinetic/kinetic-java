@@ -35,6 +35,7 @@ import com.seagate.kinetic.heartbeat.message.OperationCounter;
 import com.seagate.kinetic.proto.Kinetic.Message;
 import com.seagate.kinetic.proto.Kinetic.Message.MessageType;
 import com.seagate.kinetic.proto.Kinetic.Message.Security.ACL;
+import com.seagate.kinetic.proto.Kinetic.MessageOrBuilder;
 import com.seagate.kinetic.simulator.heartbeat.Heartbeat;
 import com.seagate.kinetic.simulator.internal.p2p.P2POperationHandler;
 import com.seagate.kinetic.simulator.io.provider.nio.NioEventLoopGroupManager;
@@ -389,7 +390,7 @@ public class SimulatorEngine implements MessageService {
     @Override
     @SuppressWarnings("unchecked")
     public KineticMessage processRequest(KineticMessage kmreq) {
-
+        
         Message request = (Message) kmreq.getMessage();
 
         KineticMessage kmresp = new KineticMessage();
@@ -474,16 +475,21 @@ public class SimulatorEngine implements MessageService {
             } catch (Exception e2) {
                 logger.log(Level.WARNING, e2.getMessage(), e2);
             }
-
-            this.addStatisticCounter(request, response.build());
+            
+            this.addStatisticCounter(kmreq, kmresp);
         }
 
         return kmresp;
     }
 
-    private void addStatisticCounter(Message request, Message response) {
+    private void addStatisticCounter(KineticMessage kmreq, KineticMessage kmresp) {
 
         try {
+            
+            Message request = (Message) kmreq.getMessage();
+            
+            Message response = ((Message.Builder) kmresp.getMessage()).build();
+            
             MessageType mtype = request.getCommand().getHeader()
                     .getMessageType();
 
@@ -493,12 +499,20 @@ public class SimulatorEngine implements MessageService {
 
             if (request != null) {
                 inCount = request.getSerializedSize();
+                //add in-bound value byte count
+                if (kmreq.getValue() != null) {
+                    inCount = inCount + kmreq.getValue().length;
+                }
             }
-
+            
             if (response != null) {
                 outCount = response.getSerializedSize();
+              //add out-bound value byte count
+                if (kmresp.getValue() != null) {
+                    outCount = outCount + kmresp.getValue().length;
+                }
             }
-
+            
             switch (mtype) {
             case GET:
                 this.operationCounter.addGetCounter();
