@@ -45,6 +45,7 @@ Getting Started With Kinetic drives
 Getting Started With Development
 ================================
 1. Clone the code: `git clone https://github.com/Seagate/kinetic-java.git`
+1. Build the runtime jar files as stated in Getting Started with Simulator below
 1. Run the integration tests against the Java Simulator: `mvn test -DargLine="-Xmx500M"`
 1. Run the integration tests but exclude specific files: `mvn test -Dmaven.test.excludes="**/File.java,**/OtherFile.java"
 1. Run the integration tests against the remote instance at a particular path: `mvn test -DRUN_AGAINST_EXTERNAL=true -DKINETIC_PATH=/path/to/kinetic_home`
@@ -55,7 +56,8 @@ Getting Started With Simulator
 ================================
 1. Run "mvn clean package" in "Kinetic-Folder"
 2. Start with java CLI: 
-       java -jar in "Kinetic-Folder"/kinetic-simulator/target/kinetic-simulator-0.6.0.2-SNAPSHOT-jar-with-dependencies.jar
+       java -jar in "Kinetic-Folder"/kinetic-simulator/target/kinetic-simulator-"Version"-SNAPSHOT-jar-with-dependencies.jar
+            where "Version" above is the build version number.  Such as 0.6.0.2 .
    
    or Start with script (If configuration tcp_port, tls_port and Kinetic_home, use script -help):
        Windows: 
@@ -68,8 +70,8 @@ Getting Started With Simulator
 
 Admin command line Usage
 ==============================
-1, make sure "Kinetic-Folder"/kinetic-simulator/target/kinetic-simulator-0.6.0.2-SNAPSHOT-jar-with-dependencies.jar 
-             "Kinetic-Folder"/kinetic-client/target/kinetic-client-0.6.0.2-SNAPSHOT-jar-with-dependencies.jar
+1, make sure "Kinetic-Folder"/kinetic-simulator/target/kinetic-simulator-'Version"-SNAPSHOT-jar-with-dependencies.jar 
+             "Kinetic-Folder"/kinetic-client/target/kinetic-client-"Version"-SNAPSHOT-jar-with-dependencies.jar
    exist
 
 2, start simulator
