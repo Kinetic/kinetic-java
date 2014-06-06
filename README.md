@@ -57,7 +57,7 @@ Getting Started With Simulator
 1. Run "mvn clean package" in "Kinetic-Folder"
 2. Start with java CLI: 
        java -jar in "Kinetic-Folder"/kinetic-simulator/target/kinetic-simulator-"Version"-SNAPSHOT-jar-with-dependencies.jar
-            where "Version" above is the build version number.  Such as 0.6.0.2 .
+            where "Version" above is the build version number.  Such as 0.7.0.1 .
    
    or Start with script (If configuration tcp_port, tls_port and Kinetic_home, use script -help):
        Windows: 
@@ -115,18 +115,16 @@ To generate Javadoc:
 
 2. Javadoc will be generated for modules in directory of "Kinetic-Folder"/kinetic-client/doc, "Kinetic-Folder"/kinetic-simulator/doc and "Kinetic-Folder"/kinetic-test/doc.
 
-Latest Kinetic runtime dependencies on maven central
+Latest Kinetic release, protocol dependency, and runtime dependencies on maven central
 =================================
-* kinetic-simulator: [http://mvnrepository.com/artifact/com.seagate.kinetic/kinetic-simulator/0.6.0.2] (http://mvnrepository.com/artifact/com.seagate.kinetic/kinetic-simulator/0.6.0.2)
-
-* kinetic-client: [http://mvnrepository.com/artifact/com.seagate.kinetic/kinetic-client/0.6.0.2] (http://mvnrepository.com/artifact/com.seagate.kinetic/kinetic-client/0.6.0.2)
+* kinetic-releases: [https://github.com/Seagate/kinetic-java/releases] (https://github.com/Seagate/kinetic-java/releases)
 
 Run smoke test against simulator or kinetic drive
 ==================================
 Make sure one instance of simulator or kinetic drive is running.
 
 1.  Run "mvn clean package" in "Kinetic-Folder" or "Kinetic-Folder"/kinetic-test, verify that
-   "Kinetic-Folder"/kinetic-test/target/kinetic-test-0.6.0.2-SNAPSHOT-jar-with-dependencies.jar 
+   "Kinetic-Folder"/kinetic-test/target/kinetic-test-0.7.0.1-SNAPSHOT-jar-with-dependencies.jar 
    "Kinetic-Folder"/kinetic-test/target/smoke-tests.jar
    exist.
 

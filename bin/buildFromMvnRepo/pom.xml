@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.seagate.kinetic</groupId>
 	<artifactId>kinetic-all</artifactId>
-	<version>0.6.0.2-SNAPSHOT</version>
+	<version>0.7.0.1-SNAPSHOT</version>
 	<build>
 		<sourceDirectory>src</sourceDirectory>
 		<plugins>
@@ -53,12 +53,13 @@
 		<dependency>
 			<groupId>com.seagate.kinetic</groupId>
 			<artifactId>kinetic-simulator</artifactId>
-			<version>0.6.0.2</version>
+			<version>0.7.0.1</version>
 		</dependency>
 		<dependency>
 			<groupId>com.seagate.kinetic</groupId>
 			<artifactId>kinetic-client</artifactId>
-			<version>0.6.0.2</version>
+			<version>0.7.0.1</version>
 		</dependency>
 	</dependencies>
 </project>
+
