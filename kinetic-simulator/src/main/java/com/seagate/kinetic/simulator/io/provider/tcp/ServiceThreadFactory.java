@@ -60,6 +60,7 @@ public class ServiceThreadFactory implements ThreadFactory {
 	@Override
 	public Thread newThread(Runnable r) {
 		Thread t = new Thread(r);
+		t.setDaemon(true);
 		t.setName(myName + this.nextSequence());
 		return t;
 	}
