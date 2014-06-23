@@ -42,6 +42,7 @@ import kinetic.client.EntryMetadata;
 import kinetic.client.KineticClient;
 import kinetic.client.KineticClientFactory;
 import kinetic.client.KineticException;
+import kinetic.client.VersionMismatchException;
 import kinetic.client.advanced.AdvancedKineticClient;
 import kinetic.simulator.SimulatorConfiguration;
 
@@ -146,7 +147,7 @@ public class KineticBoundaryTest extends IntegrationTestCase {
 
             getClient().put(versioned, newVersion);
             fail("Should have thrown");
-        } catch (KineticException e1) {
+        } catch (VersionMismatchException e1) {
             Entry vGet = getClient().get(key);
             assertEntryEquals(key, valueInit, newVersionInit, vGet);
         }
@@ -183,9 +184,10 @@ public class KineticBoundaryTest extends IntegrationTestCase {
         try {
             getClient().put(newEntryWithInvalidDbVersion, newVersion);
             fail("Should have thrown");
-        } catch (KineticException e1) {
-            assertEquals("Kinetic Command Exception: VERSION_MISMATCH: ",
-                    e1.getMessage());
+        } catch (VersionMismatchException e1) {
+            logger.info("caught expected VersionMismatchException exception.");
+        } catch (KineticException ke) {
+            fail ("Should have caught VersionMismatchException.");
         }
 
         logger.info(this.testEndInfo());

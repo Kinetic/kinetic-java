@@ -20,6 +20,7 @@ package com.seagate.kinetic.client.internal;
 import kinetic.client.Entry;
 import kinetic.client.EntryMetadata;
 import kinetic.client.KineticException;
+import kinetic.client.VersionMismatchException;
 
 import com.google.protobuf.ByteString;
 import com.seagate.kinetic.common.lib.KineticMessage;
@@ -123,10 +124,9 @@ public class MessageFactory {
     public static void checkPutReply(KineticMessage reply,
             MessageType expectedType)
                     throws KineticException {
-
-        // check error status
-        checkErrorStatus(reply);
-
+        /**
+         * put response throws VersionMismatchException if received VERSION_MISMATCH status code.
+         */
         if (reply.getMessage().getCommand().getHeader().getMessageType() != expectedType) {
             throw new KineticException("received wrong message type.");
         }
@@ -135,24 +135,27 @@ public class MessageFactory {
             throw new KineticException("no KV in response.");
         }
 
-        // if (!reply.getCommand().hasStatus()) {
-        // throw new KineticException("no KV.Status");
-        // }
+        if (!reply.getMessage().getCommand().hasStatus()) {
+            throw new KineticException("no KV.Status");
+        }
 
-        // if (reply.getCommand().getStatus().getCode() ==
-        // Status.StatusCode.VERSION_MISMATCH) {
-        //
-        // throw new KineticException("VersionException: "
-        // + reply.getCommand().getStatus().getCode() + ": "
-        // + reply.getCommand().getStatus().getStatusMessage());
-        // }
-        //
-        // if (reply.getCommand().getStatus().getCode() !=
-        // Status.StatusCode.SUCCESS) {
-        // throw new KineticException("Unknown Error: "
-        // + reply.getCommand().getStatus().getCode() + ": "
-        // + reply.getCommand().getStatus().getStatusMessage());
-        // }
+        if (reply.getMessage().getCommand().getStatus().getCode() ==
+            Status.StatusCode.VERSION_MISMATCH) {
+        
+            throw new VersionMismatchException("Kinetic Command Exception: "
+                    + reply.getMessage().getCommand().getStatus().getCode()
+                    + ": "
+                    + reply.getMessage().getCommand().getStatus()
+                            .getStatusMessage());
+        }
+
+        if (reply.getMessage().getCommand().getStatus().getCode() != Status.StatusCode.SUCCESS) {
+            throw new KineticException("Kinetic Command Exception: "
+                    + reply.getMessage().getCommand().getStatus().getCode()
+                    + ": "
+                    + reply.getMessage().getCommand().getStatus()
+                    .getStatusMessage());
+        }
     }
 
     public static boolean checkDeleteReply(KineticMessage reply)

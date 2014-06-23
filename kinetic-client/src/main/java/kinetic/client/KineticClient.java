@@ -81,7 +81,7 @@ public interface KineticClient extends GenericKineticClient {
 	 * Put the specified <code>Entry</code> entry to the persistent store.
 	 * Replace the version in the store with the new version. If the version in
 	 * the specified entry does not match the version stored in the persistent
-	 * store, a <code>KineticException</code> is thrown.
+	 * store, a <code>VersionMismatchException</code> is thrown.
 	 * <p>
 	 * The specified entry is guaranteed to be persisted in the store if the
 	 * call returns successfully.
@@ -109,6 +109,9 @@ public interface KineticClient extends GenericKineticClient {
 	 * @return a shallow copy of the specified entry but the value of version in
 	 *         the entry metadata is set to the new version.
 	 * 
+	 * @throws VersionMismatchException 
+	 *              If the version in the specified entry does not match the version stored.
+     * 
 	 * @throws KineticException
 	 *             if any internal error occurred.
 	 * 
@@ -149,7 +152,7 @@ public interface KineticClient extends GenericKineticClient {
 	/**
 	 * Put the versioned <code>Entry</code> asynchronously. If the version in
 	 * the specified entry does not match the version stored in the persistent
-	 * store, a <code>KineticException</code> is delivered to the callback
+	 * store, a <code>VersionMismatchException</code> is delivered to the callback
 	 * instance.
 	 * 
 	 * @param entry
