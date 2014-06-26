@@ -62,7 +62,7 @@ public class KineticHeartbeatListenerService extends HeartbeatListener {
         if (!nodesInfo.containsKey(key)) {
             nodeInfo = new NodeInfo();
             nodeInfo.setHost(host);
-            nodeInfo.setPort(port);
+            nodeInfo.setPort(msg.getPort());
             nodeInfo.setTlsPort(msg.getTlsPort());
             nodesInfo.put(key, nodeInfo);
         }
@@ -81,7 +81,7 @@ public class KineticHeartbeatListenerService extends HeartbeatListener {
 
         AdminClientConfiguration clientConfig = new AdminClientConfiguration();
         clientConfig.setHost(nodeInfo.getHost());
-        clientConfig.setPort(nodeInfo.getPort());
+        clientConfig.setPort(nodeInfo.getTlsPort());
 
         // just update the log info when someone asks the detailed info
         KineticAdminClient adminClient = null;
@@ -149,7 +149,7 @@ public class KineticHeartbeatListenerService extends HeartbeatListener {
             nodeInfo = nodesInfo.get(key);
             res += "{";
             res += "\"host\":" + "\"" + nodeInfo.getHost() + "\",";
-            res += "\"port\":" + nodeInfo.getPort() + ",";
+            res += "\"port\":" + nodeInfo.getTlsPort() + ",";
             res += "\"status\":" + nodeInfo.getStatus();
             res += "}";
             if (++i < length) {
