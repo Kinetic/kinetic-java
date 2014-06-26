@@ -39,6 +39,7 @@ import com.seagate.kinetic.proto.Kinetic.Message.Builder;
 import com.seagate.kinetic.proto.Kinetic.Message.MessageType;
 import com.seagate.kinetic.proto.Kinetic.Message.Synchronization;
 
+
 /**
  *
  * Default KineticClient API implementation.
@@ -105,24 +106,26 @@ public class DefaultKineticClient implements AdvancedKineticClient {
 
         // return entry
         Entry returnEntry = null;
+        KineticMessage request = null;
+        KineticMessage response = null;
 
         try {
 
             // construct put request message
-            KineticMessage im = MessageFactory.createPutRequestMessage(
+            request = MessageFactory.createPutRequestMessage(
                     entry, newVersion);
 
             // proto builder
-            Message.Builder message = (Builder) im.getMessage();
+            Message.Builder message = (Builder) request.getMessage();
 
             // set persist option
             setPersistOption(message, option);
 
             // send request
-            KineticMessage reply = this.client.request(im);
+            response = this.client.request(request);
 
             // check response
-            MessageFactory.checkPutReply(reply, MessageType.PUT_RESPONSE);
+            //MessageFactory.checkPutReply(reply, MessageType.PUT_RESPONSE);
 
             // construct return instance
             returnEntry = new Entry(entry.getKey(), entry.getValue(),
@@ -136,7 +139,11 @@ public class DefaultKineticClient implements AdvancedKineticClient {
         } catch (KineticException lce) {
             throw lce;
         } catch (Exception e) {
+            
             KineticException lce = new KineticException(e.getMessage(), e);
+            lce.setRequestMessage(request);
+            lce.setResponseMessage(response);
+            
             throw lce;
         }
 
@@ -150,25 +157,30 @@ public class DefaultKineticClient implements AdvancedKineticClient {
     public Entry get(byte[] key) throws KineticException {
 
         Entry entry = null;
-
+        KineticMessage request = null;
+        KineticMessage response = null;
+        
         try {
 
             // create get request message
-            KineticMessage request = MessageFactory.createGetRequestMessage(
+            request = MessageFactory.createGetRequestMessage(
                     key, MessageType.GET);
 
             // send request
-            KineticMessage response = this.client.request(request);
+            response = this.client.request(request);
 
             // check response
-            MessageFactory.checkGetReply(response, MessageType.GET_RESPONSE);
+            //MessageFactory.checkGetReply(response, MessageType.GET_RESPONSE);
 
             // transform message to entry
             entry = MessageFactory.responsetoEntry(response);
-
+        } catch (EntryNotFoundException enfe) {
+            ;
         } catch (Exception e) {
-            KineticException lce = new KineticException(e.getMessage(), e);
-            throw lce;
+            KineticException ke = new KineticException(e.getMessage(), e);
+            ke.setRequestMessage(request);
+            ke.setResponseMessage(response);
+            throw ke;
         }
 
         return entry;
@@ -181,25 +193,29 @@ public class DefaultKineticClient implements AdvancedKineticClient {
     public Entry getNext(byte[] key) throws KineticException {
 
         Entry entry = null;
-
+        KineticMessage request = null;
+        KineticMessage response = null;
+        
         try {
-
             // create get request message
-            KineticMessage request = MessageFactory.createGetRequestMessage(
+            request = MessageFactory.createGetRequestMessage(
                     key, MessageType.GETNEXT);
 
             // send request
-            KineticMessage response = this.client.request(request);
+            response = this.client.request(request);
 
             // check response
-            MessageFactory
-            .checkGetReply(response, MessageType.GETNEXT_RESPONSE);
+            //MessageFactory
+            //.checkGetReply(response, MessageType.GETNEXT_RESPONSE);
 
             // transform message to entry
             entry = MessageFactory.responsetoEntry(response);
-
+        } catch (EntryNotFoundException enfe) {
+            ;
         } catch (Exception e) {
             KineticException lce = new KineticException(e.getMessage(), e);
+            lce.setRequestMessage(request);
+            lce.setResponseMessage(response);
             throw lce;
         }
 
@@ -213,25 +229,30 @@ public class DefaultKineticClient implements AdvancedKineticClient {
     public Entry getPrevious(byte[] key) throws KineticException {
 
         Entry entry = null;
+        KineticMessage request = null;
+        KineticMessage response = null;
 
         try {
 
             // create get request message
-            KineticMessage request = MessageFactory.createGetRequestMessage(
+            request = MessageFactory.createGetRequestMessage(
                     key, MessageType.GETPREVIOUS);
 
             // send request
-            KineticMessage response = this.client.request(request);
+            response = this.client.request(request);
 
             // check response
-            MessageFactory.checkGetReply(response,
-                    MessageType.GETPREVIOUS_RESPONSE);
+//            MessageFactory.checkGetReply(response,
+//                    MessageType.GETPREVIOUS_RESPONSE);
 
             // transform message to entry
             entry = MessageFactory.responsetoEntry(response);
-
+        } catch (EntryNotFoundException enfe) {
+            ;
         } catch (Exception e) {
             KineticException lce = new KineticException(e.getMessage(), e);
+            lce.setRequestMessage(request);
+            lce.setResponseMessage(response);
             throw lce;
         }
 
@@ -264,7 +285,8 @@ public class DefaultKineticClient implements AdvancedKineticClient {
 
             // convert to return type
             response = toByteArrayList(bsList);
-
+        } catch (KineticException ke) {
+            throw ke;
         } catch (Exception e) {
             KineticException lce = new KineticException(e.getMessage(), e);
             throw lce;
@@ -331,17 +353,30 @@ public class DefaultKineticClient implements AdvancedKineticClient {
      * @throws KineticException
      */
     private boolean doDelete(KineticMessage request) throws KineticException {
+        
+        //deleted flag
         boolean deleted = false;
-
+        
+        KineticMessage response = null;
+        
         try {
             // response message
-            KineticMessage response = this.client.request(request);
+            response = this.client.request(request);
 
-            deleted = MessageFactory.checkDeleteReply(response);
+            //deleted = MessageFactory.checkDeleteReply(response);
+            deleted = true;
 
             LOG.fine("delete entry successfully ...");
+        } catch (EntryNotFoundException enfe) {
+            //entry not found returns false for delete command
+            deleted = false;
+        } catch (KineticException ke) {
+           //re-throw ke
+           throw ke;
         } catch (Exception e) {
             KineticException lce = new KineticException(e.getMessage(), e);
+            lce.setRequestMessage(request);
+            lce.setResponseMessage(response);
             throw lce;
         }
 
@@ -382,7 +417,7 @@ public class DefaultKineticClient implements AdvancedKineticClient {
      * Send a request operation to the Kinetic server.
      * <p>
      *
-     * @param message
+     * @param request
      *            request message for a specific operation.
      *
      * @return respond message for the request operation.
@@ -391,14 +426,20 @@ public class DefaultKineticClient implements AdvancedKineticClient {
      *             if any internal error occurred.
      */
     @Override
-    public KineticMessage request(KineticMessage message)
+    public KineticMessage request(KineticMessage request)
             throws KineticException {
         KineticMessage respond = null;
 
         try {
-            respond = this.client.request(message);
+            respond = this.client.request(request);
+        } catch (KineticException ke) {
+            throw ke;
         } catch (Exception e) {
-            throw new KineticException(e.getMessage(), e);
+            KineticException ke = new KineticException(e.getMessage(), e);
+            ke.setRequestMessage(request);
+            ke.setResponseMessage(respond);
+            
+            throw ke;
         }
         return respond;
     }
@@ -573,26 +614,31 @@ public class DefaultKineticClient implements AdvancedKineticClient {
     public EntryMetadata getMetadata(byte[] key) throws KineticException {
 
         EntryMetadata metadata = null;
-
+        KineticMessage request = null;
+        KineticMessage response = null;
+        
         try {
 
             // create get metadata request message
-            KineticMessage request = MessageFactory.createGetMetadataMessage(
+            request = MessageFactory.createGetMetadataMessage(
                     key, MessageType.GET);
 
             // send request
-            KineticMessage response = this.client.request(request);
+            response = this.client.request(request);
 
             // check response
-            MessageFactory.checkGetReply(response, MessageType.GET_RESPONSE);
+            //MessageFactory.checkGetReply(response, MessageType.GET_RESPONSE);
 
             // transform message to metadata
             metadata = MessageFactory.responsetoEntryMetadata(response
                     .getMessage());
-
+        } catch (EntryNotFoundException enfe) {
+            ;
         } catch (Exception e) {
-            KineticException lce = new KineticException(e.getMessage(), e);
-            throw lce;
+            KineticException ke = new KineticException(e.getMessage(), e);
+            ke.setRequestMessage(request);
+            ke.setResponseMessage(response);
+            throw ke;
         }
 
         return metadata;
@@ -627,6 +673,9 @@ public class DefaultKineticClient implements AdvancedKineticClient {
             throws KineticException {
 
         byte[] newVersion = null;
+        
+        KineticMessage request = null;
+        KineticMessage response = null;
 
         if (entry.getEntryMetadata() != null) {
             newVersion = entry.getEntryMetadata().getVersion();
@@ -635,10 +684,10 @@ public class DefaultKineticClient implements AdvancedKineticClient {
         try {
 
             // construct put request message
-            KineticMessage km = MessageFactory.createPutRequestMessage(
+            request = MessageFactory.createPutRequestMessage(
                     entry, newVersion);
 
-            Message.Builder message = (Builder) km.getMessage();
+            Message.Builder message = (Builder) request.getMessage();
 
             // set force bit
             message.getCommandBuilder().getBodyBuilder().getKeyValueBuilder()
@@ -648,17 +697,21 @@ public class DefaultKineticClient implements AdvancedKineticClient {
             setPersistOption(message, option);
 
             // send request
-            KineticMessage reply = this.client.request(km);
+            response = this.client.request(request);
 
             // check response
-            MessageFactory.checkPutReply(reply, MessageType.PUT_RESPONSE);
+            //MessageFactory.checkPutReply(reply, MessageType.PUT_RESPONSE);
 
             LOG.fine("put versioned successfully.");
 
         } catch (KineticException lce) {
             throw lce;
         } catch (Exception e) {
+            
             KineticException lce = new KineticException(e.getMessage(), e);
+            lce.setRequestMessage(request);
+            lce.setResponseMessage(response);
+            
             throw lce;
         }
 
@@ -769,25 +822,17 @@ public class DefaultKineticClient implements AdvancedKineticClient {
 
         long time = System.currentTimeMillis();
 
-        try {
+        // create get request message
+        KineticMessage request = MessageFactory.createNoOpRequestMessage();
 
-            // create get request message
-            KineticMessage request = MessageFactory.createNoOpRequestMessage();
+        // send request
+        this.client.request(request);
 
-            // send request
-            KineticMessage response = this.client.request(request);
+        // check response
+        // MessageFactory.checkNoOpReply(response);
 
-            // check response
-            MessageFactory.checkNoOpReply(response);
-
-            // no op round trip time
-            time = System.currentTimeMillis() - time;
-        } catch (KineticException ke) {
-            throw ke;
-        } catch (Exception e) {
-            KineticException lce = new KineticException(e.getMessage(), e);
-            throw lce;
-        }
+        // no op round trip time
+        time = System.currentTimeMillis() - time;
 
         return time;
     }
@@ -797,25 +842,11 @@ public class DefaultKineticClient implements AdvancedKineticClient {
      */
     @Override
     public void flush() throws KineticException {
-
-        try {
-
             // create get request message
             KineticMessage request = MessageFactory.createFlushDataRequestMessage();
 
             // send request
-            KineticMessage response = this.client.request(request);
-
-            // check response
-            MessageFactory.checkFushDataReply(response);
-
-        } catch (KineticException ke) {
-            throw ke;
-        } catch (Exception e) {
-            KineticException lce = new KineticException(e.getMessage(), e);
-            throw lce;
-        }
-
+            this.client.request(request);
     }
 
     /**
@@ -876,7 +907,8 @@ public class DefaultKineticClient implements AdvancedKineticClient {
 
             // convert to return type
             response = toByteArrayList(bsList);
-
+        } catch (KineticException ke) {
+            throw ke;
         } catch (Exception e) {
             KineticException lce = new KineticException(e.getMessage(), e);
             throw lce;

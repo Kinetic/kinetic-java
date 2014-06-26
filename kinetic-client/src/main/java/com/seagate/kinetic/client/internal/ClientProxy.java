@@ -42,7 +42,7 @@ import com.seagate.kinetic.proto.Kinetic.Message.Builder;
 import com.seagate.kinetic.proto.Kinetic.Message.Header;
 import com.seagate.kinetic.proto.Kinetic.Message.MessageType;
 import com.seagate.kinetic.proto.Kinetic.Message.Range;
-import com.seagate.kinetic.proto.Kinetic.Message.Status;
+
 
 /**
  * Perform request response operation synchronously or asynchronously on behalf
@@ -241,32 +241,20 @@ public class ClientProxy {
      *
      * @return an array of keys in db that matched the specified range.
      *
-     * @throws LCException
+     * @throws KineticException
      *             if any internal error occurred.
      *
      * @see KineticClient#getKeyRange(byte[], boolean, byte[], boolean, int)
      * @see KeyRange
      */
-    List<ByteString> getKeyRange(KeyRange range) throws LCException {
-        try {
-
+    List<ByteString> getKeyRange(KeyRange range) throws KineticException {
+        
             // perform key range op
             KineticMessage resp = doRange(range);
-
-            // check response message type
-            if (resp.getMessage().getCommand().getHeader().getMessageType() != MessageType.GETKEYRANGE_RESPONSE) {
-                throw new LCException("received wrong message type.");
-            }
 
             // return list of matched keys.
             return resp.getMessage().getCommand().getBody().getRange()
                     .getKeyList();
-        } catch (LCException lce) {
-            throw lce;
-        } catch (Exception e) {
-            throw new LCException("Message processing error: " + e
-                    + e.getStackTrace()[0].toString());
-        }
     }
 
     /**
@@ -279,15 +267,16 @@ public class ClientProxy {
      * @throws LCException
      *             if any internal error occurred.
      */
-    KineticMessage doRange(KeyRange keyRange) throws LCException {
+    KineticMessage doRange(KeyRange keyRange) throws KineticException {
 
+        //request message
+        KineticMessage request = null;
+        // response message
+        KineticMessage respond = null;
+        
         try {
-
-            // response message
-            KineticMessage respond = null;
-
             // request message
-            KineticMessage request = MessageFactory
+            request = MessageFactory
                     .createKineticMessageWithBuilder();
             Message.Builder msg = (Builder) request.getMessage();
 
@@ -309,24 +298,21 @@ public class ClientProxy {
 
             // send request
             respond = request(request);
-
-            // check response type
-            if (respond.getMessage().getCommand().getHeader().getMessageType() != MessageType.GETKEYRANGE_RESPONSE) {
-                throw new LCException("received wrong message type.");
-            }
-
-            // check status
-            if (respond.getMessage().getCommand().getStatus().getCode() != Status.StatusCode.SUCCESS) {
-                throw new LCException("operation failed: "
-                        + respond.getMessage().getCommand().getStatus()
-                        .getStatusMessage());
-            }
+            
+            MessageFactory.checkReply(request, respond);
 
             // return response
             return respond;
+        } catch (KineticException ke) {
+            //re-throw ke
+            throw ke;
         } catch (Exception e) {
-            throw new LCException("Message processing error: " + e
-                    + e.getStackTrace()[0].toString());
+            //make a new kinetic exception
+            KineticException ke = new KineticException (e);
+            ke.setRequestMessage(request);
+            ke.setResponseMessage(respond);
+            //throw ke
+            throw ke;
         }
     }
 
@@ -350,6 +336,51 @@ public class ClientProxy {
     private void throwLcException(String exceptionMessage) throws LCException {
         throw new LCException(exceptionMessage);
     }
+    
+    /**
+     * Send a kinetic request message to drive/simulator.
+     * 
+     * @param krequest the request message
+     * @return response the response message 
+     * @throws KineticException if the command operation failed.
+     * 
+     * @see kinetic.client.VersionMismatchException
+     * @see kinetic.client.ClusterVersionFailureException
+     */
+    KineticMessage request(KineticMessage krequest) throws KineticException {
+        
+        KineticMessage kresponse = null;
+        
+        try {
+            kresponse = this.doRequest(krequest);
+            
+            //check status code
+            MessageFactory.checkReply(krequest, kresponse);
+            
+        } catch (KineticException ke) {
+            ke.setRequestMessage(krequest);
+            ke.setResponseMessage(kresponse);
+            throw ke;
+        } catch (Exception e) {
+            throwKineticException (e, krequest, kresponse);
+        }
+        
+        return kresponse;
+    }
+    
+    private void throwKineticException(Exception e, KineticMessage request,
+            KineticMessage response) throws KineticException {
+
+        //new instance
+        KineticException ke = new KineticException (e);
+        
+        //set request message
+        ke.setRequestMessage(request);
+        //set response message
+        ke.setResponseMessage(response);
+        
+        throw ke;
+    }
 
     /**
      * Send the specified request message synchronously to the Kinetic service.
@@ -365,7 +396,7 @@ public class ClientProxy {
      * @see #requestAsync(com.seagate.kinetic.proto.Kinetic.Message.Builder,
      *      CallbackHandler)
      */
-    KineticMessage request(KineticMessage im) throws LCException {
+    KineticMessage doRequest(KineticMessage im) throws LCException {
         KineticMessage in = null;
         try {
 

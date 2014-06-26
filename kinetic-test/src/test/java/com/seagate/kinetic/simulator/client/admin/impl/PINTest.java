@@ -129,12 +129,18 @@ public class PINTest extends IntegrationTestCase {
 		KineticMessage km1 = new KineticMessage();
 		km1.setMessage(request1);
 
-		Message respond1 = (Message) getAdminClient().configureSetupPolicy(km1)
-				.getMessage();
-		assertTrue(respond1.getCommand().getStatus().getCode()
-				.equals(Status.StatusCode.INTERNAL_ERROR));
+        try {
+            @SuppressWarnings("unused")
+            Message respond1 = (Message) getAdminClient().configureSetupPolicy(
+                    km1).getMessage();
+        } catch (KineticException ke) {
+            assertTrue(ke.getResponseMessage().getMessage().getCommand()
+                    .getStatus().getCode()
+                    .equals(Status.StatusCode.INTERNAL_ERROR));
+        } finally {
 
-		cleanPin(firstPin, this.getAdminClient());
+            cleanPin(firstPin, this.getAdminClient());
+        }
 	}
 
 	@Test
@@ -202,12 +208,17 @@ public class PINTest extends IntegrationTestCase {
 		KineticMessage km1 = new KineticMessage();
 		km1.setMessage(request1);
 
-		Message respond1 = (Message) getAdminClient().configureSetupPolicy(km1)
-				.getMessage();
-		assertTrue(respond1.getCommand().getStatus().getCode()
-				.equals(Status.StatusCode.INTERNAL_ERROR));
-
-		cleanPin(firstPin, this.getAdminClient());
+        try {
+            @SuppressWarnings("unused")
+            Message respond1 = (Message) getAdminClient().configureSetupPolicy(
+                    km1).getMessage();
+        } catch (KineticException ke) {
+            assertTrue(ke.getResponseMessage().getMessage().getCommand()
+                    .getStatus().getCode()
+                    .equals(Status.StatusCode.INTERNAL_ERROR));
+        } finally {
+            cleanPin(firstPin, this.getAdminClient());
+        }
 	}
 
 }

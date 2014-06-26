@@ -100,6 +100,10 @@ public class HeaderOp {
 			checkHmac(km, key);
 
 			if (in.getClusterVersion() != clusterVersion) {
+			    
+			    //set cluster version in response message
+			    respond.getCommandBuilder().getHeaderBuilder().setClusterVersion(clusterVersion);
+			    
 				throw new HeaderException(
 						Message.Status.StatusCode.VERSION_FAILURE,
 						"CLUSTER_VERSION_FAILURE: Simulator cluster version is "

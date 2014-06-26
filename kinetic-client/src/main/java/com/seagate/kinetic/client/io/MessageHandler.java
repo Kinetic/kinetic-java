@@ -34,6 +34,7 @@ import kinetic.client.KineticException;
 
 import com.seagate.kinetic.client.internal.CallbackContext;
 import com.seagate.kinetic.client.internal.ClientProxy;
+import com.seagate.kinetic.client.internal.EntryNotFoundException;
 import com.seagate.kinetic.client.internal.MessageFactory;
 import com.seagate.kinetic.client.internal.async.DeleteAsyncCallbackHandler;
 import com.seagate.kinetic.client.internal.async.GetAsyncCallbackHandler;
@@ -329,8 +330,7 @@ public class MessageHandler implements ClientMessageService, Runnable {
 		AsyncKineticException lce = null;
 
 		try {
-			MessageFactory.checkPutReply(context.getResponseMessage(),
-					MessageType.PUT_RESPONSE);
+			MessageFactory.checkReply(context.getRequestMessage(), context.getResponseMessage());
 		} catch (KineticException e) {
 			lce = getAsyncKineticException(context, e);
 		}
@@ -344,8 +344,10 @@ public class MessageHandler implements ClientMessageService, Runnable {
 		AsyncKineticException lce = null;
 
 		try {
-			MessageFactory.checkGetReply(context.getResponseMessage(),
-					messageType);
+			MessageFactory.checkReply(context.getRequestMessage(), context.getResponseMessage());
+		} catch (EntryNotFoundException enfe) {
+		    //entry not found will return null entry to applications
+		    ;
 		} catch (KineticException e) {
 
 			lce = new AsyncKineticException(lce);
@@ -363,8 +365,7 @@ public class MessageHandler implements ClientMessageService, Runnable {
 		AsyncKineticException lce = null;
 
 		try {
-			MessageFactory.checkGetKeyRangeReply(context.getResponseMessage(),
-					messageType);
+			MessageFactory.checkReply(context.getRequestMessage(), context.getResponseMessage());
 		} catch (KineticException e) {
 
 			lce = new AsyncKineticException(lce);
@@ -382,8 +383,10 @@ public class MessageHandler implements ClientMessageService, Runnable {
 		AsyncKineticException lce = null;
 
 		try {
-			MessageFactory.checkGetReply(context.getResponseMessage(),
-					messageType);
+			MessageFactory.checkReply(context.getRequestMessage(), context.getResponseMessage());
+		} catch (EntryNotFoundException enfe) {
+		    //entry not found will return null to applications
+		    ;
 		} catch (KineticException e) {
 
 			lce = new AsyncKineticException(lce);
@@ -401,7 +404,7 @@ public class MessageHandler implements ClientMessageService, Runnable {
 		AsyncKineticException lce = null;
 
 		try {
-			MessageFactory.checkDeleteReply(context.getResponseMessage());
+			MessageFactory.checkDeleteReply(context.getRequestMessage(), context.getResponseMessage());
 		} catch (KineticException e) {
 
 			lce = new AsyncKineticException(lce);

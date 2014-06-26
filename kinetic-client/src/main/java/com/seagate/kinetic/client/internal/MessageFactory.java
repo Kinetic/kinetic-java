@@ -17,6 +17,7 @@
  */
 package com.seagate.kinetic.client.internal;
 
+import kinetic.client.ClusterVersionFailureException;
 import kinetic.client.Entry;
 import kinetic.client.EntryMetadata;
 import kinetic.client.KineticException;
@@ -30,7 +31,7 @@ import com.seagate.kinetic.proto.Kinetic.Message.Builder;
 import com.seagate.kinetic.proto.Kinetic.Message.KeyValue;
 import com.seagate.kinetic.proto.Kinetic.Message.MessageType;
 import com.seagate.kinetic.proto.Kinetic.Message.Range;
-import com.seagate.kinetic.proto.Kinetic.Message.Status;
+
 import com.seagate.kinetic.proto.Kinetic.Message.Status.StatusCode;
 import com.seagate.kinetic.proto.Kinetic.Message.Synchronization;
 import com.seagate.kinetic.proto.Kinetic.MessageOrBuilder;
@@ -121,76 +122,17 @@ public class MessageFactory {
         return holder;
     }
 
-    public static void checkPutReply(KineticMessage reply,
-            MessageType expectedType)
-                    throws KineticException {
-        /**
-         * put response throws VersionMismatchException if received VERSION_MISMATCH status code.
-         */
-        if (reply.getMessage().getCommand().getHeader().getMessageType() != expectedType) {
-            throw new KineticException("received wrong message type.");
-        }
-
-        if (!reply.getMessage().getCommand().getBody().hasKeyValue()) {
-            throw new KineticException("no KV in response.");
-        }
-
-        if (!reply.getMessage().getCommand().hasStatus()) {
-            throw new KineticException("no KV.Status");
-        }
-
-        if (reply.getMessage().getCommand().getStatus().getCode() ==
-            Status.StatusCode.VERSION_MISMATCH) {
-        
-            throw new VersionMismatchException("Kinetic Command Exception: "
-                    + reply.getMessage().getCommand().getStatus().getCode()
-                    + ": "
-                    + reply.getMessage().getCommand().getStatus()
-                            .getStatusMessage());
-        }
-
-        if (reply.getMessage().getCommand().getStatus().getCode() != Status.StatusCode.SUCCESS) {
-            throw new KineticException("Kinetic Command Exception: "
-                    + reply.getMessage().getCommand().getStatus().getCode()
-                    + ": "
-                    + reply.getMessage().getCommand().getStatus()
-                    .getStatusMessage());
-        }
-    }
-
-    public static boolean checkDeleteReply(KineticMessage reply)
+    public static boolean checkDeleteReply(KineticMessage request, KineticMessage reply)
             throws KineticException {
-
-        if (reply.getMessage().getCommand().getHeader().getMessageType() != MessageType.DELETE_RESPONSE) {
-            throw new KineticException("received wrong message type.");
-        }
-
-        if (!reply.getMessage().getCommand().hasStatus()) {
-            throw new KineticException("no KV.Status");
-        }
-
-        if (reply.getMessage().getCommand().getStatus().getCode() == StatusCode.NOT_FOUND) {
+        
+        try {
+           checkReply (request, reply);  
+        } catch (EntryNotFoundException nfe) {
             return false;
+        } catch (KineticException ke) {
+            throw ke;
         }
-
-        // check error status
-        checkErrorStatus(reply);
-
-        // if (reply.getCommand().getStatus().getCode() ==
-        // Status.StatusCode.VERSION_MISMATCH) {
-        //
-        // throw new KineticException("VersionException: "
-        // + reply.getCommand().getStatus().getCode() + ": "
-        // + reply.getCommand().getStatus().getStatusMessage());
-        // }
-        //
-        // if (reply.getCommand().getStatus().getCode() !=
-        // Status.StatusCode.SUCCESS) {
-        // throw new KineticException("Unknown Error: "
-        // + reply.getCommand().getStatus().getCode() + ": "
-        // + reply.getCommand().getStatus().getStatusMessage());
-        // }
-
+       
         return true;
     }
 
@@ -381,59 +323,68 @@ public class MessageFactory {
 
         return metadata;
     }
-
-    public static void checkGetReply(KineticMessage reply,
-            MessageType expectType)
-                    throws KineticException {
-
-        if (reply.getMessage().getCommand().getHeader().getMessageType() != expectType) {
-            throw new KineticException("received wrong message type.");
-        }
-
-        StatusCode code = reply.getMessage().getCommand().getStatus().getCode();
-
-        if (code != StatusCode.SUCCESS && code != StatusCode.NOT_FOUND) {
-            throw new KineticException("Kinetic Command Exception: "
-                    + reply.getMessage().getCommand().getStatus().getCode()
-                    + ": "
-                    + reply.getMessage().getCommand().getStatus()
-                    .getStatusMessage());
-        }
-    }
-
-    public static void checkGetKeyRangeReply(KineticMessage reply,
-            MessageType expectType) throws KineticException {
-
-        // check error code
-        checkErrorStatus(reply);
-
-        if (reply.getMessage().getCommand().getHeader().getMessageType() != expectType) {
-            throw new KineticException("received wrong message type.");
-        }
-
-        // StatusCode code = reply.getCommand().getStatus().getCode();
-        //
-        // if (code != StatusCode.SUCCESS && code != StatusCode.NOT_FOUND) {
-        // throw new KineticException("Unknown Error: "
-        // + reply.getCommand().getStatus().getCode() + ": "
-        // + reply.getCommand().getStatus().getStatusMessage());
-        // }
-    }
-
-    public static void checkErrorStatus(KineticMessage reply)
+    
+    /**
+     * Check the response message status.
+     * 
+     * @param reply the response message from drive/simulator
+     * 
+     * @throws KineticException if status code is not equal to <code>StatusCode.SUCCESS</code>
+     */
+    public static void checkReply(KineticMessage request, KineticMessage reply)
             throws KineticException {
+        
+        //request message type
+        MessageType requestType = request.getMessage().getCommand().getHeader().getMessageType();
+        //response message type
+        MessageType responseType = reply.getMessage().getCommand().getHeader().getMessageType();
+        
+        //check message type
+        //see .proto for message type definition rules
+        if (responseType.getNumber() != (requestType.getNumber()-1)) {
+            
+            String msg =
+            "Received wrong message type., received="
+                    + responseType
+                    + ", expected=" + requestType;
+            
+            throw new KineticException (msg);
+        }
 
+        //check if contains status message
         if (!reply.getMessage().getCommand().hasStatus()) {
             throw new KineticException("No status was set");
         }
 
-        if (reply.getMessage().getCommand().getStatus().getCode() != Status.StatusCode.SUCCESS) {
-
-            throw new KineticException("Kinetic Command Exception: "
-                    + reply.getMessage().getCommand().getStatus().getCode()
-                    + ": "
-                    + reply.getMessage().getCommand().getStatus()
-                    .getStatusMessage());
+        //get status code
+        StatusCode statusCode = reply.getMessage().getCommand().getStatus().getCode();
+        
+        //if success, all is fine.  simply return
+        if (statusCode == StatusCode.SUCCESS) {
+            return;
+        }
+        
+        //set standard exception message 
+        String errorMessage = "Kinetic Command Exception: "
+                + statusCode
+                + ": "
+                + reply.getMessage().getCommand().getStatus()
+                        .getStatusMessage();
+                        
+        switch (statusCode) {
+        
+        case VERSION_MISMATCH:
+            //throw version mismatch exception
+            throw new VersionMismatchException(errorMessage);
+        case VERSION_FAILURE:
+            //throw cluster version exception
+            throw new ClusterVersionFailureException (errorMessage);
+        case NOT_FOUND:
+            //entry not found
+            throw new EntryNotFoundException (errorMessage);
+        default:
+            //throw normal kinetic exception
+            throw new KineticException (errorMessage);
         }
 
     }
@@ -450,28 +401,6 @@ public class MessageFactory {
 
         return im;
     }
-
-    public static void checkNoOpReply(KineticMessage reply)
-            throws KineticException {
-
-        if (StatusCode.SUCCESS != reply.getMessage().getCommand().getStatus()
-                .getCode()) {
-            throw new KineticException("Kinetic Command Exception: "
-                    + reply.getMessage().getCommand().getStatus().getCode()
-                    + ": "
-                    + reply.getMessage().getCommand().getStatus()
-                    .getStatusMessage());
-        }
-
-        if (reply.getMessage().getCommand().getHeader().getMessageType() != MessageType.NOOP_RESPONSE) {
-            throw new KineticException(
-                    "Received wrong message type., received="
-                            + reply.getMessage().getCommand().getHeader()
-                            .getMessageType()
-                            + ", expected=" + MessageType.NOOP_RESPONSE);
-        }
-
-    }
     
     public static KineticMessage createFlushDataRequestMessage()
             throws KineticException {
@@ -486,27 +415,6 @@ public class MessageFactory {
         return im;
     }
     
-    public static void checkFushDataReply(KineticMessage reply)
-            throws KineticException {
-
-        if (StatusCode.SUCCESS != reply.getMessage().getCommand().getStatus()
-                .getCode()) {
-            throw new KineticException("Kinetic Command Exception: "
-                    + reply.getMessage().getCommand().getStatus().getCode()
-                    + ": "
-                    + reply.getMessage().getCommand().getStatus()
-                    .getStatusMessage());
-        }
-
-        if (reply.getMessage().getCommand().getHeader().getMessageType() != MessageType.FLUSHALLDATA_RESPONSE) {
-            throw new KineticException(
-                    "Received wrong message type., received="
-                            + reply.getMessage().getCommand().getHeader()
-                            .getMessageType()
-                            + ", expected=" + MessageType.FLUSHALLDATA_RESPONSE);
-        }
-
-    }
 
     /**
      * create an internal message with empty builder message.

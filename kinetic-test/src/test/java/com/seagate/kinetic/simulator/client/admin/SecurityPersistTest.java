@@ -33,6 +33,7 @@ import kinetic.client.KineticException;
 import org.junit.Test;
 
 import com.google.protobuf.ByteString;
+
 import com.seagate.kinetic.IntegrationTestCase;
 import com.seagate.kinetic.common.lib.KineticMessage;
 import com.seagate.kinetic.proto.Kinetic.Message;
@@ -252,9 +253,15 @@ public class SecurityPersistTest extends IntegrationTestCase {
 
         KineticMessage km3 = new KineticMessage();
         km3.setMessage(request3);
-        Message response3 = (Message) client5.request(km3).getMessage();
-        assertTrue(response3.getCommand().getStatus().getCode()
-                .equals(Status.StatusCode.NOT_AUTHORIZED));
+        
+        try {
+            @SuppressWarnings("unused")
+            Message response3 = (Message) client5.request(km3).getMessage();
+        } catch (KineticException ke) {
+            assertTrue(ke.getResponseMessage().getMessage().getCommand()
+                    .getStatus().getCode()
+                    .equals(Status.StatusCode.NOT_AUTHORIZED));
+        }
 
         client5.close();
 
@@ -320,10 +327,18 @@ public class SecurityPersistTest extends IntegrationTestCase {
         // set security
         KineticMessage km1 = new KineticMessage();
         km1.setMessage(request);
-        Message response = (Message) this.getClient().request(km1).getMessage();
-        assertTrue(response.getCommand().getStatus().getCode()
-                .equals(Status.StatusCode.NO_SUCH_HMAC_ALGORITHM));
-        this.getClient().close();
+        
+        try {
+            @SuppressWarnings("unused")
+            Message response = (Message) this.getClient().request(km1)
+                    .getMessage();
+        } catch (KineticException ke) {
+            assertTrue(ke.getResponseMessage().getMessage().getCommand()
+                    .getStatus().getCode()
+                    .equals(Status.StatusCode.NO_SUCH_HMAC_ALGORITHM));
+        } finally {
+            this.getClient().close();
+        }
     }
 
     @Test
@@ -352,10 +367,18 @@ public class SecurityPersistTest extends IntegrationTestCase {
         // set security
         KineticMessage km = new KineticMessage();
         km.setMessage(request);
-        Message response = (Message) this.getClient().request(km).getMessage();
-        assertTrue(response.getCommand().getStatus().getCode()
-                .equals(Status.StatusCode.NO_SUCH_HMAC_ALGORITHM));
-        this.getClient().close();
+        
+        try {
+            @SuppressWarnings("unused")
+            Message response = (Message) this.getClient().request(km)
+                    .getMessage();
+        } catch (KineticException ke) {
+            assertTrue(ke.getResponseMessage().getMessage().getCommand()
+                    .getStatus().getCode()
+                    .equals(Status.StatusCode.NO_SUCH_HMAC_ALGORITHM));
+        } finally {
+            this.getClient().close();
+        }
     }
 
     @Test
@@ -380,12 +403,18 @@ public class SecurityPersistTest extends IntegrationTestCase {
         // set security
         KineticMessage km = new KineticMessage();
         km.setMessage(request);
+        
+        try {
+        @SuppressWarnings("unused")
         Message response = (Message) this.getClient().request(km).getMessage();
-        assertTrue(response.getCommand().getStatus().getCode()
-                .equals(Status.StatusCode.INTERNAL_ERROR));
-        assertTrue(response.getCommand().getStatus().getStatusMessage()
-                .equals("No role set in acl"));
+        } catch (KineticException ke) {
+            assertTrue(ke.getResponseMessage().getMessage().getCommand().getStatus().getCode()
+                    .equals(Status.StatusCode.INTERNAL_ERROR));
+            //assertTrue(response.getCommand().getStatus().getStatusMessage()
+            //        .equals("No role set in acl"));
+        } finally {
         this.getClient().close();
+        }
     }
 
     @Test
@@ -414,11 +443,17 @@ public class SecurityPersistTest extends IntegrationTestCase {
         // set security
         KineticMessage km = new KineticMessage();
         km.setMessage(request);
-        Message response = (Message) this.getClient().request(km).getMessage();
-        assertTrue(response.getCommand().getStatus().getCode()
-                .equals(Status.StatusCode.INTERNAL_ERROR));
-        assertTrue(response.getCommand().getStatus().getStatusMessage()
-                .startsWith("Role is invalid in acl"));
-        this.getClient().close();
+        
+        try {
+            this.getClient().request(km);
+        } catch (KineticException ke) {      
+            assertTrue(ke.getResponseMessage().getMessage().getCommand()
+                    .getStatus().getCode()
+                    .equals(Status.StatusCode.INTERNAL_ERROR));
+            // assertTrue(response.getCommand().getStatus().getStatusMessage()
+            // .startsWith("Role is invalid in acl"));
+        } finally {
+            this.getClient().close();
+        }
     }
 }

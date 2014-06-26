@@ -45,6 +45,7 @@ import kinetic.admin.Role;
 import kinetic.admin.Statistics;
 import kinetic.admin.Temperature;
 import kinetic.admin.Utilization;
+import kinetic.client.ClusterVersionFailureException;
 import kinetic.client.Entry;
 import kinetic.client.EntryMetadata;
 import kinetic.client.KineticClient;
@@ -200,9 +201,17 @@ public class KineticAdminTest extends IntegrationTestCase {
         try {
             getAdminClient().setup(null, null, 2, false);
             fail("Should have thrown");
+        } catch (ClusterVersionFailureException cve) {
+            long requestClusterVersion = cve.getRequestMessage().getMessage()
+                    .getCommand().getHeader().getClusterVersion();
+            
+            long responseClusterVersion = cve.getResponseMessage().getMessage()
+                    .getCommand().getHeader().getClusterVersion();
+
+            logger.info("caught expected exception, this is ok. request cluster version="
+                    + requestClusterVersion + ", respose cluster version=" + responseClusterVersion);
         } catch (Exception e) {
-            assertTrue(e.getMessage().contains(
-                    "Unknown Error: VERSION_FAILURE: CLUSTER_VERSION_FAILURE"));
+           fail ("should have caught ClusterVersionException");
         }
 
         resetClusterVersion(1);
@@ -1249,9 +1258,14 @@ public class KineticAdminTest extends IntegrationTestCase {
         Message.Builder request = Message.newBuilder();
         request.getCommandBuilder().getBodyBuilder().getSecurityBuilder()
                 .addAcl(acl);
-        Message response = getAdminClient().configureSecurityPolicy(request);
-        assertEquals(Status.StatusCode.INTERNAL_ERROR, response.getCommand()
+        
+        try {
+            @SuppressWarnings("unused")
+            Message response = getAdminClient().configureSecurityPolicy(request);
+        } catch (KineticException ke) {
+            assertEquals(Status.StatusCode.INTERNAL_ERROR, ke.getResponseMessage().getMessage().getCommand()
                 .getStatus().getCode());
+        }
     }
 
     @Test

@@ -17,6 +17,8 @@
  */
 package kinetic.client;
 
+import com.seagate.kinetic.common.lib.KineticMessage;
+
 /**
  * Kinetic Client root Exception. All Kinetic client exceptions extend from this
  * class.
@@ -40,6 +42,13 @@ package kinetic.client;
  * @see KineticClient
  */
 public class KineticException extends Exception {
+    
+ // request message
+    private KineticMessage request = null;
+
+    // response message
+    private KineticMessage response = null;
+
 
 	private static final long serialVersionUID = -649278492614600795L;
 
@@ -84,4 +93,45 @@ public class KineticException extends Exception {
 	public KineticException(String message, Throwable cause) {
 		super(message, cause);
 	}
+	
+	/**
+     * Get request message for this operation.
+     *
+     * @return request message for this asynchronous operation
+     */
+    public KineticMessage getRequestMessage() {
+        return this.request;
+    }
+
+    /**
+     *
+     * Set the kinetic request with the specified message.
+     *
+     * @param request
+     *            Kinetic request message.
+     */
+    public void setRequestMessage(KineticMessage request) {
+        this.request = request;
+    }
+
+    /**
+     * Get the response message from kinetic drive/simulator.
+     *
+     * @return The asynchronous response message from kinetic service
+     */
+    public KineticMessage getResponseMessage() {
+        return this.response;
+    }
+
+    /**
+     * Set the response message sent from kinetic drive/simulator.
+     * <p>
+     * called by the Kinetic Client Runtime.
+     *
+     * @param response
+     *            the response object from simulator.
+     */
+    public void setResponseMessage(KineticMessage response) {
+        this.response = response;
+    }
 }
