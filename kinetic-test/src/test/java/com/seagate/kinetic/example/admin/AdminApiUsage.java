@@ -221,8 +221,8 @@ public class AdminApiUsage {
 		// get capacity info from kineticLog
 		Capacity capacity = kineticLog.getCapacity();
 		System.out.println("Drive capacity (MB) info"
-				+ "\nDrive total capacity: " + capacity.getTotal()
-				+ "\nDrive remaining capacity: " + capacity.getRemaining()
+				+ "\nDrive total capacity: " + capacity.getNominalCapacityInBytes()
+				+ "\nDrive remaining capacity: " + capacity.getPortionFull()
 				+ "\n");
 
 		// get utilization info from kineticLog

@@ -19,24 +19,24 @@ package kinetic.admin;
 
 public class Capacity {
 	// total capacity of hard disk
-	private long total;
+	private long nominalCapacityInBytes;
 
 	// remaining capacity of hard disk
-	private float remaining;
+	private float portionFull;
 
-	public long getTotal() {
-		return total;
+	public long getNominalCapacityInBytes() {
+		return nominalCapacityInBytes;
 	}
 
-	public void setTotal(long total) {
-		this.total = total;
+	public void setNominalCapacityInBytes(long total) {
+		this.nominalCapacityInBytes = total;
 	}
 
-	public float getRemaining() {
-		return remaining;
+	public float getPortionFull() {
+		return portionFull;
 	}
 
-	public void setRemaining(float remaining) {
-		this.remaining = remaining;
+	public void setPortionFull(float remaining) {
+		this.portionFull = remaining;
 	}
 }

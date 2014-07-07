@@ -68,6 +68,7 @@ import com.seagate.kinetic.proto.Kinetic.Message.Security;
 import com.seagate.kinetic.proto.Kinetic.Message.Security.ACL.HMACAlgorithm;
 import com.seagate.kinetic.proto.Kinetic.Message.Security.ACL.Permission;
 import com.seagate.kinetic.proto.Kinetic.Message.Security.ACL.Scope;
+import com.seagate.kinetic.proto.Kinetic.Message.MessageType;
 import com.seagate.kinetic.proto.Kinetic.Message.Setup;
 import com.seagate.kinetic.proto.Kinetic.Message.Status;
 import com.seagate.kinetic.proto.Kinetic.MessageOrBuilder;
@@ -327,8 +328,8 @@ public class KineticAdminTest extends IntegrationTestCase {
         assertTrue(log.getStatistics().size() > 0);
         assertTrue(log.getMessages().length > 0);
 
-        assertTrue(log.getCapacity().getRemaining() >= 0);
-        assertTrue(log.getCapacity().getTotal() >= 0);
+        assertTrue(log.getCapacity().getPortionFull() >= 0);
+        assertTrue(log.getCapacity().getNominalCapacityInBytes() >= 0);
 
         assertTrue(log.getLimits().getMaxKeySize() == 4096);
         assertTrue(log.getLimits().getMaxValueSize() == 1024 * 1024);
@@ -1342,8 +1343,8 @@ public class KineticAdminTest extends IntegrationTestCase {
         KineticLog log = getAdminClient().getLog(listOfLogType);
 
         Capacity capacity = log.getCapacity();
-        assertTrue(capacity.getRemaining() >= 0);
-        assertTrue(capacity.getTotal() >= 0);
+        assertTrue(capacity.getPortionFull() >= 0);
+        assertTrue(capacity.getNominalCapacityInBytes() >= 0);
 
         Configuration configuration = log.getConfiguration();
         assertTrue(configuration.getCompilationDate().length() > 0);
@@ -1447,6 +1448,25 @@ public class KineticAdminTest extends IntegrationTestCase {
                 .equals(Status.StatusCode.SUCCESS));
         assertTrue(0 <= respond1.getCommand().getBody().getGetLog()
                 .getCapacity().getNominalCapacityInBytes());
+    }
+    
+    @Test
+    public void testGetConfiguration() throws KineticException {
+
+        Message.Builder request1 = Message.newBuilder();
+        GetLog.Builder getLog1 = request1.getCommandBuilder().getBodyBuilder()
+                .getGetLogBuilder();
+        getLog1.addType(Type.CONFIGURATION);
+
+        KineticMessage km1 = new KineticMessage();
+        km1.setMessage(request1);
+
+        Message respond1 = (Message) getAdminClient().getLog(km1).getMessage();
+
+        assertTrue(respond1.getCommand().getStatus().getCode()
+                .equals(Status.StatusCode.SUCCESS));
+        
+        assertTrue(respond1.getCommand().getHeader().getMessageType().equals(MessageType.GETLOG_RESPONSE));
     }
 
     @Test
