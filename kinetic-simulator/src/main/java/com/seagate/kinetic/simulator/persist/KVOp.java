@@ -28,6 +28,7 @@ import kinetic.simulator.SimulatorConfiguration;
 import com.google.protobuf.ByteString;
 import com.seagate.kinetic.common.lib.KineticMessage;
 import com.seagate.kinetic.proto.Kinetic.Message;
+import com.seagate.kinetic.proto.Kinetic.Message.Algorithm;
 import com.seagate.kinetic.proto.Kinetic.Message.Builder;
 import com.seagate.kinetic.proto.Kinetic.Message.KeyValue;
 import com.seagate.kinetic.proto.Kinetic.Message.MessageType;
@@ -143,7 +144,10 @@ public class KVOp {
                         respondKeyValue.setDbVersion(storeEntry.getVersion());
                         respondKeyValue.setTag(storeEntry.getTag());
 
-                        respondKeyValue.setAlgorithm(storeEntry.getAlgorithm());
+                        // set algorithm only if it was set by application
+                        if (storeEntry.hasAlgorithm()) {
+                            respondKeyValue.setAlgorithm(storeEntry.getAlgorithm());
+                        }
 
                         // respond value
                         if (!metadataOnly) {
@@ -190,10 +194,14 @@ public class KVOp {
                             valueByteString = ByteString.EMPTY;
                         }
 
+                        Algorithm al = null;
+                        if (requestKeyValue.hasAlgorithm()) {
+                            al = requestKeyValue.getAlgorithm();
+                        }
                         KVValue data = new KVValue(requestKeyValue.getKey(),
                                 requestKeyValue.getNewVersion(),
                                 requestKeyValue.getTag(),
-                                requestKeyValue.getAlgorithm(), valueByteString);
+                                al, valueByteString);
 
                         if (requestKeyValue.getForce()) {
                             store.putForced(key, data, persistOption);
@@ -275,8 +283,10 @@ public class KVOp {
                         respondKeyValue.setKey(nextKey);
                         respondKeyValue.setTag(storeEntry.getTag());
                         respondKeyValue.setDbVersion(storeEntry.getVersion());
-
-                        respondKeyValue.setAlgorithm(storeEntry.getAlgorithm());
+                        
+                        if (storeEntry.hasAlgorithm()) {
+                            respondKeyValue.setAlgorithm(storeEntry.getAlgorithm());
+                        }
 
                         if (!metadataOnly) {
                             // respond.setValue(storeEntry.getData());
@@ -307,7 +317,9 @@ public class KVOp {
                         respondKeyValue.setTag(storeEntry.getTag());
                         respondKeyValue.setDbVersion(storeEntry.getVersion());
 
-                        respondKeyValue.setAlgorithm(storeEntry.getAlgorithm());
+                        if (storeEntry.hasAlgorithm()) {
+                            respondKeyValue.setAlgorithm(storeEntry.getAlgorithm());
+                        }
 
                         if (!metadataOnly) {
                             // respond.setValue(storeEntry.getData());
