@@ -20,6 +20,7 @@ package com.seagate.kinetic.client.internal;
 import kinetic.client.ClusterVersionFailureException;
 import kinetic.client.Entry;
 import kinetic.client.EntryMetadata;
+import kinetic.client.EntryNotFoundException;
 import kinetic.client.KineticException;
 import kinetic.client.VersionMismatchException;
 
@@ -31,7 +32,6 @@ import com.seagate.kinetic.proto.Kinetic.Message.Builder;
 import com.seagate.kinetic.proto.Kinetic.Message.KeyValue;
 import com.seagate.kinetic.proto.Kinetic.Message.MessageType;
 import com.seagate.kinetic.proto.Kinetic.Message.Range;
-
 import com.seagate.kinetic.proto.Kinetic.Message.Status.StatusCode;
 import com.seagate.kinetic.proto.Kinetic.Message.Synchronization;
 import com.seagate.kinetic.proto.Kinetic.MessageOrBuilder;

@@ -15,12 +15,34 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
-package kinetic.admin;
+package kinetic.client;
 
 /**
- * Kinetic Log Type enumeration.
+ * 
+ * This exception is thrown to indicate that an entry is expected but unable to obtain from the service.  
+ * 
+ * @author chiaming
+ * 
+ * @see KineticException
  */
-public enum KineticLogType {
+public class EntryNotFoundException extends KineticException {
 
-    UTILIZATIONS, TEMPERATURES, CAPACITIES, CONFIGURATION, STATISTICS, MESSAGES, LIMITS, DEVICE;
+    private static final long serialVersionUID = -2377497794808030692L;
+
+    public EntryNotFoundException() {
+        ;
+    }
+
+    public EntryNotFoundException(String message) {
+        super(message);
+    }
+
+    public EntryNotFoundException(Throwable cause) {
+        super(cause);
+    }
+
+    public EntryNotFoundException(String message, Throwable cause) {
+        super(message, cause);
+    }
+
 }

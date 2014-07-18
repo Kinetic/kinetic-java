@@ -122,6 +122,32 @@ public interface KineticAdminClient {
      */
     public KineticLog getLog(List<KineticLogType> listOfLogType)
             throws KineticException;
+    
+    /**
+     * 
+     * Get the vendor specific log message.
+     * <p>
+     * The Device GetLog message is to ask the device to send back the
+     * log of a certain name in the value field. The limit of each
+     * log is 1m byte.
+     * <p>
+     * Proprietary names should be prefaced by the vendor name so that name
+     * collisions do not happen in the future. An example could be names that
+     * start with “com.wd” would be for Western Digital devices.
+     * <p>
+     * If the name is not found, the EntryNotFoundException is thrown.
+     * <p>
+     * There can be only one Device in the list of logs that can be retrieved.
+     * 
+     * @throws EntryNotFoundException if unable to get the log entry for the specified name.
+     * 
+     * @throws KineticException if any internal errors occur.
+     * 
+     * @param name the vendor specific name for the getLog command.
+     * 
+     *  @return <code>Device</code> that contains the name and value for the getLog command.
+     */
+    public Device getVendorSpecificDeviceLog (byte[] name) throws KineticException;
 
     /**
      * Set the access control list to the Kinetic drive.

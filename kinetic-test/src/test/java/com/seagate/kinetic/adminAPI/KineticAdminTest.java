@@ -27,13 +27,16 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import kinetic.admin.ACL;
 import kinetic.admin.Capacity;
 import kinetic.admin.Configuration;
+import kinetic.admin.Device;
 import kinetic.admin.Domain;
 import kinetic.admin.Interface;
 import kinetic.admin.KineticAdminClient;
@@ -48,6 +51,7 @@ import kinetic.admin.Utilization;
 import kinetic.client.ClusterVersionFailureException;
 import kinetic.client.Entry;
 import kinetic.client.EntryMetadata;
+import kinetic.client.EntryNotFoundException;
 import kinetic.client.KineticClient;
 import kinetic.client.KineticClientFactory;
 import kinetic.client.KineticException;
@@ -344,6 +348,49 @@ public class KineticAdminTest extends IntegrationTestCase {
         // assertTrue(log.getLimits().getMaxKeyRangeCount() >= 0);
 
         logger.info(this.testEndInfo());
+    }
+    
+    @Test
+    public void getVendorSpecificDeviceLogTest() {
+        KineticAdminClient aclient = getAdminClient();
+        
+        byte[] name = null;
+        //name supported by the simulator only
+        String sname = "com.seagate.simulator:dummy";
+        
+        //name not supported by anyone
+        String sname2 = "com.seagate.simulator:badName";
+        
+        byte[] name2 = null;
+        try {
+           name = sname.getBytes("utf8");
+           name2 = sname2.getBytes("utf8");
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+        
+        try {
+            Device device = aclient.getVendorSpecificDeviceLog(name);
+            
+            logger.info("got vendor specific log., name = " + sname + ", log size=" + device.getValue().length);
+        } catch (EntryNotFoundException enfe) {
+            //could happen if this the service is not simulator
+            logger.info("device log name not found for name: " + sname);
+        } catch (KineticException e) {
+           logger.log(Level.WARNING, e.getMessage(), e);
+        }
+        
+        try {
+            aclient.getVendorSpecificDeviceLog(name2);
+            
+            fail ("should have caught EntryNotFoundException");
+        } catch (EntryNotFoundException enfe) {
+            //could happen if this the service is not simulator
+            logger.info("device log name not found for name: " + sname2);
+        } catch (KineticException e) {
+           logger.log(Level.WARNING, e.getMessage(), e);
+           fail ("should have caught EntryNotFoundException");
+        }
     }
 
     /**

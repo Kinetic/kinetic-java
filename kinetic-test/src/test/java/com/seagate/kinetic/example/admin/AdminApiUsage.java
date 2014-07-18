@@ -23,6 +23,8 @@ import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.seagate.kinetic.proto.Kinetic.Message.GetLog.Device;
+
 import kinetic.admin.ACL;
 import kinetic.admin.AdminClientConfiguration;
 import kinetic.admin.Capacity;
@@ -33,6 +35,7 @@ import kinetic.admin.KineticLog;
 import kinetic.admin.Role;
 import kinetic.admin.Temperature;
 import kinetic.admin.Utilization;
+import kinetic.client.EntryNotFoundException;
 import kinetic.client.KineticException;
 
 /**
@@ -232,6 +235,34 @@ public class AdminApiUsage {
 					+ "\nName: " + util.getName() + "\nUtilization: "
 					+ util.getUtility() + "\n");
 		}
+		
+        try {
+            // get vendor specific device log from simulator.
+            // the name "com.seagate.simulator:dummy" is only supported by
+            // the simulator.
+            kinetic.admin.Device device = adminClient
+                    .getVendorSpecificDeviceLog("com.seagate.simulator:dummy"
+                            .getBytes("utf8"));
+            System.out.println("**** got device value., size = "
+                    + device.getValue().length);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        try {
+            // attempt to get unsupported vendor specific log
+            // this will cause EntryNotFoundException to be raised
+            adminClient
+                    .getVendorSpecificDeviceLog("com.seagate.simulator:badName"
+                            .getBytes("utf8"));
+
+            // should not enter here
+            throw new RuntimeException("EntryNotFoundException not caught");
+        } catch (UnsupportedEncodingException uee) {
+            uee.printStackTrace();
+        } catch (EntryNotFoundException enfe) {
+            System.out.println("caught expected exception., this is OK.");
+        }
 
 		// close admin client
 		adminClient.close();

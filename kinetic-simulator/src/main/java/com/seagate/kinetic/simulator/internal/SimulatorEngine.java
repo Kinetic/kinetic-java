@@ -444,7 +444,7 @@ public class SimulatorEngine implements MessageService {
                 boolean hasPermission = GetLogHandler.checkPermission(request,
                         response, aclmap);
                 if (hasPermission) {
-                    GetLogHandler.handleGetLog(this, request, response);
+                    GetLogHandler.handleGetLog(this, request, kmresp);
                 }
             } else if (request.getCommand().getBody()
                     .hasP2POperation()) {

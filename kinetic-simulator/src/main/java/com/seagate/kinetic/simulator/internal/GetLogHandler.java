@@ -20,13 +20,16 @@
 package com.seagate.kinetic.simulator.internal;
 
 import java.net.UnknownHostException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
 import com.google.protobuf.ByteString;
+import com.seagate.kinetic.common.lib.KineticMessage;
 import com.seagate.kinetic.heartbeat.message.ByteCounter;
 import com.seagate.kinetic.heartbeat.message.OperationCounter;
 import com.seagate.kinetic.proto.Kinetic.Message;
+import com.seagate.kinetic.proto.Kinetic.Message.Builder;
 import com.seagate.kinetic.proto.Kinetic.Message.GetLog.Capacity;
 import com.seagate.kinetic.proto.Kinetic.Message.GetLog.Configuration;
 import com.seagate.kinetic.proto.Kinetic.Message.GetLog.Limits;
@@ -53,6 +56,9 @@ import com.seagate.kinetic.simulator.utility.UtilizationUtil;
  *
  */
 public class GetLogHandler {
+    
+    public static final String SIMULATOR_DUMMY_LOG_NAME = "com.seagate.simulator:dummy";
+    
     public static boolean checkPermission(Message request,
             Message.Builder respond, Map<Long, ACL> currentMap) {
         boolean hasPermission = false;
@@ -83,7 +89,10 @@ public class GetLogHandler {
         return hasPermission;
     }
 
-    public static void handleGetLog(SimulatorEngine engine, Message request, Message.Builder respond) throws UnknownHostException {
+    public static void handleGetLog(SimulatorEngine engine, Message request, KineticMessage kmresp) throws UnknownHostException {
+        
+        Message.Builder respond = (Message.Builder) kmresp.getMessage();
+        
         List<Type> types = request.getCommand().getBody().getGetLog()
                 .getTypeList();
 
@@ -198,6 +207,34 @@ public class GetLogHandler {
                 Limits limits = LimitsUtil.getLimits(engine.getServiceConfiguration());
                 getLog.setLimits(limits);
                 break;
+                
+            case DEVICE:
+                // get if name is set
+                boolean hasName = request.getCommand().getBody().getGetLog().getDevice().hasName();
+                
+                ByteString bs = null;
+                if (hasName) {
+                    //get name
+                    bs = request.getCommand().getBody().getGetLog().getDevice().getName();
+                    //check if this is the supported name
+                    if (SIMULATOR_DUMMY_LOG_NAME.equals(bs.toStringUtf8())) {
+                        byte[] dummyValue = new byte[1024 * 1024];
+                        Arrays.fill(dummyValue, (byte) 0);
+                        
+                        kmresp.setValue(dummyValue);
+                    } else {
+                        respond.getCommandBuilder().getStatusBuilder()
+                        .setCode(StatusCode.NOT_FOUND);
+                        respond.getCommandBuilder().getStatusBuilder()
+                        .setStatusMessage("No device log for the specified name: " + bs.toStringUtf8());   
+                    }
+                } else {
+                    respond.getCommandBuilder().getStatusBuilder()
+                    .setCode(StatusCode.NOT_FOUND);
+                    respond.getCommandBuilder().getStatusBuilder()
+                    .setStatusMessage("Missing device log name.");  
+                }
+                
             default:
                 ;
             }

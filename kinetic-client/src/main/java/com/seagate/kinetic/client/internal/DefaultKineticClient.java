@@ -25,6 +25,7 @@ import kinetic.client.CallbackHandler;
 import kinetic.client.ClientConfiguration;
 import kinetic.client.Entry;
 import kinetic.client.EntryMetadata;
+import kinetic.client.EntryNotFoundException;
 import kinetic.client.KineticException;
 import kinetic.client.advanced.AdvancedKineticClient;
 import kinetic.client.advanced.PersistOption;

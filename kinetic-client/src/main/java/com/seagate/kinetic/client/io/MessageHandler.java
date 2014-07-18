@@ -30,11 +30,11 @@ import kinetic.client.AsyncKineticException;
 import kinetic.client.ClientConfiguration;
 import kinetic.client.Entry;
 import kinetic.client.EntryMetadata;
+import kinetic.client.EntryNotFoundException;
 import kinetic.client.KineticException;
 
 import com.seagate.kinetic.client.internal.CallbackContext;
 import com.seagate.kinetic.client.internal.ClientProxy;
-import com.seagate.kinetic.client.internal.EntryNotFoundException;
 import com.seagate.kinetic.client.internal.MessageFactory;
 import com.seagate.kinetic.client.internal.async.DeleteAsyncCallbackHandler;
 import com.seagate.kinetic.client.internal.async.GetAsyncCallbackHandler;

@@ -20,6 +20,7 @@ package com.seagate.kinetic.admin.impl;
 import java.util.List;
 
 import kinetic.admin.ACL;
+import kinetic.admin.Device;
 import kinetic.admin.Domain;
 import kinetic.admin.KineticAdminClient;
 import kinetic.admin.KineticLog;
@@ -445,6 +446,10 @@ public class DefaultAdminClient implements KineticAdminClient {
             case LIMITS:
                 getLog.addType(Type.LIMITS);
                 break;
+                
+            case DEVICE:
+                throw new java.lang.UnsupportedOperationException(
+                        "Please use #getVendorSpecificDeviceLog() to get vendor specific log.");
 
             default:
                 ;
@@ -455,22 +460,7 @@ public class DefaultAdminClient implements KineticAdminClient {
 
         Message response = (Message) kmresp.getMessage();
 
-        if (response.getCommand().getHeader().getMessageType() != MessageType.GETLOG_RESPONSE) {
-            throw new KineticException("received wrong message type.");
-        }
-
-        if (response.getCommand().getStatus().getCode() == Status.StatusCode.NOT_AUTHORIZED) {
-
-            throw new KineticException("Authorized Exception: "
-                    + response.getCommand().getStatus().getCode() + ": "
-                    + response.getCommand().getStatus().getStatusMessage());
-        }
-
-        if (response.getCommand().getStatus().getCode() != Status.StatusCode.SUCCESS) {
-            throw new KineticException("Unknown Error: "
-                    + response.getCommand().getStatus().getCode() + ": "
-                    + response.getCommand().getStatus().getStatusMessage());
-        }
+        checkGetLogResponse(response);
 
         KineticLog kineticLog = new DefaultKineticLog(response);
         return kineticLog;
@@ -523,4 +513,69 @@ public class DefaultAdminClient implements KineticAdminClient {
                     + response.getCommand().getStatus().getStatusMessage());
         }
     }
+
+    @Override
+    public Device getVendorSpecificDeviceLog(byte[] name)
+            throws KineticException {
+        
+        KineticMessage km = MessageFactory.createKineticMessageWithBuilder();
+
+        Message.Builder request = (Builder) km.getMessage();
+
+        GetLog.Builder getLog = request.getCommandBuilder().getBodyBuilder()
+                .getGetLogBuilder();
+        
+        // add DEVICE type
+        getLog.addType(Type.DEVICE);
+        
+        // set vendor specific log name
+        getLog.getDeviceBuilder().setName(ByteString.copyFrom(name));
+        
+        // send getLog/DEVICE message
+        KineticMessage kmresp = getLog(km);
+        
+        // get response message
+        Message response = (Message) kmresp.getMessage();
+        
+        // sanity check response 
+        checkGetLogResponse(response);
+        
+        // get vendor specific getLog/DEVICE name/value
+        byte[] value = kmresp.getValue();
+        
+        
+        Device device = new Device();
+        
+        device.setName (name);
+        device.setValue(value);
+        
+        return device;
+    }
+    
+    /**
+     * Sanity check getLog response message.
+     * 
+     * @param response
+     * @throws KineticException
+     */
+    private static void checkGetLogResponse (Message response) throws KineticException {
+        
+        if (response.getCommand().getHeader().getMessageType() != MessageType.GETLOG_RESPONSE) {
+            throw new KineticException("received wrong message type.");
+        }
+
+        if (response.getCommand().getStatus().getCode() == Status.StatusCode.NOT_AUTHORIZED) {
+
+            throw new KineticException("Authorized Exception: "
+                    + response.getCommand().getStatus().getCode() + ": "
+                    + response.getCommand().getStatus().getStatusMessage());
+        }
+
+        if (response.getCommand().getStatus().getCode() != Status.StatusCode.SUCCESS) {
+            throw new KineticException("Unknown Error: "
+                    + response.getCommand().getStatus().getCode() + ": "
+                    + response.getCommand().getStatus().getStatusMessage());
+        }
+    }
+    
 }
