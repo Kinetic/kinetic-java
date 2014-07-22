@@ -346,6 +346,8 @@ public class KineticAdminTest extends IntegrationTestCase {
         // assertTrue(log.getLimits().getMaxConnections() >= 0);
         // assertTrue(log.getLimits().getMaxMessageSize() >= 0);
         // assertTrue(log.getLimits().getMaxKeyRangeCount() >= 0);
+        
+        logger.info("get max identity count: " + log.getLimits().getMaxIdentityCount());
 
         logger.info(this.testEndInfo());
     }
@@ -1593,6 +1595,7 @@ public class KineticAdminTest extends IntegrationTestCase {
         // assertTrue(log.getLimits().getMaxConnections() >= 0);
         // assertTrue(log.getLimits().getMaxMessageSize() >= 0);
         // assertTrue(log.getLimits().getMaxKeyRangeCount() >= 0);
+        logger.info("max identity count: " + respond1.getCommand().getBody().getGetLog().getLimits().getMaxIdentityCount() );
     }
 
     @Test

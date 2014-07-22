@@ -44,6 +44,8 @@ public abstract class LimitsUtil {
                 .getMaxOutstandingWriteRequests());
         limits.setMaxMessageSize(config.getMaxMessageSize());
         limits.setMaxKeyRangeCount(config.getMaxSupportedKeyRangeSize());
+        
+        limits.setMaxIdentityCount(config.getMaxIdentityCount());
 
         return limits.build();
     }

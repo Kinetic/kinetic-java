@@ -457,6 +457,10 @@ public class DefaultKineticLog implements KineticLog {
         if (limits.hasMaxKeyRangeCount()) {
             LimitsInfo.setMaxKeyRangeCount(limits.getMaxKeyRangeCount());
         }
+        
+        if (limits.hasMaxIdentityCount()) {
+            LimitsInfo.setMaxIdentityCount(limits.getMaxIdentityCount());
+        }
 
         return LimitsInfo;
     }

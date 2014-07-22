@@ -189,14 +189,21 @@ public class SimulatorConfiguration extends Properties {
     private static int maxMessageSize = -1;
     
     /**
+     * max supported identity cout.
+     * 
+     * -1 means not enforced.
+     */
+    private static int maxIdentityCount = -1;
+    
+    /**
      * current simulator version.
      */
-    public static final String SIMULATOR_VERSION = "0.6.0.3-SNAPSHOT";
+    public static final String SIMULATOR_VERSION = "0.7.0.2-SNAPSHOT";
     
     /**
      * simulator source commit hash.
      */
-    public static final String SIMULATOR_SOURCE_HASH = "b1badd928fc2ee618ecbde8be0fbadd0aac447fe";
+    public static final String SIMULATOR_SOURCE_HASH = "d1b6eb31cf7ce2a34d5e5f65fadc82151990b8dd";
     
     /**
      * current supported protocol version defined at kinetic-protocol repository.
@@ -746,6 +753,17 @@ public class SimulatorConfiguration extends Properties {
      */
     public static int getMaxSupportedTagSize() {
         return maxSupportedTagSize;
+    }
+    
+    /**
+     * Get maximum identity count.
+     * 
+     * Returns -1 means not enforced by the current implementation.
+     * 
+     * @return default value (-1)
+     */
+    public static int getMaxIdentityCount() {
+        return maxIdentityCount;
     }
 
     /**

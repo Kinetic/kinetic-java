@@ -56,6 +56,9 @@ public class Limits {
     
     // max key range count;
     private int maxKeyRangeCount = 0;
+    
+    //max identity count
+    private int maxIdentityCount = -1;
 
     /**
      * Get the value of max key size.
@@ -229,4 +232,24 @@ public class Limits {
     public void setMaxKeyRangeCount(int maxKeyRangeCount) {
         this.maxKeyRangeCount = maxKeyRangeCount;
     }
+    
+    /**
+     * Get max identity count. -1 means not enforced.
+     * 
+     * @return max identity count.
+     */
+    public int getMaxIdentityCount() {
+        return this.maxIdentityCount;
+    }
+    
+    /**
+     * Set max identity count.
+     * 
+     * @param maxIdentityCount the max identity count to be set.
+     */
+    public void setMaxIdentityCount (int maxIdentityCount) {
+        this.maxIdentityCount = maxIdentityCount;
+    }
+    
+    
 }
