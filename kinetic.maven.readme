@@ -20,6 +20,3 @@ To build kinetic-java projects, run maven command line in <Kinetic-Folder>:
    
    To skip test cases:
    mvn clean package -Dmaven.test.skip=true or mvn clean package -DskipTests
-   
-   To skip sync kinetic.proto file with kinetic-protocol repository (for example, no Internet connections, etc): 
-   mvn clean compile -DskipProtoSync

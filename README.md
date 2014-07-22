@@ -9,6 +9,7 @@ Suggested Development Environments
 * Maven 3.0.3 or later: [http://maven.apache.org/download.cgi](http://maven.apache.org/download.cgi)
 
 * Protocol buffer 2.5 [https://code.google.com/p/protobuf/downloads/list] (https://code.google.com/p/protobuf/downloads/list)
+  (Optional requirement.  Required only if desired to change the kinetic.proto file. See build.setup.readme for details.)   
 
 * For Windows 7 system, install the system patch package for jni:
   32 bit: [http://www.microsoft.com/en-us/download/details.aspx?id=5555](http://www.microsoft.com/en-us/download/details.aspx?id=5555)
