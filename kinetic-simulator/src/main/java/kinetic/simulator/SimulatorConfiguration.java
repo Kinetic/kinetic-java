@@ -201,12 +201,12 @@ public class SimulatorConfiguration extends Properties {
     /**
      * current supported protocol version defined at kinetic-protocol repository.
      */
-    public static final String PROTOCOL_VERSION = "2.0.5";
+    public static final String PROTOCOL_VERSION = "2.0.6";
     
     /**
      * current supported protocol source commit hash value obtained from kinetic-protocol repository.
      */
-    public static final String PROTOCOL_SOURCE_HASH = "80b18b440c05c5994cb1bd555f680f8f62bb0337";
+    public static final String PROTOCOL_SOURCE_HASH = "c3b5e37bb236785b12ec2cdae03b682185e7279f";
     
     /**
      * heart beat provider.

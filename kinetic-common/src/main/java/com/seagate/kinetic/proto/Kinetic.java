@@ -19678,6 +19678,16 @@ public final class Kinetic {
          * <code>optional uint32 maxKeyRangeCount = 9;</code>
          */
         int getMaxKeyRangeCount();
+
+        // optional uint32 maxIdentityCount = 10;
+        /**
+         * <code>optional uint32 maxIdentityCount = 10;</code>
+         */
+        boolean hasMaxIdentityCount();
+        /**
+         * <code>optional uint32 maxIdentityCount = 10;</code>
+         */
+        int getMaxIdentityCount();
       }
       /**
        * Protobuf type {@code com.seagate.kinetic.proto.Message.GetLog.Limits}
@@ -19773,6 +19783,11 @@ public final class Kinetic {
                 case 72: {
                   bitField0_ |= 0x00000100;
                   maxKeyRangeCount_ = input.readUInt32();
+                  break;
+                }
+                case 80: {
+                  bitField0_ |= 0x00000200;
+                  maxIdentityCount_ = input.readUInt32();
                   break;
                 }
               }
@@ -19959,6 +19974,22 @@ public final class Kinetic {
           return maxKeyRangeCount_;
         }
 
+        // optional uint32 maxIdentityCount = 10;
+        public static final int MAXIDENTITYCOUNT_FIELD_NUMBER = 10;
+        private int maxIdentityCount_;
+        /**
+         * <code>optional uint32 maxIdentityCount = 10;</code>
+         */
+        public boolean hasMaxIdentityCount() {
+          return ((bitField0_ & 0x00000200) == 0x00000200);
+        }
+        /**
+         * <code>optional uint32 maxIdentityCount = 10;</code>
+         */
+        public int getMaxIdentityCount() {
+          return maxIdentityCount_;
+        }
+
         private void initFields() {
           maxKeySize_ = 0;
           maxValueSize_ = 0;
@@ -19969,6 +20000,7 @@ public final class Kinetic {
           maxOutstandingWriteRequests_ = 0;
           maxMessageSize_ = 0;
           maxKeyRangeCount_ = 0;
+          maxIdentityCount_ = 0;
         }
         private byte memoizedIsInitialized = -1;
         public final boolean isInitialized() {
@@ -20008,6 +20040,9 @@ public final class Kinetic {
           }
           if (((bitField0_ & 0x00000100) == 0x00000100)) {
             output.writeUInt32(9, maxKeyRangeCount_);
+          }
+          if (((bitField0_ & 0x00000200) == 0x00000200)) {
+            output.writeUInt32(10, maxIdentityCount_);
           }
           getUnknownFields().writeTo(output);
         }
@@ -20053,6 +20088,10 @@ public final class Kinetic {
           if (((bitField0_ & 0x00000100) == 0x00000100)) {
             size += com.google.protobuf.CodedOutputStream
               .computeUInt32Size(9, maxKeyRangeCount_);
+          }
+          if (((bitField0_ & 0x00000200) == 0x00000200)) {
+            size += com.google.protobuf.CodedOutputStream
+              .computeUInt32Size(10, maxIdentityCount_);
           }
           size += getUnknownFields().getSerializedSize();
           memoizedSerializedSize = size;
@@ -20188,6 +20227,8 @@ public final class Kinetic {
             bitField0_ = (bitField0_ & ~0x00000080);
             maxKeyRangeCount_ = 0;
             bitField0_ = (bitField0_ & ~0x00000100);
+            maxIdentityCount_ = 0;
+            bitField0_ = (bitField0_ & ~0x00000200);
             return this;
           }
 
@@ -20252,6 +20293,10 @@ public final class Kinetic {
               to_bitField0_ |= 0x00000100;
             }
             result.maxKeyRangeCount_ = maxKeyRangeCount_;
+            if (((from_bitField0_ & 0x00000200) == 0x00000200)) {
+              to_bitField0_ |= 0x00000200;
+            }
+            result.maxIdentityCount_ = maxIdentityCount_;
             result.bitField0_ = to_bitField0_;
             onBuilt();
             return result;
@@ -20294,6 +20339,9 @@ public final class Kinetic {
             }
             if (other.hasMaxKeyRangeCount()) {
               setMaxKeyRangeCount(other.getMaxKeyRangeCount());
+            }
+            if (other.hasMaxIdentityCount()) {
+              setMaxIdentityCount(other.getMaxIdentityCount());
             }
             this.mergeUnknownFields(other.getUnknownFields());
             return this;
@@ -20615,6 +20663,39 @@ public final class Kinetic {
           public Builder clearMaxKeyRangeCount() {
             bitField0_ = (bitField0_ & ~0x00000100);
             maxKeyRangeCount_ = 0;
+            onChanged();
+            return this;
+          }
+
+          // optional uint32 maxIdentityCount = 10;
+          private int maxIdentityCount_ ;
+          /**
+           * <code>optional uint32 maxIdentityCount = 10;</code>
+           */
+          public boolean hasMaxIdentityCount() {
+            return ((bitField0_ & 0x00000200) == 0x00000200);
+          }
+          /**
+           * <code>optional uint32 maxIdentityCount = 10;</code>
+           */
+          public int getMaxIdentityCount() {
+            return maxIdentityCount_;
+          }
+          /**
+           * <code>optional uint32 maxIdentityCount = 10;</code>
+           */
+          public Builder setMaxIdentityCount(int value) {
+            bitField0_ |= 0x00000200;
+            maxIdentityCount_ = value;
+            onChanged();
+            return this;
+          }
+          /**
+           * <code>optional uint32 maxIdentityCount = 10;</code>
+           */
+          public Builder clearMaxIdentityCount() {
+            bitField0_ = (bitField0_ & ~0x00000200);
+            maxIdentityCount_ = 0;
             onChanged();
             return this;
           }
@@ -26836,7 +26917,7 @@ public final class Kinetic {
   static {
     java.lang.String[] descriptorData = {
       "\n\rkinetic.proto\022\031com.seagate.kinetic.pro" +
-      "to\"\226+\n\007Message\022;\n\007command\030\001 \001(\0132*.com.se" +
+      "to\"\260+\n\007Message\022;\n\007command\030\001 \001(\0132*.com.se" +
       "agate.kinetic.proto.Message.Command\022\014\n\004h" +
       "mac\030\003 \001(\014\032\266\001\n\007Command\0229\n\006header\030\001 \001(\0132)." +
       "com.seagate.kinetic.proto.Message.Header" +
@@ -26896,7 +26977,7 @@ public final class Kinetic {
       ".Status\022>\n\005p2pop\030\010 \001(\0132/.com.seagate.kin" +
       "etic.proto.Message.P2POperation\0323\n\004Peer\022",
       "\020\n\010hostname\030\001 \001(\t\022\014\n\004port\030\002 \001(\005\022\013\n\003tls\030\003" +
-      " \001(\010\032\370\r\n\006GetLog\022<\n\004type\030\001 \003(\0162..com.seag" +
+      " \001(\010\032\222\016\n\006GetLog\022<\n\004type\030\001 \003(\0162..com.seag" +
       "ate.kinetic.proto.Message.GetLog.Type\022J\n" +
       "\013utilization\030\002 \003(\01325.com.seagate.kinetic" +
       ".proto.Message.GetLog.Utilization\022J\n\013tem" +
@@ -26930,51 +27011,52 @@ public final class Kinetic {
       "ess\030\004 \001(\014\032o\n\nStatistics\022C\n\013messageType\030\001" +
       " \001(\0162..com.seagate.kinetic.proto.Message" +
       ".MessageType\022\r\n\005count\030\004 \001(\004\022\r\n\005bytes\030\005 \001" +
-      "(\004\032\361\001\n\006Limits\022\022\n\nmaxKeySize\030\001 \001(\r\022\024\n\014max" +
+      "(\004\032\213\002\n\006Limits\022\022\n\nmaxKeySize\030\001 \001(\r\022\024\n\014max" +
       "ValueSize\030\002 \001(\r\022\026\n\016maxVersionSize\030\003 \001(\r\022" +
       "\022\n\nmaxTagSize\030\004 \001(\r\022\026\n\016maxConnections\030\005 " +
       "\001(\r\022\"\n\032maxOutstandingReadRequests\030\006 \001(\r\022" +
       "#\n\033maxOutstandingWriteRequests\030\007 \001(\r\022\026\n\016",
       "maxMessageSize\030\010 \001(\r\022\030\n\020maxKeyRangeCount" +
-      "\030\t \001(\r\032\026\n\006Device\022\014\n\004name\030\001 \001(\014\"\236\001\n\004Type\022" +
-      "\031\n\014INVALID_TYPE\020\377\377\377\377\377\377\377\377\377\001\022\020\n\014UTILIZATIO" +
-      "NS\020\000\022\020\n\014TEMPERATURES\020\001\022\016\n\nCAPACITIES\020\002\022\021" +
-      "\n\rCONFIGURATION\020\003\022\016\n\nSTATISTICS\020\004\022\014\n\010MES" +
-      "SAGES\020\005\022\n\n\006LIMITS\020\006\022\n\n\006DEVICE\020\007\032\351\004\n\010Secu" +
-      "rity\022<\n\003acl\030\002 \003(\0132/.com.seagate.kinetic." +
-      "proto.Message.Security.ACL\032\236\004\n\003ACL\022\020\n\010id" +
-      "entity\030\001 \001(\003\022\013\n\003key\030\002 \001(\014\022T\n\rhmacAlgorit" +
-      "hm\030\003 \001(\0162=.com.seagate.kinetic.proto.Mes",
-      "sage.Security.ACL.HMACAlgorithm\022D\n\005scope" +
-      "\030\004 \003(\01325.com.seagate.kinetic.proto.Messa" +
-      "ge.Security.ACL.Scope\032\213\001\n\005Scope\022\016\n\006offse" +
-      "t\030\001 \001(\003\022\r\n\005value\030\002 \001(\014\022N\n\npermission\030\003 \003" +
-      "(\0162:.com.seagate.kinetic.proto.Message.S" +
-      "ecurity.ACL.Permission\022\023\n\013TlsRequired\030\004 " +
-      "\001(\010\"B\n\rHMACAlgorithm\022#\n\026INVALID_HMAC_ALG" +
-      "ORITHM\020\377\377\377\377\377\377\377\377\377\001\022\014\n\010HmacSHA1\020\001\"\211\001\n\nPerm" +
-      "ission\022\037\n\022INVALID_PERMISSION\020\377\377\377\377\377\377\377\377\377\001\022" +
-      "\010\n\004READ\020\000\022\t\n\005WRITE\020\001\022\n\n\006DELETE\020\002\022\t\n\005RANG",
-      "E\020\003\022\t\n\005SETUP\020\004\022\t\n\005P2POP\020\005\022\n\n\006GETLOG\020\007\022\014\n" +
-      "\010SECURITY\020\010\"c\n\017Synchronization\022$\n\027INVALI" +
-      "D_SYNCHRONIZATION\020\377\377\377\377\377\377\377\377\377\001\022\020\n\014WRITETHR" +
-      "OUGH\020\001\022\r\n\tWRITEBACK\020\002\022\t\n\005FLUSH\020\003\"_\n\tAlgo" +
-      "rithm\022\036\n\021INVALID_ALGORITHM\020\377\377\377\377\377\377\377\377\377\001\022\010\n" +
-      "\004SHA1\020\001\022\010\n\004SHA2\020\002\022\010\n\004SHA3\020\003\022\t\n\005CRC32\020\004\022\t" +
-      "\n\005CRC64\020\005\"\207\004\n\013MessageType\022!\n\024INVALID_MES" +
-      "SAGE_TYPE\020\377\377\377\377\377\377\377\377\377\001\022\007\n\003GET\020\002\022\020\n\014GET_RES" +
-      "PONSE\020\001\022\007\n\003PUT\020\004\022\020\n\014PUT_RESPONSE\020\003\022\n\n\006DE" +
-      "LETE\020\006\022\023\n\017DELETE_RESPONSE\020\005\022\013\n\007GETNEXT\020\010",
-      "\022\024\n\020GETNEXT_RESPONSE\020\007\022\017\n\013GETPREVIOUS\020\n\022" +
-      "\030\n\024GETPREVIOUS_RESPONSE\020\t\022\017\n\013GETKEYRANGE" +
-      "\020\014\022\030\n\024GETKEYRANGE_RESPONSE\020\013\022\016\n\nGETVERSI" +
-      "ON\020\020\022\027\n\023GETVERSION_RESPONSE\020\017\022\t\n\005SETUP\020\026" +
-      "\022\022\n\016SETUP_RESPONSE\020\025\022\n\n\006GETLOG\020\030\022\023\n\017GETL" +
-      "OG_RESPONSE\020\027\022\014\n\010SECURITY\020\032\022\025\n\021SECURITY_" +
-      "RESPONSE\020\031\022\021\n\rPEER2PEERPUSH\020\034\022\032\n\026PEER2PE" +
-      "ERPUSH_RESPONSE\020\033\022\010\n\004NOOP\020\036\022\021\n\rNOOP_RESP" +
-      "ONSE\020\035\022\020\n\014FLUSHALLDATA\020 \022\031\n\025FLUSHALLDATA" +
-      "_RESPONSE\020\037B\tB\007Kinetic"
+      "\030\t \001(\r\022\030\n\020maxIdentityCount\030\n \001(\r\032\026\n\006Devi" +
+      "ce\022\014\n\004name\030\001 \001(\014\"\236\001\n\004Type\022\031\n\014INVALID_TYP" +
+      "E\020\377\377\377\377\377\377\377\377\377\001\022\020\n\014UTILIZATIONS\020\000\022\020\n\014TEMPER" +
+      "ATURES\020\001\022\016\n\nCAPACITIES\020\002\022\021\n\rCONFIGURATIO" +
+      "N\020\003\022\016\n\nSTATISTICS\020\004\022\014\n\010MESSAGES\020\005\022\n\n\006LIM" +
+      "ITS\020\006\022\n\n\006DEVICE\020\007\032\351\004\n\010Security\022<\n\003acl\030\002 " +
+      "\003(\0132/.com.seagate.kinetic.proto.Message." +
+      "Security.ACL\032\236\004\n\003ACL\022\020\n\010identity\030\001 \001(\003\022\013" +
+      "\n\003key\030\002 \001(\014\022T\n\rhmacAlgorithm\030\003 \001(\0162=.com",
+      ".seagate.kinetic.proto.Message.Security." +
+      "ACL.HMACAlgorithm\022D\n\005scope\030\004 \003(\01325.com.s" +
+      "eagate.kinetic.proto.Message.Security.AC" +
+      "L.Scope\032\213\001\n\005Scope\022\016\n\006offset\030\001 \001(\003\022\r\n\005val" +
+      "ue\030\002 \001(\014\022N\n\npermission\030\003 \003(\0162:.com.seaga" +
+      "te.kinetic.proto.Message.Security.ACL.Pe" +
+      "rmission\022\023\n\013TlsRequired\030\004 \001(\010\"B\n\rHMACAlg" +
+      "orithm\022#\n\026INVALID_HMAC_ALGORITHM\020\377\377\377\377\377\377\377" +
+      "\377\377\001\022\014\n\010HmacSHA1\020\001\"\211\001\n\nPermission\022\037\n\022INVA" +
+      "LID_PERMISSION\020\377\377\377\377\377\377\377\377\377\001\022\010\n\004READ\020\000\022\t\n\005W",
+      "RITE\020\001\022\n\n\006DELETE\020\002\022\t\n\005RANGE\020\003\022\t\n\005SETUP\020\004" +
+      "\022\t\n\005P2POP\020\005\022\n\n\006GETLOG\020\007\022\014\n\010SECURITY\020\010\"c\n" +
+      "\017Synchronization\022$\n\027INVALID_SYNCHRONIZAT" +
+      "ION\020\377\377\377\377\377\377\377\377\377\001\022\020\n\014WRITETHROUGH\020\001\022\r\n\tWRIT" +
+      "EBACK\020\002\022\t\n\005FLUSH\020\003\"_\n\tAlgorithm\022\036\n\021INVAL" +
+      "ID_ALGORITHM\020\377\377\377\377\377\377\377\377\377\001\022\010\n\004SHA1\020\001\022\010\n\004SHA" +
+      "2\020\002\022\010\n\004SHA3\020\003\022\t\n\005CRC32\020\004\022\t\n\005CRC64\020\005\"\207\004\n\013" +
+      "MessageType\022!\n\024INVALID_MESSAGE_TYPE\020\377\377\377\377" +
+      "\377\377\377\377\377\001\022\007\n\003GET\020\002\022\020\n\014GET_RESPONSE\020\001\022\007\n\003PUT" +
+      "\020\004\022\020\n\014PUT_RESPONSE\020\003\022\n\n\006DELETE\020\006\022\023\n\017DELE",
+      "TE_RESPONSE\020\005\022\013\n\007GETNEXT\020\010\022\024\n\020GETNEXT_RE" +
+      "SPONSE\020\007\022\017\n\013GETPREVIOUS\020\n\022\030\n\024GETPREVIOUS" +
+      "_RESPONSE\020\t\022\017\n\013GETKEYRANGE\020\014\022\030\n\024GETKEYRA" +
+      "NGE_RESPONSE\020\013\022\016\n\nGETVERSION\020\020\022\027\n\023GETVER" +
+      "SION_RESPONSE\020\017\022\t\n\005SETUP\020\026\022\022\n\016SETUP_RESP" +
+      "ONSE\020\025\022\n\n\006GETLOG\020\030\022\023\n\017GETLOG_RESPONSE\020\027\022" +
+      "\014\n\010SECURITY\020\032\022\025\n\021SECURITY_RESPONSE\020\031\022\021\n\r" +
+      "PEER2PEERPUSH\020\034\022\032\n\026PEER2PEERPUSH_RESPONS" +
+      "E\020\033\022\010\n\004NOOP\020\036\022\021\n\rNOOP_RESPONSE\020\035\022\020\n\014FLUS" +
+      "HALLDATA\020 \022\031\n\025FLUSHALLDATA_RESPONSE\020\037B\tB",
+      "\007Kinetic"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -27094,7 +27176,7 @@ public final class Kinetic {
           internal_static_com_seagate_kinetic_proto_Message_GetLog_Limits_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_com_seagate_kinetic_proto_Message_GetLog_Limits_descriptor,
-              new java.lang.String[] { "MaxKeySize", "MaxValueSize", "MaxVersionSize", "MaxTagSize", "MaxConnections", "MaxOutstandingReadRequests", "MaxOutstandingWriteRequests", "MaxMessageSize", "MaxKeyRangeCount", });
+              new java.lang.String[] { "MaxKeySize", "MaxValueSize", "MaxVersionSize", "MaxTagSize", "MaxConnections", "MaxOutstandingReadRequests", "MaxOutstandingWriteRequests", "MaxMessageSize", "MaxKeyRangeCount", "MaxIdentityCount", });
           internal_static_com_seagate_kinetic_proto_Message_GetLog_Device_descriptor =
             internal_static_com_seagate_kinetic_proto_Message_GetLog_descriptor.getNestedTypes().get(6);
           internal_static_com_seagate_kinetic_proto_Message_GetLog_Device_fieldAccessorTable = new
