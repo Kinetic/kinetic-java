@@ -58,16 +58,6 @@
 							<executable>${project.parent.basedir}/bin/syncProtoFromRepo.sh</executable>
 						</configuration>
 					</execution>
-					<execution>
-						<id>build-protocol</id>
-						<phase>generate-sources</phase>
-						<goals>
-							<goal>exec</goal>
-						</goals>
-						<configuration>
-							<executable>${project.parent.basedir}/bin/buildProto.sh</executable>
-						</configuration>
-					</execution>
 				</executions>
 			</plugin>
 			<plugin>
