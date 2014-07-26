@@ -26,7 +26,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.seagate.kinetic.common.lib.KineticMessage;
+import com.seagate.kinetic.simulator.internal.ConnectionInfo;
 import com.seagate.kinetic.simulator.internal.FaultInjectedCloseConnectionException;
+import com.seagate.kinetic.simulator.internal.SimulatorEngine;
+import com.seagate.kinetic.simulator.internal.StatefulMessage;
+import com.seagate.kinetic.simulator.io.provider.nio.NioConnectionStateManager;
 import com.seagate.kinetic.simulator.io.provider.nio.NioQueuedRequestProcessRunner;
 import com.seagate.kinetic.simulator.io.provider.nio.RequestProcessRunner;
 import com.seagate.kinetic.simulator.io.provider.spi.MessageService;
@@ -34,7 +38,6 @@ import com.seagate.kinetic.simulator.io.provider.spi.MessageService;
 /**
  *
  * @author chiaming
- *
  */
 public class NioMessageServiceHandler extends
 		SimpleChannelInboundHandler<KineticMessage> {
@@ -62,6 +65,16 @@ public class NioMessageServiceHandler extends
 					lcservice);
 		}
 	}
+	
+	@Override
+	public void channelActive (ChannelHandlerContext ctx) throws Exception {
+	    super.channelActive(ctx);
+	    
+	    // register connection info with the channel handler context
+	    ConnectionInfo info = SimulatorEngine.registerNewConnection(ctx);
+	    
+	    logger.info("***** connection registered., id = " + info.getConnectionId());
+	}
 
 	@Override
 	protected void channelRead0(ChannelHandlerContext ctx,
@@ -72,14 +85,26 @@ public class NioMessageServiceHandler extends
 			throw new FaultInjectedCloseConnectionException(
 					"Fault injected for the simulator");
 		}
+		
+		StatefulMessage sm = NioConnectionStateManager.getStatefulMessage(ctx, request);
 
 		if (enforceOrdering) {
 			// process request sequentially
-			queuedRequestProcessRunner.processRequest(ctx, request);
+		    if (sm != null) {
+		        queuedRequestProcessRunner.processRequest(ctx, sm);
+		    } else {
+		        queuedRequestProcessRunner.processRequest(ctx, request);
+		    }
 		} else {
 			// each request is independently processed
-			RequestProcessRunner rpr = new RequestProcessRunner(lcservice, ctx,
-					request);
+			RequestProcessRunner rpr = null;
+			
+			if (sm != null) {
+			    rpr = new RequestProcessRunner(lcservice, ctx,sm);
+			} else {
+			    rpr = new RequestProcessRunner(lcservice, ctx,request);
+			}
+			
 			this.lcservice.execute(rpr);
 		}
 	}
@@ -106,6 +131,12 @@ public class NioMessageServiceHandler extends
 
 	@Override
 	public void handlerRemoved(ChannelHandlerContext ctx) throws Exception {
+	    
+	 // remove connection info of the channel handler context from conn info map
+	    ConnectionInfo info = SimulatorEngine.removeConnectionInfo(ctx);
+	   
+	    logger.info("connection info is removed, id=" + info.getConnectionId() );
+	    
 		// close process runner
 		if (this.queuedRequestProcessRunner != null) {
 			logger.fine("removing/closing nio queued request process runner ...");

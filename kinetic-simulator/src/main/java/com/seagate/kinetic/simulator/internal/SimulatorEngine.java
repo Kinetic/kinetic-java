@@ -23,6 +23,7 @@ import java.io.File;
 import java.security.Key;
 import java.util.ArrayList;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -35,7 +36,6 @@ import com.seagate.kinetic.heartbeat.message.OperationCounter;
 import com.seagate.kinetic.proto.Kinetic.Message;
 import com.seagate.kinetic.proto.Kinetic.Message.MessageType;
 import com.seagate.kinetic.proto.Kinetic.Message.Security.ACL;
-import com.seagate.kinetic.proto.Kinetic.MessageOrBuilder;
 import com.seagate.kinetic.simulator.heartbeat.Heartbeat;
 import com.seagate.kinetic.simulator.internal.p2p.P2POperationHandler;
 import com.seagate.kinetic.simulator.io.provider.nio.NioEventLoopGroupManager;
@@ -143,7 +143,13 @@ public class SimulatorEngine implements MessageService {
     // shutdown hook
     private static SimulatorShutdownHook shutdownHook = new SimulatorShutdownHook(
             tpService);
+    
+    //connection map
+    private static ConcurrentHashMap<Object, ConnectionInfo> connectionMap = new ConcurrentHashMap<Object, ConnectionInfo>();
 
+    // next connection id
+    private static long nextConnectionId = 0;
+    
     static {
         // add shutdown hook to clean up resources
         Runtime.getRuntime().addShutdownHook(shutdownHook);
@@ -701,4 +707,73 @@ public class SimulatorEngine implements MessageService {
         }
 
     }
+    
+    /**
+     * put connection/connection info into the connection map.
+     *  
+     * @param connection the key for the entry
+     * @param cinfo value of the entry
+     * @return the previous value associated with key, or null if there was no mapping for key
+     */
+    public static ConnectionInfo putConnectionInfo (Object connection, ConnectionInfo cinfo) {
+        return connectionMap.put(connection, cinfo);
+    }
+    
+    /**
+     * Get connection info based on the specified key.
+     * 
+     * @param connection key to get the connection info.
+     * 
+     * @return the value to which the specified key is mapped, or null if this map contains no mapping for the key
+     */
+    public static ConnectionInfo getConnectionInfo (Object connection) {
+        return connectionMap.get(connection);
+    }
+    
+    /**
+     * remove the value of the specified key.
+     * @param connection the key od the entry that needs to be removed
+     * @return the previous value associated with key, or null if there was no mapping for key
+     */
+    public static ConnectionInfo removeConnectionInfo (Object connection) {
+        return connectionMap.remove (connection);
+    }
+    
+    /**
+     * register a new connection. A new connection info instance is created and associated with the connection.
+     * 
+     * @param connection the new connection to be added to the connection map.
+     * 
+     * @return the connection info instance associated with the connection.
+     */
+    public static ConnectionInfo registerNewConnection (Object connection) {
+        ConnectionInfo info = newConnectionInfo();
+        putConnectionInfo (connection, info);
+        
+        return info;
+    }
+    
+    /**
+     * instantiate a new connection info object with connection id set.
+     * 
+     * @return a new connection info object with connection id set
+     */
+    public static ConnectionInfo newConnectionInfo() {
+        
+        ConnectionInfo info = new ConnectionInfo();
+        
+        info.setConnectionId(getNextConnectionId());
+        
+        return info;
+    }
+    
+    /**
+     * Get next available connection id.
+     * 
+     * @return next available connection id in sequence.
+     */
+    private static synchronized long getNextConnectionId() {
+        return nextConnectionId ++;
+    }
+    
 }

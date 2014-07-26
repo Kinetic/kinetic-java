@@ -28,6 +28,7 @@ import com.seagate.kinetic.common.lib.KineticMessage;
 import com.seagate.kinetic.proto.Kinetic.Message;
 import com.seagate.kinetic.proto.Kinetic.Message.Status;
 import com.seagate.kinetic.proto.Kinetic.Message.Status.StatusCode;
+import com.seagate.kinetic.simulator.internal.StatefulMessage;
 
 class HeaderException extends Exception {
 	private static final long serialVersionUID = 5201751340412081922L;
@@ -115,6 +116,12 @@ public class HeaderOp {
 			// set status code
 			respond.getCommandBuilder().getStatusBuilder()
 			.setCode(Status.StatusCode.SUCCESS);
+			
+			// set connection Id as server instructed.
+			if (km instanceof StatefulMessage) {
+			    long cid = ((StatefulMessage)km).getConnectionId();
+			    respond.getCommandBuilder().getHeaderBuilder().setConnectionID(cid);
+			}
 
 			LOG.fine("Header processed successfully. status code="
 					+ respond.getCommand().getStatus().getCode());

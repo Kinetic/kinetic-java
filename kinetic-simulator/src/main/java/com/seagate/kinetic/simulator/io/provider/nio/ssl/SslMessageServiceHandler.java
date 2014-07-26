@@ -26,6 +26,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.seagate.kinetic.common.lib.KineticMessage;
+import com.seagate.kinetic.simulator.internal.ConnectionInfo;
+import com.seagate.kinetic.simulator.internal.SimulatorEngine;
+import com.seagate.kinetic.simulator.internal.StatefulMessage;
+import com.seagate.kinetic.simulator.io.provider.nio.NioConnectionStateManager;
 import com.seagate.kinetic.simulator.io.provider.nio.NioQueuedRequestProcessRunner;
 import com.seagate.kinetic.simulator.io.provider.nio.RequestProcessRunner;
 import com.seagate.kinetic.simulator.io.provider.spi.MessageService;
@@ -61,20 +65,38 @@ public class SslMessageServiceHandler extends
 
 	@Override
 	public void channelActive(final ChannelHandlerContext ctx) throws Exception {
-		logger.fine("Kinetic ssl channel is active ...");
+	    
+	    // register connection info with the channel handler context
+        ConnectionInfo info = SimulatorEngine.registerNewConnection(ctx);
+        
+        logger.info("TLS channel is active, connection registered., id = " + info.getConnectionId());
 	}
 
 	@Override
 	protected void channelRead0(ChannelHandlerContext ctx,
 			KineticMessage request)
 			throws Exception {
+	    
+	    StatefulMessage sm = NioConnectionStateManager.getStatefulMessage(ctx, request);
 
 		if (enforceOrdering) {
-			// process request sequentially
-			queuedRequestProcessRunner.processRequest(ctx, request);
+		    // process request sequentially
+            if (sm != null) {
+                queuedRequestProcessRunner.processRequest(ctx, sm);
+            } else {
+                queuedRequestProcessRunner.processRequest(ctx, request);
+            }
 		} else {
-			RequestProcessRunner rpr = new RequestProcessRunner(lcservice, ctx,
-					request);
+		    
+		 // each request is independently processed
+            RequestProcessRunner rpr = null;
+            
+            if (sm != null) {
+                rpr = new RequestProcessRunner(lcservice, ctx,sm);
+            } else {
+                rpr = new RequestProcessRunner(lcservice, ctx,request);
+            }
+			
 			this.lcservice.execute(rpr);
 		}
 
@@ -103,6 +125,11 @@ public class SslMessageServiceHandler extends
 
 	@Override
 	public void handlerRemoved(ChannelHandlerContext ctx) throws Exception {
+	    
+	    // remove connection info of the channel handler context from conn info map
+        ConnectionInfo info = SimulatorEngine.removeConnectionInfo(ctx);
+       
+        logger.info("connection info is removed, id=" + info.getConnectionId() );
 
 		if (this.queuedRequestProcessRunner != null) {
 			logger.info("removing/closing ssl nio queued request process runner ...");

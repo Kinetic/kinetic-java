@@ -19,6 +19,7 @@ package com.seagate.kinetic.client.internal;
 
 import java.util.ArrayList;
 import java.util.List;
+
 import java.util.logging.Logger;
 
 import kinetic.client.CallbackHandler;
@@ -85,6 +86,9 @@ public class DefaultKineticClient implements AdvancedKineticClient {
 
         // create client proxy to talk to the drive
         client = new ClientProxy(config);
+        
+        //send a no-op and set connection ID.
+        this.connectionSetUp();
 
         LOG.fine("kinetic client initialized, server=" + config.getHost()
                 + ", port=" + config.getPort());
@@ -932,6 +936,35 @@ public class DefaultKineticClient implements AdvancedKineticClient {
                 true);
 
         this.client.requestAsync(message, handler);
+    }
+    
+    /**
+     * Set up kinetic connection.
+     * <p>
+     * The purpose is to get a connection ID from server. After this is returned, the connection is ready 
+     * for concurrent and asynchronous operations. 
+     * 
+     * This may be extended to set up other connection attributes in the future.
+     * @throws KineticException 
+     */
+    private void connectionSetUp ()  {
+        
+        KineticMessage response = null;
+        
+        try {
+            // create get request message
+            KineticMessage request = MessageFactory.createNoOpRequestMessage();
+
+            // send request
+            response = this.client.request(request); 
+        } catch (KineticException e) {
+            LOG.warning(e.getMessage());
+        } finally {
+            if (response != null) {
+                // set connectionId
+                this.client.setConnectionId(response);
+            }
+        }
     }
 
 }

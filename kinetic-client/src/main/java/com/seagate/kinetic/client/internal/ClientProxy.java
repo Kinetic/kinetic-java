@@ -85,6 +85,8 @@ public class ClientProxy {
 
     // use protocol v2
     private boolean useV2Protocol = true;
+    
+    private volatile boolean isConnectionIdSetByServer = false;
 
     /**
      * Construct a new instance of client proxy
@@ -116,6 +118,46 @@ public class ClientProxy {
 
         // io handler
         this.iohandler = new IoHandler(this);
+    }
+    
+    /**
+     * Set client connection ID by server. Usually this is set by first OP response from the server. The 
+     * client library uses this connectionID after this is set by the server.
+     * 
+     * @param cid the connection id to be set for this connection.
+     */
+    public void setConnectionId(KineticMessage kresponse) {
+        
+        
+        
+        if (this.isConnectionIdSetByServer) {
+            /**
+             * if already set by server, simply return.
+             */
+            return;
+        }
+        
+        /**
+         * check if set connection ID is needed.
+         */
+        synchronized (this) {
+            
+            if (isConnectionIdSetByServer) {
+                return;
+            }
+            
+            if (kresponse.getMessage().getCommand().getHeader()
+                    .hasConnectionID()) {
+                
+                this.connectionID = kresponse.getMessage().getCommand()
+                        .getHeader().getConnectionID();
+                
+                //set flag to true
+                this.isConnectionIdSetByServer = true;
+                
+                logger.info("set connection Id: " + this.connectionID);
+            }
+        }
     }
 
     /**
@@ -356,7 +398,6 @@ public class ClientProxy {
             
             //check status code
             MessageFactory.checkReply(krequest, kresponse);
-            
         } catch (KineticException ke) {
             ke.setRequestMessage(krequest);
             ke.setResponseMessage(kresponse);
