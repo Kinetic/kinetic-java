@@ -116,13 +116,7 @@ public class HeaderOp {
 			// set status code
 			respond.getCommandBuilder().getStatusBuilder()
 			.setCode(Status.StatusCode.SUCCESS);
-			
-			// set connection Id as server instructed.
-			if (km instanceof StatefulMessage) {
-			    long cid = ((StatefulMessage)km).getConnectionId();
-			    respond.getCommandBuilder().getHeaderBuilder().setConnectionID(cid);
-			}
-
+		
 			LOG.fine("Header processed successfully. status code="
 					+ respond.getCommand().getStatus().getCode());
 
@@ -142,6 +136,18 @@ public class HeaderOp {
 
 			throw new HeaderException(StatusCode.INTERNAL_ERROR,
 					ex.getMessage());
+		} finally {
+		    
+            try {
+                // set connection Id if necessary
+                if (km instanceof StatefulMessage) {
+                    long cid = ((StatefulMessage) km).getConnectionId();
+                    respond.getCommandBuilder().getHeaderBuilder()
+                            .setConnectionID(cid);
+                }
+            } catch (Exception e) {
+                LOG.warning(e.getMessage());
+            }
 		}
 
 	}

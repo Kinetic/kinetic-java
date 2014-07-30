@@ -951,6 +951,8 @@ public class DefaultKineticClient implements AdvancedKineticClient {
         
         KineticMessage response = null;
         
+        KineticException ke = null;
+        
         try {
             // create get request message
             KineticMessage request = MessageFactory.createNoOpRequestMessage();
@@ -958,11 +960,26 @@ public class DefaultKineticClient implements AdvancedKineticClient {
             // send request
             response = this.client.request(request); 
         } catch (KineticException e) {
+            // assign exception caught so that we can use it in the finally clause 
+            ke = e;
             LOG.warning(e.getMessage());
-        } finally {
+        } finally {   
             if (response != null) {
-                // set connectionId
+                /**
+                 * if got normal response, check and set connection Id.
+                 */
                 this.client.setConnectionId(response);
+            } else if (ke != null){
+                /**
+                 * check if response message is set in the exception
+                 */
+                response = ke.getResponseMessage();
+                if (response != null) {
+                    /**
+                     * set connection Id if necessary.
+                     */
+                    this.client.setConnectionId(response);
+                }
             }
         }
     }

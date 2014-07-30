@@ -77,7 +77,7 @@ public class SslMessageServiceHandler extends
 			KineticMessage request)
 			throws Exception {
 	    
-	    StatefulMessage sm = NioConnectionStateManager.getStatefulMessage(ctx, request);
+	    StatefulMessage sm = NioConnectionStateManager.checkAndGetStatefulMessage(ctx, request);
 
 		if (enforceOrdering) {
 		    // process request sequentially

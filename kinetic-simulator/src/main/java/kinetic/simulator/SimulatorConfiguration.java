@@ -219,6 +219,20 @@ public class SimulatorConfiguration extends Properties {
      * heart beat provider.
      */
 	private HeartbeatProvider heartbeatProvider = null;
+	
+	/**
+	 * flag to indicate if the simulator should enforce connection Id verification.
+	 * if set to true, simulator will check and enforce that client MUST set the assigned 
+	 * connection Id in all sub-sequential request messages to the simulator/drive.
+	 *  
+	 * The connection Id is set by drive/simulator in the first response message after 
+	 * a connection is created.
+	 * 
+	 * Default is set to false unless the "kinetic.simulator.connection.id.enforced" system property is set to true.
+	 * 
+	 * Default will be set to true after the released drive code enforces the verification.
+	 */
+	private static boolean isConnectionIdCheckEnforced = Boolean.getBoolean("kinetic.simulator.connection.id.enforced");
 
 	/**
 	 * Construct a server configuration instance with the specified defaults.
@@ -839,4 +853,23 @@ public class SimulatorConfiguration extends Properties {
 
 		return this.heartbeatProvider;
 	}
+	
+	/**
+	 * Set if simulator should enforce connection Id verification.
+	 * 
+	 * @param flag set to true if simulator should enforce connection Id verification.
+	 */
+    // public synchronized static void setIsConnectionIdCheckEnforced (boolean
+    // flag) {
+    // isConnectionIdCheckEnforced = flag;
+    // }
+	
+	/**
+	 * Get flag that indicates if simulator is enforcing connection Id verification.
+	 * 
+	 * @return true if simulator is enforcing connection Id verification
+	 */
+	public static boolean getIsConnectionIdCheckEnforced () {
+        return isConnectionIdCheckEnforced;
+    }
 }

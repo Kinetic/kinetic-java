@@ -146,9 +146,9 @@ public class SimulatorEngine implements MessageService {
     
     //connection map
     private static ConcurrentHashMap<Object, ConnectionInfo> connectionMap = new ConcurrentHashMap<Object, ConnectionInfo>();
-
-    // next connection id
-    private static long nextConnectionId = 0;
+    
+    // last connection Id. 
+    private static long lastConnectionId = System.currentTimeMillis();
     
     static {
         // add shutdown hook to clean up resources
@@ -768,12 +768,26 @@ public class SimulatorEngine implements MessageService {
     }
     
     /**
-     * Get next available connection id.
+     * Get next available unique connection id based on timestamp. The Id is guarantees to be unique for simulators 
+     * running within the same JVM.
      * 
-     * @return next available connection id in sequence.
+     * @return next available unique connection ID based on timestamp.
      */
     private static synchronized long getNextConnectionId() {
-        return nextConnectionId ++;
+        
+        // current time
+        long id = System.currentTimeMillis();
+        
+        // check if duplicate.  enforce so that it is later than the time that this JVM is started.
+        if (id <= lastConnectionId) {
+            // increase one so its unique.
+            id = lastConnectionId + 1;
+        }
+        
+        // set last connection id
+        lastConnectionId = id;
+        
+        return id;
     }
     
 }

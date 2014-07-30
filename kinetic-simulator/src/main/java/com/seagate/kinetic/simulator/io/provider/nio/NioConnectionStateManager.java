@@ -21,10 +21,13 @@ package com.seagate.kinetic.simulator.io.provider.nio;
 
 import java.util.logging.Logger;
 
+import kinetic.simulator.SimulatorConfiguration;
+
 import com.seagate.kinetic.common.lib.KineticMessage;
 import com.seagate.kinetic.simulator.internal.ConnectionInfo;
 import com.seagate.kinetic.simulator.internal.SimulatorEngine;
 import com.seagate.kinetic.simulator.internal.StatefulMessage;
+
 import io.netty.channel.ChannelHandlerContext;
 
 /**
@@ -46,8 +49,11 @@ public class NioConnectionStateManager {
      * 
      * @return A stateful message that contains a connection Id to be set in the response message.  
      *          Otherwise return null if connection Id has already set in a response message for this connection.
+     *          
+     * @throws RuntimeException if connection has already set by the simulator but received a connection Id 
+     *         does not match. 
      */
-    public static StatefulMessage getStatefulMessage(ChannelHandlerContext ctx,
+    public static StatefulMessage checkAndGetStatefulMessage(ChannelHandlerContext ctx,
             KineticMessage request) {
 
         // get connection info for this channel
@@ -79,7 +85,15 @@ public class NioConnectionStateManager {
                             + ", received request message connection Id="
                             + request.getMessage().getCommand().getHeader()
                                     .getConnectionID());
-                }
+                    
+                    if (SimulatorConfiguration.getIsConnectionIdCheckEnforced()) {
+                        throw new RuntimeException("expect CID="
+                                + cinfo.getConnectionId()
+                                + " , but received CID="
+                                + request.getMessage().getCommand().getHeader()
+                                        .getConnectionID());
+                    }
+               }
             }
         }
 

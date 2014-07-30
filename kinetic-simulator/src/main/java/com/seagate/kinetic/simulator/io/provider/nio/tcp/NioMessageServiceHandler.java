@@ -86,7 +86,7 @@ public class NioMessageServiceHandler extends
 					"Fault injected for the simulator");
 		}
 		
-		StatefulMessage sm = NioConnectionStateManager.getStatefulMessage(ctx, request);
+		StatefulMessage sm = NioConnectionStateManager.checkAndGetStatefulMessage(ctx, request);
 
 		if (enforceOrdering) {
 			// process request sequentially
