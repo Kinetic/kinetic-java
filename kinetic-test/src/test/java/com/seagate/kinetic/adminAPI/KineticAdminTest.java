@@ -1313,7 +1313,7 @@ public class KineticAdminTest extends IntegrationTestCase {
             @SuppressWarnings("unused")
             Message response = getAdminClient().configureSecurityPolicy(request);
         } catch (KineticException ke) {
-            assertEquals(Status.StatusCode.INTERNAL_ERROR, ke.getResponseMessage().getMessage().getCommand()
+            assertEquals(Status.StatusCode.INVALID_REQUEST, ke.getResponseMessage().getMessage().getCommand()
                 .getStatus().getCode());
         }
     }

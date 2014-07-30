@@ -96,7 +96,7 @@ public abstract class SecurityHandler {
                 if (domain.hasOffset() && domain.getOffset() < 0) {
                     // Negative offsets are not allowed
                     respond.getCommandBuilder().getStatusBuilder()
-                    .setCode(StatusCode.INTERNAL_ERROR);
+                    .setCode(StatusCode.INVALID_REQUEST);
                     respond.getCommandBuilder()
                     .getStatusBuilder()
                     .setStatusMessage(
@@ -107,7 +107,7 @@ public abstract class SecurityHandler {
                 List<Permission> roleOfList = domain.getPermissionList();
                 if (null == roleOfList || roleOfList.isEmpty()) {
                     respond.getCommandBuilder().getStatusBuilder()
-                    .setCode(StatusCode.INTERNAL_ERROR);
+                    .setCode(StatusCode.INVALID_REQUEST);
                     respond.getCommandBuilder().getStatusBuilder()
                     .setStatusMessage("No role set in acl");
                     return currentMap;
@@ -116,7 +116,7 @@ public abstract class SecurityHandler {
                 for (Permission role : roleOfList) {
                     if (!RoleUtil.isValid(role)) {
                         respond.getCommandBuilder().getStatusBuilder()
-                        .setCode(StatusCode.INTERNAL_ERROR);
+                        .setCode(StatusCode.INVALID_REQUEST);
                         respond.getCommandBuilder()
                         .getStatusBuilder()
                         .setStatusMessage(

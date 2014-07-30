@@ -409,7 +409,7 @@ public class SecurityPersistTest extends IntegrationTestCase {
         Message response = (Message) this.getClient().request(km).getMessage();
         } catch (KineticException ke) {
             assertTrue(ke.getResponseMessage().getMessage().getCommand().getStatus().getCode()
-                    .equals(Status.StatusCode.INTERNAL_ERROR));
+                    .equals(Status.StatusCode.INVALID_REQUEST));
             //assertTrue(response.getCommand().getStatus().getStatusMessage()
             //        .equals("No role set in acl"));
         } finally {
@@ -449,7 +449,7 @@ public class SecurityPersistTest extends IntegrationTestCase {
         } catch (KineticException ke) {      
             assertTrue(ke.getResponseMessage().getMessage().getCommand()
                     .getStatus().getCode()
-                    .equals(Status.StatusCode.INTERNAL_ERROR));
+                    .equals(Status.StatusCode.INVALID_REQUEST));
             // assertTrue(response.getCommand().getStatus().getStatusMessage()
             // .startsWith("Role is invalid in acl"));
         } finally {
