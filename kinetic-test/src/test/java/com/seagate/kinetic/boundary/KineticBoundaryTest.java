@@ -59,6 +59,7 @@ import com.seagate.kinetic.client.internal.DefaultKineticClient;
 import com.seagate.kinetic.proto.Kinetic;
 import com.seagate.kinetic.proto.Kinetic.Message.Security.ACL;
 import com.seagate.kinetic.proto.Kinetic.Message.Security.ACL.Permission;
+import com.seagate.kinetic.proto.Kinetic.Message.Status.StatusCode;
 
 /**
  * Kinetic Client API Boundary Test.
@@ -297,12 +298,9 @@ public class KineticBoundaryTest extends IntegrationTestCase {
             // ... We would rather have this test than remove it, and it is
             // undesirable for it to fail when run
             // ... against one target. So, we tolerate both cases for now.
-            if (!e.getMessage().equals("IO error")
-                    && !e.getMessage()
-                    .equals("Kinetic Command Exception: INTERNAL_ERROR: value size exceeded max supported size. Supported size: 1048576, received size=1048577 (in bytes)")) {
-                fail("The error observed matches neither the expected implementation of the drive nor simulator. "
-                        + e.toString());
-            }
+            StatusCode code = e.getResponseMessage().getMessage().getCommand().getStatus().getCode();
+            
+            assertEquals (StatusCode.INVALID_REQUEST, code);
         }
     }
 

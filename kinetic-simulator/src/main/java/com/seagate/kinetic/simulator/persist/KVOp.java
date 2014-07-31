@@ -174,7 +174,7 @@ public class KVOp {
                        checkMaxVersionLength (bs);
 
                         if (isSupportedValueSize(kmreq) == false) {
-                            throw new KvException(StatusCode.INVALID_REQUEST,
+                            throw new InvalidRequestException (
                                     "value size exceeded max supported size. Supported size: "
                                             + maxValueSize + ", received size="
                                             + kmreq.getValue().length
