@@ -338,7 +338,7 @@ public class KineticAdminTest extends IntegrationTestCase {
         assertTrue(log.getLimits().getMaxKeySize() == 4096);
         assertTrue(log.getLimits().getMaxValueSize() == 1024 * 1024);
         assertTrue(log.getLimits().getMaxVersionSize() == 2048);
-        assertTrue(log.getLimits().getMaxKeyRangeCount() == 1024);
+        assertTrue(log.getLimits().getMaxKeyRangeCount() == 200);
         // // TODO: To be validated
         // assertTrue(log.getLimits().getMaxTagSize() >= 0);
         // assertTrue(log.getLimits().getMaxOutstandingReadRequests() >= 0);
@@ -1448,7 +1448,7 @@ public class KineticAdminTest extends IntegrationTestCase {
         assertTrue(limits.getMaxKeySize() == 4096);
         assertTrue(limits.getMaxValueSize() == 1024 * 1024);
         assertTrue(limits.getMaxVersionSize() == 2048);
-        assertTrue(limits.getMaxKeyRangeCount() == 1024);
+        assertTrue(limits.getMaxKeyRangeCount() == 200);
         // // TODO: To be validated
         // assertTrue(limits.getMaxTagSize() >= 0);
         // assertTrue(limits.getMaxOutstandingReadRequests() >= 0);
@@ -1586,7 +1586,7 @@ public class KineticAdminTest extends IntegrationTestCase {
                 .getLimits().getMaxValueSize());
         assertTrue(2048 == respond1.getCommand().getBody().getGetLog()
                 .getLimits().getMaxVersionSize());
-        assertTrue(1024 == respond1.getCommand().getBody().getGetLog()
+        assertTrue(200 == respond1.getCommand().getBody().getGetLog()
                 .getLimits().getMaxKeyRangeCount());
         // // TODO: To be validated
         // assertTrue(log.getLimits().getMaxTagSize() >= 0);

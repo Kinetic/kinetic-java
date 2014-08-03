@@ -577,7 +577,7 @@ public class KineticBasicAPITest extends IntegrationTestCase {
     }
 
     /**
-     * Test getKeyRange API result order with 0~255 hex. The entries have
+     * Test getKeyRange API result order with 0~200 hex. The entries have
      * already existed in simulator/drive. For instance, 0x00 < 0x10 < 0x2a <
      * 0xbf
      * <p>
@@ -586,11 +586,11 @@ public class KineticBasicAPITest extends IntegrationTestCase {
      *             if any internal error occurred.
      */
     @Test
-    public void testGetKeyRange_VerifyOrder_For0To255() throws KineticException {
+    public void testGetKeyRange_VerifyOrder_For0To200() throws KineticException {
         List<byte[]> keys = new ArrayList<byte[]>();
 
         String hex = null;
-        for (int i = 0; i < 255; i++) {
+        for (int i = 0; i < 200; i++) {
             if (i < 16)
                 hex = "0x0" + Integer.toHexString(i);
             else
@@ -604,9 +604,9 @@ public class KineticBasicAPITest extends IntegrationTestCase {
         }
 
         List<byte[]> keysRange = getClient().getKeyRange(new byte[] {}, true,
-                toByteArray("0xff"), true, 500);
+                toByteArray("0xff"), true, 200);
 
-        assertEquals(255, keysRange.size());
+        assertEquals(200, keysRange.size());
         // System.out.println("get key range order are as follows:");
         // for (byte[] key : keysRange) {
         // System.out.println(new String(key));

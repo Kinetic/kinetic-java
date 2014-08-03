@@ -156,7 +156,7 @@ public class SimulatorConfiguration extends Properties {
     /**
      * max supported key range size.
      */
-    private static int maxSupportedKeyRangeSize = 1024;
+    private static int maxSupportedKeyRangeSize = 200;
 
     /**
      * max supported tag size.
