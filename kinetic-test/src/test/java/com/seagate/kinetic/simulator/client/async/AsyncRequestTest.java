@@ -40,6 +40,7 @@ import com.seagate.kinetic.common.lib.KineticMessage;
 import com.seagate.kinetic.proto.Kinetic.Message;
 import com.seagate.kinetic.proto.Kinetic.Message.KeyValue;
 import com.seagate.kinetic.proto.Kinetic.Message.MessageType;
+import com.seagate.kinetic.proto.Kinetic.Message.Synchronization;
 
 public class AsyncRequestTest extends IntegrationTestCase {
 
@@ -120,6 +121,9 @@ public class AsyncRequestTest extends IntegrationTestCase {
 
 		message.getCommandBuilder().getHeaderBuilder()
 		.setMessageType(MessageType.PUT);
+		
+		message.getCommandBuilder().getBodyBuilder().getKeyValueBuilder().setSynchronization(Synchronization.WRITETHROUGH);
+		
 		KeyValue.Builder kv = message.getCommandBuilder().getBodyBuilder()
 				.getKeyValueBuilder();
 

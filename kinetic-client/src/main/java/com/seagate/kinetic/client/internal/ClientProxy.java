@@ -155,7 +155,7 @@ public class ClientProxy {
                 //set flag to true
                 this.isConnectionIdSetByServer = true;
                 
-                logger.info("set connection Id: " + this.connectionID);
+                logger.fine("set connection Id: " + this.connectionID);
             }
         }
     }

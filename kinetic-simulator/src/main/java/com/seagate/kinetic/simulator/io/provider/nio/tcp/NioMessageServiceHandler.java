@@ -71,9 +71,10 @@ public class NioMessageServiceHandler extends
 	    super.channelActive(ctx);
 	    
 	    // register connection info with the channel handler context
-	    ConnectionInfo info = SimulatorEngine.registerNewConnection(ctx);
+	    @SuppressWarnings("unused")
+        ConnectionInfo info = SimulatorEngine.registerNewConnection(ctx);
 	    
-	    logger.info("***** connection registered., id = " + info.getConnectionId());
+	    //logger.info("***** connection registered., id = " + info.getConnectionId());
 	}
 
 	@Override
@@ -133,9 +134,10 @@ public class NioMessageServiceHandler extends
 	public void handlerRemoved(ChannelHandlerContext ctx) throws Exception {
 	    
 	 // remove connection info of the channel handler context from conn info map
-	    ConnectionInfo info = SimulatorEngine.removeConnectionInfo(ctx);
+	    @SuppressWarnings("unused")
+        ConnectionInfo info = SimulatorEngine.removeConnectionInfo(ctx);
 	   
-	    logger.info("connection info is removed, id=" + info.getConnectionId() );
+	    //logger.info("connection info is removed, id=" + info.getConnectionId() );
 	    
 		// close process runner
 		if (this.queuedRequestProcessRunner != null) {

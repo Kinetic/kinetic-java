@@ -95,6 +95,8 @@ public class KVOp {
         Message request = (Message) kmreq.getMessage();
 
         Message.Builder respond = (Builder) kmresp.getMessage();
+        
+        PersistOption persistOption = PersistOption.SYNC;
 
         try {
 
@@ -107,9 +109,6 @@ public class KVOp {
                     .getBodyBuilder().getKeyValueBuilder();
 
             boolean metadataOnly = requestKeyValue.getMetadataOnly();
-
-            // persist option
-            PersistOption persistOption = getPersistOption(requestKeyValue);
 
             try {
 
@@ -163,7 +162,10 @@ public class KVOp {
                     }
                     break;
                 case PUT:
-
+                    
+                    // persist option
+                    persistOption = getPersistOption(requestKeyValue);
+                    
                     try {
                         
                       //check max key length
@@ -220,7 +222,8 @@ public class KVOp {
 
                     break;
                 case DELETE:
-
+                 // persist option
+                    persistOption = getPersistOption(requestKeyValue);
                     try {
                         
                         //check max key length
@@ -359,7 +362,7 @@ public class KVOp {
 
         } catch (KvException e) {
 
-            LOG.fine("KV op Exception: " + e.status + ": " + e.getMessage());
+            LOG.warning ("KV op Exception: " + e.status + ": " + e.getMessage());
 
             respond.getCommandBuilder().getStatusBuilder().setCode(e.status);
             respond.getCommandBuilder().getStatusBuilder()
@@ -398,11 +401,22 @@ public class KVOp {
      *            KeyValue element.
      *
      * @return persist option.
+     * @throws KvException if invalid synchronization option is set in the kv parameter.
      */
-    public static PersistOption getPersistOption(KeyValue kv) {
+    public static PersistOption getPersistOption(KeyValue kv) throws KvException {
+        
+        /**
+         * if not set, default is set to sync/writethrough
+         */
+        if (kv.hasSynchronization() == false) {
+            return PersistOption.SYNC;
+        }
 
         PersistOption option = PersistOption.SYNC;
-
+        
+        /**
+         * if set, must be an valid option.
+         */
         Synchronization sync = kv.getSynchronization();
 
         if (sync != null) {
@@ -415,7 +429,7 @@ public class KVOp {
                 option = PersistOption.ASYNC;
                 break;
             default:
-                option = PersistOption.SYNC;
+                throw new KvException (Status.StatusCode.INVALID_REQUEST, "Invalid persistent synchronization option: " + sync);
             }
 
         }

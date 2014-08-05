@@ -67,9 +67,10 @@ public class SslMessageServiceHandler extends
 	public void channelActive(final ChannelHandlerContext ctx) throws Exception {
 	    
 	    // register connection info with the channel handler context
+        @SuppressWarnings("unused")
         ConnectionInfo info = SimulatorEngine.registerNewConnection(ctx);
         
-        logger.info("TLS channel is active, connection registered., id = " + info.getConnectionId());
+        //logger.info("TLS channel is active, connection registered., id = " + info.getConnectionId());
 	}
 
 	@Override
@@ -127,12 +128,13 @@ public class SslMessageServiceHandler extends
 	public void handlerRemoved(ChannelHandlerContext ctx) throws Exception {
 	    
 	    // remove connection info of the channel handler context from conn info map
+        @SuppressWarnings("unused")
         ConnectionInfo info = SimulatorEngine.removeConnectionInfo(ctx);
        
-        logger.info("connection info is removed, id=" + info.getConnectionId() );
+        //logger.info("connection info is removed, id=" + info.getConnectionId() );
 
 		if (this.queuedRequestProcessRunner != null) {
-			logger.info("removing/closing ssl nio queued request process runner ...");
+			//logger.info("removing/closing ssl nio queued request process runner ...");
 			this.queuedRequestProcessRunner.close();
 		}
 	}
