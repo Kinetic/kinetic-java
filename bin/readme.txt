@@ -5,8 +5,8 @@ Kinetic Simulator/Admin Command Line Interface (CLI).
 1. Define JAVA_HOME environment variable (example: google 'how to set JAVA_HOME on Mac).
 
 2. Run "mvn clean package" in <Kinetic-Folder>, verify 
-   <Kinetic-Folder>/kinetic-simulator/target/kinetic-simulator-0.6.0.2-SNAPSHOT-jar-with-dependencies.jar 
-   <Kinetic-Folder>/kinetic-client/target/kinetic-client-0.6.0.2-SNAPSHOT-jar-with-dependencies.jar
+   <Kinetic-Folder>/kinetic-simulator/target/kinetic-simulator-0.7.0.2-SNAPSHOT-jar-with-dependencies.jar 
+   <Kinetic-Folder>/kinetic-client/target/kinetic-client-0.7.0.2-SNAPSHOT-jar-with-dependencies.jar
    exist.
 
 3. To start Kinetic simulator:
@@ -42,12 +42,16 @@ Kinetic Simulator/Admin Command Line Interface (CLI).
             cd <Kinetic-Folder>/bin
             sh startSimulator.sh -help
             
+7. To ping the drive or simulator (Linux & Mac):
+	    cd <Kinetic-Folder>/bin
+	    sh ping.sh [host] [host port]
+
 Run smoke test against simulator or kinetic drive
 ==================================
 Make sure one instance of simulator or kinetic drive is running.
 
 1. Run "mvn clean package" in <Kinetic-Folder> or <Kinetic-Folder>/kinetic-test, verify 
-   <Kinetic-Folder>/kinetic-test/target/kinetic-test-0.6.0.2-SNAPSHOT-jar-with-dependencies.jar 
+   <Kinetic-Folder>/kinetic-test/target/kinetic-test-0.7.0.2-SNAPSHOT-jar-with-dependencies.jar 
    <Kinetic-Folder>/kinetic-test/target/smoke-tests.jar
    exist.
 
