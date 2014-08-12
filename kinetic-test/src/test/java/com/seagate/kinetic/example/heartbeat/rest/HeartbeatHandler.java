@@ -67,7 +67,7 @@ public class HeartbeatHandler extends AbstractHandler {
         
         response.getWriter().println("<br>update time: " + new Date() + "</br>");
         
-        SortedMap <String, HeartbeatMessage> map = hbc.getHeartBeatMap();
+        SortedMap <String, MessageContainer> map = hbc.getHeartBeatMap();
         
        int index = 0;
        
@@ -79,6 +79,7 @@ public class HeartbeatHandler extends AbstractHandler {
        response.getWriter().println("<td>IP Address</td>");
        response.getWriter().println("<td>TCP Port</td>");
        response.getWriter().println("<td>TLS Port</td>");
+       response.getWriter().println("<td>Timestamp</td>");
        response.getWriter().println("</tr>");
        
         synchronized (this) {
@@ -87,9 +88,10 @@ public class HeartbeatHandler extends AbstractHandler {
                 //response.getWriter().println("<br>" + index + ":    " + key);
                 response.getWriter().println("<tr>");
                 response.getWriter().println("<td>" + index +"</td>");
-                response.getWriter().println("<td>" + map.get(key).getNetworkInterfaces().get(0).getIpV4Address() +"</td>");
-                response.getWriter().println("<td>" + map.get(key).getPort() +"</td>");
-                response.getWriter().println("<td>" + map.get(key).getTlsPort() +"</td>");
+                response.getWriter().println("<td>" + map.get(key).getHeartbeatMessage().getNetworkInterfaces().get(0).getIpV4Address() +"</td>");
+                response.getWriter().println("<td>" + map.get(key).getHeartbeatMessage().getPort() +"</td>");
+                response.getWriter().println("<td>" + map.get(key).getHeartbeatMessage().getTlsPort() +"</td>");
+                response.getWriter().println("<td>" + new Date (map.get(key).getTimestamp()) +"</td>");
                 response.getWriter().println("</tr>");
                 index ++;
             }

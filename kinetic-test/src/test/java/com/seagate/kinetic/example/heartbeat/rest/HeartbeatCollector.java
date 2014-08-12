@@ -21,16 +21,14 @@ package com.seagate.kinetic.example.heartbeat.rest;
 
 import java.io.IOException;
 import java.io.StringReader;
+import java.util.ArrayList;
 import java.util.Collections;
-
 import java.util.SortedMap;
 import java.util.TreeMap;
-
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.google.gson.Gson;
-
 import com.google.gson.stream.JsonReader;
 import com.seagate.kinetic.heartbeat.HeartbeatMessage;
 import com.seagate.kinetic.monitor.HeartbeatListener;
@@ -52,8 +50,12 @@ public class HeartbeatCollector extends HeartbeatListener {
     private final static Logger logger = Logger
             .getLogger(HeartbeatCollector.class.getName());
     
-    private SortedMap <String, HeartbeatMessage> drives = 
-            Collections.synchronizedSortedMap(new TreeMap<String, HeartbeatMessage>());
+    private static long SWEEP_TIME = 120000;
+    
+    private SortedMap <String, MessageContainer> drives = 
+            Collections.synchronizedSortedMap(new TreeMap<String, MessageContainer>());
+    
+    private long lastSweepTime = System.currentTimeMillis();
 
     public HeartbeatCollector() throws IOException {
         super();
@@ -76,8 +78,12 @@ public class HeartbeatCollector extends HeartbeatListener {
             
             String key = hbm.getNetworkInterfaces().get(0).getIpV4Address() + ":" + hbm.getPort();
             
-            this.drives.put(key, hbm);
-
+            MessageContainer container = new MessageContainer (hbm, System.currentTimeMillis());
+            
+            
+            this.drives.put(key, container);
+            
+            
             logger.fine ("received heart beat: " + key);
             
 
@@ -92,8 +98,41 @@ public class HeartbeatCollector extends HeartbeatListener {
      * 
      * @return the heart beat map used by this collector
      */
-    public SortedMap<String, HeartbeatMessage> getHeartBeatMap() {
-        return new TreeMap<String, HeartbeatMessage> (drives);
+    public SortedMap<String, MessageContainer> getHeartBeatMap() {
+
+        // do a bit of clean up
+        sweep();
+
+        return new TreeMap<String, MessageContainer>(drives);
+    }
+    
+    /**
+     * clean up heartbeat table
+     */
+    private void sweep() {
+        
+        long now = System.currentTimeMillis();
+        
+        synchronized (this) {
+            if ((now - this.lastSweepTime) >= SWEEP_TIME) {
+
+                ArrayList<String> keys = new ArrayList<String>();
+
+                // do sweep
+                for (String key : drives.keySet()) {
+                    if ((now - drives.get(key).getTimestamp()) >= SWEEP_TIME) {
+                        keys.add(key);
+                    }
+                }
+
+                for (String key : keys) {
+                    drives.remove(key);
+                }
+
+                this.lastSweepTime = now;
+            }
+        }
+        
     }
 
 }
