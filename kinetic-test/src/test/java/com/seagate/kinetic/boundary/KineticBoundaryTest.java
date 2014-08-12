@@ -2417,10 +2417,66 @@ public class KineticBoundaryTest extends IntegrationTestCase {
     }
     
     /**
+     * Test put max version length cannot exceed max supported size (2048).
+     */
+    @Test
+    public void testPutExceedMaxVersionLength() {
+        
+        byte[] key = toByteArray("key00000000000");
+        byte[] value = toByteArray("value00000000000");
+        
+        int vlen = SimulatorConfiguration.getMaxSupportedVersionSize();
+        
+        byte[] version = new byte[vlen + 1];
+        Entry entry = new Entry();
+        entry.setKey(key);
+        entry.setValue(value);
+        entry.getEntryMetadata().setVersion(version);
+        
+        //expect to fail: exceed max version size to put
+        try {
+            getClient().putForced(entry);
+            fail("did not receive expected exception: request put version exceeds max allowed size " + vlen);
+        } catch (KineticException e) {
+            logger.info("caught expected exception: " + e.getMessage());
+        }
+        
+        logger.info(this.testEndInfo());
+    }
+    
+    /**
+     * Test delete max version length cannot exceed max supported size (2048).
+     */
+    @Test
+    public void testDeleteExceedMaxVersionLength() {
+        
+        byte[] key = toByteArray("key00000000000");
+        byte[] value = toByteArray("value00000000000");
+        
+        int vlen = SimulatorConfiguration.getMaxSupportedVersionSize();
+        
+        byte[] version = new byte[vlen + 1];
+        Entry entry = new Entry();
+        entry.setKey(key);
+        entry.setValue(value);
+        entry.getEntryMetadata().setVersion(version);
+         
+        //expect fail to delete: exceed max version size
+        try {
+            getClient().delete(entry);
+            fail("did not receive expected exception: request delete version exceeds max allowed size " + vlen);
+        } catch (KineticException e) {
+            logger.info("caught expected exception: " + e.getMessage());
+        }
+         
+        logger.info(this.testEndInfo());
+    }
+    
+    /**
      * Test max version length cannot exceed max supported size (2048).
      */
     @Test
-    public void testMaxVersionLength() {
+    public void testValidMaxVersionLength() {
         
         byte[] key = toByteArray("key00000000000");
         byte[] value = toByteArray("value00000000000");
@@ -2438,28 +2494,6 @@ public class KineticBoundaryTest extends IntegrationTestCase {
             getClient().putForced(entry);
         } catch (KineticException e) {
             fail("received unexpected exception: " + e);
-        }
-        
-        //expect to fail: exceed max version size to put
-        try {
-            byte[] version2 = new byte[vlen + 1];
-            entry.getEntryMetadata().setVersion(version2);
-            
-            getClient().putForced(entry);
-            fail("did not receive expected exception: request key exceeds max allowed size " + vlen);
-        } catch (KineticException e) {
-            logger.info("caught expected exception: " + e.getMessage());
-        }
-        
-        //expect fail to delete: exceed max version size
-        try {
-            byte[] version2 = new byte[vlen + 1];
-            entry.getEntryMetadata().setVersion(version2);
-           
-            getClient().delete(entry);
-            fail("did not receive expected exception: request key exceeds max allowed size " + vlen);
-        } catch (KineticException e) {
-            logger.info("caught expected exception: " + e.getMessage());
         }
         
         //expect succeed to delete.
