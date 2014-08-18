@@ -26,7 +26,7 @@ import kinetic.client.EntryMetadata;
 
 import com.google.protobuf.ByteString;
 import com.seagate.kinetic.common.lib.KineticMessage;
-import com.seagate.kinetic.proto.Kinetic.Message.Status.StatusCode;
+import com.seagate.kinetic.proto.Kinetic.Command.Status.StatusCode;
 
 /**
  * Callback result message factory.
@@ -59,7 +59,7 @@ public class CallbackResultMessageFactory {
 		Entry entry = new Entry();
 
 		// set entry key
-		entry.setKey(request.getMessage().getCommand().getBody().getKeyValue()
+		entry.setKey(request.getCommand().getBody().getKeyValue()
 				.getKey()
 				.toByteArray());
 
@@ -72,24 +72,24 @@ public class CallbackResultMessageFactory {
 		EntryMetadata metadata = entry.getEntryMetadata();
 
 		// set version
-		if (request.getMessage().getCommand().getBody().getKeyValue()
+		if (request.getCommand().getBody().getKeyValue()
 				.hasNewVersion()) {
-			metadata.setVersion(request.getMessage().getCommand().getBody()
+			metadata.setVersion(request.getCommand().getBody()
 					.getKeyValue()
 					.getNewVersion().toByteArray());
 		}
 
 		// set body
-		if (request.getMessage().getCommand().getBody().getKeyValue().hasTag()) {
-			metadata.setTag(request.getMessage().getCommand().getBody()
+		if (request.getCommand().getBody().getKeyValue().hasTag()) {
+			metadata.setTag(request.getCommand().getBody()
 					.getKeyValue()
 					.getTag().toByteArray());
 		}
 
 		// set algorithm
-		if (request.getMessage().getCommand().getBody().getKeyValue()
+		if (request.getCommand().getBody().getKeyValue()
 				.hasAlgorithm()) {
-			metadata.setAlgorithm(request.getMessage().getCommand().getBody()
+			metadata.setAlgorithm(request.getCommand().getBody()
 					.getKeyValue()
 					.getAlgorithm().toString());
 		}
@@ -176,9 +176,9 @@ public class CallbackResultMessageFactory {
 
 		List<byte[]> listOfByteArray = new ArrayList<byte[]>();
 
-		List<ByteString> bsList = response.getMessage().getCommand().getBody()
-				.getRange()
-				.getKeyList();
+		List<ByteString> bsList = response.getCommand().getBody()
+				.getRange().getKeysList();
+		
 		for (ByteString bs : bsList) {
 			listOfByteArray.add(bs.toByteArray());
 		}
@@ -204,7 +204,7 @@ public class CallbackResultMessageFactory {
 		KineticMessage request = context.getRequestMessage();
 		KineticMessage response = context.getResponseMessage();
 
-		boolean deleted = (response.getMessage().getCommand().getStatus()
+		boolean deleted = (response.getCommand().getStatus()
 				.getCode() == StatusCode.SUCCESS);
 
 		// callback result

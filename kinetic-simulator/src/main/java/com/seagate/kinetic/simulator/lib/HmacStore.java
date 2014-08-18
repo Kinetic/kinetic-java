@@ -32,10 +32,10 @@ import kinetic.client.KineticException;
 
 import com.google.protobuf.ByteString;
 import com.seagate.kinetic.common.lib.HMACAlgorithmUtil;
-import com.seagate.kinetic.proto.Kinetic.Message.Security.ACL;
-import com.seagate.kinetic.proto.Kinetic.Message.Security.ACL.HMACAlgorithm;
-import com.seagate.kinetic.proto.Kinetic.Message.Security.ACL.Permission;
-import com.seagate.kinetic.proto.Kinetic.Message.Security.ACL.Scope;
+import com.seagate.kinetic.proto.Kinetic.Command.Security.ACL;
+import com.seagate.kinetic.proto.Kinetic.Command.Security.ACL.HMACAlgorithm;
+import com.seagate.kinetic.proto.Kinetic.Command.Security.ACL.Permission;
+import com.seagate.kinetic.proto.Kinetic.Command.Security.ACL.Scope;
 
 public class HmacStore {
 

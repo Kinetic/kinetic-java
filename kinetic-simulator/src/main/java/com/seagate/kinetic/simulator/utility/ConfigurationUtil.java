@@ -35,8 +35,8 @@ import java.util.logging.Logger;
 import kinetic.simulator.SimulatorConfiguration;
 
 import com.google.protobuf.ByteString;
-import com.seagate.kinetic.proto.Kinetic.Message.GetLog.Configuration;
-import com.seagate.kinetic.proto.Kinetic.Message.GetLog.Configuration.Interface;
+import com.seagate.kinetic.proto.Kinetic.Command.GetLog.Configuration;
+import com.seagate.kinetic.proto.Kinetic.Command.GetLog.Configuration.Interface;
 
 public abstract class ConfigurationUtil {
 

@@ -24,7 +24,7 @@ import java.text.DecimalFormat;
 import java.util.Random;
 import java.util.logging.Logger;
 
-import com.seagate.kinetic.proto.Kinetic.Message.GetLog.Capacity;
+import com.seagate.kinetic.proto.Kinetic.Command.GetLog.Capacity;
 
 /**
  *

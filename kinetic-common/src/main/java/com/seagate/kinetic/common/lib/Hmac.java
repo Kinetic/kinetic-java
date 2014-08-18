@@ -31,6 +31,7 @@ import javax.crypto.Mac;
 
 import com.google.protobuf.ByteString;
 import com.google.protobuf.GeneratedMessage;
+import com.seagate.kinetic.proto.Kinetic.Command;
 import com.seagate.kinetic.proto.Kinetic.Message;
 
 /**
@@ -70,22 +71,22 @@ public class Hmac {
 
 	static private void oops(String s) throws HmacException {
 		// oops(Message.Header.Status.INTERNAL_ERROR, s);
-		oops(Message.Status.StatusCode.INTERNAL_ERROR, s);
+		oops(Command.Status.StatusCode.INTERNAL_ERROR, s);
 	}
 
 	public class HmacException extends Exception {
 		private static final long serialVersionUID = 5201751340412081922L;
 
 		// Message.Header.Status status;
-		Message.Status.StatusCode status;
+		Command.Status.StatusCode status;
 
-		public HmacException(Message.Status.StatusCode status, String s) {
+		public HmacException(Command.Status.StatusCode status, String s) {
 			super(s);
 			this.status = status;
 		}
 	}
 
-	static private void oops(Message.Status.StatusCode status, String s)
+	static private void oops(Command.Status.StatusCode status, String s)
 			throws HmacException {
 		throw h.new HmacException(status, s);
 	}
@@ -121,35 +122,55 @@ public class Hmac {
 		}
 	}
 
-	public static ByteString calc(KineticMessage im, Key key)
-			throws HmacException {
+//	public static ByteString calc(KineticMessage im, Key key)
+//			throws HmacException {
+//
+//		try {
+//
+//			//Mac mac = getMacInstance (users, user);
+//
+//			Mac mac = getMacInstance (key);
+//
+//			lv("command", mac, im.getMessage().getCommand().toByteArray());
+//
+//			ByteString result = ByteString.copyFrom(mac.doFinal());
+//
+//			LOG.fine("Message Hmac :" + toString(result));
+//			return result;
+//
+//		} catch (GeneralSecurityException e) {
+//			oops(e.getMessage());
+//		}
+//		return null; // should never get here...
+//	}
+	
+	/**
+	 * Calculate HMAC based on the specified bytes and key.
+	 * 
+	 * @param bytes bytes for HMAC calculation
+	 * @param key security key used to calculate HMAC
+	 * @return byte string of hmac value
+	 * @throws HmacException 
+	 */
+	public static ByteString calc(byte[] bytes, Key key)
+            throws HmacException {
 
-		try {
+        try {
 
-			//Mac mac = getMacInstance (users, user);
+            Mac mac = getMacInstance (key);
 
-			Mac mac = getMacInstance (key);
+            lv("command", mac, bytes);
 
-			lv("command", mac, im.getMessage().getCommand().toByteArray());
+            ByteString result = ByteString.copyFrom(mac.doFinal());
 
-			// XXX: message "value" field is skipped if there is value set
-			// in KeyValue.tag field.
-			// ByteString tag = getTag(message);
-			//
-			// if (tag == null || tag.size() == 0) {
-			// lv("value ", mac, message.getValue().toByteArray());
-			// }
+            LOG.fine("Message Hmac :" + toString(result));
+            return result;
 
-			ByteString result = ByteString.copyFrom(mac.doFinal());
-
-			LOG.fine("Message Hmac :" + toString(result));
-			return result;
-
-		} catch (GeneralSecurityException e) {
-			oops(e.getMessage());
-		}
-		return null; // should never get here...
-	}
+        } catch (GeneralSecurityException e) {
+            oops(e.getMessage());
+        }
+        return null; // should never get here...
+    }
 
 	public static ByteString calcTag(KineticMessage im, Key key) {
 
@@ -178,31 +199,42 @@ public class Hmac {
 		return result;
 	}
 
-//	private static ByteString getTag(Message.Builder message) {
-//
-//		ByteString tag = null;
-//
-//		try {
-//			tag = message.getCommand().getBody().getKeyValue().getTag();
-//		} catch (Exception e) {
-//			LOG.warning(e.getMessage());
-//		}
-//
-//		return tag;
-//	}
-
 	public static boolean check(KineticMessage km, Key key)
 			throws HmacException {
 
-		// Message.Builder m = (Builder) km.getMessage();
-
-		if (calc(km, key).equals(km.getMessage().getHmac())) {
-			return true;
-		}
+	    // get commnad bytes
+	    byte[] bytes = km.getMessage().getCommandBytes().toByteArray();
+	    
+	    // get expected hmac value
+	    ByteString expected = km.getMessage().getHmacAuth().getHmac();
+	    
+	    // calculate hmac and compare to expected value
+	    if (check (bytes, key, expected)) {
+	        return true;
+	    }
 
 		LOG.warning("HMAC did not compare");
 		return false;
 	}
+	
+	/**
+	 * Check if the specified byte[] is equal to the expected hmac with the specified key. 
+	 * @param bytes
+	 * @param key
+	 * @param expectedHmac
+	 * @return
+	 * @throws HmacException
+	 */
+	public static boolean check(byte[] bytes, Key key, ByteString expectedHmac)
+            throws HmacException {
+
+        if (calc(bytes, key).equals(expectedHmac)) {
+            return true;
+        }
+
+        LOG.warning("HMAC did not compare");
+        return false;
+    }
 
 	public static Mac getMacInstance (Key key) throws HmacException, NoSuchAlgorithmException, InvalidKeyException {
 

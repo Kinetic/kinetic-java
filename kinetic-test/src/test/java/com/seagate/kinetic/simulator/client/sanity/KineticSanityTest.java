@@ -48,7 +48,7 @@ import com.seagate.kinetic.KineticTestRunner;
 
 import org.junit.Test;
 
-import com.seagate.kinetic.proto.Kinetic.Message.Algorithm;
+import com.seagate.kinetic.proto.Kinetic.Command.Algorithm;
 
 import org.junit.runner.RunWith;
 

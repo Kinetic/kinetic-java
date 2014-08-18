@@ -77,20 +77,19 @@ public class NioConnectionStateManager {
                 // update connection info map
                 SimulatorEngine.putConnectionInfo(ctx, cinfo);
             } else {
-                if (cinfo.getConnectionId() != request.getMessage()
-                        .getCommand().getHeader().getConnectionID()) {
+                if (cinfo.getConnectionId() != request.getCommand().getHeader().getConnectionID()) {
                     
                     logger.warning ("expect connection Id="
                             + cinfo.getConnectionId()
                             + ", received request message connection Id="
-                            + request.getMessage().getCommand().getHeader()
+                            + request.getCommand().getHeader()
                                     .getConnectionID());
                     
                     if (SimulatorConfiguration.getIsConnectionIdCheckEnforced()) {
                         throw new RuntimeException("expect CID="
                                 + cinfo.getConnectionId()
                                 + " , but received CID="
-                                + request.getMessage().getCommand().getHeader()
+                                + request.getCommand().getHeader()
                                         .getConnectionID());
                     }
                }

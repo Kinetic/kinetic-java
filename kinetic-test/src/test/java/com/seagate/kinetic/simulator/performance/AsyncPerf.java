@@ -39,10 +39,12 @@ import kinetic.client.KineticException;
 
 import com.google.protobuf.ByteString;
 import com.seagate.kinetic.client.internal.DefaultKineticClient;
+import com.seagate.kinetic.client.internal.MessageFactory;
 import com.seagate.kinetic.common.lib.KineticMessage;
+import com.seagate.kinetic.proto.Kinetic.Command;
 import com.seagate.kinetic.proto.Kinetic.Message;
-import com.seagate.kinetic.proto.Kinetic.Message.KeyValue;
-import com.seagate.kinetic.proto.Kinetic.Message.MessageType;
+import com.seagate.kinetic.proto.Kinetic.Command.KeyValue;
+import com.seagate.kinetic.proto.Kinetic.Command.MessageType;
 
 /**
  *
@@ -110,11 +112,12 @@ public class AsyncPerf {
 				EntryMetadata entryMetadata = new EntryMetadata();
 				Entry versioned = new Entry(toByteArray(key), value,
 						entryMetadata);
-				Message.Builder m = createPutMessage(versioned,
+				
+				KineticMessage km = createPutMessage(versioned,
 						toByteArray(INIT_VERSION));
 
-				KineticMessage km = new KineticMessage();
-				km.setMessage(m);
+				//KineticMessage km = new KineticMessage();
+				//km.setMessage(m);
 
 				CallbackHandler callback = new MyCallBack(lbq, km);
 
@@ -145,11 +148,12 @@ public class AsyncPerf {
 					EntryMetadata entryMetadata = new EntryMetadata();
 					Entry versioned = new Entry(toByteArray(key), value,
 							entryMetadata);
-					Message.Builder m = createPutMessage(versioned,
+					
+					KineticMessage km = createPutMessage(versioned,
 							toByteArray(INIT_VERSION));
 
-					KineticMessage km = new KineticMessage();
-					km.setMessage(m);
+					//KineticMessage km = new KineticMessage();
+					//km.setMessage(m);
 
 					CallbackHandler callback = new MyCallBack(lbq, km);
 
@@ -186,15 +190,21 @@ public class AsyncPerf {
 
 	}
 
-	private static Message.Builder createPutMessage(Entry versioned,
+	private static KineticMessage createPutMessage(Entry versioned,
 			byte[] newVersion) {
-		Message.Builder message = Message.newBuilder();
-		KineticMessage km = new KineticMessage();
-		km.setMessage(message);
+	    
+	    KineticMessage km = MessageFactory.createKineticMessageWithBuilder();
+	    
+		//Message.Builder message = Message.newBuilder();
+		//KineticMessage km = new KineticMessage();
+		//km.setMessage(message);
 
-		message.getCommandBuilder().getHeaderBuilder()
+	    Command.Builder commandBuilder = (Command.Builder) km.getCommand();
+	    
+		commandBuilder.getHeaderBuilder()
 		.setMessageType(MessageType.PUT);
-		KeyValue.Builder kv = message.getCommandBuilder().getBodyBuilder()
+		
+		KeyValue.Builder kv = commandBuilder.getBodyBuilder()
 				.getKeyValueBuilder();
 
 		kv.setKey(ByteString.copyFrom(versioned.getKey()));
@@ -208,7 +218,7 @@ public class AsyncPerf {
 			km.setValue(versioned.getValue());
 		}
 
-		return message;
+		return km;
 	}
 
 	private static void clear(int count) throws KineticException,

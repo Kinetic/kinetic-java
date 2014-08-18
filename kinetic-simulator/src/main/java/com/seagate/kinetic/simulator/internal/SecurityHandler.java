@@ -28,13 +28,15 @@ import java.util.List;
 import java.util.Map;
 
 import com.seagate.kinetic.common.lib.HMACAlgorithmUtil;
+import com.seagate.kinetic.common.lib.KineticMessage;
 import com.seagate.kinetic.common.lib.RoleUtil;
+import com.seagate.kinetic.proto.Kinetic.Command;
 import com.seagate.kinetic.proto.Kinetic.Message;
-import com.seagate.kinetic.proto.Kinetic.Message.MessageType;
-import com.seagate.kinetic.proto.Kinetic.Message.Security;
-import com.seagate.kinetic.proto.Kinetic.Message.Security.ACL;
-import com.seagate.kinetic.proto.Kinetic.Message.Security.ACL.Permission;
-import com.seagate.kinetic.proto.Kinetic.Message.Status.StatusCode;
+import com.seagate.kinetic.proto.Kinetic.Command.MessageType;
+import com.seagate.kinetic.proto.Kinetic.Command.Security;
+import com.seagate.kinetic.proto.Kinetic.Command.Security.ACL;
+import com.seagate.kinetic.proto.Kinetic.Command.Security.ACL.Permission;
+import com.seagate.kinetic.proto.Kinetic.Command.Status.StatusCode;
 
 /**
  * Security handler prototype.
@@ -43,15 +45,20 @@ import com.seagate.kinetic.proto.Kinetic.Message.Status.StatusCode;
  *
  */
 public abstract class SecurityHandler {
-    public static boolean checkPermission(Message request,
-            Message.Builder respond, Map<Long, ACL> currentMap) {
+    
+    public static boolean checkPermission(KineticMessage request,
+            KineticMessage respond, Map<Long, ACL> currentMap) {
+        
         boolean hasPermission = false;
+        
+        Command.Builder commandBuilder = (Command.Builder) respond.getCommand();
 
         // set reply type
-        respond.getCommandBuilder().getHeaderBuilder()
+        commandBuilder.getHeaderBuilder()
         .setMessageType(MessageType.SECURITY_RESPONSE);
+        
         // set ack sequence
-        respond.getCommandBuilder().getHeaderBuilder()
+        commandBuilder.getHeaderBuilder()
         .setAckSequence(request.getCommand().getHeader().getSequence());
 
         // check if has permission to set security
@@ -60,14 +67,14 @@ public abstract class SecurityHandler {
         } else {
             try {
                 // check if client has permission
-                Authorizer.checkPermission(currentMap, request.getCommand()
-                        .getHeader().getIdentity(), Permission.SECURITY);
+                Authorizer.checkPermission(currentMap, request.getMessage().getHmacAuth().getIdentity(), 
+                        Permission.SECURITY);
 
                 hasPermission = true;
             } catch (KVSecurityException e) {
-                respond.getCommandBuilder().getStatusBuilder()
+                commandBuilder.getStatusBuilder()
                 .setCode(StatusCode.NOT_AUTHORIZED);
-                respond.getCommandBuilder().getStatusBuilder()
+                commandBuilder.getStatusBuilder()
                 .setStatusMessage(e.getMessage());
             }
         }
@@ -75,9 +82,13 @@ public abstract class SecurityHandler {
 
     }
 
-    public static synchronized Map<Long, ACL> handleSecurity(Message request,
-            Message.Builder respond, Map<Long, ACL> currentMap,
-            String kineticHome) throws KVStoreException, IOException {
+    public static synchronized Map<Long, ACL> handleSecurity(
+            KineticMessage request, KineticMessage response,
+            Map<Long, ACL> currentMap, String kineticHome)
+            throws KVStoreException, IOException {
+
+        Command.Builder commandBuilder = (Command.Builder) response
+                .getCommand();
 
         List<ACL> aclList = request.getCommand().getBody().getSecurity()
                 .getAclList();
@@ -87,39 +98,35 @@ public abstract class SecurityHandler {
             // add algorithm check
             if (!acl.hasHmacAlgorithm()
                     || !HMACAlgorithmUtil.isSupported(acl.getHmacAlgorithm())) {
-                respond.getCommandBuilder().getStatusBuilder()
-                .setCode(StatusCode.NO_SUCH_HMAC_ALGORITHM);
+                commandBuilder.getStatusBuilder().setCode(
+                        StatusCode.NO_SUCH_HMAC_ALGORITHM);
                 return currentMap;
             }
 
             for (ACL.Scope domain : acl.getScopeList()) {
                 if (domain.hasOffset() && domain.getOffset() < 0) {
                     // Negative offsets are not allowed
-                    respond.getCommandBuilder().getStatusBuilder()
-                    .setCode(StatusCode.INVALID_REQUEST);
-                    respond.getCommandBuilder()
-                    .getStatusBuilder()
-                    .setStatusMessage(
+                    commandBuilder.getStatusBuilder().setCode(
+                            StatusCode.INVALID_REQUEST);
+                    commandBuilder.getStatusBuilder().setStatusMessage(
                             "Offset in domain is less than 0.");
                     return currentMap;
                 }
 
                 List<Permission> roleOfList = domain.getPermissionList();
                 if (null == roleOfList || roleOfList.isEmpty()) {
-                    respond.getCommandBuilder().getStatusBuilder()
-                    .setCode(StatusCode.INVALID_REQUEST);
-                    respond.getCommandBuilder().getStatusBuilder()
-                    .setStatusMessage("No role set in acl");
+                    commandBuilder.getStatusBuilder().setCode(
+                            StatusCode.INVALID_REQUEST);
+                    commandBuilder.getStatusBuilder().setStatusMessage(
+                            "No role set in acl");
                     return currentMap;
                 }
 
                 for (Permission role : roleOfList) {
                     if (!RoleUtil.isValid(role)) {
-                        respond.getCommandBuilder().getStatusBuilder()
-                        .setCode(StatusCode.INVALID_REQUEST);
-                        respond.getCommandBuilder()
-                        .getStatusBuilder()
-                        .setStatusMessage(
+                        commandBuilder.getStatusBuilder().setCode(
+                                StatusCode.INVALID_REQUEST);
+                        commandBuilder.getStatusBuilder().setStatusMessage(
                                 "Role is invalid in acl. Role is: "
                                         + role.toString());
                         return currentMap;
@@ -134,8 +141,8 @@ public abstract class SecurityHandler {
 
         SecurityHandler.persistAcl(request.getCommand().getBody().getSecurity()
                 .toByteArray(), kineticHome);
-        respond.getCommandBuilder().getStatusBuilder()
-        .setCode(StatusCode.SUCCESS);
+        
+        commandBuilder.getStatusBuilder().setCode(StatusCode.SUCCESS);
 
         return currentMap;
     }

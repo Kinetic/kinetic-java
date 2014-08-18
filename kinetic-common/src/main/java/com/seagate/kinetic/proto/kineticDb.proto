@@ -51,6 +51,6 @@ option java_outer_classname = "KineticDb";
     // the algorithm will be negative. If the data protection algorithm is not a standard unkeyed algorithm
     // then  a positive number is used and the drive has no idea what the key is. See the discussion of
     // encrypted key/value store.(See security document).
-    optional Message.Algorithm algorithm = 4;
+    optional Command.Algorithm algorithm = 4;
     }
   }

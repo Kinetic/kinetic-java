@@ -19,7 +19,6 @@ package com.seagate.kinetic.client.internal;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import java.util.logging.Logger;
 
 import kinetic.client.CallbackHandler;
@@ -36,10 +35,10 @@ import com.seagate.kinetic.client.internal.ClientProxy.KeyRange;
 import com.seagate.kinetic.client.internal.ClientProxy.LCException;
 import com.seagate.kinetic.client.lib.ClientLogger;
 import com.seagate.kinetic.common.lib.KineticMessage;
-import com.seagate.kinetic.proto.Kinetic.Message;
-import com.seagate.kinetic.proto.Kinetic.Message.Builder;
-import com.seagate.kinetic.proto.Kinetic.Message.MessageType;
-import com.seagate.kinetic.proto.Kinetic.Message.Synchronization;
+import com.seagate.kinetic.proto.Kinetic.Command;
+
+import com.seagate.kinetic.proto.Kinetic.Command.MessageType;
+import com.seagate.kinetic.proto.Kinetic.Command.Synchronization;
 
 
 /**
@@ -121,7 +120,7 @@ public class DefaultKineticClient implements AdvancedKineticClient {
                     entry, newVersion);
 
             // proto builder
-            Message.Builder message = (Builder) request.getMessage();
+            Command.Builder message = (Command.Builder) request.getCommand();
 
             // set persist option
             setPersistOption(message, option);
@@ -335,10 +334,10 @@ public class DefaultKineticClient implements AdvancedKineticClient {
                     .createDeleteRequestMessage(entry);
 
             // proto builder
-            Message.Builder request = (Builder) im.getMessage();
+            Command.Builder message = (Command.Builder) im.getCommand();
 
             // set persist option
-            setPersistOption(request, option);
+            setPersistOption(message, option);
 
             // do delete op
             return this.doDelete(im);
@@ -520,8 +519,9 @@ public class DefaultKineticClient implements AdvancedKineticClient {
         // construct put request message
         KineticMessage km = MessageFactory.createPutRequestMessage(entry,
                 newVersion);
+        
         // proto builder
-        Message.Builder message = (Builder) km.getMessage();
+        Command.Builder message = (Command.Builder) km.getCommand();
 
         // set persist option
         setPersistOption(message, option);
@@ -563,7 +563,8 @@ public class DefaultKineticClient implements AdvancedKineticClient {
         KineticMessage km = MessageFactory
                 .createDeleteRequestMessage(entry);
 
-        Message.Builder message = (Builder) km.getMessage();
+        // proto builder
+        Command.Builder message = (Command.Builder) km.getCommand();
 
         // set persist option
         setPersistOption(message, option);
@@ -635,8 +636,7 @@ public class DefaultKineticClient implements AdvancedKineticClient {
             //MessageFactory.checkGetReply(response, MessageType.GET_RESPONSE);
 
             // transform message to metadata
-            metadata = MessageFactory.responsetoEntryMetadata(response
-                    .getMessage());
+            metadata = MessageFactory.responsetoEntryMetadata(response);
         } catch (EntryNotFoundException enfe) {
             ;
         } catch (Exception e) {
@@ -691,15 +691,15 @@ public class DefaultKineticClient implements AdvancedKineticClient {
             // construct put request message
             request = MessageFactory.createPutRequestMessage(
                     entry, newVersion);
-
-            Message.Builder message = (Builder) request.getMessage();
+            
+            Command.Builder commandBuilder = (Command.Builder) request.getCommand();
 
             // set force bit
-            message.getCommandBuilder().getBodyBuilder().getKeyValueBuilder()
+            commandBuilder.getBodyBuilder().getKeyValueBuilder()
             .setForce(true);
 
             // set persist option
-            setPersistOption(message, option);
+            setPersistOption(commandBuilder, option);
 
             // send request
             response = this.client.request(request);
@@ -748,15 +748,14 @@ public class DefaultKineticClient implements AdvancedKineticClient {
         // construct put request message
         KineticMessage km = MessageFactory.createPutRequestMessage(entry,
                 newVersion);
-
-        Message.Builder message = (Builder) km.getMessage();
+        
+        Command.Builder commandBuilder = (Command.Builder) km.getCommand();
 
         // set force bit
-        message.getCommandBuilder().getBodyBuilder().getKeyValueBuilder()
-        .setForce(true);
+        commandBuilder.getBodyBuilder().getKeyValueBuilder().setForce(true);
 
         // set persist option
-        setPersistOption(message, option);
+        setPersistOption(commandBuilder, option);
 
         this.client.requestAsync(km, handler);
 
@@ -781,7 +780,8 @@ public class DefaultKineticClient implements AdvancedKineticClient {
         KineticMessage km = MessageFactory
                 .createForceDeleteRequestMessage(key);
 
-        Message.Builder request = (Builder) km.getMessage();
+        // get command builder
+        Command.Builder request = (Command.Builder) km.getCommand();
 
         // set persist option
         setPersistOption(request, option);
@@ -810,7 +810,7 @@ public class DefaultKineticClient implements AdvancedKineticClient {
         KineticMessage km = MessageFactory
                 .createForceDeleteRequestMessage(key);
 
-        Message.Builder request = (Builder) km.getMessage();
+        Command.Builder request = (Command.Builder) km.getCommand();
 
         // set persist option
         setPersistOption(request, option);
@@ -859,7 +859,7 @@ public class DefaultKineticClient implements AdvancedKineticClient {
      *
      * @see PersistOption
      */
-    private static void setPersistOption(Message.Builder message,
+    private static void setPersistOption(Command.Builder message,
             PersistOption option) {
 
         if (option == null) {
@@ -868,19 +868,19 @@ public class DefaultKineticClient implements AdvancedKineticClient {
 
         switch (option) {
         case SYNC:
-            message.getCommandBuilder().getBodyBuilder().getKeyValueBuilder()
+            message.getBodyBuilder().getKeyValueBuilder()
             .setSynchronization(Synchronization.WRITETHROUGH);
             break;
         case ASYNC:
-            message.getCommandBuilder().getBodyBuilder().getKeyValueBuilder()
+            message.getBodyBuilder().getKeyValueBuilder()
             .setSynchronization(Synchronization.WRITEBACK);
             break;
         case FLUSH:
-            message.getCommandBuilder().getBodyBuilder().getKeyValueBuilder()
+            message.getBodyBuilder().getKeyValueBuilder()
             .setSynchronization(Synchronization.FLUSH);
             break;
         default:
-            message.getCommandBuilder().getBodyBuilder().getKeyValueBuilder()
+            message.getBodyBuilder().getKeyValueBuilder()
             .setSynchronization(Synchronization.WRITETHROUGH);
             break;
         }

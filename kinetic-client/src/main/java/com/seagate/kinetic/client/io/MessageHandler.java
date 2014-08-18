@@ -43,7 +43,7 @@ import com.seagate.kinetic.client.internal.async.GetMetadataAsyncCallbackHandler
 import com.seagate.kinetic.client.internal.async.PutAsyncCallbackHandler;
 import com.seagate.kinetic.client.io.provider.spi.ClientMessageService;
 import com.seagate.kinetic.common.lib.KineticMessage;
-import com.seagate.kinetic.proto.Kinetic.Message.MessageType;
+import com.seagate.kinetic.proto.Kinetic.Command.MessageType;
 
 /**
  *
@@ -130,7 +130,7 @@ public class MessageHandler implements ClientMessageService, Runnable {
 			logger.info("read/routing message: " + message);
 		}
 
-		Long seq = Long.valueOf(message.getMessage().getCommand().getHeader()
+		Long seq = Long.valueOf(message.getCommand().getHeader()
 				.getAckSequence());
 
 		Object obj = this.ackmap.get(seq);
@@ -197,7 +197,7 @@ public class MessageHandler implements ClientMessageService, Runnable {
 			throws InterruptedException {
 
 		// get ack seq
-		Long seq = Long.valueOf(message.getMessage().getCommand().getHeader()
+		Long seq = Long.valueOf(message.getCommand().getHeader()
 				.getAckSequence());
 		// get callback instance
 		Object context = this.ackmap.get(seq);
@@ -225,7 +225,7 @@ public class MessageHandler implements ClientMessageService, Runnable {
 		LinkedBlockingQueue<KineticMessage> lbq = new LinkedBlockingQueue<KineticMessage>(
 				1);
 
-		Long seq = Long.valueOf(message.getMessage().getCommand().getHeader()
+		Long seq = Long.valueOf(message.getCommand().getHeader()
 				.getSequence());
 
 		this.ackmap.put(seq, lbq);
@@ -251,7 +251,7 @@ public class MessageHandler implements ClientMessageService, Runnable {
 			throws IOException,
 			InterruptedException {
 
-		Long seq = Long.valueOf(message.getMessage().getCommand().getHeader()
+		Long seq = Long.valueOf(message.getCommand().getHeader()
 				.getSequence());
 
 		synchronized (this) {
@@ -269,7 +269,7 @@ public class MessageHandler implements ClientMessageService, Runnable {
 	@SuppressWarnings("rawtypes")
 	private void invokeCallbackHandler(Object cbContext, KineticMessage response) {
 
-		MessageType type = response.getMessage().getCommand().getHeader()
+		MessageType type = response.getCommand().getHeader()
 				.getMessageType();
 
 		AsyncKineticException exception = this
@@ -284,7 +284,7 @@ public class MessageHandler implements ClientMessageService, Runnable {
 			break;
 		case GET_RESPONSE:
 			boolean isMetadataOnly = ((CallbackContext) cbContext)
-					.getRequestMessage().getMessage().getCommand().getBody()
+					.getRequestMessage().getCommand().getBody()
 					.getKeyValue().getMetadataOnly();
 			if (isMetadataOnly)
 			{

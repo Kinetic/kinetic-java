@@ -26,8 +26,11 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.google.protobuf.ByteString;
+import com.google.protobuf.InvalidProtocolBufferException;
 import com.seagate.kinetic.common.lib.KineticMessage;
 import com.seagate.kinetic.common.lib.ProtocolMessageUtil;
+import com.seagate.kinetic.proto.Kinetic.Command;
 import com.seagate.kinetic.proto.Kinetic.Message;
 
 /**
@@ -129,6 +132,19 @@ public class KineticDecoder extends ByteToMessageDecoder {
 		Message message = mbuilder.build();
 
 		km.setMessage(message);
+		
+		// get command bytes
+		ByteString commandBytes = message.getCommandBytes();
+		
+		// build command
+		Command.Builder commandBuilder = Command.newBuilder();
+		
+		try {
+            commandBuilder.mergeFrom(commandBytes);
+            km.setCommand(commandBuilder.build());
+        } catch (InvalidProtocolBufferException e) {
+           logger.log(Level.WARNING, e.getMessage(), e);
+        }
 
 		// the whole message
 		out.add(km);
@@ -138,10 +154,7 @@ public class KineticDecoder extends ByteToMessageDecoder {
 
 			logger.info("Inbound protocol message: ");
 
-			// Message.Builder m = mbuilder.setValue(ByteString.EMPTY);
-
-			String printMsg = ProtocolMessageUtil.toString(message,
-					attachedValueLength);
+			String printMsg = ProtocolMessageUtil.toString(km);
 
 			logger.info(printMsg);
 		}

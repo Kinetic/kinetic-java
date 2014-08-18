@@ -22,7 +22,7 @@ package com.seagate.kinetic.simulator.persist;
 
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
-import com.seagate.kinetic.proto.Kinetic.Message.Algorithm;
+import com.seagate.kinetic.proto.Kinetic.Command.Algorithm;
 
 public class KVValue {
 

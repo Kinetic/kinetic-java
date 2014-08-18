@@ -33,22 +33,26 @@ import kinetic.admin.Temperature;
 import kinetic.admin.Utilization;
 import kinetic.client.KineticException;
 
-import com.seagate.kinetic.proto.Kinetic.Message;
+import com.seagate.kinetic.common.lib.KineticMessage;
+
 
 public class DefaultKineticLog implements KineticLog {
-    private Message response = null;
+    //private Message response = null;
+    
+    private KineticMessage response = null;
 
-    public DefaultKineticLog(Message response) {
-        this.response = response;
+    public DefaultKineticLog(KineticMessage km) {
+        this.response = km;
     }
 
     @Override
     public List<Utilization> getUtilization() throws KineticException {
-        validate(response);
+        
+        validate(this.response);
 
         List<Utilization> utils = new ArrayList<Utilization>();
-        List<com.seagate.kinetic.proto.Kinetic.Message.GetLog.Utilization> utilizations = response
-                .getCommand().getBody().getGetLog().getUtilizationList();
+        List<com.seagate.kinetic.proto.Kinetic.Command.GetLog.Utilization> utilizations = response
+                .getCommand().getBody().getGetLog().getUtilizationsList();
         if (null == utilizations || utilizations.isEmpty()
                 || 0 == utilizations.size()) {
             throw new KineticException(
@@ -71,8 +75,8 @@ public class DefaultKineticLog implements KineticLog {
         validate(response);
 
         List<Temperature> temps = new ArrayList<Temperature>();
-        List<com.seagate.kinetic.proto.Kinetic.Message.GetLog.Temperature> Temperatures = response
-                .getCommand().getBody().getGetLog().getTemperatureList();
+        List<com.seagate.kinetic.proto.Kinetic.Command.GetLog.Temperature> Temperatures = response
+                .getCommand().getBody().getGetLog().getTemperaturesList();
         if (null == Temperatures || Temperatures.isEmpty()
                 || 0 == Temperatures.size()) {
             throw new KineticException(
@@ -111,7 +115,7 @@ public class DefaultKineticLog implements KineticLog {
     public Capacity getCapacity() throws KineticException {
         validate(response);
 
-        com.seagate.kinetic.proto.Kinetic.Message.GetLog.Capacity capacity = response
+        com.seagate.kinetic.proto.Kinetic.Command.GetLog.Capacity capacity = response
                 .getCommand().getBody().getGetLog().getCapacity();
 
         if (null == response.getCommand().getBody().getGetLog().getCapacity()) {
@@ -132,7 +136,7 @@ public class DefaultKineticLog implements KineticLog {
         return capacInfo;
     }
 
-    private void validate(Message response) throws KineticException {
+    private void validate(KineticMessage response) throws KineticException {
         if (null == response) {
             throw new KineticException(
                     "Response message error: response is null");
@@ -164,8 +168,8 @@ public class DefaultKineticLog implements KineticLog {
 
         validate(response);
 
-        List<com.seagate.kinetic.proto.Kinetic.Message.GetLog.Type> typeOfList = response
-                .getCommand().getBody().getGetLog().getTypeList();
+        List<com.seagate.kinetic.proto.Kinetic.Command.GetLog.Type> typeOfList = response
+                .getCommand().getBody().getGetLog().getTypesList();
 
         if (null == typeOfList || typeOfList.isEmpty()
                 || 0 == typeOfList.size()) {
@@ -236,7 +240,7 @@ public class DefaultKineticLog implements KineticLog {
 
         validate(response);
 
-        com.seagate.kinetic.proto.Kinetic.Message.GetLog.Configuration configuration = response
+        com.seagate.kinetic.proto.Kinetic.Command.GetLog.Configuration configuration = response
                 .getCommand().getBody().getGetLog().getConfiguration();
 
         if (null == response.getCommand().getBody().getGetLog()
@@ -254,12 +258,12 @@ public class DefaultKineticLog implements KineticLog {
 
         List<Interface> interfaces = new ArrayList<Interface>();
 
-        List<com.seagate.kinetic.proto.Kinetic.Message.GetLog.Configuration.Interface> interfacesFromResponse = configuration
+        List<com.seagate.kinetic.proto.Kinetic.Command.GetLog.Configuration.Interface> interfacesFromResponse = configuration
                 .getInterfaceList();
         if (null != interfacesFromResponse
                 && (!interfacesFromResponse.isEmpty())
                 && 0 != interfacesFromResponse.size()) {
-            for (com.seagate.kinetic.proto.Kinetic.Message.GetLog.Configuration.Interface interfaceFromMessage : interfacesFromResponse) {
+            for (com.seagate.kinetic.proto.Kinetic.Command.GetLog.Configuration.Interface interfaceFromMessage : interfacesFromResponse) {
                 Interface interfaceInfo = new Interface();
 
                 if (interfaceFromMessage.hasIpv4Address()) {
@@ -341,7 +345,7 @@ public class DefaultKineticLog implements KineticLog {
     public List<Statistics> getStatistics() throws KineticException {
         validate(response);
 
-        List<com.seagate.kinetic.proto.Kinetic.Message.GetLog.Statistics> statisticsOfMessageList = response
+        List<com.seagate.kinetic.proto.Kinetic.Command.GetLog.Statistics> statisticsOfMessageList = response
                 .getCommand().getBody().getGetLog().getStatisticsList();
 
         if (null == response.getCommand().getBody().getGetLog()
@@ -352,7 +356,7 @@ public class DefaultKineticLog implements KineticLog {
 
         List<Statistics> statisticOfList = new ArrayList<Statistics>();
 
-        for (com.seagate.kinetic.proto.Kinetic.Message.GetLog.Statistics statistics : statisticsOfMessageList) {
+        for (com.seagate.kinetic.proto.Kinetic.Command.GetLog.Statistics statistics : statisticsOfMessageList) {
             Statistics statisticsInfo = new Statistics();
             if (statistics.hasBytes()) {
                 statisticsInfo.setBytes(statistics.getBytes());
@@ -410,7 +414,7 @@ public class DefaultKineticLog implements KineticLog {
     public Limits getLimits() throws KineticException {
         validate(response);
 
-        com.seagate.kinetic.proto.Kinetic.Message.GetLog.Limits limits = response
+        com.seagate.kinetic.proto.Kinetic.Command.GetLog.Limits limits = response
                 .getCommand().getBody().getGetLog().getLimits();
 
         if (null == response.getCommand().getBody().getGetLog().getLimits()) {

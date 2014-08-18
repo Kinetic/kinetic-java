@@ -35,8 +35,10 @@ import kinetic.client.KineticException;
 
 import com.google.protobuf.ByteString;
 import com.seagate.kinetic.admin.impl.DefaultAdminClient;
+import com.seagate.kinetic.client.internal.MessageFactory;
 import com.seagate.kinetic.common.lib.KineticMessage;
 import com.seagate.kinetic.proto.Kinetic;
+import com.seagate.kinetic.proto.Kinetic.Command;
 import com.seagate.kinetic.proto.Kinetic.Message;
 
 /**
@@ -109,22 +111,27 @@ public class KineticTestHelpers {
 	 */
 	public static void cleanPin(String pin, DefaultAdminClient client)
 			throws KineticException {
+	    
 		if (Boolean.getBoolean("kinetic.test.disable-clean-pin")) {
 			return;
 		}
-		Kinetic.Message.Builder request = Kinetic.Message.newBuilder();
-		Kinetic.Message.Setup.Builder setup = request.getCommandBuilder()
+		
+		KineticMessage km = MessageFactory.createKineticMessageWithBuilder();
+		
+		Command.Builder commandBuilder = (Command.Builder) km.getCommand();
+		
+		Kinetic.Command.Setup.Builder setup = commandBuilder
 				.getBodyBuilder().getSetupBuilder();
-		setup.setPin(ByteString.copyFromUtf8(pin));
+		
+		/**
+		 * XXX: protocol-3.0.0
+		 */
+		//setup.setPin(ByteString.copyFromUtf8(pin));
 
-		KineticMessage km = new KineticMessage();
-		km.setMessage(request);
-
-		Kinetic.Message respond = (Message) client.configureSetupPolicy(km)
-				.getMessage();
+		KineticMessage respond = client.configureSetupPolicy(km);
 
 		assertTrue(respond.getCommand().getStatus().getCode()
-				.equals(Kinetic.Message.Status.StatusCode.SUCCESS));
+				.equals(Kinetic.Command.Status.StatusCode.SUCCESS));
 	}
 
 	/**

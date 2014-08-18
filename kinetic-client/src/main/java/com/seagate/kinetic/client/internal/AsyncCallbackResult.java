@@ -131,7 +131,7 @@ public class AsyncCallbackResult<T> implements CallbackResult<T> {
 		}
 
 		// return the key field of the request message.
-		return this.request.getMessage().getCommand().getBody().getKeyValue()
+		return this.request.getCommand().getBody().getKeyValue()
 				.getKey()
 				.toByteArray();
 	}

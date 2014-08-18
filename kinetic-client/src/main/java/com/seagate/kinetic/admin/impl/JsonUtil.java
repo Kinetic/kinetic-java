@@ -25,9 +25,9 @@ import kinetic.admin.Domain;
 
 import com.google.gson.Gson;
 import com.google.protobuf.ByteString;
-import com.seagate.kinetic.proto.Kinetic.Message.GetLog.Type;
-import com.seagate.kinetic.proto.Kinetic.Message.Security.ACL.HMACAlgorithm;
-import com.seagate.kinetic.proto.Kinetic.Message.Security.ACL.Permission;
+import com.seagate.kinetic.proto.Kinetic.Command.GetLog.Type;
+import com.seagate.kinetic.proto.Kinetic.Command.Security.ACL.HMACAlgorithm;
+import com.seagate.kinetic.proto.Kinetic.Command.Security.ACL.Permission;
 
 /**
  *
@@ -41,17 +41,17 @@ public class JsonUtil {
     /*
      * change Json to message security
      */
-    public static final com.seagate.kinetic.proto.Kinetic.Message.Security parseSecurity(
+    public static final com.seagate.kinetic.proto.Kinetic.Command.Security parseSecurity(
             String content) {
         Gson gson = new Gson();
         Security security = gson.fromJson(content, Security.class);
 
-        com.seagate.kinetic.proto.Kinetic.Message.Security.Builder retSecurityBuilder = com.seagate.kinetic.proto.Kinetic.Message.Security
+        com.seagate.kinetic.proto.Kinetic.Command.Security.Builder retSecurityBuilder = com.seagate.kinetic.proto.Kinetic.Command.Security
                 .newBuilder();
-        com.seagate.kinetic.proto.Kinetic.Message.Security.ACL.Builder retAclBuilder = null;
-        com.seagate.kinetic.proto.Kinetic.Message.Security.ACL.Scope.Builder retDomainBuilder = null;
+        com.seagate.kinetic.proto.Kinetic.Command.Security.ACL.Builder retAclBuilder = null;
+        com.seagate.kinetic.proto.Kinetic.Command.Security.ACL.Scope.Builder retDomainBuilder = null;
         for (ACL acl : security.getAcl()) {
-            retAclBuilder = com.seagate.kinetic.proto.Kinetic.Message.Security.ACL
+            retAclBuilder = com.seagate.kinetic.proto.Kinetic.Command.Security.ACL
                     .newBuilder();
             retAclBuilder.setIdentity(acl.getUserId());
             if (null == acl.getAlgorithm() || acl.getAlgorithm().isEmpty()) {
@@ -62,7 +62,7 @@ public class JsonUtil {
             }
             retAclBuilder.setKey(ByteString.copyFromUtf8(acl.getKey()));
             for (Domain domain : acl.getDomains()) {
-                retDomainBuilder = com.seagate.kinetic.proto.Kinetic.Message.Security.ACL.Scope
+                retDomainBuilder = com.seagate.kinetic.proto.Kinetic.Command.Security.ACL.Scope
                         .newBuilder();
                 retDomainBuilder.setOffset(domain.getOffset());
                 retDomainBuilder.setValue(ByteString.copyFromUtf8(domain
@@ -82,17 +82,22 @@ public class JsonUtil {
     /*
      * change Json to message setup
      */
-    public static final com.seagate.kinetic.proto.Kinetic.Message.Setup parseSetup(
+    public static final com.seagate.kinetic.proto.Kinetic.Command.Setup parseSetup(
             String content) {
         Gson gson = new Gson();
         Setup setup = gson.fromJson(content, Setup.class);
 
-        com.seagate.kinetic.proto.Kinetic.Message.Setup.Builder retSetupBuilder = com.seagate.kinetic.proto.Kinetic.Message.Setup
+        com.seagate.kinetic.proto.Kinetic.Command.Setup.Builder retSetupBuilder = com.seagate.kinetic.proto.Kinetic.Command.Setup
                 .newBuilder();
+        
         retSetupBuilder.setNewClusterVersion(setup.getNewClusterVersion());
-        retSetupBuilder.setPin(ByteString.copyFromUtf8(setup.getPin()));
-        retSetupBuilder.setSetPin(ByteString.copyFromUtf8(setup.getSetPin()));
-        retSetupBuilder.setInstantSecureErase(setup.isInstantSecureErase());
+        
+        /**
+         * XXX: protocol-3.0.0
+         */
+        //retSetupBuilder.setPin(ByteString.copyFromUtf8(setup.getPin()));
+        //retSetupBuilder.setSetPin(ByteString.copyFromUtf8(setup.getSetPin()));
+        //retSetupBuilder.setInstantSecureErase(setup.isInstantSecureErase());
 
         return retSetupBuilder.build();
     }
@@ -100,15 +105,15 @@ public class JsonUtil {
     /*
      * change Json to message getlog
      */
-    public static final com.seagate.kinetic.proto.Kinetic.Message.GetLog parseGetLog(
+    public static final com.seagate.kinetic.proto.Kinetic.Command.GetLog parseGetLog(
             String content) {
         Gson gson = new Gson();
         GetLog getLog = gson.fromJson(content, GetLog.class);
 
-        com.seagate.kinetic.proto.Kinetic.Message.GetLog.Builder retGetLogBuilder = com.seagate.kinetic.proto.Kinetic.Message.GetLog
+        com.seagate.kinetic.proto.Kinetic.Command.GetLog.Builder retGetLogBuilder = com.seagate.kinetic.proto.Kinetic.Command.GetLog
                 .newBuilder();
         for (Type type : getLog.getType()) {
-            retGetLogBuilder.addType(type);
+            retGetLogBuilder.addTypes(type);
         }
         return retGetLogBuilder.build();
     }
@@ -117,14 +122,19 @@ public class JsonUtil {
      * change message setup to Json class
      */
     public static String toJson(
-            com.seagate.kinetic.proto.Kinetic.Message.Setup setup) {
+            com.seagate.kinetic.proto.Kinetic.Command.Setup setup) {
         Gson gson = new Gson();
 
         Setup mySetup = new Setup();
-        mySetup.setInstantSecureErase(setup.getInstantSecureErase());
+        
+        /**
+         * XXX: protocol-3.0.0
+         */
+        
+        //mySetup.setInstantSecureErase(setup.getInstantSecureErase());
         mySetup.setNewClusterVersion(setup.getNewClusterVersion());
-        mySetup.setPin(setup.getPin().toStringUtf8());
-        mySetup.setSetPin(setup.getSetPin().toStringUtf8());
+        //mySetup.setPin(setup.getPin().toStringUtf8());
+        //mySetup.setSetPin(setup.getSetPin().toStringUtf8());
 
         return gson.toJson(mySetup, Setup.class);
     }
@@ -133,11 +143,11 @@ public class JsonUtil {
      * change message getlog to Json class
      */
     public static String toJson(
-            com.seagate.kinetic.proto.Kinetic.Message.GetLog getLog) {
+            com.seagate.kinetic.proto.Kinetic.Command.GetLog getLog) {
         Gson gson = new Gson();
 
         GetLog myGetLog = new GetLog();
-        myGetLog.setType(getLog.getTypeList());
+        myGetLog.setType(getLog.getTypesList());
 
         return gson.toJson(myGetLog, GetLog.class);
     }
@@ -146,7 +156,7 @@ public class JsonUtil {
      * change message security to Json class
      */
     public static String toJson(
-            com.seagate.kinetic.proto.Kinetic.Message.Security security) {
+            com.seagate.kinetic.proto.Kinetic.Command.Security security) {
         Gson gson = new Gson();
 
         Security mySecurity = new Security();
@@ -154,7 +164,7 @@ public class JsonUtil {
         Domain myDomain = null;
         List<ACL> myAclList = new ArrayList<ACL>();
         List<Domain> myDomainList = null;
-        for (com.seagate.kinetic.proto.Kinetic.Message.Security.ACL acl : security
+        for (com.seagate.kinetic.proto.Kinetic.Command.Security.ACL acl : security
                 .getAclList()) {
             myAcl = new ACL();
             // myAcl.setAlgorithm(acl.getAlgorithmName());
@@ -164,7 +174,7 @@ public class JsonUtil {
 
             myDomainList = new ArrayList<Domain>();
             List<kinetic.admin.Role> roleList = null;
-            for (com.seagate.kinetic.proto.Kinetic.Message.Security.ACL.Scope domain : acl
+            for (com.seagate.kinetic.proto.Kinetic.Command.Security.ACL.Scope domain : acl
                     .getScopeList()) {
                 myDomain = new Domain();
                 roleList = new ArrayList<kinetic.admin.Role>();
@@ -201,14 +211,14 @@ class Security {
 }
 
 class GetLog {
-    private List<com.seagate.kinetic.proto.Kinetic.Message.GetLog.Type> type;
+    private List<com.seagate.kinetic.proto.Kinetic.Command.GetLog.Type> type;
 
-    public List<com.seagate.kinetic.proto.Kinetic.Message.GetLog.Type> getType() {
+    public List<com.seagate.kinetic.proto.Kinetic.Command.GetLog.Type> getType() {
         return type;
     }
 
     public void setType(
-            List<com.seagate.kinetic.proto.Kinetic.Message.GetLog.Type> type) {
+            List<com.seagate.kinetic.proto.Kinetic.Command.GetLog.Type> type) {
         this.type = type;
     }
 }

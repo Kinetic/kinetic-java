@@ -27,16 +27,17 @@ import kinetic.simulator.SimulatorConfiguration;
 
 import com.google.protobuf.ByteString;
 import com.seagate.kinetic.common.lib.KineticMessage;
+import com.seagate.kinetic.proto.Kinetic.Command;
 import com.seagate.kinetic.proto.Kinetic.Message;
-import com.seagate.kinetic.proto.Kinetic.Message.Algorithm;
+import com.seagate.kinetic.proto.Kinetic.Command.Algorithm;
 import com.seagate.kinetic.proto.Kinetic.Message.Builder;
-import com.seagate.kinetic.proto.Kinetic.Message.KeyValue;
-import com.seagate.kinetic.proto.Kinetic.Message.MessageType;
-import com.seagate.kinetic.proto.Kinetic.Message.Security.ACL;
-import com.seagate.kinetic.proto.Kinetic.Message.Security.ACL.Permission;
-import com.seagate.kinetic.proto.Kinetic.Message.Status;
-import com.seagate.kinetic.proto.Kinetic.Message.Status.StatusCode;
-import com.seagate.kinetic.proto.Kinetic.Message.Synchronization;
+import com.seagate.kinetic.proto.Kinetic.Command.KeyValue;
+import com.seagate.kinetic.proto.Kinetic.Command.MessageType;
+import com.seagate.kinetic.proto.Kinetic.Command.Security.ACL;
+import com.seagate.kinetic.proto.Kinetic.Command.Security.ACL.Permission;
+import com.seagate.kinetic.proto.Kinetic.Command.Status;
+import com.seagate.kinetic.proto.Kinetic.Command.Status.StatusCode;
+import com.seagate.kinetic.proto.Kinetic.Command.Synchronization;
 import com.seagate.kinetic.simulator.internal.Authorizer;
 import com.seagate.kinetic.simulator.internal.InvalidRequestException;
 import com.seagate.kinetic.simulator.internal.KVSecurityException;
@@ -94,18 +95,18 @@ public class KVOp {
 
         Message request = (Message) kmreq.getMessage();
 
-        Message.Builder respond = (Builder) kmresp.getMessage();
+        Command.Builder commandBuilder = (Command.Builder) kmresp.getCommand();
         
         PersistOption persistOption = PersistOption.SYNC;
 
         try {
 
             // KV in;
-            KeyValue requestKeyValue = request.getCommand().getBody()
+            KeyValue requestKeyValue = kmreq.getCommand().getBody()
                     .getKeyValue();
 
             // kv out
-            KeyValue.Builder respondKeyValue = respond.getCommandBuilder()
+            KeyValue.Builder respondKeyValue = commandBuilder
                     .getBodyBuilder().getKeyValueBuilder();
 
             boolean metadataOnly = requestKeyValue.getMetadataOnly();
@@ -113,10 +114,10 @@ public class KVOp {
             try {
 
                 // set ack sequence
-                respond.getCommandBuilder()
+                commandBuilder
                 .getHeaderBuilder()
                 .setAckSequence(
-                        request.getCommand().getHeader().getSequence());
+                        kmreq.getCommand().getHeader().getSequence());
 
                 // key = in.getKey();
                 ByteString key = requestKeyValue.getKey();
@@ -124,7 +125,7 @@ public class KVOp {
                 KVValue storeEntry = null;
 
                 // perform key value op
-                switch (request.getCommand().getHeader().getMessageType()) {
+                switch (kmreq.getCommand().getHeader().getMessageType()) {
                 case GET:
                     // get entry from store
                     try {
@@ -132,9 +133,8 @@ public class KVOp {
                         //check max key length
                         checkMaxKeyLenth (key.size());
                         
-                        Authorizer.checkPermission(aclmap, request.getCommand()
-                                .getHeader().getIdentity(), Permission.READ,
-                                key);
+                        Authorizer.checkPermission(aclmap, kmreq.getMessage()
+                                .getHmacAuth().getIdentity(),Permission.READ, key);
 
                         storeEntry = store.get(key);
 
@@ -157,7 +157,7 @@ public class KVOp {
 
                     } finally {
                         // respond message type
-                        respond.getCommandBuilder().getHeaderBuilder()
+                        commandBuilder.getHeaderBuilder()
                         .setMessageType(MessageType.GET_RESPONSE);
                     }
                     break;
@@ -183,8 +183,8 @@ public class KVOp {
                                             + " (in bytes)");
                         }
 
-                        Authorizer.checkPermission(aclmap, request.getCommand()
-                                .getHeader().getIdentity(), Permission.WRITE,
+                        Authorizer.checkPermission(aclmap, kmreq.getMessage()
+                                .getHmacAuth().getIdentity(), Permission.WRITE,
                                 key);
 
                         ByteString valueByteString = null;
@@ -216,7 +216,7 @@ public class KVOp {
                         }
                     } finally {
                         // respond message type
-                        respond.getCommandBuilder().getHeaderBuilder()
+                        commandBuilder.getHeaderBuilder()
                         .setMessageType(MessageType.PUT_RESPONSE);
                     }
 
@@ -233,8 +233,8 @@ public class KVOp {
                         ByteString bs = requestKeyValue.getDbVersion();
                         checkMaxVersionLength (bs);
                         
-                        Authorizer.checkPermission(aclmap, request.getCommand()
-                                .getHeader().getIdentity(), Permission.DELETE,
+                        Authorizer.checkPermission(aclmap, kmreq.getMessage()
+                                .getHmacAuth().getIdentity(), Permission.DELETE,
                                 key);
 
                         if (requestKeyValue.getForce()) {
@@ -246,7 +246,7 @@ public class KVOp {
 
                     } finally {
                         // respond message type
-                        respond.getCommandBuilder().getHeaderBuilder()
+                        commandBuilder.getHeaderBuilder()
                         .setMessageType(MessageType.DELETE_RESPONSE);
                     }
                     break;
@@ -256,15 +256,15 @@ public class KVOp {
                         //check max key length
                         checkMaxKeyLenth (key.size());
                         
-                        Authorizer.checkPermission(aclmap, request.getCommand()
-                                .getHeader().getIdentity(), Permission.READ,
+                        Authorizer.checkPermission(aclmap, kmreq.getMessage()
+                                .getHmacAuth().getIdentity(), Permission.READ,
                                 key);
 
                         storeEntry = store.get(key);
                         respondKeyValue.setDbVersion(storeEntry.getVersion());
                     } finally {
                         // respond message type
-                        respond.getCommandBuilder()
+                        commandBuilder
                         .getHeaderBuilder()
                         .setMessageType(MessageType.GETVERSION_RESPONSE);
                     }
@@ -279,8 +279,8 @@ public class KVOp {
                         ByteString nextKey = storeEntry.getKeyOf();
 
                         // We must verify that the next key is readable, not the passed key
-                        Authorizer.checkPermission(aclmap, request.getCommand()
-                                .getHeader().getIdentity(), Permission.READ,
+                        Authorizer.checkPermission(aclmap, kmreq.getMessage()
+                                .getHmacAuth().getIdentity(), Permission.READ,
                                 nextKey);
 
                         respondKeyValue.setKey(nextKey);
@@ -297,7 +297,7 @@ public class KVOp {
                         }
                     } finally {
                         // respond message type
-                        respond.getCommandBuilder().getHeaderBuilder()
+                        commandBuilder.getHeaderBuilder()
                         .setMessageType(MessageType.GETNEXT_RESPONSE);
                     }
 
@@ -312,8 +312,8 @@ public class KVOp {
                         ByteString previousKey = storeEntry.getKeyOf();
 
                         // We must verify that the previous key is readable, not the passed key
-                        Authorizer.checkPermission(aclmap, request.getCommand()
-                                .getHeader().getIdentity(), Permission.READ,
+                        Authorizer.checkPermission(aclmap, kmreq.getMessage()
+                                .getHmacAuth().getIdentity(), Permission.READ,
                                 previousKey);
 
                         respondKeyValue.setKey(previousKey);
@@ -330,7 +330,7 @@ public class KVOp {
                         }
                     } finally {
                         // respond message type
-                        respond.getCommandBuilder()
+                        commandBuilder
                         .getHeaderBuilder()
                         .setMessageType(
                                 MessageType.GETPREVIOUS_RESPONSE);
@@ -357,15 +357,15 @@ public class KVOp {
             }
 
             // respond status
-            respond.getCommandBuilder().getStatusBuilder()
+            commandBuilder.getStatusBuilder()
             .setCode(Status.StatusCode.SUCCESS);
 
         } catch (KvException e) {
 
             LOG.warning ("KV op Exception: " + e.status + ": " + e.getMessage());
 
-            respond.getCommandBuilder().getStatusBuilder().setCode(e.status);
-            respond.getCommandBuilder().getStatusBuilder()
+            commandBuilder.getStatusBuilder().setCode(e.status);
+            commandBuilder.getStatusBuilder()
             .setStatusMessage(e.getMessage());
         }
 

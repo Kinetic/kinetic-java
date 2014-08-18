@@ -24,7 +24,7 @@ import kinetic.client.EntryMetadata;
 import com.seagate.kinetic.client.internal.CallbackContext;
 import com.seagate.kinetic.client.internal.CallbackResultMessageFactory;
 import com.seagate.kinetic.client.io.MessageHandler;
-import com.seagate.kinetic.proto.Kinetic.Message.MessageType;
+import com.seagate.kinetic.proto.Kinetic.Command.MessageType;
 
 public class GetMetadataAsyncCallbackHandler extends
 		AsyncCallbackHandler<EntryMetadata> {

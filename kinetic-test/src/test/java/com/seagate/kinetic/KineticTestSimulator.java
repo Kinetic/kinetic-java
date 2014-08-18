@@ -37,7 +37,9 @@ import org.apache.commons.io.FilenameUtils;
 
 import com.leacox.process.FinalizedProcess;
 import com.leacox.process.FinalizedProcessBuilder;
+import com.seagate.kinetic.client.internal.MessageFactory;
 import com.seagate.kinetic.common.lib.KineticMessage;
+import com.seagate.kinetic.proto.Kinetic.Command;
 import com.seagate.kinetic.simulator.lib.MyLogger;
 
 /**
@@ -158,18 +160,27 @@ public class KineticTestSimulator {
 		}
 
 		if (clearExistingDatabase) {
-			KineticClient kineticClient = buildClient();
-			com.seagate.kinetic.proto.Kinetic.Message.Builder builder = com.seagate.kinetic.proto.Kinetic.Message
-					.newBuilder();
-			builder.getCommandBuilder().getBodyBuilder().getSetupBuilder()
-			.setInstantSecureErase(true);
-			builder.getCommandBuilder()
+			
+		    KineticClient kineticClient = buildClient();
+			
+		    KineticMessage km = MessageFactory.createKineticMessageWithBuilder();
+		    Command.Builder commandBuillder = (Command.Builder) km.getCommand();
+		    
+		    commandBuillder.getBodyBuilder().getSetupBuilder();
+		    
+		    /**
+		     * XXX protocol-3.0.0
+		     */
+		    
+			//com.seagate.kinetic.proto.Kinetic.Message.Builder builder = com.seagate.kinetic.proto.Kinetic.Message
+			//		.newBuilder();
+			//builder.getCommandBuilder().getBodyBuilder().getSetupBuilder()
+			//.setInstantSecureErase(true);
+			
+		    commandBuillder
 			.getHeaderBuilder()
 			.setMessageType(
-					com.seagate.kinetic.proto.Kinetic.Message.MessageType.SETUP);
-
-			KineticMessage km = new KineticMessage();
-			km.setMessage(builder);
+					com.seagate.kinetic.proto.Kinetic.Command.MessageType.SETUP);
 
 			kineticClient.request(km);
 			kineticClient.close();

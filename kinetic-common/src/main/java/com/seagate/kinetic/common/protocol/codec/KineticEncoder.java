@@ -26,6 +26,7 @@ import java.util.logging.Logger;
 
 import com.seagate.kinetic.common.lib.KineticMessage;
 import com.seagate.kinetic.common.lib.ProtocolMessageUtil;
+
 import com.seagate.kinetic.proto.Kinetic.Message;
 import com.seagate.kinetic.proto.Kinetic.Message.Builder;
 
@@ -67,22 +68,19 @@ public class KineticEncoder extends MessageToByteEncoder<KineticMessage> {
 			ByteBuf out) throws Exception {
 
 		try {
-
-			//int valueLength = 0;
-
+	
 			// get value to write separately
 			// byte[] value = builder.getValue().toByteArray();
 			byte[] value = km.getValue();
 
 			// 1. write magic number
 			out.writeByte((byte) 'F');
-
-			// set value to an empty value
-			// builder.setValue(ByteString.EMPTY);
-			// build message (without value) to write
-			// Message msg = builder.build();
-			Message.Builder builder = (Builder) km.getMessage();
-			Message msg = builder.build();
+			
+			//get message
+			Message.Builder messageBuilder = (Builder) km.getMessage();
+			
+			// build message
+			Message msg = messageBuilder.build();
 
 			// get proto message bytes
 			byte[] protoMessageBytes = msg.toByteArray();
@@ -111,12 +109,7 @@ public class KineticEncoder extends MessageToByteEncoder<KineticMessage> {
 
 				logger.info("outbound protocol message:");
 				
-				int len = 0;
-				if (value != null) {
-				    len = value.length;
-				}
-				
-				String printMsg = ProtocolMessageUtil.toString(msg, len);
+				String printMsg = ProtocolMessageUtil.toString(km);
 
 				logger.info(printMsg);
 			}

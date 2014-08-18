@@ -28,19 +28,19 @@ import com.google.protobuf.ByteString;
 import com.seagate.kinetic.common.lib.KineticMessage;
 import com.seagate.kinetic.heartbeat.message.ByteCounter;
 import com.seagate.kinetic.heartbeat.message.OperationCounter;
-import com.seagate.kinetic.proto.Kinetic.Message;
-import com.seagate.kinetic.proto.Kinetic.Message.Builder;
-import com.seagate.kinetic.proto.Kinetic.Message.GetLog.Capacity;
-import com.seagate.kinetic.proto.Kinetic.Message.GetLog.Configuration;
-import com.seagate.kinetic.proto.Kinetic.Message.GetLog.Limits;
-import com.seagate.kinetic.proto.Kinetic.Message.GetLog.Statistics;
-import com.seagate.kinetic.proto.Kinetic.Message.GetLog.Temperature;
-import com.seagate.kinetic.proto.Kinetic.Message.GetLog.Type;
-import com.seagate.kinetic.proto.Kinetic.Message.GetLog.Utilization;
-import com.seagate.kinetic.proto.Kinetic.Message.MessageType;
-import com.seagate.kinetic.proto.Kinetic.Message.Security.ACL;
-import com.seagate.kinetic.proto.Kinetic.Message.Security.ACL.Permission;
-import com.seagate.kinetic.proto.Kinetic.Message.Status.StatusCode;
+import com.seagate.kinetic.proto.Kinetic.Command;
+
+import com.seagate.kinetic.proto.Kinetic.Command.GetLog.Capacity;
+import com.seagate.kinetic.proto.Kinetic.Command.GetLog.Configuration;
+import com.seagate.kinetic.proto.Kinetic.Command.GetLog.Limits;
+import com.seagate.kinetic.proto.Kinetic.Command.GetLog.Statistics;
+import com.seagate.kinetic.proto.Kinetic.Command.GetLog.Temperature;
+import com.seagate.kinetic.proto.Kinetic.Command.GetLog.Type;
+import com.seagate.kinetic.proto.Kinetic.Command.GetLog.Utilization;
+import com.seagate.kinetic.proto.Kinetic.Command.MessageType;
+import com.seagate.kinetic.proto.Kinetic.Command.Security.ACL;
+import com.seagate.kinetic.proto.Kinetic.Command.Security.ACL.Permission;
+import com.seagate.kinetic.proto.Kinetic.Command.Status.StatusCode;
 import com.seagate.kinetic.simulator.utility.CapacityUtil;
 import com.seagate.kinetic.simulator.utility.ConfigurationUtil;
 import com.seagate.kinetic.simulator.utility.LimitsUtil;
@@ -59,15 +59,19 @@ public class GetLogHandler {
     
     public static final String SIMULATOR_DUMMY_LOG_NAME = "com.seagate.simulator:dummy";
     
-    public static boolean checkPermission(Message request,
-            Message.Builder respond, Map<Long, ACL> currentMap) {
+    public static boolean checkPermission(KineticMessage request,
+            KineticMessage respond, Map<Long, ACL> currentMap) {
+        
         boolean hasPermission = false;
 
+        Command.Builder respCommandBuilder = (Command.Builder) respond.getCommand();
+        
         // set reply type
-        respond.getCommandBuilder().getHeaderBuilder()
+        respCommandBuilder.getHeaderBuilder()
         .setMessageType(MessageType.GETLOG_RESPONSE);
+        
         // set ack sequence
-        respond.getCommandBuilder().getHeaderBuilder()
+        respCommandBuilder.getHeaderBuilder()
         .setAckSequence(request.getCommand().getHeader().getSequence());
 
         // check if has permission to set security
@@ -75,13 +79,13 @@ public class GetLogHandler {
             hasPermission = true;
         } else {
             try {
-                Authorizer.checkPermission(currentMap, request.getCommand()
-                        .getHeader().getIdentity(), Permission.GETLOG);
+                Authorizer.checkPermission(currentMap, request.getMessage().getHmacAuth().getIdentity(), Permission.GETLOG);
+                
                 hasPermission = true;
             } catch (KVSecurityException e) {
-                respond.getCommandBuilder().getStatusBuilder()
+                respCommandBuilder.getStatusBuilder()
                 .setCode(StatusCode.NOT_AUTHORIZED);
-                respond.getCommandBuilder().getStatusBuilder()
+                respCommandBuilder.getStatusBuilder()
                 .setStatusMessage(e.getMessage());
             }
         }
@@ -89,18 +93,18 @@ public class GetLogHandler {
         return hasPermission;
     }
 
-    public static void handleGetLog(SimulatorEngine engine, Message request, KineticMessage kmresp) throws UnknownHostException {
+    public static void handleGetLog(SimulatorEngine engine, KineticMessage request, KineticMessage kmresp) throws UnknownHostException {
         
-        Message.Builder respond = (Message.Builder) kmresp.getMessage();
+        Command.Builder respCommandBuilder = (Command.Builder) kmresp.getCommand();
         
         List<Type> types = request.getCommand().getBody().getGetLog()
-                .getTypeList();
+                .getTypesList();
 
-        Message.GetLog.Builder getLog = respond.getCommandBuilder()
+        Command.GetLog.Builder getLog = respCommandBuilder
                 .getBodyBuilder().getGetLogBuilder();
 
         for (Type type : types) {
-            getLog.addType(type);
+            getLog.addTypes(type);
 
             switch (type) {
             case CAPACITIES:
@@ -111,14 +115,14 @@ public class GetLogHandler {
                 List<Utilization> utilizations = UtilizationUtil
                 .getUtilization();
                 for (Utilization utilization : utilizations) {
-                    getLog.addUtilization(utilization);
+                    getLog.addUtilizations(utilization);
                 }
                 break;
             case TEMPERATURES:
                 List<Temperature> temperatures = TemperatureUtil
                 .getTemperature();
                 for (Temperature temperature : temperatures) {
-                    getLog.addTemperature(temperature);
+                    getLog.addTemperatures(temperature);
                 }
                 break;
             case CONFIGURATION:
@@ -223,15 +227,15 @@ public class GetLogHandler {
                         
                         kmresp.setValue(dummyValue);
                     } else {
-                        respond.getCommandBuilder().getStatusBuilder()
+                        respCommandBuilder.getStatusBuilder()
                         .setCode(StatusCode.NOT_FOUND);
-                        respond.getCommandBuilder().getStatusBuilder()
+                        respCommandBuilder.getStatusBuilder()
                         .setStatusMessage("No device log for the specified name: " + bs.toStringUtf8());   
                     }
                 } else {
-                    respond.getCommandBuilder().getStatusBuilder()
+                    respCommandBuilder.getStatusBuilder()
                     .setCode(StatusCode.NOT_FOUND);
-                    respond.getCommandBuilder().getStatusBuilder()
+                    respCommandBuilder.getStatusBuilder()
                     .setStatusMessage("Missing device log name.");  
                 }
                 

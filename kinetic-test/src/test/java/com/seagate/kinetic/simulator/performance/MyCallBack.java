@@ -27,7 +27,7 @@ import kinetic.client.CallbackResult;
 import kinetic.client.Entry;
 
 import com.seagate.kinetic.common.lib.KineticMessage;
-import com.seagate.kinetic.proto.Kinetic.Message.Status.StatusCode;
+import com.seagate.kinetic.proto.Kinetic.Command.Status.StatusCode;
 
 public class MyCallBack implements CallbackHandler<Entry> {
 
@@ -43,15 +43,15 @@ public class MyCallBack implements CallbackHandler<Entry> {
 	// @Override
 	public void onMessage(KineticMessage message) {
 
-		if (message.getMessage().getCommand().getStatus().getCode() != StatusCode.SUCCESS) {
+		if (message.getCommand().getStatus().getCode() != StatusCode.SUCCESS) {
 			throw new RuntimeException("unsuccessful status, message="
-					+ message.getMessage().getCommand().getStatus()
+					+ message.getCommand().getStatus()
 					.getStatusMessage() + ", code="
-					+ message.getMessage().getCommand().getStatus().getCode());
+					+ message.getCommand().getStatus().getCode());
 		}
 
-		if (this.request.getMessage().getCommand().getHeader().getSequence() != message
-				.getMessage().getCommand().getHeader().getAckSequence()) {
+		if (this.request.getCommand().getHeader().getSequence() != message
+				.getCommand().getHeader().getAckSequence()) {
 			throw new RuntimeException("call back sequence error");
 		}
 

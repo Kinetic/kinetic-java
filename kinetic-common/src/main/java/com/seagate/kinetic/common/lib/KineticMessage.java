@@ -17,6 +17,9 @@
  */
 package com.seagate.kinetic.common.lib;
 
+import java.security.Key;
+
+import com.seagate.kinetic.proto.Kinetic.CommandOrBuilder;
 import com.seagate.kinetic.proto.Kinetic.MessageOrBuilder;
 
 /**
@@ -38,6 +41,9 @@ public class KineticMessage {
 
 	// optional value
 	private byte[] value = null;
+	
+	// command
+	private CommandOrBuilder command = null;
 
 	/**
 	 * Set protocol buffer message.
@@ -75,6 +81,22 @@ public class KineticMessage {
 	 */
 	public byte[] getValue() {
 		return this.value;
+	}
+	
+	/**
+	 * set command for this message instance
+	 */
+	public void setCommand (CommandOrBuilder command) {
+	    this.command = command;
+	}
+	
+	/**
+	 * get command of this instance.
+	 * 
+	 * @return command of this instance.
+	 */
+	public CommandOrBuilder getCommand() {
+	    return this.command;
 	}
 
 }

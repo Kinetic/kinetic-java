@@ -17,7 +17,7 @@
  */
 package com.seagate.kinetic.common.lib;
 
-import com.seagate.kinetic.proto.Kinetic.Message.Security.ACL.Permission;
+import com.seagate.kinetic.proto.Kinetic.Command.Security.ACL.Permission;
 
 /**
  * Get Role list from proto and give the method to judge the role if valid.

@@ -20,6 +20,7 @@
 package com.seagate.kinetic;
 
 import com.google.common.collect.Lists;
+import com.seagate.kinetic.common.lib.KineticMessage;
 import com.seagate.kinetic.proto.Kinetic;
 
 import java.nio.charset.Charset;
@@ -49,16 +50,16 @@ public class KineticAssertions {
 	 * Assert response message status is success.
 	 * <p>
 	 */
-	public static void assertSuccess(Kinetic.Message response) {
-		assertStatus(Kinetic.Message.Status.StatusCode.SUCCESS, response);
+	public static void assertSuccess(KineticMessage response) {
+		assertStatus(Kinetic.Command.Status.StatusCode.SUCCESS, response);
 	}
 
 	/**
 	 * Assert response message status is equals as expected.
 	 * <p>
 	 */
-	public static void assertStatus(Kinetic.Message.Status.StatusCode expected,
-			Kinetic.Message response) {
+	public static void assertStatus(Kinetic.Command.Status.StatusCode expected,
+			KineticMessage response) {
 		assertEquals(String.format("Message %s status is not %s", response,
 				expected), expected, response.getCommand().getStatus()
 				.getCode());

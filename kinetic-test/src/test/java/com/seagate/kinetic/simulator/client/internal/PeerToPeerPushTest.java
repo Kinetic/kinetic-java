@@ -34,13 +34,15 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.google.protobuf.ByteString;
+import com.seagate.kinetic.client.internal.MessageFactory;
 import com.seagate.kinetic.client.internal.p2p.DefaultKineticP2pClient;
 import com.seagate.kinetic.common.lib.KineticMessage;
+import com.seagate.kinetic.proto.Kinetic.Command;
 import com.seagate.kinetic.proto.Kinetic.Message;
-import com.seagate.kinetic.proto.Kinetic.Message.MessageType;
-import com.seagate.kinetic.proto.Kinetic.Message.P2POperation;
-import com.seagate.kinetic.proto.Kinetic.Message.P2POperation.Operation;
-import com.seagate.kinetic.proto.Kinetic.Message.P2POperation.Peer;
+import com.seagate.kinetic.proto.Kinetic.Command.MessageType;
+import com.seagate.kinetic.proto.Kinetic.Command.P2POperation;
+import com.seagate.kinetic.proto.Kinetic.Command.P2POperation.Operation;
+import com.seagate.kinetic.proto.Kinetic.Command.P2POperation.Peer;
 
 /**
  * P2P raw/internal API test.
@@ -107,13 +109,16 @@ public class PeerToPeerPushTest {
 		p2pClient.putForced(entry);
 
 		// request message
-		Message.Builder request = Message.newBuilder();
+		KineticMessage km = MessageFactory.createKineticMessageWithBuilder();
+        
+		Message.Builder request = (Message.Builder) km.getMessage();
+		Command.Builder commandBuilder = (Command.Builder) km.getCommand();
 
 		// set message type
-		request.getCommandBuilder().getHeaderBuilder()
+		commandBuilder.getHeaderBuilder()
 		.setMessageType(MessageType.PEER2PEERPUSH);
 
-		P2POperation.Builder p2pOp = request.getCommandBuilder()
+		P2POperation.Builder p2pOp = commandBuilder
 				.getBodyBuilder().getP2POperationBuilder();
 
 		// set peer
@@ -129,8 +134,7 @@ public class PeerToPeerPushTest {
 		p2pOp.addOperation(operation.build());
 
 		// p2p push -- config 0
-		KineticMessage km = new KineticMessage();
-		km.setMessage(request);
+		
 		p2pClient.PeerToPeerPush(km);
 
 		logger.info("peer to peer pushed entry ...");

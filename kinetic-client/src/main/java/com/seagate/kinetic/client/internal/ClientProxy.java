@@ -37,11 +37,12 @@ import com.seagate.kinetic.client.io.IoHandler;
 import com.seagate.kinetic.common.lib.Hmac;
 import com.seagate.kinetic.common.lib.Hmac.HmacException;
 import com.seagate.kinetic.common.lib.KineticMessage;
+import com.seagate.kinetic.proto.Kinetic.Command;
 import com.seagate.kinetic.proto.Kinetic.Message;
 import com.seagate.kinetic.proto.Kinetic.Message.Builder;
-import com.seagate.kinetic.proto.Kinetic.Message.Header;
-import com.seagate.kinetic.proto.Kinetic.Message.MessageType;
-import com.seagate.kinetic.proto.Kinetic.Message.Range;
+import com.seagate.kinetic.proto.Kinetic.Command.Header;
+import com.seagate.kinetic.proto.Kinetic.Command.MessageType;
+import com.seagate.kinetic.proto.Kinetic.Command.Range;
 
 
 /**
@@ -82,9 +83,6 @@ public class ClientProxy {
 
     // hmac key map
     private final Map<Long, Key> hmacKeyMap = new HashMap<Long, Key>();
-
-    // use protocol v2
-    private boolean useV2Protocol = true;
     
     private volatile boolean isConnectionIdSetByServer = false;
 
@@ -100,9 +98,6 @@ public class ClientProxy {
 
         // client config
         this.config = config;
-
-        // set to true if v2 protocol is used
-        this.useV2Protocol = true;
 
         // get user principal from client config
         user = config.getUserId();
@@ -146,10 +141,10 @@ public class ClientProxy {
                 return;
             }
             
-            if (kresponse.getMessage().getCommand().getHeader()
+            if (kresponse.getCommand().getHeader()
                     .hasConnectionID()) {
                 
-                this.connectionID = kresponse.getMessage().getCommand()
+                this.connectionID = kresponse.getCommand()
                         .getHeader().getConnectionID();
                 
                 //set flag to true
@@ -295,8 +290,8 @@ public class ClientProxy {
             KineticMessage resp = doRange(range);
 
             // return list of matched keys.
-            return resp.getMessage().getCommand().getBody().getRange()
-                    .getKeyList();
+            return resp.getCommand().getBody().getRange()
+                    .getKeysList();
     }
 
     /**
@@ -320,14 +315,15 @@ public class ClientProxy {
             // request message
             request = MessageFactory
                     .createKineticMessageWithBuilder();
-            Message.Builder msg = (Builder) request.getMessage();
+            
+            Command.Builder commandBuilder = (Command.Builder) request.getCommand();
 
             // set message type
-            msg.getCommandBuilder().getHeaderBuilder()
+            commandBuilder.getHeaderBuilder()
             .setMessageType(MessageType.GETKEYRANGE);
 
             // get range builder
-            Range.Builder op = msg.getCommandBuilder().getBodyBuilder()
+            Range.Builder op = commandBuilder.getBodyBuilder()
                     .getRangeBuilder();
 
             // set parameters for the op
@@ -437,21 +433,24 @@ public class ClientProxy {
      * @see #requestAsync(com.seagate.kinetic.proto.Kinetic.Message.Builder,
      *      CallbackHandler)
      */
-    KineticMessage doRequest(KineticMessage im) throws LCException {
-        KineticMessage in = null;
+    KineticMessage doRequest(KineticMessage kmreq) throws LCException {
+        
+        // response kinetic message
+        KineticMessage kmresp = null;
+        
         try {
 
-            finalizeHeader(im);
+            finalizeHeader(kmreq);
 
-            in = this.iohandler.getMessageHandler().write(im);
+            kmresp = this.iohandler.getMessageHandler().write(kmreq);
 
             // check if we do received a response
-            if (in == null) {
+            if (kmresp == null) {
                 throwLcException("Timeout - unable to receive response message within " + config.getRequestTimeoutMillis() + " ms");
             }
 
             // hmac check
-            if (!Hmac.check(in, this.myKey)) {
+            if (!Hmac.check(kmresp, myKey)) {
                 throwLcException("Hmac failed compare");
             }
 
@@ -468,7 +467,7 @@ public class ClientProxy {
             throwLcException(ite.getMessage());
         }
 
-        return in;
+        return kmresp;
     }
 
     /**
@@ -488,7 +487,7 @@ public class ClientProxy {
      * @see CallbackHandler
      * @see #request(com.seagate.kinetic.proto.Kinetic.Message.Builder)
      */
-    <T> void requestAsync(KineticMessage im, CallbackHandler<T> handler)
+    <T> void requestAsync(KineticMessage kineticMessage, CallbackHandler<T> handler)
             throws KineticException {
 
         try {
@@ -496,7 +495,7 @@ public class ClientProxy {
             // Message.Builder message = (Builder) im.getMessage();
 
             // finalize and fill the required header fields for the message
-            finalizeHeader(im);
+            finalizeHeader(kineticMessage);
 
             // get request message to send
             // Message request = message.build();
@@ -506,10 +505,10 @@ public class ClientProxy {
 
             // set request message to the context so we can get it when response
             // is received
-            context.setRequestMessage(im);
+            context.setRequestMessage(kineticMessage);
 
             // send the async request message
-            this.iohandler.getMessageHandler().writeAsync(im, context);
+            this.iohandler.getMessageHandler().writeAsync(kineticMessage, context);
 
         } catch (Exception e) {
             logger.log(Level.WARNING, e.getMessage(), e);
@@ -530,7 +529,10 @@ public class ClientProxy {
         boolean flag = false;
 
         try {
-            Hmac.check(message, this.myKey);
+            //Hmac.check(message, this.myKey);
+            byte[] bytes = message.getMessage().getCommandBytes().toByteArray();
+            Hmac.check(bytes, this.myKey, message.getMessage().getHmacAuth().getHmac());
+            
             flag = true;
         } catch (Exception e) {
             logger.log(Level.WARNING, e.getMessage(), e);
@@ -545,19 +547,17 @@ public class ClientProxy {
      * @param message
      *            the request protocol buffer message.
      */
-    private void finalizeHeader(KineticMessage im) {
+    private void finalizeHeader(KineticMessage kineticMessage) {
 
-        Message.Builder message = (Builder) im.getMessage();
+        Message.Builder messageBuilder = (Builder) kineticMessage.getMessage();
+        
+        Command.Builder commandBuilder = (Command.Builder) kineticMessage.getCommand();
 
         // get header builder
-        Header.Builder header = message.getCommandBuilder().getHeaderBuilder();
+        Header.Builder header = commandBuilder.getHeaderBuilder();
 
         // set cluster version
         header.setClusterVersion(clusterVersion);
-
-        // set user id
-        // header.setUser(user);
-        header.setIdentity(user);
 
         // set connection id.
         header.setConnectionID(connectionID);
@@ -569,27 +569,39 @@ public class ClientProxy {
          * calculate and set tag value for the message
          */
         if (header.getMessageType() == MessageType.PUT) {
-            if (message.getCommandBuilder().getBodyBuilder().getKeyValueBuilder()
-                    .hasTag() == false) {
-                if (this.useV2Protocol) {
-                    // calculate value Hmac
-                    ByteString tag = Hmac.calcTag(im, this.myKey);
-                    // set tag
-                    message.getCommandBuilder().getBodyBuilder().getKeyValueBuilder()
-                    .setTag(tag);
-                }
+            if (commandBuilder.getBodyBuilder().getKeyValueBuilder().hasTag() == false) {
+                // calculate value Hmac
+                ByteString tag = Hmac.calcTag(kineticMessage, this.myKey);
+                // set tag
+                commandBuilder.getBodyBuilder().getKeyValueBuilder()
+                        .setTag(tag);
             }
         }
 
         /**
          * calculate and set hmac value for this message
          */
+        
+        // get command byte string
+        ByteString commandByteString = commandBuilder.build().toByteString();
+        
+        // get command bytes for hmac calculation
+        byte[] commandBytes = commandByteString.toByteArray();
+        
+        // calculate HMAC
         try {
-            ByteString hmac = Hmac.calc(im, this.myKey);
-            message.setHmac(hmac);
-        } catch (HmacException e) {
-
-            e.printStackTrace();
+            //calculate hmac
+            ByteString hmac = Hmac.calc(commandBytes, myKey);
+            
+            // set command bytes to message
+            messageBuilder.setCommandBytes(ByteString.copyFrom(commandBytes));
+            
+            // set identity
+            messageBuilder.getHmacAuthBuilder().setIdentity(user);
+            // set hmac
+            messageBuilder.getHmacAuthBuilder().setHmac(hmac);
+        } catch (HmacException e) {  
+            logger.log(Level.WARNING, e.getMessage(), e);
         }
     }
 

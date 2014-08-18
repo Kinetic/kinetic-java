@@ -34,15 +34,15 @@ import com.google.protobuf.ByteString;
 import com.seagate.kinetic.client.internal.MessageFactory;
 import com.seagate.kinetic.common.lib.HMACAlgorithmUtil;
 import com.seagate.kinetic.common.lib.KineticMessage;
-import com.seagate.kinetic.proto.Kinetic.Message;
-import com.seagate.kinetic.proto.Kinetic.Message.Builder;
-import com.seagate.kinetic.proto.Kinetic.Message.GetLog;
-import com.seagate.kinetic.proto.Kinetic.Message.GetLog.Type;
-import com.seagate.kinetic.proto.Kinetic.Message.MessageType;
-import com.seagate.kinetic.proto.Kinetic.Message.Security;
-import com.seagate.kinetic.proto.Kinetic.Message.Security.ACL.HMACAlgorithm;
-import com.seagate.kinetic.proto.Kinetic.Message.Setup;
-import com.seagate.kinetic.proto.Kinetic.Message.Status;
+import com.seagate.kinetic.proto.Kinetic.Command;
+
+import com.seagate.kinetic.proto.Kinetic.Command.GetLog;
+import com.seagate.kinetic.proto.Kinetic.Command.GetLog.Type;
+import com.seagate.kinetic.proto.Kinetic.Command.MessageType;
+import com.seagate.kinetic.proto.Kinetic.Command.Security;
+import com.seagate.kinetic.proto.Kinetic.Command.Security.ACL.HMACAlgorithm;
+import com.seagate.kinetic.proto.Kinetic.Command.Setup;
+import com.seagate.kinetic.proto.Kinetic.Command.Status;
 
 /**
  * This class provides administrative API for a kinetic administrator to
@@ -82,10 +82,10 @@ public class DefaultAdminClient implements KineticAdminClient {
     public KineticMessage configureSecurityPolicy(KineticMessage km)
             throws KineticException {
 
-        Message.Builder request = (Builder) km.getMessage();
-
+        Command.Builder commandBuilder = (Command.Builder) km.getCommand();
+        
         // set request message type
-        request.getCommandBuilder().getHeaderBuilder()
+        commandBuilder.getHeaderBuilder()
                 .setMessageType(MessageType.SECURITY);
 
         // send security request to server.
@@ -96,16 +96,20 @@ public class DefaultAdminClient implements KineticAdminClient {
         return respond;
     }
 
-    public Message configureSecurityPolicy(Message.Builder request)
-            throws KineticException {
-
-        KineticMessage km = new KineticMessage();
-        km.setMessage(request);
-
-        KineticMessage kmresp = this.configureSecurityPolicy(km);
-
-        return (Message) kmresp.getMessage();
-    }
+    /**
+     * XXX: protocol-3.0.0
+     */
+            
+//    public Message configureSecurityPolicy(Message.Builder request)
+//            throws KineticException {
+//
+//        KineticMessage km = new KineticMessage();
+//        km.setMessage(request);
+//
+//        KineticMessage kmresp = this.configureSecurityPolicy(km);
+//
+//        return (Message) kmresp.getMessage();
+//    }
 
     /**
      * Configure setup policies for a kinetic drive.
@@ -119,9 +123,9 @@ public class DefaultAdminClient implements KineticAdminClient {
     public KineticMessage configureSetupPolicy(KineticMessage km)
             throws KineticException {
 
-        Message.Builder request = (Builder) km.getMessage();
+        Command.Builder commandBuilder = (Command.Builder) km.getCommand();
 
-        request.getCommandBuilder().getHeaderBuilder()
+        commandBuilder.getHeaderBuilder()
                 .setMessageType(MessageType.SETUP);
 
         KineticMessage response = this.kineticClient.request(km);
@@ -139,10 +143,11 @@ public class DefaultAdminClient implements KineticAdminClient {
      */
     public KineticMessage getLog(KineticMessage km) throws KineticException {
 
-        Message.Builder request = (Builder) km.getMessage();
+        Command.Builder request = (Command.Builder) km.getCommand();
 
-        request.getCommandBuilder().getHeaderBuilder()
+        request.getHeaderBuilder()
                 .setMessageType(MessageType.GETLOG);
+        
         KineticMessage response = this.kineticClient.request(km);
 
         return response;
@@ -156,41 +161,41 @@ public class DefaultAdminClient implements KineticAdminClient {
     @Override
     public void instantErase(byte[] pin) throws KineticException {
 
-        KineticMessage km = MessageFactory.createKineticMessageWithBuilder();
-
-        Message.Builder request = (Builder) km.getMessage();
-
-        Setup.Builder setup = request.getCommandBuilder().getBodyBuilder()
-                .getSetupBuilder();
-
-        if (pin != null && pin.length > 0) {
-            setup.setPin(ByteString.copyFrom(pin));
-        }
-
-        setup.setInstantSecureErase(true);
-
-        KineticMessage response = configureSetupPolicy(km);
-
-        if (response.getMessage().getCommand().getHeader().getMessageType() != MessageType.SETUP_RESPONSE) {
-            throw new KineticException("received wrong message type.");
-        }
-
-        if (response.getMessage().getCommand().getStatus().getCode() == Status.StatusCode.NOT_AUTHORIZED) {
-
-            throw new KineticException("Authorized Exception: "
-                    + response.getMessage().getCommand().getStatus().getCode()
-                    + ": "
-                    + response.getMessage().getCommand().getStatus()
-                            .getStatusMessage());
-        }
-
-        if (response.getMessage().getCommand().getStatus().getCode() != Status.StatusCode.SUCCESS) {
-            throw new KineticException("Unknown Error: "
-                    + response.getMessage().getCommand().getStatus().getCode()
-                    + ": "
-                    + response.getMessage().getCommand().getStatus()
-                            .getStatusMessage());
-        }
+//        KineticMessage km = MessageFactory.createKineticMessageWithBuilder();
+//
+//        Message.Builder request = (Builder) km.getMessage();
+//
+//        Setup.Builder setup = request.getCommandBuilder().getBodyBuilder()
+//                .getSetupBuilder();
+//
+//        if (pin != null && pin.length > 0) {
+//            setup.setPin(ByteString.copyFrom(pin));
+//        }
+//
+//        setup.setInstantSecureErase(true);
+//
+//        KineticMessage response = configureSetupPolicy(km);
+//
+//        if (response.getMessage().getCommand().getHeader().getMessageType() != MessageType.SETUP_RESPONSE) {
+//            throw new KineticException("received wrong message type.");
+//        }
+//
+//        if (response.getMessage().getCommand().getStatus().getCode() == Status.StatusCode.NOT_AUTHORIZED) {
+//
+//            throw new KineticException("Authorized Exception: "
+//                    + response.getMessage().getCommand().getStatus().getCode()
+//                    + ": "
+//                    + response.getMessage().getCommand().getStatus()
+//                            .getStatusMessage());
+//        }
+//
+//        if (response.getMessage().getCommand().getStatus().getCode() != Status.StatusCode.SUCCESS) {
+//            throw new KineticException("Unknown Error: "
+//                    + response.getMessage().getCommand().getStatus().getCode()
+//                    + ": "
+//                    + response.getMessage().getCommand().getStatus()
+//                            .getStatusMessage());
+//        }
 
     }
 
@@ -243,15 +248,15 @@ public class DefaultAdminClient implements KineticAdminClient {
 
         KineticMessage km = MessageFactory.createKineticMessageWithBuilder();
 
-        Message.Builder request = (Builder) km.getMessage();
-
-        Security.Builder security = request.getCommandBuilder()
+        Command.Builder commandBuilder = (Command.Builder) km.getCommand();
+        
+        Security.Builder security = commandBuilder
                 .getBodyBuilder().getSecurityBuilder();
 
         validate(acls);
 
         for (ACL aclInfo : acls) {
-            com.seagate.kinetic.proto.Kinetic.Message.Security.ACL.Builder acl = com.seagate.kinetic.proto.Kinetic.Message.Security.ACL
+            com.seagate.kinetic.proto.Kinetic.Command.Security.ACL.Builder acl = com.seagate.kinetic.proto.Kinetic.Command.Security.ACL
                     .newBuilder();
 
             if (aclInfo.getAlgorithm() != null) {
@@ -264,12 +269,12 @@ public class DefaultAdminClient implements KineticAdminClient {
             acl.setIdentity(aclInfo.getUserId());
             acl.setKey(ByteString.copyFromUtf8(aclInfo.getKey()));
             for (Domain domainInfo : aclInfo.getDomains()) {
-                com.seagate.kinetic.proto.Kinetic.Message.Security.ACL.Scope.Builder scope = com.seagate.kinetic.proto.Kinetic.Message.Security.ACL.Scope
+                com.seagate.kinetic.proto.Kinetic.Command.Security.ACL.Scope.Builder scope = com.seagate.kinetic.proto.Kinetic.Command.Security.ACL.Scope
                         .newBuilder();
                 scope.setOffset(domainInfo.getOffset());
                 scope.setValue(ByteString.copyFromUtf8(domainInfo.getValue()));
                 for (kinetic.admin.Role role : domainInfo.getRoles()) {
-                    scope.addPermission(com.seagate.kinetic.proto.Kinetic.Message.Security.ACL.Permission
+                    scope.addPermission(com.seagate.kinetic.proto.Kinetic.Command.Security.ACL.Permission
                             .valueOf(role.toString()));
                 }
 
@@ -280,33 +285,33 @@ public class DefaultAdminClient implements KineticAdminClient {
 
         KineticMessage response = configureSecurityPolicy(km);
 
-        if (response.getMessage().getCommand().getHeader().getMessageType() != MessageType.SECURITY_RESPONSE) {
+        if (response.getCommand().getHeader().getMessageType() != MessageType.SECURITY_RESPONSE) {
             throw new KineticException("received wrong message type.");
         }
 
-        if (response.getMessage().getCommand().getStatus().getCode() == Status.StatusCode.NOT_AUTHORIZED) {
+        if (response.getCommand().getStatus().getCode() == Status.StatusCode.NOT_AUTHORIZED) {
 
             throw new KineticException("Authorized Exception: "
-                    + response.getMessage().getCommand().getStatus().getCode()
+                    + response.getCommand().getStatus().getCode()
                     + ": "
-                    + response.getMessage().getCommand().getStatus()
+                    + response.getCommand().getStatus()
                             .getStatusMessage());
         }
 
-        if (response.getMessage().getCommand().getStatus().getCode() == Status.StatusCode.NO_SUCH_HMAC_ALGORITHM) {
+        if (response.getCommand().getStatus().getCode() == Status.StatusCode.NO_SUCH_HMAC_ALGORITHM) {
 
             throw new KineticException("Hmac algorithm Exception: "
-                    + response.getMessage().getCommand().getStatus().getCode()
+                    + response.getCommand().getStatus().getCode()
                     + ": "
-                    + response.getMessage().getCommand().getStatus()
+                    + response.getCommand().getStatus()
                             .getStatusMessage());
         }
 
-        if (response.getMessage().getCommand().getStatus().getCode() != Status.StatusCode.SUCCESS) {
+        if (response.getCommand().getStatus().getCode() != Status.StatusCode.SUCCESS) {
             throw new KineticException("Unknown Error: "
-                    + response.getMessage().getCommand().getStatus().getCode()
+                    + response.getCommand().getStatus().getCode()
                     + ": "
-                    + response.getMessage().getCommand().getStatus()
+                    + response.getCommand().getStatus()
                             .getStatusMessage());
         }
 
@@ -317,47 +322,50 @@ public class DefaultAdminClient implements KineticAdminClient {
             boolean secureErase) throws KineticException {
 
         KineticMessage km = MessageFactory.createKineticMessageWithBuilder();
+        
+        Command.Builder commandBuilder = (Command.Builder) km.getCommand(); 
 
-        Message.Builder request = (Builder) km.getMessage();
-
-        Setup.Builder setup = request.getCommandBuilder().getBodyBuilder()
+        Setup.Builder setup = commandBuilder.getBodyBuilder()
                 .getSetupBuilder();
-
-        if (pin != null && pin.length > 0) {
-            setup.setPin(ByteString.copyFrom(pin));
-        }
-
-        if (setPin != null && setPin.length > 0) {
-            setup.setSetPin(ByteString.copyFrom(setPin));
-        }
-
-        setup.setInstantSecureErase(secureErase);
+        /**
+         * XXX: protocol-3.0.0
+         */
+        
+//
+//        if (pin != null && pin.length > 0) {
+//            setup.setPin(ByteString.copyFrom(pin));
+//        }
+//
+//        if (setPin != null && setPin.length > 0) {
+//            setup.setSetPin(ByteString.copyFrom(setPin));
+//        }
+//
+//        setup.setInstantSecureErase(secureErase);
 
         if (0 > newClusterVersion) {
             throw new KineticException(
                     "Parameter invalid: new cluster version less than 0.");
         }
+        
         setup.setNewClusterVersion(newClusterVersion);
 
         KineticMessage kmresp = configureSetupPolicy(km);
 
-        Message response = (Message) kmresp.getMessage();
-
-        if (response.getCommand().getHeader().getMessageType() != MessageType.SETUP_RESPONSE) {
+        if (kmresp.getCommand().getHeader().getMessageType() != MessageType.SETUP_RESPONSE) {
             throw new KineticException("received wrong message type.");
         }
 
-        if (response.getCommand().getStatus().getCode() == Status.StatusCode.NOT_AUTHORIZED) {
+        if (kmresp.getCommand().getStatus().getCode() == Status.StatusCode.NOT_AUTHORIZED) {
 
             throw new KineticException("Authorized Exception: "
-                    + response.getCommand().getStatus().getCode() + ": "
-                    + response.getCommand().getStatus().getStatusMessage());
+                    + kmresp.getCommand().getStatus().getCode() + ": "
+                    + kmresp.getCommand().getStatus().getStatusMessage());
         }
 
-        if (response.getCommand().getStatus().getCode() != Status.StatusCode.SUCCESS) {
+        if (kmresp.getCommand().getStatus().getCode() != Status.StatusCode.SUCCESS) {
             throw new KineticException("Unknown Error: "
-                    + response.getCommand().getStatus().getCode() + ": "
-                    + response.getCommand().getStatus().getStatusMessage());
+                    + kmresp.getCommand().getStatus().getCode() + ": "
+                    + kmresp.getCommand().getStatus().getStatusMessage());
         }
 
     }
@@ -366,40 +374,40 @@ public class DefaultAdminClient implements KineticAdminClient {
     public KineticLog getLog() throws KineticException {
 
         KineticMessage km = MessageFactory.createKineticMessageWithBuilder();
-        Message.Builder request = (Builder) km.getMessage();
-
-        GetLog.Builder getLog = request.getCommandBuilder().getBodyBuilder()
+       
+        Command.Builder commandBuilder = (Command.Builder) km.getCommand();
+        
+        GetLog.Builder getLog = commandBuilder.getBodyBuilder()
                 .getGetLogBuilder();
-        getLog.addType(Type.CAPACITIES);
-        getLog.addType(Type.CONFIGURATION);
-        getLog.addType(Type.MESSAGES);
-        getLog.addType(Type.STATISTICS);
-        getLog.addType(Type.TEMPERATURES);
-        getLog.addType(Type.UTILIZATIONS);
-        getLog.addType(Type.LIMITS);
+        getLog.addTypes(Type.CAPACITIES);
+        getLog.addTypes(Type.CONFIGURATION);
+        getLog.addTypes(Type.MESSAGES);
+        getLog.addTypes(Type.STATISTICS);
+        getLog.addTypes(Type.TEMPERATURES);
+        getLog.addTypes(Type.UTILIZATIONS);
+        getLog.addTypes(Type.LIMITS);
 
         KineticMessage kmresp = getLog(km);
 
-        Message response = (Message) kmresp.getMessage();
-
-        if (response.getCommand().getHeader().getMessageType() != MessageType.GETLOG_RESPONSE) {
+        if (kmresp.getCommand().getHeader().getMessageType() != MessageType.GETLOG_RESPONSE) {
             throw new KineticException("received wrong message type.");
         }
 
-        if (response.getCommand().getStatus().getCode() == Status.StatusCode.NOT_AUTHORIZED) {
+        if (kmresp.getCommand().getStatus().getCode() == Status.StatusCode.NOT_AUTHORIZED) {
 
             throw new KineticException("Authorized Exception: "
-                    + response.getCommand().getStatus().getCode() + ": "
-                    + response.getCommand().getStatus().getStatusMessage());
+                    + kmresp.getCommand().getStatus().getCode() + ": "
+                    + kmresp.getCommand().getStatus().getStatusMessage());
         }
 
-        if (response.getCommand().getStatus().getCode() != Status.StatusCode.SUCCESS) {
+        if (kmresp.getCommand().getStatus().getCode() != Status.StatusCode.SUCCESS) {
             throw new KineticException("Unknown Error: "
-                    + response.getCommand().getStatus().getCode() + ": "
-                    + response.getCommand().getStatus().getStatusMessage());
+                    + kmresp.getCommand().getStatus().getCode() + ": "
+                    + kmresp.getCommand().getStatus().getStatusMessage());
         }
 
-        KineticLog kineticLOG = new DefaultKineticLog(response);
+        KineticLog kineticLOG = new DefaultKineticLog(kmresp);
+        
         return kineticLOG;
     }
 
@@ -412,39 +420,39 @@ public class DefaultAdminClient implements KineticAdminClient {
 
         KineticMessage km = MessageFactory.createKineticMessageWithBuilder();
 
-        Message.Builder request = (Builder) km.getMessage();
+        Command.Builder commandBuilder = (Command.Builder) km.getCommand();
 
-        GetLog.Builder getLog = request.getCommandBuilder().getBodyBuilder()
+        GetLog.Builder getLog = commandBuilder.getBodyBuilder()
                 .getGetLogBuilder();
 
         for (KineticLogType getLogType : listOfLogType) {
             switch (getLogType) {
             case CAPACITIES:
-                getLog.addType(Type.CAPACITIES);
+                getLog.addTypes(Type.CAPACITIES);
                 break;
 
             case TEMPERATURES:
-                getLog.addType(Type.TEMPERATURES);
+                getLog.addTypes(Type.TEMPERATURES);
                 break;
 
             case UTILIZATIONS:
-                getLog.addType(Type.UTILIZATIONS);
+                getLog.addTypes(Type.UTILIZATIONS);
                 break;
 
             case CONFIGURATION:
-                getLog.addType(Type.CONFIGURATION);
+                getLog.addTypes(Type.CONFIGURATION);
                 break;
 
             case MESSAGES:
-                getLog.addType(Type.MESSAGES);
+                getLog.addTypes(Type.MESSAGES);
                 break;
 
             case STATISTICS:
-                getLog.addType(Type.STATISTICS);
+                getLog.addTypes(Type.STATISTICS);
                 break;
                 
             case LIMITS:
-                getLog.addType(Type.LIMITS);
+                getLog.addTypes(Type.LIMITS);
                 break;
                 
             case DEVICE:
@@ -458,11 +466,9 @@ public class DefaultAdminClient implements KineticAdminClient {
 
         KineticMessage kmresp = getLog(km);
 
-        Message response = (Message) kmresp.getMessage();
+        checkGetLogResponse(kmresp);
 
-        checkGetLogResponse(response);
-
-        KineticLog kineticLog = new DefaultKineticLog(response);
+        KineticLog kineticLog = new DefaultKineticLog(kmresp);
         return kineticLog;
     }
 
@@ -474,14 +480,15 @@ public class DefaultAdminClient implements KineticAdminClient {
             throws KineticException {
 
         KineticMessage km = MessageFactory.createKineticMessageWithBuilder();
-        Message.Builder request = (Builder) km.getMessage();
-
-        Setup.Builder setup = request.getCommandBuilder().getBodyBuilder()
+        
+        Command.Builder commandBuilder = (Command.Builder) km.getCommand(); 
+        
+        Setup.Builder setup = commandBuilder.getBodyBuilder()
                 .getSetupBuilder();
 
-        if (null != pin && pin.length > 0) {
-            setup.setPin(ByteString.copyFrom(pin));
-        }
+//        if (null != pin && pin.length > 0) {
+//            setup.setPin(ByteString.copyFrom(pin));
+//        }
 
         setup.setFirmwareDownload(true);
 
@@ -490,27 +497,26 @@ public class DefaultAdminClient implements KineticAdminClient {
             km.setValue(bytes);
         }
 
-        request.getCommandBuilder().getHeaderBuilder()
+        commandBuilder.getHeaderBuilder()
                 .setMessageType(MessageType.SETUP);
 
         KineticMessage kmresp = this.kineticClient.request(km);
-        Message response = (Message) kmresp.getMessage();
 
-        if (response.getCommand().getHeader().getMessageType() != MessageType.SETUP_RESPONSE) {
+        if (kmresp.getCommand().getHeader().getMessageType() != MessageType.SETUP_RESPONSE) {
             throw new KineticException("received wrong message type.");
         }
 
-        if (response.getCommand().getStatus().getCode() == Status.StatusCode.NOT_AUTHORIZED) {
+        if (kmresp.getCommand().getStatus().getCode() == Status.StatusCode.NOT_AUTHORIZED) {
 
             throw new KineticException("Authorized Exception: "
-                    + response.getCommand().getStatus().getCode() + ": "
-                    + response.getCommand().getStatus().getStatusMessage());
+                    + kmresp.getCommand().getStatus().getCode() + ": "
+                    + kmresp.getCommand().getStatus().getStatusMessage());
         }
 
-        if (response.getCommand().getStatus().getCode() != Status.StatusCode.SUCCESS) {
+        if (kmresp.getCommand().getStatus().getCode() != Status.StatusCode.SUCCESS) {
             throw new KineticException("Unknown Error: "
-                    + response.getCommand().getStatus().getCode() + ": "
-                    + response.getCommand().getStatus().getStatusMessage());
+                    + kmresp.getCommand().getStatus().getCode() + ": "
+                    + kmresp.getCommand().getStatus().getStatusMessage());
         }
     }
 
@@ -520,13 +526,13 @@ public class DefaultAdminClient implements KineticAdminClient {
         
         KineticMessage km = MessageFactory.createKineticMessageWithBuilder();
 
-        Message.Builder request = (Builder) km.getMessage();
-
-        GetLog.Builder getLog = request.getCommandBuilder().getBodyBuilder()
+        Command.Builder commandBuilder = (Command.Builder) km.getCommand(); 
+        
+        GetLog.Builder getLog = commandBuilder.getBodyBuilder()
                 .getGetLogBuilder();
         
         // add DEVICE type
-        getLog.addType(Type.DEVICE);
+        getLog.addTypes(Type.DEVICE);
         
         // set vendor specific log name
         getLog.getDeviceBuilder().setName(ByteString.copyFrom(name));
@@ -534,11 +540,8 @@ public class DefaultAdminClient implements KineticAdminClient {
         // send getLog/DEVICE message
         KineticMessage kmresp = getLog(km);
         
-        // get response message
-        Message response = (Message) kmresp.getMessage();
-        
         // sanity check response 
-        checkGetLogResponse(response);
+        checkGetLogResponse(kmresp);
         
         // get vendor specific getLog/DEVICE name/value
         byte[] value = kmresp.getValue();
@@ -558,7 +561,7 @@ public class DefaultAdminClient implements KineticAdminClient {
      * @param response
      * @throws KineticException
      */
-    private static void checkGetLogResponse (Message response) throws KineticException {
+    private static void checkGetLogResponse (KineticMessage response) throws KineticException {
         
         if (response.getCommand().getHeader().getMessageType() != MessageType.GETLOG_RESPONSE) {
             throw new KineticException("received wrong message type.");

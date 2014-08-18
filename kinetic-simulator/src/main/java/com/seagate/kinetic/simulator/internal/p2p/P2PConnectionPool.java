@@ -28,8 +28,9 @@ import kinetic.client.KineticClient;
 import kinetic.client.KineticClientFactory;
 import kinetic.client.KineticException;
 
+import com.seagate.kinetic.common.lib.KineticMessage;
 import com.seagate.kinetic.proto.Kinetic.Message;
-import com.seagate.kinetic.proto.Kinetic.Message.P2POperation.Peer;
+import com.seagate.kinetic.proto.Kinetic.Command.P2POperation.Peer;
 
 /**
  *
@@ -63,7 +64,7 @@ public class P2PConnectionPool {
      * @throws KineticException
      *             if unable to connect to peer.
      */
-    public KineticClient getKineticClient(Message request)
+    public KineticClient getKineticClient(KineticMessage request)
             throws KineticException {
 
         // get client instance
@@ -72,14 +73,14 @@ public class P2PConnectionPool {
         return client;
     }
 
-    private synchronized KineticClient getFromCacheOrCreate(Message request)
+    private synchronized KineticClient getFromCacheOrCreate(KineticMessage request)
             throws KineticException {
 
         // peer info
         Peer peer = request.getCommand().getBody().getP2POperation().getPeer();
 
         // user id
-        long uid = request.getCommand().getHeader().getIdentity();
+        long uid = request.getMessage().getHmacAuth().getIdentity();
 
         // map key
         String key = uid + ":" + peer.getHostname() + ":" + peer.getPort()
@@ -112,7 +113,7 @@ public class P2PConnectionPool {
      * @throws KineticException
      *             if any internal error occured.
      */
-    private KineticClient createClient(Message request) throws KineticException {
+    private KineticClient createClient(KineticMessage request) throws KineticException {
 
         // get peer info
         Peer peer = request.getCommand().getBody().getP2POperation().getPeer();
@@ -121,7 +122,7 @@ public class P2PConnectionPool {
         ClientConfiguration config = new ClientConfiguration();
 
         // set original client user id
-        config.setUserId(request.getCommand().getHeader().getIdentity());
+        config.setUserId(request.getMessage().getHmacAuth().getIdentity());
 
         // set peer info
         config.setHost(peer.getHostname());
