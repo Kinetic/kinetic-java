@@ -6,7 +6,7 @@ BASE_DIR=`cd "$BASE_DIR"; pwd`
 PROTO_REPO_URL=https://github.com/Seagate/Kinetic-Protocol.git
 PROTO_FILE=$BASE_DIR/kinetic-common/src/main/java/com/seagate/kinetic/proto/kinetic.proto
 CLONE_DIR=$BASE_DIR/bin/Kinetic-Protocol
-PROTO_RELEASE_VERSION=2.0.6
+PROTO_RELEASE_VERSION=3.0.0
 
 function syncFromProtoRepo(){
     if [ -d "$CLONE_DIR" ]; then

@@ -208,6 +208,8 @@ public class SimulatorEngine implements MessageService {
 
             // init network io service
             this.initIoService();
+            
+            logger.info("simulator protocol version = " + SimulatorConfiguration.getProtocolVersion());
 
         } catch (Exception e) {
             e.printStackTrace();

@@ -20,6 +20,8 @@ package kinetic.client;
 import java.util.Properties;
 import java.util.logging.Logger;
 
+import com.seagate.kinetic.proto.Kinetic;
+
 /**
  * Kinetic Client configuration.
  * <p>
@@ -47,12 +49,12 @@ public class ClientConfiguration extends Properties {
 	 /**
      * current supported kinetic protocol version on kinetic-protocol repo.
      */
-    public static final String PROTOCOL_VERSION = "2.0.6";
+    public static final String PROTOCOL_VERSION = Kinetic.Local.getDefaultInstance().getProtocolVersion();
     
     /**
      * current supported protocol source commit hash on kinetic-protocol repo.
      */
-    public static final String PROTOCOL_SOURCE_HASH = "c3b5e37bb236785b12ec2cdae03b682185e7279f";
+    public static final String PROTOCOL_SOURCE_HASH = "f74698fba2df685cbfa9b6b9de54f1d2398f8615";
 
 	// kinetic server host
 	private String host = "localhost";

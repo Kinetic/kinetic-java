@@ -21,6 +21,8 @@ package kinetic.simulator;
 
 import java.util.Properties;
 
+import com.seagate.kinetic.proto.Kinetic;
+import com.seagate.kinetic.proto.Kinetic.Message;
 import com.seagate.kinetic.simulator.heartbeat.HeartbeatProvider;
 import com.seagate.kinetic.simulator.heartbeat.provider.MulticastHeartbeatProvider;
 
@@ -208,7 +210,7 @@ public class SimulatorConfiguration extends Properties {
     /**
      * current supported protocol version defined at kinetic-protocol repository.
      */
-    public static final String PROTOCOL_VERSION = "2.0.6";
+    public static final String PROTOCOL_VERSION = Kinetic.Local.getDefaultInstance().getProtocolVersion();
     
     /**
      * current supported protocol source commit hash value obtained from kinetic-protocol repository.
