@@ -27,6 +27,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.google.protobuf.ByteString;
 import com.seagate.kinetic.common.lib.HMACAlgorithmUtil;
 import com.seagate.kinetic.common.lib.KineticMessage;
 import com.seagate.kinetic.common.lib.RoleUtil;
@@ -84,11 +85,13 @@ public abstract class SecurityHandler {
 
     public static synchronized Map<Long, ACL> handleSecurity(
             KineticMessage request, KineticMessage response,
-            Map<Long, ACL> currentMap, String kineticHome)
+            Map<Long, ACL> currentMap, SecurityPin securityPin, String kineticHome)
             throws KVStoreException, IOException {
 
         Command.Builder commandBuilder = (Command.Builder) response
                 .getCommand();
+        
+        commandBuilder.getHeaderBuilder().setMessageType(MessageType.SECURITY_RESPONSE);
 
         List<ACL> aclList = request.getCommand().getBody().getSecurity()
                 .getAclList();
@@ -134,11 +137,59 @@ public abstract class SecurityHandler {
                 }
             }
         }
-
+        
+        // get request security
+        Security security = request.getCommand().getBody().getSecurity(); 
+        
+        // get current erase pin
+        ByteString currentErasePin = securityPin.getErasePin();
+        
+        // need to compare if we need the old pin
+        if ((currentErasePin != null) && (currentErasePin.isEmpty() == false)) {
+            // get old erase pin
+            ByteString oldErasePin = security.getOldErasePIN();
+            
+            // compare old with current
+            if (currentErasePin.equals(oldErasePin) == false) {
+                commandBuilder.getStatusBuilder().setCode(
+                        StatusCode.NOT_AUTHORIZED);
+                commandBuilder.getStatusBuilder().setStatusMessage(
+                        "Invalid old erase pin: " + oldErasePin);
+                
+                return currentMap;
+            } 
+        }
+        
+        // get current lock pin
+        ByteString currentLockPin = securityPin.getLockPin();
+        
+        // need to compare if we need the old pin
+        if ((currentLockPin != null) && (currentLockPin.isEmpty() == false)) {
+            // get old erase pin
+            ByteString oldLockPin = security.getOldLockPIN();
+            
+            // compare old with current
+            if (currentLockPin.equals(oldLockPin) == false) {
+                commandBuilder.getStatusBuilder().setCode(
+                        StatusCode.NOT_AUTHORIZED);
+                commandBuilder.getStatusBuilder().setStatusMessage(
+                        "Invalid old lock pin: " + oldLockPin);
+                
+                return currentMap;
+            } 
+        }
+  
+        // update acl map
         for (ACL acl : aclList) {
             currentMap.put(acl.getIdentity(), acl);
         }
-
+        
+        // set erase pin
+        securityPin.setErasePin(security.getNewErasePIN());
+              
+        //set lock pin
+        securityPin.setLockPin(security.getNewLockPIN());
+        
         SecurityHandler.persistAcl(request.getCommand().getBody().getSecurity()
                 .toByteArray(), kineticHome);
         
@@ -168,7 +219,7 @@ public abstract class SecurityHandler {
         out.close();
     }
 
-    public static Map<Long, ACL> loadACL(String kineticHome) throws IOException {
+    public static Map<Long, ACL> loadACL(String kineticHome, SecurityPin securityPin) throws IOException {
         String aclPersistFilePath = kineticHome + File.separator + ".acl";
 
         File aclFile = new File(aclPersistFilePath);
@@ -186,8 +237,16 @@ public abstract class SecurityHandler {
                 for (ACL acl : aclList) {
                     aclMap.put(acl.getIdentity(), acl);
                 }
+                
+                // set erase pin in cache
+                securityPin.setErasePin(security.getNewErasePIN());
+                
+                // set lock pin in cache
+                securityPin.setLockPin(security.getNewLockPIN());
             }
         }
+        
+        
         return aclMap;
     }
 }

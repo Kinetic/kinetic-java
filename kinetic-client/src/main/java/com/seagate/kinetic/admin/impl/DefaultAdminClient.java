@@ -17,6 +17,7 @@
  */
 package com.seagate.kinetic.admin.impl;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import kinetic.admin.ACL;
@@ -25,24 +26,32 @@ import kinetic.admin.Domain;
 import kinetic.admin.KineticAdminClient;
 import kinetic.admin.KineticLog;
 import kinetic.admin.KineticLogType;
+import kinetic.admin.Role;
 import kinetic.client.ClientConfiguration;
 import kinetic.client.KineticClient;
 import kinetic.client.KineticClientFactory;
 import kinetic.client.KineticException;
 
 import com.google.protobuf.ByteString;
+//import com.google.protobuf.Message;
+//import com.google.protobuf.Message.Builder;
 import com.seagate.kinetic.client.internal.MessageFactory;
 import com.seagate.kinetic.common.lib.HMACAlgorithmUtil;
 import com.seagate.kinetic.common.lib.KineticMessage;
 import com.seagate.kinetic.proto.Kinetic.Command;
-
 import com.seagate.kinetic.proto.Kinetic.Command.GetLog;
 import com.seagate.kinetic.proto.Kinetic.Command.GetLog.Type;
 import com.seagate.kinetic.proto.Kinetic.Command.MessageType;
+import com.seagate.kinetic.proto.Kinetic.Command.PinOperation.PinOpType;
 import com.seagate.kinetic.proto.Kinetic.Command.Security;
 import com.seagate.kinetic.proto.Kinetic.Command.Security.ACL.HMACAlgorithm;
 import com.seagate.kinetic.proto.Kinetic.Command.Setup;
 import com.seagate.kinetic.proto.Kinetic.Command.Status;
+import com.seagate.kinetic.proto.Kinetic.Command.Status.StatusCode;
+import com.seagate.kinetic.proto.Kinetic.Message.AuthType;
+import com.seagate.kinetic.proto.Kinetic.Message.Builder;
+import com.seagate.kinetic.proto.Kinetic.Message;
+import com.seagate.kinetic.proto.Kinetic.Message.PINauth;
 
 /**
  * This class provides administrative API for a kinetic administrator to
@@ -160,6 +169,37 @@ public class DefaultAdminClient implements KineticAdminClient {
 
     @Override
     public void instantErase(byte[] pin) throws KineticException {
+        
+        KineticMessage km = MessageFactory.createKineticMessageWithBuilder();
+        
+        Message.Builder mb = (Message.Builder) km.getMessage();
+        mb.setAuthType(AuthType.PINAUTH);
+        
+        if (pin != null) {
+            mb.setPinAuth(PINauth.newBuilder().setPin(ByteString.copyFrom(pin)));
+        }
+        
+        Command.Builder commandBuilder = (Command.Builder) km.getCommand();
+        
+        commandBuilder.getHeaderBuilder()
+        .setMessageType(MessageType.PINOP);
+        
+        commandBuilder.getBodyBuilder().getPinOpBuilder().setPinOpType(PinOpType.ERASE_PINOP);
+        
+        KineticMessage response = this.kineticClient.request(km);
+        
+        if (response.getCommand().getStatus().getCode() != StatusCode.SUCCESS) {
+            
+            KineticException ke = new KineticException ("erase db failed.");
+            ke.setRequestMessage(km);
+            ke.setResponseMessage(response);
+            
+            throw ke;
+        }
+    }
+    
+    //@Override
+    public void instantEraseOld(byte[] pin) throws KineticException {
 
 //        KineticMessage km = MessageFactory.createKineticMessageWithBuilder();
 //
@@ -244,7 +284,8 @@ public class DefaultAdminClient implements KineticAdminClient {
     }
 
     @Override
-    public void setSecurity(List<ACL> acls) throws KineticException {
+    public void setSecurity(List<ACL> acls, byte[] oldLockPin,
+           byte[] newLockPin, byte[] oldErasePin, byte[] newErasePin) throws KineticException {
 
         KineticMessage km = MessageFactory.createKineticMessageWithBuilder();
 
@@ -280,6 +321,27 @@ public class DefaultAdminClient implements KineticAdminClient {
 
                 acl.addScope(scope.build());
             }
+            
+            // set old lock pin
+            if (oldLockPin != null) {
+                security.setOldLockPIN(ByteString.copyFrom(oldLockPin));
+            }
+            
+            // set new lock pin
+            if (newLockPin != null) {
+                security.setNewLockPIN(ByteString.copyFrom(newLockPin));
+            }
+            
+            // set old erase pin
+            if (oldErasePin != null) {
+                security.setOldErasePIN (ByteString.copyFrom(oldErasePin));
+            }
+            
+            // set new erase pin
+            if (newErasePin != null) {
+                security.setNewErasePIN (ByteString.copyFrom(newErasePin));
+            }
+            
             security.addAcl(acl.build());
         }
 
@@ -316,9 +378,54 @@ public class DefaultAdminClient implements KineticAdminClient {
         }
 
     }
+    
+    
+    private void setPinsWithDeafultAcl(byte[] oldLockPin, byte[] newLockPin,
+            byte[] oldErasePin, byte[] newErasePin) throws KineticException {
+        
+        List<Role> roles = new ArrayList<Role>();
+        roles.add(Role.DELETE);
+        roles.add(Role.GETLOG);
+        roles.add(Role.READ);
+        roles.add(Role.RANGE);
+        roles.add(Role.SECURITY);
+        roles.add(Role.SETUP);
+        roles.add(Role.WRITE);
+        roles.add(Role.P2POP);
+
+        Domain domain = new Domain();
+        domain.setRoles(roles);
+
+        List<Domain> domains = new ArrayList<Domain>();
+        domains.add(domain);
+
+        List<ACL> acls = new ArrayList<ACL>();
+        ACL acl1 = new ACL();
+        acl1.setDomains(domains);
+        acl1.setUserId(1);
+        acl1.setKey("asdfasdf");
+
+        acls.add(acl1);
+
+        this.setSecurity(acls, oldLockPin, newLockPin, oldErasePin, newErasePin);
+    }
 
     @Override
-    public void setup(byte[] pin, byte[] setPin, long newClusterVersion,
+    public void setup(byte[] oldErasePin, byte[] newErasePin, long newClusterVersion,
+            boolean secureErase) throws KineticException {
+        
+        this.setPinsWithDeafultAcl(null, null, oldErasePin, newErasePin);
+        
+        if (secureErase) {
+            this.instantErase(newErasePin);
+        }
+        
+        this.setClusterVersion(newClusterVersion);
+        
+    }
+    
+    //@Override
+    public void _setup(byte[] pin, byte[] setPin, long newClusterVersion,
             boolean secureErase) throws KineticException {
 
         KineticMessage km = MessageFactory.createKineticMessageWithBuilder();
@@ -327,10 +434,6 @@ public class DefaultAdminClient implements KineticAdminClient {
 
         Setup.Builder setup = commandBuilder.getBodyBuilder()
                 .getSetupBuilder();
-        /**
-         * XXX: protocol-3.0.0
-         */
-        
 //
 //        if (pin != null && pin.length > 0) {
 //            setup.setPin(ByteString.copyFrom(pin));
@@ -342,6 +445,43 @@ public class DefaultAdminClient implements KineticAdminClient {
 //
 //        setup.setInstantSecureErase(secureErase);
 
+        if (0 > newClusterVersion) {
+            throw new KineticException(
+                    "Parameter invalid: new cluster version less than 0.");
+        }
+        
+        setup.setNewClusterVersion(newClusterVersion);
+
+        KineticMessage kmresp = configureSetupPolicy(km);
+
+        if (kmresp.getCommand().getHeader().getMessageType() != MessageType.SETUP_RESPONSE) {
+            throw new KineticException("received wrong message type.");
+        }
+
+        if (kmresp.getCommand().getStatus().getCode() == Status.StatusCode.NOT_AUTHORIZED) {
+
+            throw new KineticException("Authorized Exception: "
+                    + kmresp.getCommand().getStatus().getCode() + ": "
+                    + kmresp.getCommand().getStatus().getStatusMessage());
+        }
+
+        if (kmresp.getCommand().getStatus().getCode() != Status.StatusCode.SUCCESS) {
+            throw new KineticException("Unknown Error: "
+                    + kmresp.getCommand().getStatus().getCode() + ": "
+                    + kmresp.getCommand().getStatus().getStatusMessage());
+        }
+
+    }
+    
+    public void setClusterVersion (long newClusterVersion) throws KineticException {
+        
+        KineticMessage km = MessageFactory.createKineticMessageWithBuilder();
+        
+        Command.Builder commandBuilder = (Command.Builder) km.getCommand(); 
+
+        Setup.Builder setup = commandBuilder.getBodyBuilder()
+                .getSetupBuilder();
+        
         if (0 > newClusterVersion) {
             throw new KineticException(
                     "Parameter invalid: new cluster version less than 0.");

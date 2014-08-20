@@ -167,7 +167,9 @@ public class AdminApiUsage {
 		aclList.add(acl);
 
 		// perform set security operation
-		adminClient.setSecurity(aclList);
+		byte[] pin = "1234".getBytes();
+		
+		adminClient.setSecurity(aclList, null, pin, null, pin);
 		System.out.println("Set the security info for client with all roles");
 
 		// close admin client

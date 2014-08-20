@@ -161,7 +161,7 @@ public interface KineticAdminClient {
      * @see Domain
      * @see Role
      */
-    public void setSecurity(List<ACL> acls) throws KineticException;
+    public void setSecurity(List<ACL> acls, byte[] oldLockPin, byte[] newLockPin, byte[] oldErasePin, byte[] newErasePin) throws KineticException;
 
     /**
      * Erase all data in database for the drive.

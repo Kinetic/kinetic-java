@@ -27,6 +27,7 @@ import java.util.logging.Logger;
 import com.seagate.kinetic.common.lib.Hmac;
 import com.seagate.kinetic.common.lib.KineticMessage;
 import com.seagate.kinetic.proto.Kinetic.Command;
+import com.seagate.kinetic.proto.Kinetic.Command.MessageType;
 import com.seagate.kinetic.proto.Kinetic.Command.Status;
 import com.seagate.kinetic.proto.Kinetic.Command.Status.StatusCode;
 import com.seagate.kinetic.simulator.internal.StatefulMessage;
@@ -98,22 +99,32 @@ public class HeaderOp {
 			respCommandBuilder.getHeaderBuilder()
 			.setAckSequence(in.getSequence());
 
-			// check hmac
-			checkHmac(km, key);
+            if (km.getMessage().hasPinAuth()) {
+                // sanity check only
+                if (in.getMessageType() != MessageType.PINOP) {
+                    throw new HeaderException(
+                            Status.StatusCode.INVALID_REQUEST,
+                            "Invalid message type for pin operation.");
+                }
+            } else {
+                // check hmac
+                checkHmac(km, key);
 
-			if (in.getClusterVersion() != clusterVersion) {
-			    
-			    //set cluster version in response message
-			    respCommandBuilder.getHeaderBuilder().setClusterVersion(clusterVersion);
-			    
-				throw new HeaderException(
-						Status.StatusCode.VERSION_FAILURE,
-						"CLUSTER_VERSION_FAILURE: Simulator cluster version is "
-								+ clusterVersion
-								+ "; Received request cluster version is "
-								+ in.getClusterVersion());
-			}
+                if (in.getClusterVersion() != clusterVersion) {
 
+                    // set cluster version in response message
+                    respCommandBuilder.getHeaderBuilder().setClusterVersion(
+                            clusterVersion);
+
+                    throw new HeaderException(
+                            Status.StatusCode.VERSION_FAILURE,
+                            "CLUSTER_VERSION_FAILURE: Simulator cluster version is "
+                                    + clusterVersion
+                                    + "; Received request cluster version is "
+                                    + in.getClusterVersion());
+                }
+            }
+			
 			// set status code
 			respCommandBuilder.getStatusBuilder()
 			.setCode(Status.StatusCode.SUCCESS);

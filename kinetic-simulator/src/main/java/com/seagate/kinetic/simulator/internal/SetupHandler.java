@@ -87,15 +87,13 @@ public abstract class SetupHandler {
     }
 
     @SuppressWarnings("rawtypes")
-    public static synchronized SetupInfo handleSetup(KineticMessage request,
-            KineticMessage respond, byte[] myPin, Store store,
+    private static synchronized SetupInfo _handleSetup(KineticMessage request,
+            KineticMessage respond, Store store,
             String kineticHome) throws KVStoreException, IOException {
         
         SetupInfo setupInfo = null;
         
         Command.Builder commandBuilder = (Command.Builder) respond.getCommand();
-
-        byte[] newPin = null;
         
         /**
          * XXX protocol-3.0.0
@@ -103,33 +101,29 @@ public abstract class SetupHandler {
         //byte[] newPin = request.getMessage().getCommand().getBody().getSetup()
         //        .getPin()
         //        .toByteArray();
-        
-        if (null == newPin) {
-            return setupInfo;
-        }
 
-        logger.info("parameterPin=" + new String(newPin) + ", internalPin="
-                + new String(myPin));
-
-        if (null == myPin || 0 == myPin.length) {
-            setupInfo = handleSetup(request, respond, myPin, newPin, store,
-                    kineticHome);
-        } else if (Arrays.equals(newPin, myPin)) {
-            setupInfo = handleSetup(request, respond, myPin, newPin, store,
-                    kineticHome);
-        } else {
-            commandBuilder.getStatusBuilder()
-            .setCode(StatusCode.INTERNAL_ERROR);
-            commandBuilder.getStatusBuilder()
-            .setStatusMessage("Pin not match");
-        }
+//        logger.info("parameterPin=" + new String(newPin) + ", internalPin="
+//                + new String(myPin));
+//
+//        if (null == myPin || 0 == myPin.length) {
+//            setupInfo = handleSetup(request, respond, myPin, newPin, store,
+//                    kineticHome);
+//        } else if (Arrays.equals(newPin, myPin)) {
+//            setupInfo = handleSetup(request, respond, myPin, newPin, store,
+//                    kineticHome);
+//        } else {
+//            commandBuilder.getStatusBuilder()
+//            .setCode(StatusCode.INTERNAL_ERROR);
+//            commandBuilder.getStatusBuilder()
+//            .setStatusMessage("Pin not match");
+//        }
 
         return setupInfo;
     }
 
     @SuppressWarnings("rawtypes")
-    private static SetupInfo handleSetup(KineticMessage request,
-            KineticMessage respond, byte[] myPin, byte[] newPin, Store store,
+    public static SetupInfo handleSetup(KineticMessage request,
+            KineticMessage respond, Store store,
             String kineticHome) throws IOException, KVStoreException {
         
         SetupInfo setupInfo = new SetupInfo();
@@ -189,7 +183,7 @@ public abstract class SetupHandler {
         return setupInfo;
     }
 
-    private static void persistSetup(byte[] contents, String kineticHome)
+     static void persistSetup(byte[] contents, String kineticHome)
             throws IOException {
         String setupPersistFilePath = kineticHome + File.separator + ".setup";
         String setupPersistBakFilePath = setupPersistFilePath + ".bak";

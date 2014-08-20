@@ -430,7 +430,11 @@ public class KineticAdminTest extends IntegrationTestCase {
 
         acls.add(acl1);
 
-        getAdminClient().setSecurity(acls);
+        // security pins
+        byte[] pin = "1".getBytes();
+       
+        // all pins set the same
+        getAdminClient().setSecurity(acls, null, pin, null, pin);
 
         // The acl have been set, so making a call with getlog role should
         // succeed
@@ -478,7 +482,7 @@ public class KineticAdminTest extends IntegrationTestCase {
 
         acls.add(acl1);
 
-        getAdminClient().setSecurity(acls);
+        getAdminClient().setSecurity(acls, null, null, null, null);
 
         KineticLog log = getAdminClient().getLog();
         assertTrue(log.getTemperature().size() > 0);
@@ -523,7 +527,7 @@ public class KineticAdminTest extends IntegrationTestCase {
         acl1.setDomains(domains);
 
         acls.add(acl1);
-        getAdminClient().setSecurity(acls);
+        getAdminClient().setSecurity(acls, null, null, null, null);
 
         KineticLog log = getAdminClient().getLog();
         assertTrue(log.getTemperature().size() > 0);
@@ -570,7 +574,7 @@ public class KineticAdminTest extends IntegrationTestCase {
 
         acls.add(acl1);
         try {
-            getAdminClient().setSecurity(acls);
+            getAdminClient().setSecurity(acls, null, null, null, null);
             fail("no exception was thrown");
         } catch (Exception e) {
             assertTrue(e.getMessage().contains("No enum constant"));
@@ -617,7 +621,7 @@ public class KineticAdminTest extends IntegrationTestCase {
 
         acls.add(acl1);
         try {
-            getAdminClient().setSecurity(acls);
+            getAdminClient().setSecurity(acls, null, null, null, null);
             fail("no exception was thrown");
         } catch (Exception e) {
             assertTrue(e.getMessage().contains("No enum constant"));
@@ -663,7 +667,7 @@ public class KineticAdminTest extends IntegrationTestCase {
 
         acls.add(acl1);
         try {
-            getAdminClient().setSecurity(acls);
+            getAdminClient().setSecurity(acls, null, null, null, null);
             fail("no exception was thrown");
         } catch (Exception e) {
             assertTrue(e.getMessage().contains("No enum constant"));
@@ -698,7 +702,7 @@ public class KineticAdminTest extends IntegrationTestCase {
 
         acls.add(acl1);
         try {
-            getAdminClient().setSecurity(acls);
+            getAdminClient().setSecurity(acls, null, null, null, null);
             fail("no exception was thrown");
         } catch (Exception e) {
             System.out.println(e.getMessage());

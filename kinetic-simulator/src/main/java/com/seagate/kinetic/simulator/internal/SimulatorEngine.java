@@ -35,6 +35,7 @@ import com.seagate.kinetic.common.lib.KineticMessage;
 import com.seagate.kinetic.heartbeat.message.ByteCounter;
 import com.seagate.kinetic.heartbeat.message.OperationCounter;
 import com.seagate.kinetic.proto.Kinetic.Command;
+import com.seagate.kinetic.proto.Kinetic.Command.Security;
 import com.seagate.kinetic.proto.Kinetic.Message;
 import com.seagate.kinetic.proto.Kinetic.Message.AuthType;
 import com.seagate.kinetic.proto.Kinetic.Command.MessageType;
@@ -94,6 +95,8 @@ public class SimulatorEngine implements MessageService {
 
     // ack map
     private Map<Long, ACL> aclmap = null;
+    
+    private SecurityPin securityPin = new SecurityPin();
 
     private Map<Long, Key> hmacKeyMap = null;
 
@@ -188,7 +191,7 @@ public class SimulatorEngine implements MessageService {
             // calculate my home
             kineticHome = kineticHome(config);
             
-            Map<Long, ACL> loadedAclMap = SecurityHandler.loadACL(kineticHome);
+            Map<Long, ACL> loadedAclMap = SecurityHandler.loadACL(kineticHome, securityPin);
             if (loadedAclMap.size() > 0) {
                 this.aclmap = loadedAclMap;
                 this.hmacKeyMap = HmacStore.getHmacKeyMap(loadedAclMap);
@@ -429,8 +432,13 @@ public class SimulatorEngine implements MessageService {
         try {
             
             HeaderOp.checkHeader(kmreq, kmresp, key, clusterVersion);
-
-            if (kmreq.getCommand().getHeader().getMessageType() == MessageType.FLUSHALLDATA) {
+            
+            if (kmreq.getCommand().getHeader().getMessageType() == MessageType.PINOP) {
+                boolean removeSetup = PinOperationHandler.handleOperation(kmreq, kmresp, securityPin, store, kineticHome);
+                if (removeSetup) {
+                    clusterVersion = 0L;
+                }
+            } else if (kmreq.getCommand().getHeader().getMessageType() == MessageType.FLUSHALLDATA) {
                 commandBuilder.getHeaderBuilder()
                 .setMessageType(MessageType.FLUSHALLDATA_RESPONSE);
                 logger.warning("received flush data command, this is a no op on simulator at this time ...");
@@ -449,7 +457,7 @@ public class SimulatorEngine implements MessageService {
                 if (hasPermission) {
                     synchronized (this.hmacKeyMap) {
                         aclmap = SecurityHandler.handleSecurity(kmreq,
-                                kmresp, aclmap, kineticHome);
+                                kmresp, aclmap, securityPin, kineticHome);
                         this.hmacKeyMap = HmacStore.getHmacKeyMap(aclmap);
                     }
                 }
@@ -459,7 +467,7 @@ public class SimulatorEngine implements MessageService {
                         kmresp, aclmap);
                 if (hasPermission) {
                     SetupInfo setupInfo = SetupHandler.handleSetup(kmreq,
-                            kmresp, pin, store, kineticHome);
+                            kmresp, store, kineticHome);
                     if (setupInfo != null) {
                         this.clusterVersion = setupInfo.getClusterVersion();
                         this.pin = setupInfo.getPin();
