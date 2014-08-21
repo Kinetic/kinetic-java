@@ -102,8 +102,6 @@ public class SimulatorEngine implements MessageService {
 
     private Long clusterVersion = null;
 
-    private byte[] pin = null;
-
     private final boolean isHttp = Boolean.getBoolean("kinetic.io.http");
 
     private final boolean isHttps = Boolean.getBoolean("kinetic.io.https");
@@ -204,7 +202,7 @@ public class SimulatorEngine implements MessageService {
             }
             SetupInfo setupInfo = SetupHandler.loadSetup(kineticHome);
             clusterVersion = setupInfo.getClusterVersion();
-            pin = setupInfo.getPin();
+            //pin = setupInfo.getPin();
 
             // initialize db store
             this.initStore();
@@ -470,7 +468,7 @@ public class SimulatorEngine implements MessageService {
                             kmresp, store, kineticHome);
                     if (setupInfo != null) {
                         this.clusterVersion = setupInfo.getClusterVersion();
-                        this.pin = setupInfo.getPin();
+                        //this.pin = setupInfo.getPin();
                     }
                 }
             } else if (kmreq.getCommand().getBody().hasGetLog()) {
@@ -512,11 +510,13 @@ public class SimulatorEngine implements MessageService {
                 // get command byte[]
                 byte[] commandByte = commandByteString.toByteArray();
                 
-                //calculate hmac 
-                ByteString hmac = Hmac.calc(commandByte, key);
-                
-                //set hmac
-                messageBuilder.getHmacAuthBuilder().setHmac(hmac);
+                // require Hmac calculation ?
+                if (key != null) {
+                    //calculate hmac 
+                    ByteString hmac = Hmac.calc(commandByte, key);
+                    //set hmac
+                    messageBuilder.getHmacAuthBuilder().setHmac(hmac);
+                }
                 
                 // set identity
                 messageBuilder.getHmacAuthBuilder().setIdentity(userId);

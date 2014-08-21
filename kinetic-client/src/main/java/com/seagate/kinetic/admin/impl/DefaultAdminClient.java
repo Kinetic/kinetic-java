@@ -424,55 +424,7 @@ public class DefaultAdminClient implements KineticAdminClient {
         
     }
     
-    //@Override
-    public void _setup(byte[] pin, byte[] setPin, long newClusterVersion,
-            boolean secureErase) throws KineticException {
-
-        KineticMessage km = MessageFactory.createKineticMessageWithBuilder();
-        
-        Command.Builder commandBuilder = (Command.Builder) km.getCommand(); 
-
-        Setup.Builder setup = commandBuilder.getBodyBuilder()
-                .getSetupBuilder();
-//
-//        if (pin != null && pin.length > 0) {
-//            setup.setPin(ByteString.copyFrom(pin));
-//        }
-//
-//        if (setPin != null && setPin.length > 0) {
-//            setup.setSetPin(ByteString.copyFrom(setPin));
-//        }
-//
-//        setup.setInstantSecureErase(secureErase);
-
-        if (0 > newClusterVersion) {
-            throw new KineticException(
-                    "Parameter invalid: new cluster version less than 0.");
-        }
-        
-        setup.setNewClusterVersion(newClusterVersion);
-
-        KineticMessage kmresp = configureSetupPolicy(km);
-
-        if (kmresp.getCommand().getHeader().getMessageType() != MessageType.SETUP_RESPONSE) {
-            throw new KineticException("received wrong message type.");
-        }
-
-        if (kmresp.getCommand().getStatus().getCode() == Status.StatusCode.NOT_AUTHORIZED) {
-
-            throw new KineticException("Authorized Exception: "
-                    + kmresp.getCommand().getStatus().getCode() + ": "
-                    + kmresp.getCommand().getStatus().getStatusMessage());
-        }
-
-        if (kmresp.getCommand().getStatus().getCode() != Status.StatusCode.SUCCESS) {
-            throw new KineticException("Unknown Error: "
-                    + kmresp.getCommand().getStatus().getCode() + ": "
-                    + kmresp.getCommand().getStatus().getStatusMessage());
-        }
-
-    }
-    
+    @Override
     public void setClusterVersion (long newClusterVersion) throws KineticException {
         
         KineticMessage km = MessageFactory.createKineticMessageWithBuilder();

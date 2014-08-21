@@ -30,6 +30,8 @@ import com.seagate.kinetic.proto.Kinetic.Command.PinOperation.PinOpType;
 import com.seagate.kinetic.proto.Kinetic.Command.MessageType;
 import com.seagate.kinetic.proto.Kinetic.Command.Setup;
 import com.seagate.kinetic.proto.Kinetic.Command.Status.StatusCode;
+import com.seagate.kinetic.proto.Kinetic.Message.AuthType;
+import com.seagate.kinetic.proto.Kinetic.Message;
 import com.seagate.kinetic.simulator.persist.Store;
 
 /**
@@ -50,6 +52,10 @@ public abstract class PinOperationHandler {
         
         // remove set up in if erase db
         boolean removeSetup = false;
+        
+        Message.Builder messageBuilder = (Message.Builder) respond.getMessage();
+        // set pin auth
+        messageBuilder.setAuthType(AuthType.PINAUTH);
 
         Command.Builder commandBuilder = (Command.Builder) respond.getCommand();
         

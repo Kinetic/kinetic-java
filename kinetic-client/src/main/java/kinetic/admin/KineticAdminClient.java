@@ -178,6 +178,14 @@ public interface KineticAdminClient {
      *             if unable to load firmware bytes to the drive.
      */
     public void instantErase(byte[] pin) throws KineticException;
+    
+    /**
+     * Set cluster version with the specified version.
+     * 
+     * @param newClusterVersion
+     * @throws KineticException
+     */
+    public void setClusterVersion (long newClusterVersion) throws KineticException;
 
     /**
      * Close the connection and release all resources allocated by this
