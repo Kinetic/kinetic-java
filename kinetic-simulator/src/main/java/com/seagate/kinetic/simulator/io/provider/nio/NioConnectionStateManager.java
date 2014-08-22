@@ -53,50 +53,28 @@ public class NioConnectionStateManager {
      * @throws RuntimeException if connection has already set by the simulator but received a connection Id 
      *         does not match. 
      */
-    public static StatefulMessage checkAndGetStatefulMessage(ChannelHandlerContext ctx,
+    public static void checkIfConnectionIdSet(ChannelHandlerContext ctx,
             KineticMessage request) {
 
         // get connection info for this channel
         ConnectionInfo cinfo = SimulatorEngine.getConnectionInfo(ctx);
-
-        // stateful message
-        StatefulMessage sm = null;
-
-        // this should not be null
-        if (cinfo != null) {
-            // check if this is the first message of this connection
-            if (cinfo.getIsConnectionIdSetToClient() == false) {
-                // new instance of stateful message
-                sm = new StatefulMessage(request);
-                // first connection, set connection id to it
-                sm.setConnectionId(cinfo.getConnectionId());
-
-                // only set once
-                cinfo.setIsConnectionIdSetToClient(true);
-
-                // update connection info map
-                SimulatorEngine.putConnectionInfo(ctx, cinfo);
-            } else {
-                if (cinfo.getConnectionId() != request.getCommand().getHeader().getConnectionID()) {
-                    
-                    logger.warning ("expect connection Id="
-                            + cinfo.getConnectionId()
-                            + ", received request message connection Id="
-                            + request.getCommand().getHeader()
-                                    .getConnectionID());
-                    
-                    if (SimulatorConfiguration.getIsConnectionIdCheckEnforced()) {
-                        throw new RuntimeException("expect CID="
-                                + cinfo.getConnectionId()
-                                + " , but received CID="
-                                + request.getCommand().getHeader()
-                                        .getConnectionID());
-                    }
-               }
+        
+        if (cinfo.getConnectionId() != request.getCommand().getHeader().getConnectionID()) {
+            
+            logger.warning ("expect connection Id="
+                    + cinfo.getConnectionId()
+                    + ", received request message connection Id="
+                    + request.getCommand().getHeader()
+                            .getConnectionID());
+            
+            if (SimulatorConfiguration.getIsConnectionIdCheckEnforced()) {
+                throw new RuntimeException("expect CID="
+                        + cinfo.getConnectionId()
+                        + " , but received CID="
+                        + request.getCommand().getHeader()
+                                .getConnectionID());
             }
         }
-
-        return sm;
     }
 
 }

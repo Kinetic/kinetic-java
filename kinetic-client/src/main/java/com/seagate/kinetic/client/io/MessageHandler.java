@@ -44,6 +44,7 @@ import com.seagate.kinetic.client.internal.async.PutAsyncCallbackHandler;
 import com.seagate.kinetic.client.io.provider.spi.ClientMessageService;
 import com.seagate.kinetic.common.lib.KineticMessage;
 import com.seagate.kinetic.proto.Kinetic.Command.MessageType;
+import com.seagate.kinetic.proto.Kinetic.Message.AuthType;
 
 /**
  *
@@ -84,6 +85,8 @@ public class MessageHandler implements ClientMessageService, Runnable {
 	private long requestTimeout = 30000;
 
 	private final Object syncObj = new Object();
+	
+	private boolean isStatusMessageReceived = false;
 
 	/**
 	 * Constructor.
@@ -128,6 +131,20 @@ public class MessageHandler implements ClientMessageService, Runnable {
 
 		if (logger.isLoggable(Level.FINEST)) {
 			logger.info("read/routing message: " + message);
+		}
+		
+		/**
+		 * check status message has received.
+		 */
+		if (this.isStatusMessageReceived == false) {
+		    
+		    if (message.getMessage().getAuthType() == AuthType.UNSOLICITEDSTATUS) {
+		        this.client.setConnectionId(message);
+		        this.isStatusMessageReceived = true;
+		        return;
+		    } else {
+		        logger.warning("received unexpected message ..." + message.getMessage() + ", command=" + message.getCommand());
+		    }
 		}
 
 		Long seq = Long.valueOf(message.getCommand().getHeader()

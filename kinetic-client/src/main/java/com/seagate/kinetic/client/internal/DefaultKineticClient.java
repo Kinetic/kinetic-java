@@ -87,7 +87,7 @@ public class DefaultKineticClient implements AdvancedKineticClient {
         client = new ClientProxy(config);
         
         //send a no-op and set connection ID.
-        this.connectionSetUp();
+        //this.connectionSetUp();
 
         LOG.fine("kinetic client initialized, server=" + config.getHost()
                 + ", port=" + config.getPort());

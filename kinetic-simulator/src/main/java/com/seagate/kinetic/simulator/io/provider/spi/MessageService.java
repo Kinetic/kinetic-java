@@ -19,9 +19,11 @@
  */
 package com.seagate.kinetic.simulator.io.provider.spi;
 
+import io.netty.channel.ChannelHandlerContext;
 import kinetic.simulator.SimulatorConfiguration;
 
 import com.seagate.kinetic.common.lib.KineticMessage;
+import com.seagate.kinetic.simulator.internal.ConnectionInfo;
 import com.seagate.kinetic.simulator.io.provider.nio.NioEventLoopGroupManager;
 
 /**
@@ -75,4 +77,12 @@ public interface MessageService {
 	 * @return a new instance of NioEventLoopGroupManager.
 	 */
 	public NioEventLoopGroupManager getNioEventLoopGroupManager();
+	
+	/**
+	 * Register a new connection for the message service.
+	 * 
+	 * @param ctx
+	 * @return
+	 */
+	public ConnectionInfo registerNewConnection (ChannelHandlerContext ctx);
 }

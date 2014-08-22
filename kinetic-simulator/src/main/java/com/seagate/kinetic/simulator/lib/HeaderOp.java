@@ -153,12 +153,10 @@ public class HeaderOp {
 		} finally {
 		    
             try {
-                // set connection Id if necessary
-                if (km instanceof StatefulMessage) {
-                    long cid = ((StatefulMessage) km).getConnectionId();
-                    respCommandBuilder.getHeaderBuilder()
-                            .setConnectionID(cid);
-                }
+                // set connection Id in the response message
+                long cid = km.getCommand().getHeader().getConnectionID();
+                respCommandBuilder.getHeaderBuilder().setConnectionID(cid);
+
             } catch (Exception e) {
                 LOG.warning(e.getMessage());
             }

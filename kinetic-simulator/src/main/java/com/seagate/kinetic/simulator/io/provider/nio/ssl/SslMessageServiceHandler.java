@@ -68,40 +68,27 @@ public class SslMessageServiceHandler extends
 	    
 	    // register connection info with the channel handler context
         @SuppressWarnings("unused")
-        ConnectionInfo info = SimulatorEngine.registerNewConnection(ctx);
+        ConnectionInfo info = this.lcservice.registerNewConnection(ctx);
         
         //logger.info("TLS channel is active, connection registered., id = " + info.getConnectionId());
 	}
 
 	@Override
-	protected void channelRead0(ChannelHandlerContext ctx,
-			KineticMessage request)
-			throws Exception {
-	    
-	    StatefulMessage sm = NioConnectionStateManager.checkAndGetStatefulMessage(ctx, request);
+    protected void channelRead0(ChannelHandlerContext ctx,
+            KineticMessage request) throws Exception {
 
-		if (enforceOrdering) {
-		    // process request sequentially
-            if (sm != null) {
-                queuedRequestProcessRunner.processRequest(ctx, sm);
-            } else {
-                queuedRequestProcessRunner.processRequest(ctx, request);
-            }
-		} else {
-		    
-		 // each request is independently processed
+        NioConnectionStateManager.checkIfConnectionIdSet(ctx, request);
+
+        if (enforceOrdering) {
+            // process request sequentially
+            queuedRequestProcessRunner.processRequest(ctx, request);
+        } else {
+            // each request is independently processed
             RequestProcessRunner rpr = null;
-            
-            if (sm != null) {
-                rpr = new RequestProcessRunner(lcservice, ctx,sm);
-            } else {
-                rpr = new RequestProcessRunner(lcservice, ctx,request);
-            }
-			
-			this.lcservice.execute(rpr);
-		}
-
-	}
+            rpr = new RequestProcessRunner(lcservice, ctx, request);
+            this.lcservice.execute(rpr);
+        }
+    }
 
 	@Override
 	public void channelReadComplete(ChannelHandlerContext ctx) throws Exception {

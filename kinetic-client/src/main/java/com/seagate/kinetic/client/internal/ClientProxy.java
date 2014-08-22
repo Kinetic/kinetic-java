@@ -22,6 +22,8 @@ import java.security.Key;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -39,6 +41,7 @@ import com.seagate.kinetic.common.lib.Hmac.HmacException;
 import com.seagate.kinetic.common.lib.KineticMessage;
 import com.seagate.kinetic.proto.Kinetic.Command;
 import com.seagate.kinetic.proto.Kinetic.Message;
+import com.seagate.kinetic.proto.Kinetic.Message.AuthType;
 import com.seagate.kinetic.proto.Kinetic.Message.Builder;
 import com.seagate.kinetic.proto.Kinetic.Command.Header;
 import com.seagate.kinetic.proto.Kinetic.Command.MessageType;
@@ -85,6 +88,8 @@ public class ClientProxy {
     private final Map<Long, Key> hmacKeyMap = new HashMap<Long, Key>();
     
     private volatile boolean isConnectionIdSetByServer = false;
+    
+    private CountDownLatch cidLatch = new CountDownLatch (1);
 
     /**
      * Construct a new instance of client proxy
@@ -113,18 +118,32 @@ public class ClientProxy {
 
         // io handler
         this.iohandler = new IoHandler(this);
+        
+        // wait for status message
+        this.waitForStatusMessage();
+    }
+    
+    private void waitForStatusMessage() throws KineticException {
+        
+        try {
+            this.cidLatch.await(30, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            logger.log(Level.WARNING, e.getMessage(), e);
+        }
+        
+        if (this.isConnectionIdSetByServer == false) {
+            throw new KineticException ("Did not receive a Status message from service.");
+        }
     }
     
     /**
-     * Set client connection ID by server. Usually this is set by first OP response from the server. The 
+     * Set client connection ID by server. his is set by  from the server. The 
      * client library uses this connectionID after this is set by the server.
      * 
      * @param cid the connection id to be set for this connection.
      */
     public void setConnectionId(KineticMessage kresponse) {
-        
-        
-        
+
         if (this.isConnectionIdSetByServer) {
             /**
              * if already set by server, simply return.
@@ -132,27 +151,28 @@ public class ClientProxy {
             return;
         }
         
+        if (kresponse.getMessage().getAuthType() != AuthType.UNSOLICITEDSTATUS) {
+            return;
+        }
+
         /**
          * check if set connection ID is needed.
          */
-        synchronized (this) {
+
+        if (kresponse.getCommand().getHeader().hasConnectionID()) {
+
+            this.connectionID = kresponse.getCommand().getHeader()
+                    .getConnectionID();
+
+            // set flag to true
+            this.isConnectionIdSetByServer = true;
             
-            if (isConnectionIdSetByServer) {
-                return;
-            }
-            
-            if (kresponse.getCommand().getHeader()
-                    .hasConnectionID()) {
-                
-                this.connectionID = kresponse.getCommand()
-                        .getHeader().getConnectionID();
-                
-                //set flag to true
-                this.isConnectionIdSetByServer = true;
-                
-                logger.fine("set connection Id: " + this.connectionID);
-            }
+            // countdown
+            this.cidLatch.countDown();
+
+            logger.fine("set connection Id: " + this.connectionID);
         }
+
     }
 
     /**

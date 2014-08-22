@@ -19,6 +19,8 @@
  */
 package com.seagate.kinetic.simulator.internal;
 
+import io.netty.channel.ChannelHandlerContext;
+
 import java.io.File;
 import java.security.Key;
 import java.util.ArrayList;
@@ -36,6 +38,7 @@ import com.seagate.kinetic.heartbeat.message.ByteCounter;
 import com.seagate.kinetic.heartbeat.message.OperationCounter;
 import com.seagate.kinetic.proto.Kinetic.Command;
 import com.seagate.kinetic.proto.Kinetic.Command.Security;
+import com.seagate.kinetic.proto.Kinetic.Command.Status.StatusCode;
 import com.seagate.kinetic.proto.Kinetic.Message;
 import com.seagate.kinetic.proto.Kinetic.Message.AuthType;
 import com.seagate.kinetic.proto.Kinetic.Command.MessageType;
@@ -791,9 +794,30 @@ public class SimulatorEngine implements MessageService {
      * 
      * @return the connection info instance associated with the connection.
      */
-    public static ConnectionInfo registerNewConnection (Object connection) {
+    public ConnectionInfo registerNewConnection (ChannelHandlerContext ctx) {
         ConnectionInfo info = newConnectionInfo();
-        putConnectionInfo (connection, info);
+        putConnectionInfo (ctx, info);
+        
+        KineticMessage km = new KineticMessage();
+        
+        Message.Builder mb = Message.newBuilder();
+        mb.setAuthType(AuthType.UNSOLICITEDSTATUS);
+        
+        Command.Builder cb = Command.newBuilder();
+        cb.getHeaderBuilder().setConnectionID(info.getConnectionId());
+        
+        cb.getHeaderBuilder().setClusterVersion(this.clusterVersion);
+        
+        cb.getStatusBuilder().setCode(StatusCode.SUCCESS);
+        
+        mb.setCommandBytes(cb.build().toByteString());
+        
+        km.setMessage(mb);
+        km.setCommand(cb);
+        
+        ctx.writeAndFlush(km);
+        
+        logger.info("***** connection registered., sent UNSOLICITEDSTATUS with cid = " + info.getConnectionId());
         
         return info;
     }
