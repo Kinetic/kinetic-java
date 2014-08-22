@@ -237,7 +237,7 @@ public class KineticAdminTest extends IntegrationTestCase {
      */
     @Test
     public void testSetup_ClusterVersionHonored() throws KineticException {
-        getAdminClient().setup(null, null, 123, false);
+        getAdminClient().setup(null, null, 0, false);
 
 //        final Message.Builder testClusterVersionRequest = Message.newBuilder();
 //        testClusterVersionRequest.getCommandBuilder().getBodyBuilder()
@@ -266,11 +266,11 @@ public class KineticAdminTest extends IntegrationTestCase {
     @Test
     public void testSetup_ClusterVersion_ErasedByISE() throws KineticException {
         // Set Cluster Version
-        getAdminClient().setup(null, null, 123, false);
+        getAdminClient().setup(null, null, 0, false);
 
         // Perform ISE. New cluster version should be ignored.
         final DefaultAdminClient client = new DefaultAdminClient(
-                getClientConfig(123));
+                getClientConfig(0));
 
         client.instantErase(null);
         client.close();
@@ -431,7 +431,8 @@ public class KineticAdminTest extends IntegrationTestCase {
         acls.add(acl1);
 
         // security pins
-        byte[] pin = "1".getBytes();
+//        byte[] pin = "1".getBytes();
+        byte[] pin = null;
        
         // all pins set the same
         getAdminClient().setSecurity(acls, null, pin, null, pin);
