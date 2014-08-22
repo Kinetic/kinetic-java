@@ -22,6 +22,7 @@ package com.seagate.kinetic.simulator.internal;
 import io.netty.channel.ChannelHandlerContext;
 
 import java.io.File;
+import java.net.UnknownHostException;
 import java.security.Key;
 import java.util.ArrayList;
 import java.util.Map;
@@ -37,8 +38,11 @@ import com.seagate.kinetic.common.lib.KineticMessage;
 import com.seagate.kinetic.heartbeat.message.ByteCounter;
 import com.seagate.kinetic.heartbeat.message.OperationCounter;
 import com.seagate.kinetic.proto.Kinetic.Command;
+import com.seagate.kinetic.proto.Kinetic.Command.GetLog.Configuration;
+import com.seagate.kinetic.proto.Kinetic.Command.GetLog.Limits;
 import com.seagate.kinetic.proto.Kinetic.Command.Security;
 import com.seagate.kinetic.proto.Kinetic.Command.Status.StatusCode;
+import com.seagate.kinetic.proto.Kinetic.Local;
 import com.seagate.kinetic.proto.Kinetic.Message;
 import com.seagate.kinetic.proto.Kinetic.Message.AuthType;
 import com.seagate.kinetic.proto.Kinetic.Command.MessageType;
@@ -55,6 +59,8 @@ import com.seagate.kinetic.simulator.persist.KVOp;
 import com.seagate.kinetic.simulator.persist.RangeOp;
 import com.seagate.kinetic.simulator.persist.Store;
 import com.seagate.kinetic.simulator.persist.StoreFactory;
+import com.seagate.kinetic.simulator.utility.ConfigurationUtil;
+import com.seagate.kinetic.simulator.utility.LimitsUtil;
 
 /**
  *
@@ -86,6 +92,10 @@ public class SimulatorEngine implements MessageService {
 
     private final static Logger logger = Logger.getLogger(SimulatorEngine.class
             .getName());
+    
+    // protocol version
+    public static final String PROTOCOL_VERSION = 
+            Local.getDefaultInstance().getProtocolVersion();
 
     private SimulatorConfiguration config = null;
 
@@ -794,31 +804,62 @@ public class SimulatorEngine implements MessageService {
      * 
      * @return the connection info instance associated with the connection.
      */
-    public ConnectionInfo registerNewConnection (ChannelHandlerContext ctx) {
+    public ConnectionInfo registerNewConnection(ChannelHandlerContext ctx) {
         ConnectionInfo info = newConnectionInfo();
-        putConnectionInfo (ctx, info);
-        
+        putConnectionInfo(ctx, info);
+
         KineticMessage km = new KineticMessage();
-        
+
         Message.Builder mb = Message.newBuilder();
         mb.setAuthType(AuthType.UNSOLICITEDSTATUS);
-        
+
         Command.Builder cb = Command.newBuilder();
+
+        // connection id
         cb.getHeaderBuilder().setConnectionID(info.getConnectionId());
-        
+
+        // cluster version
         cb.getHeaderBuilder().setClusterVersion(this.clusterVersion);
-        
+
+        // configurations
+
+        try {
+            Configuration configuration = ConfigurationUtil
+                    .getConfiguration(this.config);
+            cb.getBodyBuilder().getGetLogBuilder().getConfigurationBuilder()
+                    .mergeFrom(configuration);
+        } catch (UnknownHostException e) {
+            logger.log(Level.WARNING, e.getMessage(), e);
+        }
+
+        // cb.getBodyBuilder().getGetLogBuilder().getConfigurationBuilder().setProtocolVersion(PROTOCOL_VERSION);
+        // cb.getBodyBuilder().getGetLogBuilder().getConfigurationBuilder().setCompilationDate(ConfigurationUtil.COMPILATION_DATE);
+        // cb.getBodyBuilder().getGetLogBuilder().getConfigurationBuilder().setModel(ConfigurationUtil.MODEL);
+        // cb.getBodyBuilder().getGetLogBuilder().getConfigurationBuilder().setVersion(SimulatorConfiguration.getSimulatorVersion());
+        // cb.getBodyBuilder().getGetLogBuilder().getConfigurationBuilder().setSerialNumber(ByteString.copyFrom(ConfigurationUtil.SERIAL_NUMBER));
+        //
+        // limits
+        try {
+            Limits limits = LimitsUtil.getLimits(this.config);
+            cb.getBodyBuilder().getGetLogBuilder().getLimitsBuilder()
+                    .mergeFrom(limits);
+        } catch (UnknownHostException e) {
+            logger.log(Level.WARNING, e.getMessage(), e);
+        }
+
+        // status
         cb.getStatusBuilder().setCode(StatusCode.SUCCESS);
-        
+
         mb.setCommandBytes(cb.build().toByteString());
-        
+
         km.setMessage(mb);
         km.setCommand(cb);
-        
+
         ctx.writeAndFlush(km);
-        
-        logger.info("***** connection registered., sent UNSOLICITEDSTATUS with cid = " + info.getConnectionId());
-        
+
+        logger.info("***** connection registered., sent UNSOLICITEDSTATUS with cid = "
+                + info.getConnectionId());
+
         return info;
     }
     

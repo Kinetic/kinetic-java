@@ -42,12 +42,12 @@ public abstract class ConfigurationUtil {
 
     private final static Logger logger = Logger
             .getLogger(ConfigurationUtil.class.getName());
-    private final static String VENDER = "Seagate";
-    private final static String MODEL = "Simulator";
-    private final static byte[] SERIAL_NUMBER = "93C3DAFD-C894-3C88-A4B0-632A90D2A04B"
+    public final static String VENDER = "Seagate";
+    public final static String MODEL = "Simulator";
+    public final static byte[] SERIAL_NUMBER = "93C3DAFD-C894-3C88-A4B0-632A90D2A04B"
             .getBytes(Charset.forName("UTF-8"));
-    private final static String COMPILATION_DATE = new Date().toString();
-    private final static String PROTOCOL_COMPILATION_DATE = new Date()
+    public final static String COMPILATION_DATE = new Date().toString();
+    public final static String PROTOCOL_COMPILATION_DATE = new Date()
             .toString();
 
     @SuppressWarnings("static-access")
@@ -59,6 +59,8 @@ public abstract class ConfigurationUtil {
         configuration.setSerialNumber(ByteString.copyFrom(SERIAL_NUMBER));
         configuration.setCompilationDate(COMPILATION_DATE);
         configuration.setProtocolCompilationDate(PROTOCOL_COMPILATION_DATE);
+        
+        configuration.setVersion(SimulatorConfiguration.getSimulatorVersion());
 
         List<Interface> interfaces = new ArrayList<Interface>();
         Interface.Builder itf1 = null;
