@@ -25,6 +25,7 @@ import java.io.File;
 import java.net.UnknownHostException;
 import java.security.Key;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
@@ -113,7 +114,7 @@ public class SimulatorEngine implements MessageService {
 
     private Map<Long, Key> hmacKeyMap = null;
 
-    private Long clusterVersion = null;
+    private long clusterVersion = 0;
 
     private final boolean isHttp = Boolean.getBoolean("kinetic.io.http");
 
@@ -202,20 +203,11 @@ public class SimulatorEngine implements MessageService {
             // calculate my home
             kineticHome = kineticHome(config);
             
-            Map<Long, ACL> loadedAclMap = SecurityHandler.loadACL(kineticHome, securityPin);
-            if (loadedAclMap.size() > 0) {
-                this.aclmap = loadedAclMap;
-                this.hmacKeyMap = HmacStore.getHmacKeyMap(loadedAclMap);
-            } else {
-                // get ack map
-                this.aclmap = HmacStore.getAclMap();
-
-                // get hmac key map
-                this.hmacKeyMap = HmacStore.getHmacKeyMap(aclmap);
-            }
-            SetupInfo setupInfo = SetupHandler.loadSetup(kineticHome);
-            clusterVersion = setupInfo.getClusterVersion();
-            //pin = setupInfo.getPin();
+            SecurityHandler.loadACL(this);
+            
+            SetupHandler.loadSetup(this);
+            
+            //clusterVersion = setupInfo.getClusterVersion();
 
             // initialize db store
             this.initStore();
@@ -320,7 +312,15 @@ public class SimulatorEngine implements MessageService {
     public Map<Long, ACL> getAclMap() {
         return this.aclmap;
     }
-
+    
+    public void setAclMap ( Map<Long, ACL> aclmap) {
+        this.aclmap = aclmap;
+    }
+    
+    public void setHmacKeyMap(Map<Long, Key> hmacKeyMap) {
+        this.hmacKeyMap = hmacKeyMap;
+    }
+        
     public Map<Long, Key> getHmacKeyMap() {
         return this.hmacKeyMap;
     }
@@ -328,6 +328,18 @@ public class SimulatorEngine implements MessageService {
     @SuppressWarnings("rawtypes")
     public Store getStore() {
         return this.store;
+    }
+    
+    public void setClusterVersion (long cversion) {
+        this.clusterVersion = cversion;
+    }
+    
+    public SecurityPin getSecurityPin() {
+        return this.securityPin;
+    }
+    
+    public String getKineticHome() {
+        return this.kineticHome;
     }
 
     /**
@@ -445,10 +457,7 @@ public class SimulatorEngine implements MessageService {
             HeaderOp.checkHeader(kmreq, kmresp, key, clusterVersion);
             
             if (kmreq.getCommand().getHeader().getMessageType() == MessageType.PINOP) {
-                boolean removeSetup = PinOperationHandler.handleOperation(kmreq, kmresp, securityPin, store, kineticHome);
-                if (removeSetup) {
-                    clusterVersion = 0L;
-                }
+                PinOperationHandler.handleOperation(kmreq, kmresp, this); 
             } else if (kmreq.getCommand().getHeader().getMessageType() == MessageType.FLUSHALLDATA) {
                 commandBuilder.getHeaderBuilder()
                 .setMessageType(MessageType.FLUSHALLDATA_RESPONSE);

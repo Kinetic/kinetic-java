@@ -23,9 +23,13 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.security.Key;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
+
+import kinetic.client.KineticException;
 
 import com.google.protobuf.ByteString;
 import com.seagate.kinetic.common.lib.HMACAlgorithmUtil;
@@ -38,6 +42,7 @@ import com.seagate.kinetic.proto.Kinetic.Command.Security;
 import com.seagate.kinetic.proto.Kinetic.Command.Security.ACL;
 import com.seagate.kinetic.proto.Kinetic.Command.Security.ACL.Permission;
 import com.seagate.kinetic.proto.Kinetic.Command.Status.StatusCode;
+import com.seagate.kinetic.simulator.lib.HmacStore;
 
 /**
  * Security handler prototype.
@@ -46,6 +51,9 @@ import com.seagate.kinetic.proto.Kinetic.Command.Status.StatusCode;
  *
  */
 public abstract class SecurityHandler {
+    
+    private final static Logger logger = Logger.getLogger(SecurityHandler.class
+            .getName());
     
     public static boolean checkPermission(KineticMessage request,
             KineticMessage respond, Map<Long, ACL> currentMap) {
@@ -219,11 +227,14 @@ public abstract class SecurityHandler {
         out.close();
     }
 
-    public static Map<Long, ACL> loadACL(String kineticHome, SecurityPin securityPin) throws IOException {
-        String aclPersistFilePath = kineticHome + File.separator + ".acl";
+    public static void loadACL(SimulatorEngine engine) throws IOException, KineticException {
+        
+        String aclPersistFilePath = engine.getKineticHome() + File.separator + ".acl";
 
         File aclFile = new File(aclPersistFilePath);
-        Map<Long, ACL> aclMap = new HashMap<Long, ACL>();
+        
+        Map<Long, ACL> aclmap = new HashMap<Long, ACL>();
+        
         if (aclFile.exists()) {
             Long fileLength = aclFile.length();
             if (fileLength != 0) {
@@ -235,18 +246,71 @@ public abstract class SecurityHandler {
                 List<ACL> aclList = security.getAclList();
 
                 for (ACL acl : aclList) {
-                    aclMap.put(acl.getIdentity(), acl);
+                    aclmap.put(acl.getIdentity(), acl);
                 }
                 
                 // set erase pin in cache
-                securityPin.setErasePin(security.getNewErasePIN());
+                engine.getSecurityPin().setErasePin(security.getNewErasePIN());
                 
                 // set lock pin in cache
-                securityPin.setLockPin(security.getNewLockPIN());
+                engine.getSecurityPin().setLockPin(security.getNewLockPIN());
             }
+        } 
+        
+        if (aclmap.size() == 0) {        
+            // get default acl map
+            aclmap = HmacStore.getAclMap();       
+        } 
+        
+        // set to engine
+        engine.setAclMap(aclmap);
+        
+        // set default hmac key map
+        engine.setHmacKeyMap(HmacStore.getHmacKeyMap(aclmap));
+        
+    }
+    
+    /**
+     * Reset security ACL and pins to default.
+     * 
+     * @param kineticHome
+     * @param securityPin
+     * @param aclmap
+     * @param hmacKeyMap
+     * @throws KineticException
+     */
+    public static void resetSecurity (SimulatorEngine engine) throws KineticException {
+        
+        String aclPersistFilePath = engine.getKineticHome() + File.separator + ".acl";
+
+        File aclFile = new File(aclPersistFilePath);
+        
+        // delete security file
+        boolean deleted = aclFile.delete();
+        if (deleted) {
+            logger.info("removed security data ....");
         }
         
+        // clear erase pin
+        engine.getSecurityPin().setErasePin(null);
         
-        return aclMap;
+        // clear lock pin
+        engine.getSecurityPin().setLockPin(null);
+        
+        // clear acl map
+        engine.getAclMap().clear();
+        
+        // clear key map
+        engine.getHmacKeyMap().clear();
+        
+        Map <Long, ACL> aclmap = HmacStore.getAclMap();
+        
+        // set default ack map
+        engine.setAclMap(aclmap);
+
+        // set default key map
+        engine.setHmacKeyMap(HmacStore.getHmacKeyMap(aclmap));
+        
+        logger.info("reset security data to its factory defaults ...");
     }
 }

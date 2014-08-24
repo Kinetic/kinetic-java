@@ -23,6 +23,8 @@ import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import kinetic.client.KineticException;
+
 import com.google.protobuf.ByteString;
 import com.seagate.kinetic.common.lib.KineticMessage;
 import com.seagate.kinetic.proto.Kinetic.Command;
@@ -44,14 +46,10 @@ public abstract class PinOperationHandler {
     private final static Logger logger = Logger.getLogger(PinOperationHandler.class
             .getName());
 
-    @SuppressWarnings("rawtypes")
-    public static boolean handleOperation (KineticMessage request,
-            KineticMessage respond, SecurityPin securityPin, Store store, String kineticHome) throws KVStoreException {
+    public static void handleOperation (KineticMessage request,
+            KineticMessage respond, SimulatorEngine engine) throws KVStoreException, KineticException {
         
         boolean hasPermission = false;
-        
-        // remove set up in if erase db
-        boolean removeSetup = false;
         
         Message.Builder messageBuilder = (Message.Builder) respond.getMessage();
         // set pin auth
@@ -76,13 +74,13 @@ public abstract class PinOperationHandler {
         switch (pinOpType) {
         case LOCK_PINOP:
             // check if has permission
-            hasPermission = comparePin (requestPin, securityPin.getLockPin());
+            hasPermission = comparePin (requestPin, engine.getSecurityPin().getLockPin());
             if (hasPermission) {
                 logger.info("Device locked ...");
             }
             break;
         case UNLOCK_PINOP:
-            hasPermission = comparePin (requestPin, securityPin.getLockPin());
+            hasPermission = comparePin (requestPin, engine.getSecurityPin().getLockPin());
             if (hasPermission) {
                 logger.info("Device unlocked ...");
             }
@@ -95,22 +93,28 @@ public abstract class PinOperationHandler {
             // or not. The implication is that it may be faster
             // than the secure operation.
            
-            hasPermission = comparePin (requestPin, securityPin.getErasePin());
+            hasPermission = comparePin (requestPin, engine.getSecurityPin().getErasePin());
             if (hasPermission) {
-                store.reset();
-                resetSetup (kineticHome);
-                removeSetup = true;
+                
+                // reset store
+                engine.getStore().reset();
+                
+                //reset setup
+                resetSetup (engine);
+                
+                //reset security
+                SecurityHandler.resetSecurity(engine);
             }
             break;
         case SECURE_ERASE_PINOP:
             // Erase the device in a way that will
             // physical access and disassembly of the device
             // will not
-            hasPermission = comparePin (requestPin, securityPin.getErasePin());
+            hasPermission = comparePin (requestPin, engine.getSecurityPin().getErasePin());
             if (hasPermission) {
-                store.reset();
-                resetSetup (kineticHome);
-                removeSetup = true;
+                engine.getStore().reset();
+                resetSetup (engine);  
+                SecurityHandler.resetSecurity(engine);
             }
             break;
         case INVALID_PINOP:
@@ -127,15 +131,15 @@ public abstract class PinOperationHandler {
             
             logger.warning("unauthorized pin opeartion request, pin=" + requestPin);
         }
-        
-        return removeSetup;
+      
     }
     
-    private static void resetSetup(String kineticHome) {
+    private static void resetSetup(SimulatorEngine engine) {
         Setup.Builder sb = Setup.newBuilder();
         sb.setNewClusterVersion(0);
         try {
-            SetupHandler.persistSetup(sb.build().toByteArray(), kineticHome);
+            SetupHandler.persistSetup(sb.build().toByteArray(), engine.getKineticHome());
+            engine.setClusterVersion(0);
         } catch (IOException e) {
             logger.log(Level.WARNING, e.getMessage(), e);
         }

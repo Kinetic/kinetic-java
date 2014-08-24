@@ -138,14 +138,13 @@ public abstract class SetupHandler {
         // modify clusterVersion
         if (request.getCommand().getBody().getSetup()
                 .hasNewClusterVersion()) {
-            Long newClusterVersion = request.getCommand()
+            long newClusterVersion = request.getCommand()
                     .getBody().getSetup()
                     .getNewClusterVersion();
-            if (null != newClusterVersion) {
+            //if (null != newClusterVersion) {
                 setupInfo.setClusterVersion(newClusterVersion);
-                logger.info("the cluster version is set: "
-                        + Long.valueOf(newClusterVersion));
-            }
+                logger.info("the cluster version is set to: " + newClusterVersion);
+            //}
         }
 
         /**
@@ -226,13 +225,16 @@ public abstract class SetupHandler {
         out.close();
     }
 
-    public static SetupInfo loadSetup(String kineticHome) throws IOException {
-        String setupPersistFilePath = kineticHome + File.separator + ".setup";
+    public static void loadSetup(SimulatorEngine engine) throws IOException {
+        
+        String setupPersistFilePath = engine.getKineticHome() + File.separator + ".setup";
 
         File setupFile = new File(setupPersistFilePath);
-        SetupInfo setupInfo = new SetupInfo();
+        
         if (setupFile.exists()) {
+            
             Long fileLength = setupFile.length();
+            
             if (fileLength != 0) {
                 // read info from file
                 byte[] fileContent = new byte[fileLength.intValue()];
@@ -240,17 +242,10 @@ public abstract class SetupHandler {
                 in.read(fileContent);
                 in.close();
                 Setup setup = Setup.parseFrom(fileContent);
-                setupInfo.setClusterVersion(setup.getNewClusterVersion());
                 
-                //if (!setup.getSetPin().isEmpty()) {
-                //    setupInfo.setPin(setup.getSetPin().toByteArray());
-                //} else {
-                    // setupInfo.setPin(setup.getPin().toByteArray());
-                //    setupInfo.setPin("".getBytes());
-                //}
+                // set cluster version
+                engine.setClusterVersion(setup.getNewClusterVersion());
             }
         }
-
-        return setupInfo;
     }
 }

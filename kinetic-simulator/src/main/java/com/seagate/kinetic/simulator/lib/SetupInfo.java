@@ -28,16 +28,16 @@ package com.seagate.kinetic.simulator.lib;
  * 
  */
 public class SetupInfo {
-	private Long clusterVersion = Long.valueOf(0);
+	private long clusterVersion = 0L;
 
 	// pin used for default.
 	private byte[] pin = new byte[] {};
 
-	public Long getClusterVersion() {
+	public long getClusterVersion() {
 		return clusterVersion;
 	}
 
-	public void setClusterVersion(Long clusterVersion) {
+	public void setClusterVersion(long clusterVersion) {
 		this.clusterVersion = clusterVersion;
 	}
 
