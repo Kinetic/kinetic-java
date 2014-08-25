@@ -266,22 +266,22 @@ public class KineticAdminTest extends IntegrationTestCase {
     @Test
     public void testSetup_ClusterVersion_ErasedByISE() throws KineticException {
         // Set Cluster Version
-        //getAdminClient().setup(null, null, 0, false);
+        getAdminClient().setup(null, null, 123, false);
 
         // Perform ISE. New cluster version should be ignored.
-        //final DefaultAdminClient client = new DefaultAdminClient(
-        //        getClientConfig(0));
+        final DefaultAdminClient client = new DefaultAdminClient(
+                getAdminClientConfig(123));
 
-        //client.instantErase(null);
-        // client.close();
+        client.instantErase(null);
+        client.close();
 
         // The cluster version should have been erased, so making a call without
         // a cluster version should succeed
-        //KineticLog log = getAdminClient().getLog();
-        //assertTrue(log.getTemperature().size() > 0);
-        //assertTrue(log.getStatistics().size() > 0);
+        KineticLog log = getAdminClient().getLog();
+        assertTrue(log.getTemperature().size() > 0);
+        assertTrue(log.getStatistics().size() > 0);
 
-        //logger.info(this.testEndInfo());
+        logger.info(this.testEndInfo());
     }
 
     /**
