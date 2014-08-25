@@ -23,7 +23,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.security.Key;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -36,7 +36,7 @@ import com.seagate.kinetic.common.lib.HMACAlgorithmUtil;
 import com.seagate.kinetic.common.lib.KineticMessage;
 import com.seagate.kinetic.common.lib.RoleUtil;
 import com.seagate.kinetic.proto.Kinetic.Command;
-import com.seagate.kinetic.proto.Kinetic.Message;
+
 import com.seagate.kinetic.proto.Kinetic.Command.MessageType;
 import com.seagate.kinetic.proto.Kinetic.Command.Security;
 import com.seagate.kinetic.proto.Kinetic.Command.Security.ACL;

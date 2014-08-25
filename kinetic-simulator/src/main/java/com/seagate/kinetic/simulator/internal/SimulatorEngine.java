@@ -25,7 +25,7 @@ import java.io.File;
 import java.net.UnknownHostException;
 import java.security.Key;
 import java.util.ArrayList;
-import java.util.HashMap;
+
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
@@ -41,7 +41,7 @@ import com.seagate.kinetic.heartbeat.message.OperationCounter;
 import com.seagate.kinetic.proto.Kinetic.Command;
 import com.seagate.kinetic.proto.Kinetic.Command.GetLog.Configuration;
 import com.seagate.kinetic.proto.Kinetic.Command.GetLog.Limits;
-import com.seagate.kinetic.proto.Kinetic.Command.Security;
+
 import com.seagate.kinetic.proto.Kinetic.Command.Status.StatusCode;
 import com.seagate.kinetic.proto.Kinetic.Local;
 import com.seagate.kinetic.proto.Kinetic.Message;
@@ -456,7 +456,8 @@ public class SimulatorEngine implements MessageService {
             
             HeaderOp.checkHeader(kmreq, kmresp, key, clusterVersion);
             
-            if (kmreq.getCommand().getHeader().getMessageType() == MessageType.PINOP) {
+            if (kmreq.getMessage().getAuthType() == AuthType.PINAUTH) {
+                //perform pin op
                 PinOperationHandler.handleOperation(kmreq, kmresp, this); 
             } else if (kmreq.getCommand().getHeader().getMessageType() == MessageType.FLUSHALLDATA) {
                 commandBuilder.getHeaderBuilder()
@@ -527,28 +528,31 @@ public class SimulatorEngine implements MessageService {
 
             try {
                 // get command byte stirng
-                ByteString commandByteString = commandBuilder.build().toByteString();
-                
+                ByteString commandByteString = commandBuilder.build()
+                        .toByteString();
+
                 // get command byte[]
                 byte[] commandByte = commandByteString.toByteArray();
-                
+
                 // require Hmac calculation ?
-                if (key != null) {
-                    //calculate hmac 
+                if (kmreq.getMessage().getAuthType() == AuthType.HMACAUTH) {
+                    
+                    // calculate hmac
                     ByteString hmac = Hmac.calc(commandByte, key);
-                    //set hmac
+
+                    // set identity
+                    messageBuilder.getHmacAuthBuilder().setIdentity(userId);
+
+                    // set hmac
                     messageBuilder.getHmacAuthBuilder().setHmac(hmac);
                 }
-                
-                // set identity
-                messageBuilder.getHmacAuthBuilder().setIdentity(userId);
-                
-                //set command bytes
+
+                // set command bytes
                 messageBuilder.setCommandBytes(commandByteString);
             } catch (Exception e2) {
                 logger.log(Level.WARNING, e2.getMessage(), e2);
             }
-            
+
             this.addStatisticCounter(kmreq, kmresp);
         }
 

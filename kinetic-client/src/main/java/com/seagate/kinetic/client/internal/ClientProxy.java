@@ -469,9 +469,11 @@ public class ClientProxy {
                 throwLcException("Timeout - unable to receive response message within " + config.getRequestTimeoutMillis() + " ms");
             }
 
-            // hmac check
-            if (!Hmac.check(kmresp, myKey)) {
-                throwLcException("Hmac failed compare");
+            // check hmac if this is a hmac auth type
+            if (kmreq.getMessage().getAuthType() == AuthType.HMACAUTH) {
+                if (!Hmac.check(kmresp, myKey)) {
+                    throwLcException("Hmac failed compare");
+                }
             }
 
         } catch (LCException lce) {
@@ -610,17 +612,20 @@ public class ClientProxy {
         
         // calculate HMAC
         try {
-            //calculate hmac
-            ByteString hmac = Hmac.calc(commandBytes, myKey);
-            
+
+            if (messageBuilder.getAuthType() == AuthType.HMACAUTH) {
+                // calculate hmac
+                ByteString hmac = Hmac.calc(commandBytes, myKey);
+                // set identity
+                messageBuilder.getHmacAuthBuilder().setIdentity(user);
+                // set hmac
+                messageBuilder.getHmacAuthBuilder().setHmac(hmac);
+            }
+
             // set command bytes to message
             messageBuilder.setCommandBytes(ByteString.copyFrom(commandBytes));
-            
-            // set identity
-            messageBuilder.getHmacAuthBuilder().setIdentity(user);
-            // set hmac
-            messageBuilder.getHmacAuthBuilder().setHmac(hmac);
-        } catch (HmacException e) {  
+
+        } catch (HmacException e) {
             logger.log(Level.WARNING, e.getMessage(), e);
         }
     }

@@ -24,14 +24,14 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.sql.Timestamp;
-import java.util.Arrays;
+
 import java.util.Date;
 import java.util.Map;
 import java.util.logging.Logger;
 
 import com.seagate.kinetic.common.lib.KineticMessage;
 import com.seagate.kinetic.proto.Kinetic.Command;
-import com.seagate.kinetic.proto.Kinetic.Message;
+
 import com.seagate.kinetic.proto.Kinetic.Command.MessageType;
 import com.seagate.kinetic.proto.Kinetic.Command.Security.ACL;
 import com.seagate.kinetic.proto.Kinetic.Command.Security.ACL.Permission;
@@ -86,41 +86,7 @@ public abstract class SetupHandler {
         return hasPermission;
     }
 
-    @SuppressWarnings("rawtypes")
-    private static synchronized SetupInfo _handleSetup(KineticMessage request,
-            KineticMessage respond, Store store,
-            String kineticHome) throws KVStoreException, IOException {
-        
-        SetupInfo setupInfo = null;
-        
-        Command.Builder commandBuilder = (Command.Builder) respond.getCommand();
-        
-        /**
-         * XXX protocol-3.0.0
-         */
-        //byte[] newPin = request.getMessage().getCommand().getBody().getSetup()
-        //        .getPin()
-        //        .toByteArray();
-
-//        logger.info("parameterPin=" + new String(newPin) + ", internalPin="
-//                + new String(myPin));
-//
-//        if (null == myPin || 0 == myPin.length) {
-//            setupInfo = handleSetup(request, respond, myPin, newPin, store,
-//                    kineticHome);
-//        } else if (Arrays.equals(newPin, myPin)) {
-//            setupInfo = handleSetup(request, respond, myPin, newPin, store,
-//                    kineticHome);
-//        } else {
-//            commandBuilder.getStatusBuilder()
-//            .setCode(StatusCode.INTERNAL_ERROR);
-//            commandBuilder.getStatusBuilder()
-//            .setStatusMessage("Pin not match");
-//        }
-
-        return setupInfo;
-    }
-
+   
     @SuppressWarnings("rawtypes")
     public static SetupInfo handleSetup(KineticMessage request,
             KineticMessage respond, Store store,

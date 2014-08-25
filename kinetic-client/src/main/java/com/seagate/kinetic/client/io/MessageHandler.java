@@ -441,9 +441,14 @@ public class MessageHandler implements ClientMessageService, Runnable {
 
 		AsyncKineticException asyncException = null;
 
-		if (this.client.checkHmac(response) == false) {
-			asyncException = new AsyncKineticException(
-					"Hmac did not compare");
+		/**
+		 * Pin Auth does not require Hmac calculation.
+		 */
+		if (response.getMessage().getAuthType() == AuthType.HMACAUTH) {
+		    if (this.client.checkHmac(response) == false) {
+		        asyncException = new AsyncKineticException(
+		                "Hmac did not compare");
+		    }
 		}
 
 		return asyncException;

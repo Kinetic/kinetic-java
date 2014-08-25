@@ -30,6 +30,7 @@ import com.seagate.kinetic.proto.Kinetic.Command;
 import com.seagate.kinetic.proto.Kinetic.Command.MessageType;
 import com.seagate.kinetic.proto.Kinetic.Command.Status;
 import com.seagate.kinetic.proto.Kinetic.Command.Status.StatusCode;
+import com.seagate.kinetic.proto.Kinetic.Message.AuthType;
 
 class HeaderException extends Exception {
 	private static final long serialVersionUID = 5201751340412081922L;
@@ -98,7 +99,7 @@ public class HeaderOp {
 			respCommandBuilder.getHeaderBuilder()
 			.setAckSequence(in.getSequence());
 
-            if (km.getMessage().hasPinAuth()) {
+            if (km.getMessage().getAuthType() == AuthType.PINAUTH) {
                 // sanity check only
                 if (in.getMessageType() != MessageType.PINOP) {
                     throw new HeaderException(
