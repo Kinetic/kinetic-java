@@ -26,7 +26,6 @@ import kinetic.simulator.SimulatorConfiguration;
 import com.seagate.kinetic.common.lib.KineticMessage;
 import com.seagate.kinetic.simulator.internal.ConnectionInfo;
 import com.seagate.kinetic.simulator.internal.SimulatorEngine;
-import com.seagate.kinetic.simulator.internal.StatefulMessage;
 
 import io.netty.channel.ChannelHandlerContext;
 

@@ -17,8 +17,6 @@
  */
 package com.seagate.kinetic.common.lib;
 
-import java.security.Key;
-
 import com.seagate.kinetic.proto.Kinetic.CommandOrBuilder;
 import com.seagate.kinetic.proto.Kinetic.MessageOrBuilder;
 
@@ -44,6 +42,9 @@ public class KineticMessage {
 	
 	// command
 	private CommandOrBuilder command = null;
+	
+	// set to true if traveling through TLS/SSL
+	private volatile boolean isSecuredChannel = false;  
 
 	/**
 	 * Set protocol buffer message.
@@ -97,6 +98,24 @@ public class KineticMessage {
 	 */
 	public CommandOrBuilder getCommand() {
 	    return this.command;
+	}
+	
+	/**
+	 * set if this message travels through SSL
+	 * 
+	 * @param flag true if TLS, otherwise set to false
+	 */
+	public void setIsSecureChannel(boolean flag) {
+	    this.isSecuredChannel = flag;
+	}
+	
+	/**
+	 * Get if this message travels through SSL.
+	 * 
+	 * @return true if this message travels through SSL.
+	 */
+	public boolean getIsSecureChannel() {
+	    return this.isSecuredChannel;
 	}
 
 }

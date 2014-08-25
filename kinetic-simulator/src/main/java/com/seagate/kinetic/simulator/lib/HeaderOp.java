@@ -30,7 +30,6 @@ import com.seagate.kinetic.proto.Kinetic.Command;
 import com.seagate.kinetic.proto.Kinetic.Command.MessageType;
 import com.seagate.kinetic.proto.Kinetic.Command.Status;
 import com.seagate.kinetic.proto.Kinetic.Command.Status.StatusCode;
-import com.seagate.kinetic.simulator.internal.StatefulMessage;
 
 class HeaderException extends Exception {
 	private static final long serialVersionUID = 5201751340412081922L;

@@ -26,11 +26,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.seagate.kinetic.common.lib.KineticMessage;
-
 import com.seagate.kinetic.simulator.internal.ConnectionInfo;
 import com.seagate.kinetic.simulator.internal.FaultInjectedCloseConnectionException;
 import com.seagate.kinetic.simulator.internal.SimulatorEngine;
-
 import com.seagate.kinetic.simulator.io.provider.nio.NioConnectionStateManager;
 import com.seagate.kinetic.simulator.io.provider.nio.NioQueuedRequestProcessRunner;
 import com.seagate.kinetic.simulator.io.provider.nio.RequestProcessRunner;
@@ -72,6 +70,7 @@ public class NioMessageServiceHandler extends
 	    super.channelActive(ctx);
 	    
 	    // register connection info with the channel handler context
+        @SuppressWarnings("unused")
         ConnectionInfo info = this.lcservice.registerNewConnection(ctx);
 	    
 	    //logger.info("***** connection registered., sent UNSOLICITEDSTATUS with cid = " + info.getConnectionId());
@@ -87,6 +86,10 @@ public class NioMessageServiceHandler extends
 					"Fault injected for the simulator");
 		}
 		
+		// set ssl channel flag to false
+		request.setIsSecureChannel(false);
+		
+		// check if conn id is set
 		NioConnectionStateManager.checkIfConnectionIdSet(ctx, request);
 
 		if (enforceOrdering) {

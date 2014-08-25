@@ -28,7 +28,7 @@ import java.util.logging.Logger;
 import com.seagate.kinetic.common.lib.KineticMessage;
 import com.seagate.kinetic.simulator.internal.ConnectionInfo;
 import com.seagate.kinetic.simulator.internal.SimulatorEngine;
-import com.seagate.kinetic.simulator.internal.StatefulMessage;
+
 import com.seagate.kinetic.simulator.io.provider.nio.NioConnectionStateManager;
 import com.seagate.kinetic.simulator.io.provider.nio.NioQueuedRequestProcessRunner;
 import com.seagate.kinetic.simulator.io.provider.nio.RequestProcessRunner;
@@ -77,6 +77,10 @@ public class SslMessageServiceHandler extends
     protected void channelRead0(ChannelHandlerContext ctx,
             KineticMessage request) throws Exception {
 
+	    // set secure channel flag
+	    request.setIsSecureChannel(true);
+	    
+	    // check if client set conn id
         NioConnectionStateManager.checkIfConnectionIdSet(ctx, request);
 
         if (enforceOrdering) {

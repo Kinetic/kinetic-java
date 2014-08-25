@@ -87,9 +87,6 @@ public class MessageHandler implements ClientMessageService, Runnable {
 	private final Object syncObj = new Object();
 	
 	private boolean isStatusMessageReceived = false;
-	
-	// is this a TLS transport handler
-	private boolean isSecuredChannel = false;
 
 	/**
 	 * Constructor.
@@ -110,23 +107,6 @@ public class MessageHandler implements ClientMessageService, Runnable {
 				.getRequestTimeoutMillis();
 	}
 	
-	/**
-	 * Set to true if this is a secured channel.
-	 * 
-	 * @param flag
-	 */
-	public void setSecuredChannel (boolean flag) {
-	    this.isSecuredChannel = flag;
-	}
-	
-	/**
-	 * Get if this is a secured channel handler.
-	 * 
-	 * @return true if this is a secured channel handler.
-	 */
-	public boolean getSecuredChannel () {
-	    return this.isSecuredChannel;
-	}
 
 	/**
 	 * process message from IoHandler.

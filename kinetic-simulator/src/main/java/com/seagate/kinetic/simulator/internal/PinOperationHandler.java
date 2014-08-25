@@ -34,7 +34,6 @@ import com.seagate.kinetic.proto.Kinetic.Command.Setup;
 import com.seagate.kinetic.proto.Kinetic.Command.Status.StatusCode;
 import com.seagate.kinetic.proto.Kinetic.Message.AuthType;
 import com.seagate.kinetic.proto.Kinetic.Message;
-import com.seagate.kinetic.simulator.persist.Store;
 
 /**
  * 
@@ -64,6 +63,15 @@ public abstract class PinOperationHandler {
         // set ack sequence
         commandBuilder.getHeaderBuilder()
         .setAckSequence(request.getCommand().getHeader().getSequence());
+        
+        // check if met TLS requirement
+        if (isSecureChannel (request, commandBuilder) == false) {
+            
+            /**
+             * TLS requirement not met, return with INVALID_REQUEST. 
+             */
+            return;
+        }
         
         // request pin
         ByteString requestPin = request.getMessage().getPinAuth().getPin();
@@ -162,6 +170,18 @@ public abstract class PinOperationHandler {
         } else if (devicePin.equals(requestPin)) {
             // if request pin is the same as drive pin
             hasPermission = true;
+        }
+        
+        return hasPermission;
+    }
+    
+    private static boolean isSecureChannel (KineticMessage request, Command.Builder respCommandBuilder) {
+        
+        boolean hasPermission = request.getIsSecureChannel();
+        
+        if (hasPermission == false) {
+            respCommandBuilder.getStatusBuilder().setCode(StatusCode.INVALID_REQUEST);
+            respCommandBuilder.getStatusBuilder().setStatusMessage("TLS channel is required for Pin operation");
         }
         
         return hasPermission;
