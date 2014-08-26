@@ -29,6 +29,8 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 import kinetic.admin.AdminClientConfiguration;
+import kinetic.admin.KineticAdminClient;
+import kinetic.admin.KineticAdminClientFactory;
 import kinetic.client.ClientConfiguration;
 import kinetic.client.Entry;
 import kinetic.client.KineticClient;
@@ -41,12 +43,10 @@ import org.junit.Before;
 
 import com.google.protobuf.ByteString;
 import com.jcraft.jsch.JSchException;
-import com.seagate.kinetic.admin.impl.DefaultAdminClient;
 import com.seagate.kinetic.client.internal.MessageFactory;
 import com.seagate.kinetic.common.lib.KineticMessage;
 import com.seagate.kinetic.proto.Kinetic;
 import com.seagate.kinetic.proto.Kinetic.Command;
-
 import com.seagate.kinetic.proto.Kinetic.Command.Header;
 import com.seagate.kinetic.proto.Kinetic.Command.Security.ACL.Permission;
 
@@ -64,7 +64,7 @@ public class IntegrationTestCase {
     public KineticTestRunner.TestClientConfigConfigurator testClientConfigurator;
 
     private KineticP2pClient kineticClient;
-    private DefaultAdminClient adminClient;
+    private KineticAdminClient adminClient;
     private AbstractIntegrationTestTarget testTarget;
 
     /**
@@ -84,7 +84,7 @@ public class IntegrationTestCase {
         testTarget = IntegrationTestTargetFactory.createTestTarget(true);
         kineticClient = KineticP2PClientFactory
                 .createP2pClient(getClientConfig());
-        adminClient = new DefaultAdminClient(getClientConfig());
+        adminClient = KineticAdminClientFactory.createInstance(getAdminClientConfig());
     }
 
     /**
@@ -111,7 +111,7 @@ public class IntegrationTestCase {
         return kineticClient;
     }
 
-    protected DefaultAdminClient getAdminClient() {
+    protected KineticAdminClient getAdminClient() {
         return adminClient;
     }
 
@@ -154,14 +154,24 @@ public class IntegrationTestCase {
     }
 
     /**
+     * Get a Kinetic client configuration with default setting.
+     * <p>
+     */
+    protected AdminClientConfiguration getAdminClientConfig() {
+        AdminClientConfiguration adminClientConfiguration = testTarget
+                .getAdminClientConfig();
+        return adminClientConfiguration;
+    }
+    
+    /**
      * Get a Kinetic client configuration with setting cluster version flexible.
      * <p>
      */
     protected AdminClientConfiguration getAdminClientConfig(long clusterVersion) {
-        AdminClientConfiguration clientConfiguration = testTarget
+        AdminClientConfiguration adminClientConfiguration = testTarget
                 .getAdminClientConfig();
-        clientConfiguration.setClusterVersion(clusterVersion);
-        return clientConfiguration;
+        adminClientConfiguration.setClusterVersion(clusterVersion);
+        return adminClientConfiguration;
     }
 
     /**
@@ -176,7 +186,7 @@ public class IntegrationTestCase {
         testTarget = IntegrationTestTargetFactory.createTestTarget(false);
         kineticClient = KineticP2PClientFactory
                 .createP2pClient(getClientConfig());
-        adminClient = new DefaultAdminClient(getClientConfig());
+        adminClient = KineticAdminClientFactory.createInstance(getAdminClientConfig());
     }
 
     /**
