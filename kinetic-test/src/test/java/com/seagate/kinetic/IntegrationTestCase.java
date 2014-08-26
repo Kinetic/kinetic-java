@@ -173,6 +173,17 @@ public class IntegrationTestCase {
         adminClientConfiguration.setClusterVersion(clusterVersion);
         return adminClientConfiguration;
     }
+    
+    /**
+     * Get a Kinetic admin client configuration with setting userId and key flexible.
+     * <p>
+     */
+    protected AdminClientConfiguration getAdminClientConfig(int userId, String key) {
+        AdminClientConfiguration adminClientConfiguration = getAdminClientConfig();
+        adminClientConfiguration.setUserId(userId);
+        adminClientConfiguration.setKey(key);
+        return adminClientConfiguration;
+    }
 
     /**
      * Restart the server and the Kinetic client.
