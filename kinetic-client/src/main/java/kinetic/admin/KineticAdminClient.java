@@ -30,6 +30,7 @@ import kinetic.client.KineticException;
  * <p>
  * All administrative operations by default use SSL connections to connect to the Drive or Simulator. 
  * And this is the only supported transport for all administrative operations.
+ * <p>
  * 
  * @author James Hughes.
  * @author Chiaming Yang
@@ -151,7 +152,18 @@ public interface KineticAdminClient {
 
     /**
      * Set the access control list to the Kinetic drive.
-     * 
+     * <p>
+     * Lock Enable: Will be utilized to enable lock on power cycle. 
+     * <p>
+     * If the Client sets a non-empty value for the lock pin, device will be locked after a power cycle. 
+     * Access to the data is not immediately impacted, but a subsequent power cycle will result in a locked drive.
+     * <p>
+     * Lock Disable: If the Client sets an empty value for the lock pin, lock enable feature is turned off. 
+     * This provides the Client with a mechanism for turning off the locking feature after previously enabling it.
+     * <p>
+     * A device must be in unlock mode before a Security operation can be performed.
+     * <p>
+     *  
      * @param acls
      *            ACL information needs to be set.
      * 
@@ -176,8 +188,49 @@ public interface KineticAdminClient {
      * 
      * @throws KineticException
      *             if unable to load firmware bytes to the drive.
+     *             
+     * 
      */
     public void instantErase(byte[] pin) throws KineticException;
+    
+    /**
+     * Securely erase all user data, configurations, and setup information on the 
+     * drive.
+     * 
+     * @param pin the pin used to authenticate for this operation.
+     * 
+     * @throws KineticException if unable to perform the pin operation.
+     * 
+     * @see #setSecurity(List, byte[], byte[], byte[], byte[])
+     */
+    public void secureErase (byte[] pin) throws KineticException;
+    
+    /**
+     * Lock the device with the specified pin.
+     * <p>
+     * If the Client has set a non-zero length locking pin (to enable locking), a subsequent call to lockDevice will
+     * lock the device.  
+     * 
+     * @param pin the pin to authenticate to the service.
+     *
+     * @throws KineticException if any internal error occurred.
+     * 
+     * @see #setSecurity(List, byte[], byte[], byte[], byte[])
+     */
+    public void lockDevice (byte[] pin) throws KineticException;
+    
+    /**
+     * Unlock the device with the specified pin.
+     * <p>
+     * A successful unLockDevice call will unlock the previous locked device.
+     * 
+     * @param pin the pin to authenticate to the service.
+     * 
+     * @throws KineticException if any internal error occurred.
+     * 
+     * @see #setSecurity(List, byte[], byte[], byte[], byte[])
+     */
+    public void unLockDevice (byte[] pin) throws KineticException;
     
     /**
      * Set cluster version with the specified version.

@@ -23,7 +23,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -36,7 +35,6 @@ import com.seagate.kinetic.common.lib.HMACAlgorithmUtil;
 import com.seagate.kinetic.common.lib.KineticMessage;
 import com.seagate.kinetic.common.lib.RoleUtil;
 import com.seagate.kinetic.proto.Kinetic.Command;
-
 import com.seagate.kinetic.proto.Kinetic.Command.MessageType;
 import com.seagate.kinetic.proto.Kinetic.Command.Security;
 import com.seagate.kinetic.proto.Kinetic.Command.Security.ACL;
@@ -93,7 +91,7 @@ public abstract class SecurityHandler {
 
     public static synchronized Map<Long, ACL> handleSecurity(
             KineticMessage request, KineticMessage response,
-            Map<Long, ACL> currentMap, SecurityPin securityPin, String kineticHome)
+            SimulatorEngine engine)
             throws KVStoreException, IOException {
 
         Command.Builder commandBuilder = (Command.Builder) response
@@ -111,7 +109,7 @@ public abstract class SecurityHandler {
                     || !HMACAlgorithmUtil.isSupported(acl.getHmacAlgorithm())) {
                 commandBuilder.getStatusBuilder().setCode(
                         StatusCode.NO_SUCH_HMAC_ALGORITHM);
-                return currentMap;
+                return engine.getAclMap();
             }
 
             for (ACL.Scope domain : acl.getScopeList()) {
@@ -121,7 +119,7 @@ public abstract class SecurityHandler {
                             StatusCode.INVALID_REQUEST);
                     commandBuilder.getStatusBuilder().setStatusMessage(
                             "Offset in domain is less than 0.");
-                    return currentMap;
+                    return engine.getAclMap();
                 }
 
                 List<Permission> roleOfList = domain.getPermissionList();
@@ -130,7 +128,7 @@ public abstract class SecurityHandler {
                             StatusCode.INVALID_REQUEST);
                     commandBuilder.getStatusBuilder().setStatusMessage(
                             "No role set in acl");
-                    return currentMap;
+                    return engine.getAclMap();
                 }
 
                 for (Permission role : roleOfList) {
@@ -140,7 +138,7 @@ public abstract class SecurityHandler {
                         commandBuilder.getStatusBuilder().setStatusMessage(
                                 "Role is invalid in acl. Role is: "
                                         + role.toString());
-                        return currentMap;
+                        return engine.getAclMap();
                     }
                 }
             }
@@ -150,7 +148,7 @@ public abstract class SecurityHandler {
         Security security = request.getCommand().getBody().getSecurity(); 
         
         // get current erase pin
-        ByteString currentErasePin = securityPin.getErasePin();
+        ByteString currentErasePin = engine.getSecurityPin().getErasePin();
         
         // need to compare if we need the old pin
         if ((currentErasePin != null) && (currentErasePin.isEmpty() == false)) {
@@ -164,16 +162,16 @@ public abstract class SecurityHandler {
                 commandBuilder.getStatusBuilder().setStatusMessage(
                         "Invalid old erase pin: " + oldErasePin);
                 
-                return currentMap;
+                return engine.getAclMap();
             } 
         }
         
         // get current lock pin
-        ByteString currentLockPin = securityPin.getLockPin();
+        ByteString currentLockPin = engine.getSecurityPin().getLockPin();
         
         // need to compare if we need the old pin
         if ((currentLockPin != null) && (currentLockPin.isEmpty() == false)) {
-            // get old erase pin
+            // get old lock pin
             ByteString oldLockPin = security.getOldLockPIN();
             
             // compare old with current
@@ -183,27 +181,27 @@ public abstract class SecurityHandler {
                 commandBuilder.getStatusBuilder().setStatusMessage(
                         "Invalid old lock pin: " + oldLockPin);
                 
-                return currentMap;
+                return engine.getAclMap();
             } 
         }
   
         // update acl map
         for (ACL acl : aclList) {
-            currentMap.put(acl.getIdentity(), acl);
+            engine.getAclMap().put(acl.getIdentity(), acl);
         }
         
         // set erase pin
-        securityPin.setErasePin(security.getNewErasePIN());
+        engine.getSecurityPin().setErasePin(security.getNewErasePIN());
               
         //set lock pin
-        securityPin.setLockPin(security.getNewLockPIN());
+        engine.getSecurityPin().setLockPin(security.getNewLockPIN());
         
         SecurityHandler.persistAcl(request.getCommand().getBody().getSecurity()
-                .toByteArray(), kineticHome);
+                .toByteArray(), engine.getKineticHome());
         
         commandBuilder.getStatusBuilder().setCode(StatusCode.SUCCESS);
 
-        return currentMap;
+        return engine.getAclMap();
     }
 
     private static void persistAcl(byte[] contents, String kineticHome)
@@ -254,6 +252,14 @@ public abstract class SecurityHandler {
                 
                 // set lock pin in cache
                 engine.getSecurityPin().setLockPin(security.getNewLockPIN());
+                
+                // lock the device since it was lock enabled
+                if (engine.getSecurityPin().getLockPin().isEmpty() == false) {
+                    
+                    engine.setDeviceLocked(true);
+                    
+                    logger.warning ("******* Device is locked ********");
+                }
             }
         } 
         
@@ -313,4 +319,5 @@ public abstract class SecurityHandler {
         
         logger.info("reset security data to its factory defaults ...");
     }
+   
 }

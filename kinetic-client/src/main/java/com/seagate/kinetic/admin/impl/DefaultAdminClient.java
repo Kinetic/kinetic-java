@@ -198,46 +198,7 @@ public class DefaultAdminClient implements KineticAdminClient {
         }
     }
     
-    //@Override
-    public void instantEraseOld(byte[] pin) throws KineticException {
-
-//        KineticMessage km = MessageFactory.createKineticMessageWithBuilder();
-//
-//        Message.Builder request = (Builder) km.getMessage();
-//
-//        Setup.Builder setup = request.getCommandBuilder().getBodyBuilder()
-//                .getSetupBuilder();
-//
-//        if (pin != null && pin.length > 0) {
-//            setup.setPin(ByteString.copyFrom(pin));
-//        }
-//
-//        setup.setInstantSecureErase(true);
-//
-//        KineticMessage response = configureSetupPolicy(km);
-//
-//        if (response.getMessage().getCommand().getHeader().getMessageType() != MessageType.SETUP_RESPONSE) {
-//            throw new KineticException("received wrong message type.");
-//        }
-//
-//        if (response.getMessage().getCommand().getStatus().getCode() == Status.StatusCode.NOT_AUTHORIZED) {
-//
-//            throw new KineticException("Authorized Exception: "
-//                    + response.getMessage().getCommand().getStatus().getCode()
-//                    + ": "
-//                    + response.getMessage().getCommand().getStatus()
-//                            .getStatusMessage());
-//        }
-//
-//        if (response.getMessage().getCommand().getStatus().getCode() != Status.StatusCode.SUCCESS) {
-//            throw new KineticException("Unknown Error: "
-//                    + response.getMessage().getCommand().getStatus().getCode()
-//                    + ": "
-//                    + response.getMessage().getCommand().getStatus()
-//                            .getStatusMessage());
-//        }
-
-    }
+    
 
     private void validate(List<ACL> acls) throws KineticException {
         if (null == acls || acls.isEmpty() || 0 == acls.size()) {
@@ -671,6 +632,79 @@ public class DefaultAdminClient implements KineticAdminClient {
                     + response.getCommand().getStatus().getCode() + ": "
                     + response.getCommand().getStatus().getStatusMessage());
         }
+    }
+
+    @Override
+    public void secureErase(byte[] pin) throws KineticException {
+        this.instantErase(pin);
+    }
+
+    @Override
+    public void lockDevice(byte[] pin) throws KineticException {
+        
+        if (pin == null || pin.length == 0) {
+            throw new KineticException ("Pin mut not be null or empty");
+        }
+        
+        KineticMessage km = MessageFactory.createKineticMessageWithBuilder();
+        
+        Message.Builder mb = (Message.Builder) km.getMessage();
+        mb.setAuthType(AuthType.PINAUTH);
+        
+        mb.setPinAuth(PINauth.newBuilder().setPin(ByteString.copyFrom(pin)));
+        
+        Command.Builder commandBuilder = (Command.Builder) km.getCommand();
+        
+        commandBuilder.getHeaderBuilder()
+        .setMessageType(MessageType.PINOP);
+        
+        commandBuilder.getBodyBuilder().getPinOpBuilder().setPinOpType(PinOpType.LOCK_PINOP);
+        
+        KineticMessage response = this.kineticClient.request(km);
+        
+        if (response.getCommand().getStatus().getCode() != StatusCode.SUCCESS) {
+            
+            KineticException ke = new KineticException ("Pin op lock device failed.");
+            ke.setRequestMessage(km);
+            ke.setResponseMessage(response);
+            
+            throw ke;
+        }
+        
+    }
+
+    @Override
+    public void unLockDevice(byte[] pin) throws KineticException {
+        
+        if (pin == null || pin.length == 0) {
+            throw new KineticException ("Pin mut not be null or empty");
+        }
+        
+        KineticMessage km = MessageFactory.createKineticMessageWithBuilder();
+        
+        Message.Builder mb = (Message.Builder) km.getMessage();
+        mb.setAuthType(AuthType.PINAUTH);
+        
+        mb.setPinAuth(PINauth.newBuilder().setPin(ByteString.copyFrom(pin)));
+        
+        Command.Builder commandBuilder = (Command.Builder) km.getCommand();
+        
+        commandBuilder.getHeaderBuilder()
+        .setMessageType(MessageType.PINOP);
+        
+        commandBuilder.getBodyBuilder().getPinOpBuilder().setPinOpType(PinOpType.UNLOCK_PINOP);
+        
+        KineticMessage response = this.kineticClient.request(km);
+        
+        if (response.getCommand().getStatus().getCode() != StatusCode.SUCCESS) {
+            
+            KineticException ke = new KineticException ("Pin op lock device failed.");
+            ke.setRequestMessage(km);
+            ke.setResponseMessage(response);
+            
+            throw ke;
+        }
+        
     }
     
 }

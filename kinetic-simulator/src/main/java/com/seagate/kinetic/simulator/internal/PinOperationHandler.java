@@ -45,101 +45,127 @@ public abstract class PinOperationHandler {
     private final static Logger logger = Logger.getLogger(PinOperationHandler.class
             .getName());
 
-    public static void handleOperation (KineticMessage request,
-            KineticMessage respond, SimulatorEngine engine) throws KVStoreException, KineticException {
-        
-        boolean hasPermission = false;
-        
+    public static void handleOperation(KineticMessage request,
+            KineticMessage respond, SimulatorEngine engine)
+            throws KVStoreException, KineticException {
+
         Message.Builder messageBuilder = (Message.Builder) respond.getMessage();
         // set pin auth
         messageBuilder.setAuthType(AuthType.PINAUTH);
 
         Command.Builder commandBuilder = (Command.Builder) respond.getCommand();
-        
+
         // set reply type
-        commandBuilder.getHeaderBuilder()
-        .setMessageType(MessageType.PINOP_RESPONSE);
-        
+        commandBuilder.getHeaderBuilder().setMessageType(
+                MessageType.PINOP_RESPONSE);
+
         // set ack sequence
-        commandBuilder.getHeaderBuilder()
-        .setAckSequence(request.getCommand().getHeader().getSequence());
-        
-        // check if met TLS requirement
-        if (isSecureChannel (request, commandBuilder) == false) {
-            
-            /**
-             * TLS requirement not met, return with INVALID_REQUEST. 
-             */
-            return;
-        }
-        
+        commandBuilder.getHeaderBuilder().setAckSequence(
+                request.getCommand().getHeader().getSequence());
+
         // request pin
         ByteString requestPin = request.getMessage().getPinAuth().getPin();
-        
+
         // request pin op type
-        PinOpType pinOpType = request.getCommand().getBody().getPinOp().getPinOpType();
-        
-        switch (pinOpType) {
-        case LOCK_PINOP:
-            // check if has permission
-            hasPermission = comparePin (requestPin, engine.getSecurityPin().getLockPin());
-            if (hasPermission) {
+        PinOpType pinOpType = request.getCommand().getBody().getPinOp()
+                .getPinOpType();
+
+        try {
+
+            // check if met TLS requirement
+            checkSecureChannel(request);
+
+            switch (pinOpType) {
+            case LOCK_PINOP:
+                
+                // check if not empty
+                checkRequestPin (requestPin);
+                
+                // check if has permission
+                comparePin(requestPin, engine.getSecurityPin().getLockPin());
+
+                // lock device
+                engine.setDeviceLocked(true);
+                
                 logger.info("Device locked ...");
-            }
-            break;
-        case UNLOCK_PINOP:
-            hasPermission = comparePin (requestPin, engine.getSecurityPin().getLockPin());
-            if (hasPermission) {
+
+                break;
+            case UNLOCK_PINOP:
+                 
+                // check if not empty
+                checkRequestPin (requestPin);
+                
+                // check if has permission
+                comparePin(requestPin, engine.getSecurityPin().getLockPin());
+                
+                // unlock device
+                engine.setDeviceLocked(false);
+
                 logger.info("Device unlocked ...");
-            }
-            break;
-        case ERASE_PINOP:
-            // Both erase operations will return
-            // the device to an as manufactured state removing all
-            // user data and configuration settings.
-            // Erase the device. This may be secure
-            // or not. The implication is that it may be faster
-            // than the secure operation.
-           
-            hasPermission = comparePin (requestPin, engine.getSecurityPin().getErasePin());
-            if (hasPermission) {
+
+                break;
+            case ERASE_PINOP:
+                // Both erase operations will return
+                // the device to an as manufactured state removing all
+                // user data and configuration settings.
+                // Erase the device. This may be secure
+                // or not. The implication is that it may be faster
+                // than the secure operation.
+
+                comparePin(requestPin, engine.getSecurityPin().getErasePin());
                 
-                // reset store
-                engine.getStore().reset();
+                // do erase
+                doErase (engine);
+                break;
+            case SECURE_ERASE_PINOP:
+                // Erase the device in a way that will
+                // physical access and disassembly of the device
+                // will not
+                comparePin(requestPin, engine.getSecurityPin().getErasePin());
                 
-                //reset setup
-                resetSetup (engine);
-                
-                //reset security
-                SecurityHandler.resetSecurity(engine);
+                // do erase
+                doErase (engine);
+                break;
+            case INVALID_PINOP:
+                throw new InvalidRequestException("Invalid Pin Op Type: "
+                        + pinOpType);
+            default:
+                throw new InvalidRequestException("Invalid Pin Op Type: "
+                        + pinOpType);
+
             }
-            break;
-        case SECURE_ERASE_PINOP:
-            // Erase the device in a way that will
-            // physical access and disassembly of the device
-            // will not
-            hasPermission = comparePin (requestPin, engine.getSecurityPin().getErasePin());
-            if (hasPermission) {
-                engine.getStore().reset();
-                resetSetup (engine);  
-                SecurityHandler.resetSecurity(engine);
-            }
-            break;
-        case INVALID_PINOP:
-            hasPermission = false;
-            break;
-       default: 
-           hasPermission = false;
-           break;
+
+        } catch (KVSecurityException se) {
+            commandBuilder.getStatusBuilder()
+                    .setCode(StatusCode.NOT_AUTHORIZED);
+            commandBuilder.getStatusBuilder().setStatusMessage(se.getMessage());
+            logger.warning("unauthorized pin opeartion request");
+        } catch (InvalidRequestException ire) {
+            commandBuilder.getStatusBuilder().setCode(
+                    StatusCode.INVALID_REQUEST);
+            commandBuilder.getStatusBuilder()
+                    .setStatusMessage(ire.getMessage());
         }
-        
-        if (hasPermission == false) {
-            commandBuilder.getStatusBuilder().setCode(StatusCode.NOT_AUTHORIZED);
-            commandBuilder.getStatusBuilder().setStatusMessage("invalid pin: " + requestPin);
-            
-            logger.warning("unauthorized pin opeartion request, pin=" + requestPin);
-        }
-      
+
+    }
+    
+    /**
+     * Perform secure erase pin operation.
+     * 
+     * @param engine
+     * @throws KVStoreException
+     * @throws KineticException
+     */
+    public static void doErase(SimulatorEngine engine) throws KVStoreException,
+            KineticException {
+        // reset store
+        engine.getStore().reset();
+
+        // reset setup
+        resetSetup(engine);
+
+        // reset security
+        SecurityHandler.resetSecurity(engine);
     }
     
     private static void resetSetup(SimulatorEngine engine) {
@@ -160,30 +186,53 @@ public abstract class PinOperationHandler {
      * @param devicePin device pin.
      * @return true if the same, otherwise return false
      */
-    private static boolean comparePin (ByteString requestPin, ByteString devicePin) {
+    private static void comparePin (ByteString requestPin, ByteString devicePin) throws KVSecurityException {
         
-        boolean hasPermission = false;
-        
+        /**
+         * if not set, simply returns.
+         */
         if (devicePin == null || devicePin.isEmpty()) {
-            // if not set, set to true
-            hasPermission = true;   
-        } else if (devicePin.equals(requestPin)) {
-            // if request pin is the same as drive pin
-            hasPermission = true;
+            return;
         }
         
-        return hasPermission;
+        /**
+         * compare if pins are equal.
+         */
+        if (devicePin.equals(requestPin) == false) {
+            throw new KVSecurityException ("pin does not match., requestPin=" + requestPin);
+        }
     }
     
-    private static boolean isSecureChannel (KineticMessage request, Command.Builder respCommandBuilder) {
-        
+    /**
+     * Check if the request op is under TLS channel.
+     * 
+     * @param request
+     * @throws InvalidRequestException
+     */
+    private static void checkSecureChannel(KineticMessage request)
+            throws InvalidRequestException {
+
         boolean hasPermission = request.getIsSecureChannel();
-        
+
         if (hasPermission == false) {
-            respCommandBuilder.getStatusBuilder().setCode(StatusCode.INVALID_REQUEST);
-            respCommandBuilder.getStatusBuilder().setStatusMessage("TLS channel is required for Pin operation");
+            throw new InvalidRequestException(
+                    "TLS channel is required for Pin operation");
         }
-        
-        return hasPermission;
+
     }
+    
+    /**
+     * Check if the pin is not null or empty.
+     * 
+     * @param pin pin to be validated.
+     * 
+     * @throws InvalidRequestException if pin is null or empty.
+     */
+    private static void checkRequestPin (ByteString pin) throws InvalidRequestException {
+        
+        if (pin.isEmpty()) {
+            throw new InvalidRequestException ("Pin cannot be empty");
+        }
+    }  
+    
 }

@@ -25,7 +25,6 @@ import java.io.File;
 import java.net.UnknownHostException;
 import java.security.Key;
 import java.util.ArrayList;
-
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
@@ -41,7 +40,7 @@ import com.seagate.kinetic.heartbeat.message.OperationCounter;
 import com.seagate.kinetic.proto.Kinetic.Command;
 import com.seagate.kinetic.proto.Kinetic.Command.GetLog.Configuration;
 import com.seagate.kinetic.proto.Kinetic.Command.GetLog.Limits;
-
+import com.seagate.kinetic.proto.Kinetic.Command.PinOperation.PinOpType;
 import com.seagate.kinetic.proto.Kinetic.Command.Status.StatusCode;
 import com.seagate.kinetic.proto.Kinetic.Local;
 import com.seagate.kinetic.proto.Kinetic.Message;
@@ -170,6 +169,8 @@ public class SimulatorEngine implements MessageService {
     // last connection Id. 
     private static long lastConnectionId = System.currentTimeMillis();
     
+    private volatile boolean deviceLocked = false;
+    
     static {
         // add shutdown hook to clean up resources
         Runtime.getRuntime().addShutdownHook(shutdownHook);
@@ -203,11 +204,11 @@ public class SimulatorEngine implements MessageService {
             // calculate my home
             kineticHome = kineticHome(config);
             
+            // load acl and pins
             SecurityHandler.loadACL(this);
             
+            // load set up 
             SetupHandler.loadSetup(this);
-            
-            //clusterVersion = setupInfo.getClusterVersion();
 
             // initialize db store
             this.initStore();
@@ -456,6 +457,8 @@ public class SimulatorEngine implements MessageService {
             
             HeaderOp.checkHeader(kmreq, kmresp, key, clusterVersion);
             
+            checkDeviceLocked (kmreq, kmresp);
+            
             if (kmreq.getMessage().getAuthType() == AuthType.PINAUTH) {
                 //perform pin op
                 PinOperationHandler.handleOperation(kmreq, kmresp, this); 
@@ -477,8 +480,8 @@ public class SimulatorEngine implements MessageService {
                         kmreq, kmresp, aclmap);
                 if (hasPermission) {
                     synchronized (this.hmacKeyMap) {
-                        aclmap = SecurityHandler.handleSecurity(kmreq,
-                                kmresp, aclmap, securityPin, kineticHome);
+                        SecurityHandler.handleSecurity(kmreq,
+                                kmresp, this);
                         this.hmacKeyMap = HmacStore.getHmacKeyMap(aclmap);
                     }
                 }
@@ -511,7 +514,20 @@ public class SimulatorEngine implements MessageService {
                     this.p2pHandler.push(aclmap, store, kmreq, kmresp);
                 }
             }
+        } catch (DeviceLockedException ire) {
+            
+            int number = kmreq.getCommand().getHeader()
+                    .getMessageType()
+                    .getNumber() - 1;
 
+            commandBuilder.getHeaderBuilder()
+            .setMessageType(MessageType.valueOf(number));
+           
+            commandBuilder.getStatusBuilder().setCode(
+                    StatusCode.DEVICE_LOCKED);
+            
+            commandBuilder.getStatusBuilder().setStatusMessage("Device is locked");
+            
         } catch (Exception e) {
             
             logger.log(Level.WARNING, e.getMessage(), e);
@@ -557,6 +573,23 @@ public class SimulatorEngine implements MessageService {
         }
 
         return kmresp;
+    }
+    
+    private void checkDeviceLocked(KineticMessage kmreq, KineticMessage kmresp)
+            throws DeviceLockedException {
+
+        if (this.deviceLocked == false) {
+            return;
+        }
+
+        PinOpType pinOpType = kmreq.getCommand().getBody().getPinOp()
+                .getPinOpType();
+
+        if (pinOpType != PinOpType.UNLOCK_PINOP
+                && pinOpType != PinOpType.LOCK_PINOP) {
+            throw new DeviceLockedException ();
+        }
+
     }
 
     private void addStatisticCounter(KineticMessage kmreq, KineticMessage kmresp) {
@@ -939,6 +972,23 @@ public class SimulatorEngine implements MessageService {
         kineticMessage.setCommand(commandBuilder);
         
         return kineticMessage;
+    }
+    
+    /**
+     * Lock/unlock the device/simulator
+     * @param flag
+     */
+    public void setDeviceLocked (boolean flag) {
+        this.deviceLocked = flag;
+    }
+    
+    /**
+     * Get device lock flag.
+     * 
+     * @return true if locked. Otherwise, return false.
+     */
+    public boolean getDeviceLocked() {
+        return this.deviceLocked;
     }
     
 }
