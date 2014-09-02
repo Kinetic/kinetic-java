@@ -40,7 +40,7 @@ import com.seagate.kinetic.client.internal.DefaultKineticClient;
 import com.seagate.kinetic.client.internal.MessageFactory;
 import com.seagate.kinetic.common.lib.KineticMessage;
 import com.seagate.kinetic.proto.Kinetic.Command;
-import com.seagate.kinetic.proto.Kinetic.Message;
+
 import com.seagate.kinetic.proto.Kinetic.Command.KeyValue;
 import com.seagate.kinetic.proto.Kinetic.Command.MessageType;
 

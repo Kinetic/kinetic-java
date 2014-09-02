@@ -30,7 +30,7 @@ import kinetic.client.KineticClient;
 import com.google.protobuf.ByteString;
 import com.seagate.kinetic.common.lib.KineticMessage;
 import com.seagate.kinetic.proto.Kinetic.Command;
-import com.seagate.kinetic.proto.Kinetic.Message;
+
 import com.seagate.kinetic.proto.Kinetic.Command.MessageType;
 import com.seagate.kinetic.proto.Kinetic.Command.P2POperation;
 import com.seagate.kinetic.proto.Kinetic.Command.P2POperation.Operation;

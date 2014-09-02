@@ -937,51 +937,5 @@ public class DefaultKineticClient implements AdvancedKineticClient {
 
         this.client.requestAsync(message, handler);
     }
-    
-    /**
-     * Set up kinetic connection.
-     * <p>
-     * The purpose is to get a connection ID from server. After this is returned, the connection is ready 
-     * for concurrent and asynchronous operations. 
-     * 
-     * This may be extended to set up other connection attributes in the future.
-     * @throws KineticException 
-     */
-    private void connectionSetUp ()  {
-        
-        KineticMessage response = null;
-        
-        KineticException ke = null;
-        
-        try {
-            // create get request message
-            KineticMessage request = MessageFactory.createNoOpRequestMessage();
-
-            // send request
-            response = this.client.request(request); 
-        } catch (KineticException e) {
-            // assign exception caught so that we can use it in the finally clause 
-            ke = e;
-            LOG.warning(e.getMessage());
-        } finally {   
-            if (response != null) {
-                /**
-                 * if got normal response, check and set connection Id.
-                 */
-                this.client.setConnectionId(response);
-            } else if (ke != null){
-                /**
-                 * check if response message is set in the exception
-                 */
-                response = ke.getResponseMessage();
-                if (response != null) {
-                    /**
-                     * set connection Id if necessary.
-                     */
-                    this.client.setConnectionId(response);
-                }
-            }
-        }
-    }
 
 }

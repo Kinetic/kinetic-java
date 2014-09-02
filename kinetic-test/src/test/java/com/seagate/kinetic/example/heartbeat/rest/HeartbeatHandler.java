@@ -33,8 +33,6 @@ import org.eclipse.jetty.server.Request;
 
 import org.eclipse.jetty.server.handler.AbstractHandler;
 
-import com.seagate.kinetic.heartbeat.HeartbeatMessage;
-
 /**
  * Rest Heartbeat handler handles HTTP request.
  * <p>

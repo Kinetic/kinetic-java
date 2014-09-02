@@ -556,13 +556,4 @@ public class KineticAdminCLI {
         }
     }
 
-    private void validateErase(String erase) throws IllegalArgumentException {
-        if (erase == null || erase.isEmpty()) {
-            throw new IllegalArgumentException("Erase can not be empty.");
-        }
-
-        if (!erase.equalsIgnoreCase(TRUE) && !erase.equalsIgnoreCase(FALSE)) {
-            throw new IllegalArgumentException("Erase should be true or false.");
-        }
-    }
 }

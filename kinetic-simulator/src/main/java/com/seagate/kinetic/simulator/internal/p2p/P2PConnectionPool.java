@@ -29,7 +29,7 @@ import kinetic.client.KineticClientFactory;
 import kinetic.client.KineticException;
 
 import com.seagate.kinetic.common.lib.KineticMessage;
-import com.seagate.kinetic.proto.Kinetic.Message;
+
 import com.seagate.kinetic.proto.Kinetic.Command.P2POperation.Peer;
 
 /**

@@ -38,7 +38,7 @@ import com.seagate.kinetic.client.internal.MessageFactory;
 import com.seagate.kinetic.client.internal.p2p.DefaultKineticP2pClient;
 import com.seagate.kinetic.common.lib.KineticMessage;
 import com.seagate.kinetic.proto.Kinetic.Command;
-import com.seagate.kinetic.proto.Kinetic.Message;
+
 import com.seagate.kinetic.proto.Kinetic.Command.MessageType;
 import com.seagate.kinetic.proto.Kinetic.Command.P2POperation;
 import com.seagate.kinetic.proto.Kinetic.Command.P2POperation.Operation;
@@ -111,7 +111,7 @@ public class PeerToPeerPushTest {
 		// request message
 		KineticMessage km = MessageFactory.createKineticMessageWithBuilder();
         
-		Message.Builder request = (Message.Builder) km.getMessage();
+		//Message.Builder request = (Message.Builder) km.getMessage();
 		Command.Builder commandBuilder = (Command.Builder) km.getCommand();
 
 		// set message type

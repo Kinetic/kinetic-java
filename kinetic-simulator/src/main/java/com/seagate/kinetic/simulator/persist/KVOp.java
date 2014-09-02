@@ -28,9 +28,9 @@ import kinetic.simulator.SimulatorConfiguration;
 import com.google.protobuf.ByteString;
 import com.seagate.kinetic.common.lib.KineticMessage;
 import com.seagate.kinetic.proto.Kinetic.Command;
-import com.seagate.kinetic.proto.Kinetic.Message;
+
 import com.seagate.kinetic.proto.Kinetic.Command.Algorithm;
-import com.seagate.kinetic.proto.Kinetic.Message.Builder;
+
 import com.seagate.kinetic.proto.Kinetic.Command.KeyValue;
 import com.seagate.kinetic.proto.Kinetic.Command.MessageType;
 import com.seagate.kinetic.proto.Kinetic.Command.Security.ACL;
@@ -93,7 +93,7 @@ public class KVOp {
             Store<ByteString, ByteString, KVValue> store, KineticMessage kmreq,
             KineticMessage kmresp) {
 
-        Message request = (Message) kmreq.getMessage();
+        //Message request = (Message) kmreq.getMessage();
 
         Command.Builder commandBuilder = (Command.Builder) kmresp.getCommand();
         

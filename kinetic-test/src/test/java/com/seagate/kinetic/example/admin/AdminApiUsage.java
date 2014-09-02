@@ -23,8 +23,6 @@ import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.seagate.kinetic.proto.Kinetic.Command.GetLog.Device;
-
 import kinetic.admin.ACL;
 import kinetic.admin.AdminClientConfiguration;
 import kinetic.admin.Capacity;

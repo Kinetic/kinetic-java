@@ -49,7 +49,7 @@ import com.seagate.kinetic.proto.Kinetic.Command.Setup;
 import com.seagate.kinetic.proto.Kinetic.Command.Status;
 import com.seagate.kinetic.proto.Kinetic.Command.Status.StatusCode;
 import com.seagate.kinetic.proto.Kinetic.Message.AuthType;
-import com.seagate.kinetic.proto.Kinetic.Message.Builder;
+
 import com.seagate.kinetic.proto.Kinetic.Message;
 import com.seagate.kinetic.proto.Kinetic.Message.PINauth;
 

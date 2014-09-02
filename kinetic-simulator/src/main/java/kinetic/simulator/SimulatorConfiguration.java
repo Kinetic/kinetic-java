@@ -22,7 +22,7 @@ package kinetic.simulator;
 import java.util.Properties;
 
 import com.seagate.kinetic.proto.Kinetic;
-import com.seagate.kinetic.proto.Kinetic.Message;
+
 import com.seagate.kinetic.simulator.heartbeat.HeartbeatProvider;
 import com.seagate.kinetic.simulator.heartbeat.provider.MulticastHeartbeatProvider;
 
@@ -205,7 +205,7 @@ public class SimulatorConfiguration extends Properties {
     /**
      * simulator source commit hash.
      */
-    public static final String SIMULATOR_SOURCE_HASH = "d1b6eb31cf7ce2a34d5e5f65fadc82151990b8dd";
+    public static final String SIMULATOR_SOURCE_HASH = "955392502ae15c9f59fd48a4a0b41f1450080dc8";
     
     /**
      * current supported protocol version defined at kinetic-protocol repository.
@@ -215,7 +215,7 @@ public class SimulatorConfiguration extends Properties {
     /**
      * current supported protocol source commit hash value obtained from kinetic-protocol repository.
      */
-    public static final String PROTOCOL_SOURCE_HASH = "c3b5e37bb236785b12ec2cdae03b682185e7279f";
+    public static final String PROTOCOL_SOURCE_HASH = "f74698fba2df685cbfa9b6b9de54f1d2398f8615";
     
     /**
      * heart beat provider.
