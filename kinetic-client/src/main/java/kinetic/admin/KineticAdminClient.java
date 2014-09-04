@@ -58,7 +58,7 @@ public interface KineticAdminClient {
      * 
      * @throws KineticException
      *             if any internal error occurred.
-     * 
+     * @deprecated
      */
     public void setup(byte[] pin, byte[] setPin, long newClusterVersion,
             boolean secureErase) throws KineticException;
@@ -151,7 +151,9 @@ public interface KineticAdminClient {
     public Device getVendorSpecificDeviceLog (byte[] name) throws KineticException;
 
     /**
-     * Set the access control list to the Kinetic drive.
+     * Set the access control list to the Kinetic drive.  
+     * <p>
+     * This API only supports setting ACL or LOCK Pin or Erase PIn one at a time.
      * <p>
      * Lock Enable: Will be utilized to enable lock on power cycle. 
      * <p>
@@ -172,9 +174,38 @@ public interface KineticAdminClient {
      * @see ACL
      * @see Domain
      * @see Role
+     * 
+     * @deprecated
      */
     public void setSecurity(List<ACL> acls, byte[] oldLockPin, byte[] newLockPin, byte[] oldErasePin, byte[] newErasePin) throws KineticException;
 
+    /**
+     * Set Security ACL list.
+     * 
+     * @param acls the ACL list to be set to drive/simulator.
+     * 
+     * @throws KineticException if any internal error occurred.
+     */
+    public void setAcl (List<ACL> acls) throws KineticException;
+    
+    /**
+     * Set Security Lock pin.
+     * 
+     * @param oldLockPin old lock pin used to authenticate.
+     * @param newLockPin the new lock pin to set to the kinetic drive/simulator.
+     * 
+     * @throws KineticException if any internal error occurred.
+     */
+    public void setLockPin (byte[] oldLockPin, byte[] newLockPin) throws KineticException;
+    
+    /**
+     * 
+     * @param oldErasePin old erase pin used to authenticate.
+     * @param newErasePin new pin to set.
+     * @throws KineticException if any internal error occurred.
+     */
+    public void setErasePin (byte[] oldErasePin, byte[] newErasePin) throws KineticException;
+    
     /**
      * Erase all data in database for the drive.
      * <p>

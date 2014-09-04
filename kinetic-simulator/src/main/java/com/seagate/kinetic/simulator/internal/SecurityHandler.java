@@ -89,7 +89,7 @@ public abstract class SecurityHandler {
 
     }
 
-    public static synchronized Map<Long, ACL> handleSecurity(
+    public static synchronized void handleSecurity(
             KineticMessage request, KineticMessage response,
             SimulatorEngine engine)
             throws KVStoreException, IOException {
@@ -98,18 +98,34 @@ public abstract class SecurityHandler {
                 .getCommand();
         
         commandBuilder.getHeaderBuilder().setMessageType(MessageType.SECURITY_RESPONSE);
+        
+        // check if only contains one security component change (ACL or ICE or Lock Pin)
+        if (isSecurityMessageValid(request) == false) {
+            
+            logger.warning("security not enforced at this time, should not set ACL/ICE/LOCL at the same time ...");
+          
+//            commandBuilder.getStatusBuilder().setCode(
+//                    StatusCode.INVALID_REQUEST);
+//            commandBuilder
+//                    .getStatusBuilder()
+//                    .setStatusMessage(
+//                            "contains more than one security component change (ACL or ICE or Lock Pin");
+//            
+//            return;
+        }
 
-        List<ACL> aclList = request.getCommand().getBody().getSecurity()
+        // get ACL list
+        List<ACL> requestAclList = request.getCommand().getBody().getSecurity()
                 .getAclList();
 
         // Validate input
-        for (ACL acl : aclList) {
+        for (ACL acl : requestAclList) {
             // add algorithm check
             if (!acl.hasHmacAlgorithm()
                     || !HMACAlgorithmUtil.isSupported(acl.getHmacAlgorithm())) {
                 commandBuilder.getStatusBuilder().setCode(
                         StatusCode.NO_SUCH_HMAC_ALGORITHM);
-                return engine.getAclMap();
+                return;
             }
 
             for (ACL.Scope domain : acl.getScopeList()) {
@@ -119,7 +135,7 @@ public abstract class SecurityHandler {
                             StatusCode.INVALID_REQUEST);
                     commandBuilder.getStatusBuilder().setStatusMessage(
                             "Offset in domain is less than 0.");
-                    return engine.getAclMap();
+                    return;
                 }
 
                 List<Permission> roleOfList = domain.getPermissionList();
@@ -128,7 +144,7 @@ public abstract class SecurityHandler {
                             StatusCode.INVALID_REQUEST);
                     commandBuilder.getStatusBuilder().setStatusMessage(
                             "No role set in acl");
-                    return engine.getAclMap();
+                    return;
                 }
 
                 for (Permission role : roleOfList) {
@@ -138,70 +154,98 @@ public abstract class SecurityHandler {
                         commandBuilder.getStatusBuilder().setStatusMessage(
                                 "Role is invalid in acl. Role is: "
                                         + role.toString());
-                        return engine.getAclMap();
+                        return;
                     }
                 }
             }
         }
         
-        // get request security
-        Security security = request.getCommand().getBody().getSecurity(); 
+        // construct new security builder to persist
+        Security.Builder securityBuilder = Security.newBuilder();
         
-        // get current erase pin
-        ByteString currentErasePin = engine.getSecurityPin().getErasePin();
+        // request security
+        Security requestSecurity = request.getCommand().getBody().getSecurity(); 
         
-        // need to compare if we need the old pin
-        if ((currentErasePin != null) && (currentErasePin.isEmpty() == false)) {
-            // get old erase pin
-            ByteString oldErasePin = security.getOldErasePIN();
+        // init pins
+        initSecuirtyBuilderPins (securityBuilder, engine);
+        
+        // check if this is an ACL update
+        if (requestAclList.isEmpty()) {
+            // not an ACL update, add/preserve current acl list
+            securityBuilder.addAllAcl(engine.getAclMap().values());
+        } else {
+            // this is an ACL update, add request ack list
+            securityBuilder.addAllAcl(requestAclList);
             
-            // compare old with current
-            if (currentErasePin.equals(oldErasePin) == false) {
-                commandBuilder.getStatusBuilder().setCode(
-                        StatusCode.NOT_AUTHORIZED);
-                commandBuilder.getStatusBuilder().setStatusMessage(
-                        "Invalid old erase pin: " + oldErasePin);
-                
-                return engine.getAclMap();
-            } 
+            // update engine cache ACL list
+            for (ACL acl : requestAclList) {
+                engine.getAclMap().put(acl.getIdentity(), acl);
+            }
         }
-        
-        // get current lock pin
-        ByteString currentLockPin = engine.getSecurityPin().getLockPin();
-        
-        // need to compare if we need the old pin
-        if ((currentLockPin != null) && (currentLockPin.isEmpty() == false)) {
-            // get old lock pin
-            ByteString oldLockPin = security.getOldLockPIN();
+       
+        // check if request has ICE pin
+        if (requestSecurity.hasNewErasePIN()) {
             
-            // compare old with current
-            if (currentLockPin.equals(oldLockPin) == false) {
-                commandBuilder.getStatusBuilder().setCode(
-                        StatusCode.NOT_AUTHORIZED);
-                commandBuilder.getStatusBuilder().setStatusMessage(
-                        "Invalid old lock pin: " + oldLockPin);
+         // get current erase pin
+            ByteString currentErasePin = engine.getSecurityPin().getErasePin();
+            
+            // need to compare if we need the old pin
+            if ((currentErasePin != null) && (currentErasePin.isEmpty() == false)) {
+                // get old erase pin
+                ByteString oldErasePin = requestSecurity.getOldErasePIN();
                 
-                return engine.getAclMap();
-            } 
-        }
-  
-        // update acl map
-        for (ACL acl : aclList) {
-            engine.getAclMap().put(acl.getIdentity(), acl);
-        }
+                // compare old with current
+                if (currentErasePin.equals(oldErasePin) == false) {
+                    commandBuilder.getStatusBuilder().setCode(
+                            StatusCode.NOT_AUTHORIZED);
+                    commandBuilder.getStatusBuilder().setStatusMessage(
+                            "Invalid old erase pin: " + oldErasePin);
+                    
+                    return;
+                } 
+            }
+            
+            // set to builder to be persisted
+            securityBuilder.setNewErasePIN(requestSecurity.getNewErasePIN());
+            
+            // set ICE pin to cache
+            engine.getSecurityPin().setErasePin(requestSecurity.getNewErasePIN());  
+        } 
         
-        // set erase pin
-        engine.getSecurityPin().setErasePin(security.getNewErasePIN());
-              
-        //set lock pin
-        engine.getSecurityPin().setLockPin(security.getNewLockPIN());
+        if (requestSecurity.hasNewLockPIN()) {
+         // get current lock pin
+            ByteString currentLockPin = engine.getSecurityPin().getLockPin();
+            
+            // need to compare if we need the old pin
+            if ((currentLockPin != null) && (currentLockPin.isEmpty() == false)) {
+                // get old lock pin
+                ByteString oldLockPin = requestSecurity.getOldLockPIN();
+                
+                // compare old with current
+                if (currentLockPin.equals(oldLockPin) == false) {
+                    commandBuilder.getStatusBuilder().setCode(
+                            StatusCode.NOT_AUTHORIZED);
+                    commandBuilder.getStatusBuilder().setStatusMessage(
+                            "Invalid old lock pin: " + oldLockPin);
+                    
+                    return;
+                } 
+            }
+            
+            // set new LOCK pin to builder to be persisted
+            securityBuilder.setNewLockPIN (requestSecurity.getNewLockPIN());
+            
+            // set LOCK pin to cache
+            engine.getSecurityPin().setLockPin(requestSecurity.getNewLockPIN());
+        } 
         
-        SecurityHandler.persistAcl(request.getCommand().getBody().getSecurity()
-                .toByteArray(), engine.getKineticHome());
+        // persist to acl file
+        SecurityHandler.persistAcl(securityBuilder.build().toByteArray(), engine.getKineticHome());
         
+        // set status code
         commandBuilder.getStatusBuilder().setCode(StatusCode.SUCCESS);
 
-        return engine.getAclMap();
+        return;
     }
 
     private static void persistAcl(byte[] contents, String kineticHome)
@@ -233,6 +277,8 @@ public abstract class SecurityHandler {
         
         Map<Long, ACL> aclmap = new HashMap<Long, ACL>();
         
+        Security security = null;
+        
         if (aclFile.exists()) {
             Long fileLength = aclFile.length();
             if (fileLength != 0) {
@@ -240,7 +286,7 @@ public abstract class SecurityHandler {
                 FileInputStream in = new FileInputStream(aclFile);
                 in.read(fileContent);
                 in.close();
-                Security security = Security.parseFrom(fileContent);
+                security = Security.parseFrom(fileContent);
                 List<ACL> aclList = security.getAclList();
 
                 for (ACL acl : aclList) {
@@ -273,7 +319,6 @@ public abstract class SecurityHandler {
         
         // set default hmac key map
         engine.setHmacKeyMap(HmacStore.getHmacKeyMap(aclmap));
-        
     }
     
     /**
@@ -318,6 +363,58 @@ public abstract class SecurityHandler {
         engine.setHmacKeyMap(HmacStore.getHmacKeyMap(aclmap));
         
         logger.info("reset security data to its factory defaults ...");
+    }
+    
+    /**
+     * Check if set Security contains only ACL, or ISE, or Lock pin change.
+     * 
+     *  Drive only support to change one at a time.
+     * 
+     * @param request
+     * @return true if only one
+     */
+    private static boolean isSecurityMessageValid (KineticMessage request) {
+        
+        boolean isValid = false;
+        
+        int count = 0;
+        
+        // if acl has value
+        if (request.getCommand().getBody().getSecurity().getAclCount() > 0) {
+            count ++;
+        }
+        
+        // if erase pin has value
+        if (request.getCommand().getBody().getSecurity().hasNewErasePIN()) {
+            count ++;
+        }
+        
+        // if lock pin has value
+        if (request.getCommand().getBody().getSecurity().hasNewLockPIN()) {
+            count ++;
+        }
+        
+        // we only allow to set one at a time
+        if (count <= 1) {
+            isValid = true;
+        }
+        
+        return isValid;
+    }
+    
+    private static void initSecuirtyBuilderPins (Security.Builder securityBuilder, SimulatorEngine engine) {
+        
+        //preserv current lock pin
+        if (engine.getSecurityPin().getLockPin() != null) {
+            securityBuilder.setOldLockPIN(engine.getSecurityPin().getLockPin());
+            securityBuilder.setNewLockPIN(engine.getSecurityPin().getLockPin());
+        }
+        
+        // preserv current ICE pin
+        if (engine.getSecurityPin().getErasePin() != null) {
+            securityBuilder.setOldErasePIN (engine.getSecurityPin().getErasePin());
+            securityBuilder.setNewErasePIN(engine.getSecurityPin().getErasePin());
+        }
     }
    
 }

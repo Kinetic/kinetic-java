@@ -706,5 +706,96 @@ public class DefaultAdminClient implements KineticAdminClient {
         }
         
     }
+
+    @Override
+    public void setAcl(List<ACL> acls) throws KineticException {
+        this.setSecurity(acls, null, null, null, null);
+    }
+    
+    
+
+    @Override
+    public void setLockPin(byte[] oldLockPin, byte[] newLockPin)
+            throws KineticException {
+
+        KineticMessage km = MessageFactory.createKineticMessageWithBuilder();
+
+        Command.Builder commandBuilder = (Command.Builder) km.getCommand();
+
+        Security.Builder security = commandBuilder.getBodyBuilder()
+                .getSecurityBuilder();
+
+        // set old lock pin
+        if (oldLockPin != null) {
+            security.setOldLockPIN(ByteString.copyFrom(oldLockPin));
+        }
+
+        // set new lock pin
+        if (newLockPin != null) {
+            security.setNewLockPIN(ByteString.copyFrom(newLockPin));
+        }
+
+        KineticMessage response = configureSecurityPolicy(km);
+
+        if (response.getCommand().getHeader().getMessageType() != MessageType.SECURITY_RESPONSE) {
+            throw new KineticException("received wrong message type.");
+        }
+
+        if (response.getCommand().getStatus().getCode() == Status.StatusCode.NOT_AUTHORIZED) {
+
+            throw new KineticException("Authorized Exception: "
+                    + response.getCommand().getStatus().getCode() + ": "
+                    + response.getCommand().getStatus().getStatusMessage());
+        }
+
+        if (response.getCommand().getStatus().getCode() != Status.StatusCode.SUCCESS) {
+            throw new KineticException("Unknown Error: "
+                    + response.getCommand().getStatus().getCode() + ": "
+                    + response.getCommand().getStatus().getStatusMessage());
+        }
+
+    }
+
+    @Override
+    public void setErasePin(byte[] oldErasePin, byte[] newErasePin)
+            throws KineticException {
+        
+        KineticMessage km = MessageFactory.createKineticMessageWithBuilder();
+
+        Command.Builder commandBuilder = (Command.Builder) km.getCommand();
+
+        Security.Builder security = commandBuilder.getBodyBuilder()
+                .getSecurityBuilder();
+
+        // set old erase pin
+        if (oldErasePin != null) {
+            security.setOldErasePIN (ByteString.copyFrom(oldErasePin));
+        }
+        
+        // set new erase pin
+        if (newErasePin != null) {
+            security.setNewErasePIN (ByteString.copyFrom(newErasePin));
+        }
+
+        KineticMessage response = configureSecurityPolicy(km);
+
+        if (response.getCommand().getHeader().getMessageType() != MessageType.SECURITY_RESPONSE) {
+            throw new KineticException("received wrong message type.");
+        }
+
+        if (response.getCommand().getStatus().getCode() == Status.StatusCode.NOT_AUTHORIZED) {
+
+            throw new KineticException("Authorized Exception: "
+                    + response.getCommand().getStatus().getCode() + ": "
+                    + response.getCommand().getStatus().getStatusMessage());
+        }
+
+        if (response.getCommand().getStatus().getCode() != Status.StatusCode.SUCCESS) {
+            throw new KineticException("Unknown Error: "
+                    + response.getCommand().getStatus().getCode() + ": "
+                    + response.getCommand().getStatus().getStatusMessage());
+        }
+        
+    }
     
 }
