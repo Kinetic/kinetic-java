@@ -28,7 +28,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.google.protobuf.ByteString;
+import com.google.protobuf.InvalidProtocolBufferException;
 import com.seagate.kinetic.common.lib.KineticMessage;
+import com.seagate.kinetic.proto.Kinetic.Command;
 import com.seagate.kinetic.proto.Kinetic.Message;
 import com.seagate.kinetic.proto.KineticIo.ExtendedMessage;
 import com.seagate.kinetic.simulator.io.provider.spi.MessageService;
@@ -73,6 +75,19 @@ Runnable {
 
             // set interface message
             km.setMessage(extendedMessage.getInterfaceMessage());
+            
+         // get command bytes
+            ByteString commandBytes = extendedMessage.getInterfaceMessage().getCommandBytes();
+            
+            // build command
+            Command.Builder commandBuilder = Command.newBuilder();
+            
+            try {
+                commandBuilder.mergeFrom(commandBytes);
+                km.setCommand(commandBuilder.build());
+            } catch (InvalidProtocolBufferException e) {
+               logger.log(Level.WARNING, e.getMessage(), e);
+            }
 
             // set optiona value
             if (extendedMessage.hasValue()) {
