@@ -19,14 +19,8 @@
  */
 package com.seagate.kinetic.simulator.client.admin.impl;
 
-import static com.seagate.kinetic.KineticTestHelpers.setDefaultAcls;
 import static com.seagate.kinetic.KineticTestHelpers.toByteArray;
 import static org.junit.Assert.fail;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import kinetic.admin.ACL;
 import kinetic.client.KineticException;
 
 import org.junit.Test;
@@ -52,13 +46,21 @@ public class FirmwareDownloadTest extends IntegrationTestCase {
         byte[] firmwareInfo = "firmware download info after pin set".getBytes();
         byte[] newErasePin = toByteArray("123");
 
-        List<ACL> acls = new ArrayList<ACL>();
-        acls = setDefaultAcls();
         try {
-            getAdminClient().setSecurity(acls, null, null, null, newErasePin);
+            getAdminClient().setErasePin(null, newErasePin);
+        } catch (KineticException e1) {
+            fail("set erase pin failed");
+        }
+
+        try {
             getAdminClient().firmwareDownload(newErasePin, firmwareInfo);
-            getAdminClient().setSecurity(acls, null, null, newErasePin, null);
+            getAdminClient().instantErase(newErasePin);
         } catch (KineticException e) {
+            try {
+                getAdminClient().instantErase(newErasePin);
+            } catch (KineticException e1) {
+                fail("instant erase failed: " + e1.getMessage());
+            }
             fail("firmware download failed");
         }
     }
@@ -69,29 +71,23 @@ public class FirmwareDownloadTest extends IntegrationTestCase {
         byte[] firmwareInfo = "firmware download info after pin set".getBytes();
         byte[] newErasePin = toByteArray("123");
 
-        List<ACL> acls = new ArrayList<ACL>();
-        acls = setDefaultAcls();
         try {
-            getAdminClient().setSecurity(acls, null, null, null, newErasePin);
+            getAdminClient().setErasePin(null, newErasePin);
         } catch (KineticException e) {
-            fail("set security throw exception: " + e.getMessage());
+            fail("set erase pin throw exception: " + e.getMessage());
         }
 
         byte[] incorrectPin = toByteArray("456");
 
         try {
             getAdminClient().firmwareDownload(incorrectPin, firmwareInfo);
-            getAdminClient().setSecurity(acls, null, null, newErasePin,
-                    null);
+            getAdminClient().instantErase(newErasePin);
         } catch (KineticException e) {
             try {
-                getAdminClient().setSecurity(acls, null, null, newErasePin,
-                        null);
+                getAdminClient().instantErase(newErasePin);
             } catch (KineticException e1) {
-                fail("set security throw exception: " + e1.getMessage());
+                fail("instant erase throw exception: " + e1.getMessage());
             }
-            
-            fail("firmware download failed");
         }
     }
 }

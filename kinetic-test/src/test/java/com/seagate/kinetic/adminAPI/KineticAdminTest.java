@@ -27,7 +27,6 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -351,8 +350,13 @@ public class KineticAdminTest extends IntegrationTestCase {
         logger.info(this.testEndInfo());
     }
 
+    /**
+     * Test getVendorSpecificDeviceLog API. The device name is simulator's
+     * drive.
+     * <p>
+     */
     @Test
-    public void getVendorSpecificDeviceLogTest() {
+    public void testGetVendorSpecificDeviceLog_ForSimulator() {
         KineticAdminClient aclient = getAdminClient();
 
         byte[] name = null;
@@ -363,12 +367,54 @@ public class KineticAdminTest extends IntegrationTestCase {
         String sname2 = "com.seagate.simulator:badName";
 
         byte[] name2 = null;
+        name = toByteArray(sname);
+        name2 = toByteArray(sname2);
+
         try {
-            name = sname.getBytes("utf8");
-            name2 = sname2.getBytes("utf8");
-        } catch (UnsupportedEncodingException e) {
-            fail("unsupported encoding exception: " + e.getMessage());
+            Device device = aclient.getVendorSpecificDeviceLog(name);
+
+            logger.info("got vendor specific log., name = " + sname
+                    + ", log size=" + device.getValue().length);
+        } catch (EntryNotFoundException enfe) {
+            // could happen if this the service is not simulator
+            logger.info("device log name not found for name: " + sname);
+        } catch (KineticException e) {
+            logger.log(Level.WARNING, e.getMessage(), e);
         }
+
+        try {
+            aclient.getVendorSpecificDeviceLog(name2);
+
+            fail("should have caught EntryNotFoundException");
+        } catch (EntryNotFoundException enfe) {
+            // could happen if this the service is not simulator
+            logger.info("device log name not found for name: " + sname2);
+        } catch (KineticException e) {
+            logger.log(Level.WARNING, e.getMessage(), e);
+            fail("should have caught EntryNotFoundException");
+        }
+
+        logger.info(this.testEndInfo());
+    }
+
+    /**
+     * Test getVendorSpecificDeviceLog API. The device name is drive's name.
+     * <p>
+     */
+    @Test
+    public void testGetVendorSpecificDeviceLog_ForDrive() {
+        KineticAdminClient aclient = getAdminClient();
+
+        byte[] name = null;
+        // name supported by the simulator only
+        String sname = "com.Seagate.Kinetic.HDD.Gen1";
+
+        // name not supported by anyone
+        String sname2 = "com.seagate.Kinetic.HDD.badName";
+
+        byte[] name2 = null;
+        name = toByteArray(sname);
+        name2 = toByteArray(sname2);
 
         try {
             Device device = aclient.getVendorSpecificDeviceLog(name);
@@ -401,27 +447,22 @@ public class KineticAdminTest extends IntegrationTestCase {
      * Test set security API. The result should be success. If failed, throw
      * KineticException.
      * <p>
-     *
      */
     @Test
     public void setSecurity() {
         List<ACL> acls = new ArrayList<ACL>();
         acls = setDefaultAcls();
 
-        // security pins
-        String pin = "1";
-        byte[] pinB = toByteArray(pin);
-
         // all pins set the same
         try {
-            getAdminClient().setSecurity(acls, null, pinB, null, pinB);
+            getAdminClient().setAcl(acls);
         } catch (KineticException e) {
             fail("Set Security throw exception" + e.getMessage());
         }
 
         // erase pin
         try {
-            getAdminClient().instantErase(pinB);
+            getAdminClient().instantErase(null);
         } catch (KineticException e) {
             fail("instant erase throw exception" + e.getMessage());
         }
@@ -463,7 +504,7 @@ public class KineticAdminTest extends IntegrationTestCase {
         acls.add(acl1);
 
         try {
-            getAdminClient().setSecurity(acls, null, null, null, null);
+            getAdminClient().setAcl(acls);
         } catch (KineticException e) {
             fail("Set Security throw exception");
         }
@@ -504,7 +545,7 @@ public class KineticAdminTest extends IntegrationTestCase {
         acls.add(acl1);
 
         try {
-            getAdminClient().setSecurity(acls, null, null, null, null);
+            getAdminClient().setAcl(acls);
         } catch (KineticException e) {
             fail("Set Security throw exception");
         }
@@ -545,7 +586,7 @@ public class KineticAdminTest extends IntegrationTestCase {
 
         acls.add(acl1);
         try {
-            getAdminClient().setSecurity(acls, null, null, null, null);
+            getAdminClient().setAcl(acls);
             fail("no exception was thrown");
         } catch (Exception e) {
             assertTrue(e.getMessage().contains("No enum constant"));
@@ -587,7 +628,7 @@ public class KineticAdminTest extends IntegrationTestCase {
 
         acls.add(acl1);
         try {
-            getAdminClient().setSecurity(acls, null, null, null, null);
+            getAdminClient().setAcl(acls);
             fail("no exception was thrown");
         } catch (Exception e) {
             assertTrue(e.getMessage().contains("No enum constant"));
@@ -629,7 +670,7 @@ public class KineticAdminTest extends IntegrationTestCase {
 
         acls.add(acl1);
         try {
-            getAdminClient().setSecurity(acls, null, null, null, null);
+            getAdminClient().setAcl(acls);
             fail("no exception was thrown");
         } catch (Exception e) {
             assertTrue(e.getMessage().contains("No enum constant"));
@@ -660,7 +701,7 @@ public class KineticAdminTest extends IntegrationTestCase {
 
         acls.add(acl1);
         try {
-            getAdminClient().setSecurity(acls, null, null, null, null);
+            getAdminClient().setAcl(acls);
             fail("no exception was thrown");
         } catch (Exception e) {
             assertTrue(e.getMessage().contains("Paramter Exception"));
@@ -806,7 +847,7 @@ public class KineticAdminTest extends IntegrationTestCase {
         acls.add(acl7);
 
         try {
-            getAdminClient().setSecurity(acls, null, null, null, null);
+            getAdminClient().setAcl(acls);
         } catch (KineticException e1) {
             fail("set security throw exception: " + e1.getMessage());
         }
@@ -1188,7 +1229,7 @@ public class KineticAdminTest extends IntegrationTestCase {
         acls.add(acl);
 
         try {
-            getAdminClient().setSecurity(acls, null, null, null, null);
+            getAdminClient().setAcl(acls);
         } catch (KineticException e1) {
             fail("set security throw exception: " + e1.getMessage());
         }
@@ -1444,7 +1485,7 @@ public class KineticAdminTest extends IntegrationTestCase {
         acls.add(acl);
 
         try {
-            getAdminClient().setSecurity(acls, null, null, null, null);
+            getAdminClient().setAcl(acls);
             fail("should throw exception.");
         } catch (KineticException e1) {
             assertTrue(e1.getMessage().contains("Paramter Exception"));
@@ -1490,7 +1531,7 @@ public class KineticAdminTest extends IntegrationTestCase {
         acls.add(acl);
 
         try {
-            getAdminClient().setSecurity(acls, null, null, null, null);
+            getAdminClient().setAcl(acls);
         } catch (KineticException e1) {
             fail("set security throw exception: " + e1.getMessage());
         }
@@ -1528,6 +1569,353 @@ public class KineticAdminTest extends IntegrationTestCase {
             kineticClient1.close();
         } catch (KineticException e) {
             fail("close kineticClient throw exception: " + e.getMessage());
+        }
+
+        logger.info(this.testEndInfo());
+    }
+
+    /**
+     * Test set security, set erase pin.
+     * <p>
+     */
+    @Test
+    public void testSetSecurity_setErasePin() {
+        String erasePin = "erasePin";
+        byte[] erasePinB = toByteArray(erasePin);
+
+        try {
+            getAdminClient().setErasePin(null, erasePinB);
+        } catch (KineticException e) {
+            fail("Set erase pin throw exception" + e.getMessage());
+        }
+
+        // erase pin
+        try {
+            getAdminClient().instantErase(erasePinB);
+        } catch (KineticException e) {
+            fail("instant erase throw exception" + e.getMessage());
+        }
+
+        logger.info(this.testEndInfo());
+    }
+
+    /**
+     * Test set security, modify erase pin.
+     * <p>
+     */
+    @Test
+    public void testSetSecurity_modifyErasePin() {
+        String oldErasePin = "oldErasePin";
+        byte[] oldErasePinB = toByteArray(oldErasePin);
+        try {
+            getAdminClient().setErasePin(null, oldErasePinB);
+        } catch (KineticException e) {
+            fail("Change erase pin throw exception" + e.getMessage());
+        }
+
+        String newErasePin = "newErasePin";
+        byte[] newErasePinB = toByteArray(newErasePin);
+        try {
+            getAdminClient().setErasePin(oldErasePinB, newErasePinB);
+        } catch (KineticException e) {
+            fail("Change erase pin throw exception" + e.getMessage());
+        }
+
+        // erase pin
+        try {
+            getAdminClient().instantErase(newErasePinB);
+        } catch (KineticException e) {
+            fail("instant erase throw exception" + e.getMessage());
+        }
+
+        logger.info(this.testEndInfo());
+    }
+
+    /**
+     * Test set security, set lock pin.
+     * <p>
+     */
+    @Test
+    public void testSetSecurity_setLockPin() {
+        String lockPin = "lockPin";
+        byte[] lockPinB = toByteArray(lockPin);
+
+        try {
+            getAdminClient().setLockPin(null, lockPinB);
+        } catch (KineticException e) {
+            fail("Set erase pin throw exception" + e.getMessage());
+        }
+
+        // erase pin
+        try {
+            getAdminClient().instantErase(null);
+        } catch (KineticException e) {
+            fail("instant erase throw exception" + e.getMessage());
+        }
+
+        logger.info(this.testEndInfo());
+    }
+
+    /**
+     * Test set security, modify lock pin.
+     * <p>
+     */
+    @Test
+    public void testSetSecurity_modifyLockPin() {
+        String oldLockPin = "oldLockPin";
+        byte[] oldLockPinB = toByteArray(oldLockPin);
+        try {
+            getAdminClient().setLockPin(null, oldLockPinB);
+        } catch (KineticException e) {
+            fail("Change lock pin throw exception" + e.getMessage());
+        }
+
+        String newLockPin = "newLockPin";
+        byte[] newLockPinB = toByteArray(newLockPin);
+        try {
+            getAdminClient().setLockPin(oldLockPinB, newLockPinB);
+        } catch (KineticException e) {
+            fail("Change lock pin throw exception" + e.getMessage());
+        }
+
+        // erase
+        try {
+            getAdminClient().instantErase(null);
+        } catch (KineticException e) {
+            fail("instant erase throw exception" + e.getMessage());
+        }
+
+        logger.info(this.testEndInfo());
+    }
+
+    /**
+     * Test lock device with correct lock pin, should lock the device.
+     * <p>
+     */
+    @Test
+    public void testLockDevice_withCorrectLockpin() {
+        // set a lock pin
+        byte[] lockPinB = toByteArray("lockpin");
+        try {
+            getAdminClient().setLockPin(null, lockPinB);
+        } catch (KineticException e1) {
+            fail("set lock pin throw exception: " + e1.getMessage());
+        }
+
+        try {
+            getAdminClient().lockDevice(lockPinB);
+        } catch (KineticException e) {
+            fail("Lock device with correct pin failed: " + e.getMessage());
+        }
+
+        try {
+            getAdminClient().getLog();
+            fail("Should throw exception");
+        } catch (KineticException e) {
+            assertTrue(e.getMessage().contains("DEVICE_LOCKED"));
+        }
+
+        // clean up: unlock device
+        try {
+            getAdminClient().unLockDevice(lockPinB);
+        } catch (KineticException e) {
+            fail("instant erase throw exception" + e.getMessage());
+        }
+
+        logger.info(this.testEndInfo());
+    }
+
+    /**
+     * Test lock device with incorrect lock pin, should not lock the device.
+     * <p>
+     */
+    @Test
+    public void testLockDevice_withIncorrectLockpin() {
+        // set a lock pin
+        byte[] lockPinB = toByteArray("lockpin");
+        try {
+            getAdminClient().setLockPin(null, lockPinB);
+        } catch (KineticException e1) {
+            fail("set lock pin throw exception: " + e1.getMessage());
+        }
+
+        byte[] incorrectLockPinB = toByteArray("incorrectlockpin");
+        try {
+            getAdminClient().lockDevice(incorrectLockPinB);
+            fail("should throw exception");
+        } catch (KineticException e) {
+            assertTrue(e.getMessage().contains("NOT_AUTHORIZED"));
+        }
+
+        try {
+            getAdminClient().getLog();
+        } catch (KineticException e) {
+            fail("get log with unlocked device throw exception: "
+                    + e.getMessage());
+        }
+
+        // erase
+        try {
+            getAdminClient().instantErase(null);
+        } catch (KineticException e) {
+            fail("instant erase throw exception" + e.getMessage());
+        }
+
+        logger.info(this.testEndInfo());
+    }
+
+    /**
+     * Test lock device with null lock pin, should throw exception.
+     * <p>
+     */
+    @Test
+    public void testLockDevice_withNullLockpin() {
+        try {
+            getAdminClient().lockDevice(null);
+            fail("should throw exception");
+        } catch (KineticException e) {
+            logger.info("Lock device with null pin throw exception: "
+                    + e.getMessage());
+        }
+
+        logger.info(this.testEndInfo());
+    }
+
+    /**
+     * Test lock device with empty lock pin, should throw exception.
+     * <p>
+     */
+    @Test
+    public void testLockDevice_withEmptyLockpin() {
+        try {
+            getAdminClient().lockDevice(toByteArray(""));
+            fail("should throw exception");
+        } catch (KineticException e) {
+            logger.info("Lock device with empty pin throw exception: "
+                    + e.getMessage());
+        }
+
+        logger.info(this.testEndInfo());
+    }
+
+    /**
+     * Test unlock device with correct unlock pin, should unlock the device.
+     * <p>
+     */
+    @Test
+    public void testunLockDevice_withCorrectLockpin() {
+        // set a lock pin
+        byte[] lockPinB = toByteArray("lockpin");
+        try {
+            getAdminClient().setLockPin(null, lockPinB);
+        } catch (KineticException e1) {
+            fail("set lock pin throw exception: " + e1.getMessage());
+        }
+
+        try {
+            getAdminClient().lockDevice(lockPinB);
+        } catch (KineticException e) {
+            fail("Lock device with correct pin failed: " + e.getMessage());
+        }
+
+        try {
+            getAdminClient().unLockDevice(lockPinB);
+        } catch (KineticException e) {
+            fail("unLock device with correct pin failed: " + e.getMessage());
+        }
+
+        try {
+            getAdminClient().getLog();
+        } catch (KineticException e) {
+            fail("get log with unlock device throw exception: "
+                    + e.getMessage());
+        }
+
+        // erase
+        try {
+            getAdminClient().instantErase(null);
+        } catch (KineticException e) {
+            fail("instant erase throw exception" + e.getMessage());
+        }
+
+        logger.info(this.testEndInfo());
+    }
+
+    /**
+     * Test unlock device with incorrect unlock pin, should not unlock the
+     * device.
+     * <p>
+     */
+    @Test
+    public void testunLockDevice_withIncorrectLockpin() {
+        // set a lock pin
+        byte[] lockPinB = toByteArray("lockpin");
+        try {
+            getAdminClient().setLockPin(null, lockPinB);
+        } catch (KineticException e1) {
+            fail("set lock pin throw exception: " + e1.getMessage());
+        }
+
+        try {
+            getAdminClient().lockDevice(lockPinB);
+        } catch (KineticException e) {
+            fail("Lock device with correct pin failed: " + e.getMessage());
+        }
+
+        byte[] incorrectunLockPinB = toByteArray("incorrectunlockpin");
+        try {
+            getAdminClient().unLockDevice(incorrectunLockPinB);
+            fail("should throw exception");
+        } catch (KineticException e) {
+            assertTrue(e.getMessage().contains("NOT_AUTHORIZED"));
+        }
+
+        try {
+            getAdminClient().getLog();
+            fail("should throw exception");
+        } catch (KineticException e) {
+            assertTrue(e.getMessage().contains("DEVICE_LOCKED"));
+        }
+
+        // clean up: unlock device
+        try {
+            getAdminClient().unLockDevice(lockPinB);
+        } catch (KineticException e) {
+            fail("instant erase throw exception" + e.getMessage());
+        }
+
+        logger.info(this.testEndInfo());
+    }
+
+    /**
+     * Test unlock device with null unlock pin, should throw exception.
+     * <p>
+     */
+    @Test
+    public void testUnLockDevice_withNullLockpin() {
+        try {
+            getAdminClient().unLockDevice(null);
+            fail("should throw exception");
+        } catch (KineticException e) {
+            logger.info("unLock device with null pin throw exception: "
+                    + e.getMessage());
+        }
+
+        logger.info(this.testEndInfo());
+    }
+
+    /**
+     * Test unlock device with empty unlock pin, should throw exception.
+     * <p>
+     */
+    @Test
+    public void testLockDevice_withEmptyUnLockpin() {
+        try {
+            getAdminClient().unLockDevice(toByteArray(""));
+            fail("should throw exception");
+        } catch (KineticException e) {
+            logger.info("unLock device with empty pin throw exception: "
+                    + e.getMessage());
         }
 
         logger.info(this.testEndInfo());
@@ -1620,11 +2008,6 @@ public class KineticAdminTest extends IntegrationTestCase {
         try {
             utilOfList = log.getUtilization();
             for (Utilization util : utilOfList) {
-                assertTrue(util.getName().equals("HDA")
-                        || util.getName().equals("EN0")
-                        || util.getName().equals("EN1")
-                        || util.getName().equals("CPU"));
-
                 assertTrue(util.getUtility() >= 0);
             }
         } catch (KineticException e) {
@@ -1684,11 +2067,6 @@ public class KineticAdminTest extends IntegrationTestCase {
         try {
             utilOfList = log.getUtilization();
             for (Utilization util : utilOfList) {
-                assertTrue(util.getName().equals("HDA")
-                        || util.getName().equals("EN0")
-                        || util.getName().equals("EN1")
-                        || util.getName().equals("CPU"));
-
                 assertTrue(util.getUtility() >= 0);
             }
         } catch (KineticException e) {
@@ -1788,8 +2166,6 @@ public class KineticAdminTest extends IntegrationTestCase {
         try {
             tempOfList = log.getTemperature();
             for (Temperature temperature : tempOfList) {
-                assertTrue(temperature.getName().equals("HDA")
-                        || temperature.getName().equals("CPU"));
                 assertTrue(temperature.getCurrent() >= 0);
                 assertTrue(temperature.getMax() >= 0);
             }
@@ -1824,8 +2200,6 @@ public class KineticAdminTest extends IntegrationTestCase {
         try {
             tempOfList = log.getTemperature();
             for (Temperature temperature : tempOfList) {
-                assertTrue(temperature.getName().equals("HDA")
-                        || temperature.getName().equals("CPU"));
                 assertTrue(temperature.getCurrent() >= 0);
                 assertTrue(temperature.getMax() >= 0);
             }
@@ -1846,11 +2220,6 @@ public class KineticAdminTest extends IntegrationTestCase {
         try {
             utilOfList = log.getUtilization();
             for (Utilization util : utilOfList) {
-                assertTrue(util.getName().equals("HDA")
-                        || util.getName().equals("EN0")
-                        || util.getName().equals("EN1")
-                        || util.getName().equals("CPU"));
-
                 assertTrue(util.getUtility() >= 0);
             }
         } catch (KineticException e) {
@@ -1920,8 +2289,6 @@ public class KineticAdminTest extends IntegrationTestCase {
         try {
             tempOfList = log.getTemperature();
             for (Temperature temperature : tempOfList) {
-                assertTrue(temperature.getName().equals("HDA")
-                        || temperature.getName().equals("CPU"));
                 assertTrue(temperature.getCurrent() >= 0);
                 assertTrue(temperature.getMax() >= 0);
             }
@@ -1964,8 +2331,6 @@ public class KineticAdminTest extends IntegrationTestCase {
         try {
             tempOfList = log.getTemperature();
             for (Temperature temperature : tempOfList) {
-                assertTrue(temperature.getName().equals("HDA")
-                        || temperature.getName().equals("CPU"));
                 assertTrue(temperature.getCurrent() >= 0);
                 assertTrue(temperature.getMax() >= 0);
             }
@@ -1977,11 +2342,6 @@ public class KineticAdminTest extends IntegrationTestCase {
         try {
             utilOfList = log.getUtilization();
             for (Utilization util : utilOfList) {
-                assertTrue(util.getName().equals("HDA")
-                        || util.getName().equals("EN0")
-                        || util.getName().equals("EN1")
-                        || util.getName().equals("CPU"));
-
                 assertTrue(util.getUtility() >= 0);
             }
         } catch (KineticException e) {
@@ -2023,11 +2383,6 @@ public class KineticAdminTest extends IntegrationTestCase {
         try {
             utilOfList = log.getUtilization();
             for (Utilization util : utilOfList) {
-                assertTrue(util.getName().equals("HDA")
-                        || util.getName().equals("EN0")
-                        || util.getName().equals("EN1")
-                        || util.getName().equals("CPU"));
-
                 assertTrue(util.getUtility() >= 0);
             }
         } catch (KineticException e) {
@@ -2053,5 +2408,4 @@ public class KineticAdminTest extends IntegrationTestCase {
         client.setClusterVersion(DEFAULT_CLUSTER_VERSION);
         client.close();
     }
-
 }

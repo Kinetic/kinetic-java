@@ -84,7 +84,7 @@ public class SecurityOperationTest extends IntegrationTestCase {
         acls.add(acl1);
 
         try {
-            getAdminClient().setSecurity(acls, null, null, null, null);
+            getAdminClient().setAcl(acls);
         } catch (KineticException e1) {
             fail("set security throw exception: " + e1.getMessage());
         }

@@ -118,10 +118,7 @@ public class KineticTestHelpers {
 
         byte[] oldErasePin = toByteArray(pin);
 
-        List<ACL> acls = new ArrayList<ACL>();
-        acls = setDefaultAcls();
-
-        client.setSecurity(acls, null, null, oldErasePin, null);
+        client.setErasePin(oldErasePin, null);
     }
 
     /**

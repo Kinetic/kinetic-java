@@ -95,7 +95,7 @@ public class SecurityPersistTest extends IntegrationTestCase {
 
         // // case 1: server start, no .acl, the first security request
         try {
-            getAdminClient().setSecurity(acls, null, null, null, null);
+            getAdminClient().setAcl(acls);
         } catch (KineticException e1) {
             fail("set security throw exception: " + e1.getMessage());
         }
@@ -184,9 +184,9 @@ public class SecurityPersistTest extends IntegrationTestCase {
 
         acls.add(acl2);
 
-        // // case 1: server start, no .acl, the first security request
+        // case 1: server start, no .acl, the first security request
         try {
-            getAdminClient().setSecurity(acls, null, null, null, null);
+            getAdminClient().setAcl(acls);
         } catch (KineticException e1) {
             fail("set security throw exception: " + e1.getMessage());
         }
@@ -208,7 +208,7 @@ public class SecurityPersistTest extends IntegrationTestCase {
         acls.add(acl1);
 
         try {
-            getAdminClient().setSecurity(acls, null, null, null, null);
+            getAdminClient().setAcl(acls);
             fail("should throw exception.");
         } catch (KineticException e1) {
             assertTrue(e1.getMessage().contains("Paramter Exception"));

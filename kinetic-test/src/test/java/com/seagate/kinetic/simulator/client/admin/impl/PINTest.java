@@ -19,15 +19,9 @@
  */
 package com.seagate.kinetic.simulator.client.admin.impl;
 
-import static com.seagate.kinetic.KineticTestHelpers.setDefaultAcls;
 import static com.seagate.kinetic.KineticTestHelpers.toByteArray;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import kinetic.admin.ACL;
 import kinetic.client.KineticException;
 
 import org.junit.Test;
@@ -48,13 +42,16 @@ public class PINTest extends IntegrationTestCase {
     public void testSetErasePin() {
         byte[] newErasePin = toByteArray("123");
 
-        List<ACL> acls = new ArrayList<ACL>();
-        acls = setDefaultAcls();
         try {
-            getAdminClient().setSecurity(acls, null, null, null, newErasePin);
-            getAdminClient().setSecurity(acls, null, null, newErasePin, null);
+            getAdminClient().setErasePin(null, newErasePin);
         } catch (KineticException e) {
             fail("set pin throw exception: " + e.getMessage());
+        }
+        
+        try {
+            getAdminClient().instantErase(newErasePin);
+        } catch (KineticException e1) {
+            fail("instant erase throw exception: " + e1.getMessage());
         }
     }
 
@@ -63,26 +60,22 @@ public class PINTest extends IntegrationTestCase {
         byte[] oldErasePin = toByteArray("123");
         byte[] newErasePin = toByteArray("456");
 
-        List<ACL> acls = new ArrayList<ACL>();
-        acls = setDefaultAcls();
         try {
-            getAdminClient().setSecurity(acls, null, null, null, oldErasePin);
+            getAdminClient().setErasePin(null, oldErasePin);
         } catch (KineticException e) {
             fail("set pin throw exception: " + e.getMessage());
         }
 
         try {
-            getAdminClient().setSecurity(acls, null, null, oldErasePin,
-                    newErasePin);
+            getAdminClient().setErasePin(oldErasePin, newErasePin);
         } catch (KineticException e) {
             fail("modify pin throw exception: " + e.getMessage());
         }
 
-        // clean pin
         try {
-            getAdminClient().setSecurity(acls, null, null, newErasePin, null);
-        } catch (KineticException e) {
-            fail("clean pin throw exception: " + e.getMessage());
+            getAdminClient().instantErase(newErasePin);
+        } catch (KineticException e1) {
+            fail("instant erase throw exception: " + e1.getMessage());
         }
     }
 
@@ -92,27 +85,23 @@ public class PINTest extends IntegrationTestCase {
         byte[] oldIncorrectErasePin = toByteArray("456");
         byte[] newErasePin = toByteArray("789");
 
-        List<ACL> acls = new ArrayList<ACL>();
-        acls = setDefaultAcls();
         try {
-            getAdminClient().setSecurity(acls, null, null, null, oldErasePin);
+            getAdminClient().setErasePin(null, oldErasePin);
         } catch (KineticException e) {
             fail("set pin throw exception: " + e.getMessage());
         }
 
         try {
-            getAdminClient().setSecurity(acls, null, null,
-                    oldIncorrectErasePin, newErasePin);
+            getAdminClient().setErasePin(oldIncorrectErasePin, newErasePin);
             fail("should throw exception");
         } catch (KineticException e) {
             assertTrue(e.getMessage().contains("NOT_AUTHORIZED"));
         }
 
-        // clean pin
         try {
-            getAdminClient().setSecurity(acls, null, null, oldErasePin, null);
-        } catch (KineticException e) {
-            fail("clean pin throw exception: " + e.getMessage());
+            getAdminClient().instantErase(oldErasePin);
+        } catch (KineticException e1) {
+            fail("instant erase throw exception: " + e1.getMessage());
         }
     }
 
@@ -121,10 +110,8 @@ public class PINTest extends IntegrationTestCase {
         byte[] oldErasePin = toByteArray("123");
         byte[] newErasePin = toByteArray("456");
 
-        List<ACL> acls = new ArrayList<ACL>();
-        acls = setDefaultAcls();
         try {
-            getAdminClient().setSecurity(acls, null, null, null, oldErasePin);
+            getAdminClient().setErasePin(null, oldErasePin);
         } catch (KineticException e) {
             fail("set pin throw exception: " + e.getMessage());
         }
@@ -137,17 +124,15 @@ public class PINTest extends IntegrationTestCase {
         }
 
         try {
-            getAdminClient().setSecurity(acls, null, null, oldErasePin,
-                    newErasePin);
+            getAdminClient().setErasePin(oldErasePin, newErasePin);
         } catch (KineticException e) {
             fail("modify pin throw exception: " + e.getMessage());
         }
 
-        // clean pin
         try {
-            getAdminClient().setSecurity(acls, null, null, newErasePin, null);
-        } catch (KineticException e) {
-            fail("clean pin throw exception: " + e.getMessage());
+            getAdminClient().instantErase(newErasePin);
+        } catch (KineticException e1) {
+            fail("instant erase throw exception: " + e1.getMessage());
         }
     }
 
@@ -157,10 +142,8 @@ public class PINTest extends IntegrationTestCase {
         byte[] oldIncorrectErasePin = toByteArray("456");
         byte[] newErasePin = toByteArray("789");
 
-        List<ACL> acls = new ArrayList<ACL>();
-        acls = setDefaultAcls();
         try {
-            getAdminClient().setSecurity(acls, null, null, null, oldErasePin);
+            getAdminClient().setErasePin(null, oldErasePin);
         } catch (KineticException e) {
             fail("set pin throw exception: " + e.getMessage());
         }
@@ -173,18 +156,16 @@ public class PINTest extends IntegrationTestCase {
         }
 
         try {
-            getAdminClient().setSecurity(acls, null, null,
-                    oldIncorrectErasePin, newErasePin);
+            getAdminClient().setErasePin(oldIncorrectErasePin, newErasePin);
             fail("should throw exception");
         } catch (KineticException e) {
             assertTrue(e.getMessage().contains("NOT_AUTHORIZED"));
         }
 
-        // clean pin
         try {
-            getAdminClient().setSecurity(acls, null, null, oldErasePin, null);
-        } catch (KineticException e) {
-            fail("clean pin throw exception: " + e.getMessage());
+            getAdminClient().instantErase(oldErasePin);
+        } catch (KineticException e1) {
+            fail("instant erase throw exception: " + e1.getMessage());
         }
     }
 
