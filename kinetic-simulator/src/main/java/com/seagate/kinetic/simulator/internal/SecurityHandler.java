@@ -102,16 +102,16 @@ public abstract class SecurityHandler {
         // check if only contains one security component change (ACL or ICE or Lock Pin)
         if (isSecurityMessageValid(request) == false) {
             
-            logger.warning("security not enforced at this time, should not set ACL/ICE/LOCL at the same time ...");
+            //logger.warning("security not enforced at this time, should not set ACL/ICE/LOCL at the same time ...");
           
-//            commandBuilder.getStatusBuilder().setCode(
-//                    StatusCode.INVALID_REQUEST);
-//            commandBuilder
-//                    .getStatusBuilder()
-//                    .setStatusMessage(
-//                            "contains more than one security component change (ACL or ICE or Lock Pin");
-//            
-//            return;
+            commandBuilder.getStatusBuilder().setCode(
+                    StatusCode.INVALID_REQUEST);
+            commandBuilder
+                    .getStatusBuilder()
+                    .setStatusMessage(
+                            "contains more than one security component change (ACL or ICE or Lock Pin");
+            
+            return;
         }
 
         // get ACL list
