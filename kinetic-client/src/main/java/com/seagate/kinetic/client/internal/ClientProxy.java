@@ -119,8 +119,10 @@ public class ClientProxy {
         // io handler
         this.iohandler = new IoHandler(this);
         
-        // wait for status message
-        this.waitForStatusMessage();
+        if (this.iohandler.shouldWaitForStatusMessage()) {
+            // wait for status message
+            this.waitForStatusMessage();
+        }
     }
     
     private void waitForStatusMessage() throws KineticException {

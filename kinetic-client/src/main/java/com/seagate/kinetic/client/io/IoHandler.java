@@ -221,5 +221,14 @@ public class IoHandler {
 
 		return provider;
 	}
+	
+	public boolean shouldWaitForStatusMessage() {
+	    
+	    if (this.useHttp || this.useHttps || this.useUdt) {
+	        return false;
+	    }
+	    
+	    return true;
+	}
 
 }

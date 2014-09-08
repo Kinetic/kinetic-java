@@ -136,7 +136,9 @@ public class MessageHandler implements ClientMessageService, Runnable {
 		        this.isStatusMessageReceived = true;
 		        return;
 		    } else {
-		        logger.warning("received unexpected message ..." + message.getMessage() + ", command=" + message.getCommand());
+		        if (this.iohandler.shouldWaitForStatusMessage()) {
+		            logger.warning("received unexpected message ..." + message.getMessage() + ", command=" + message.getCommand());
+		        }
 		    }
 		}
 
