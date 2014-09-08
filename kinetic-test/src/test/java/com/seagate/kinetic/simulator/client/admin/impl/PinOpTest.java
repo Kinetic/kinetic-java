@@ -9,6 +9,7 @@ import com.seagate.kinetic.SimulatorOnly;
 import org.junit.Test;
 
 import com.seagate.kinetic.IntegrationTestCase;
+import com.seagate.kinetic.proto.Kinetic.Command.Status.StatusCode;
 
 public class PinOpTest extends IntegrationTestCase {
 
@@ -34,7 +35,8 @@ public class PinOpTest extends IntegrationTestCase {
             getAdminClient().getLog();
             fail("Should throw exception");
         } catch (KineticException e) {
-            assertTrue(e.getMessage().contains("DEVICE_LOCKED"));
+            assertTrue(e.getResponseMessage().getCommand().getStatus()
+                    .getCode().equals(StatusCode.DEVICE_LOCKED));
         }
 
         // clean up: unlock device and then instant erase
