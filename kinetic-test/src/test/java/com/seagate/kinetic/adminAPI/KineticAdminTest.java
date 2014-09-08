@@ -59,6 +59,7 @@ import org.junit.Test;
 
 import com.seagate.kinetic.IntegrationTestCase;
 import com.seagate.kinetic.IntegrationTestLoggerFactory;
+import com.seagate.kinetic.proto.Kinetic.Command.Status.StatusCode;
 
 /**
  * Kinetic Administrator Client Basic API Test.
@@ -1712,7 +1713,8 @@ public class KineticAdminTest extends IntegrationTestCase {
             getAdminClient().getLog();
             fail("Should throw exception");
         } catch (KineticException e) {
-            assertTrue(e.getMessage().contains("DEVICE_LOCKED"));
+            assertTrue(e.getResponseMessage().getCommand().getStatus()
+                    .getCode().equals(StatusCode.DEVICE_LOCKED));
         }
 
         // clean up: unlock device
@@ -1744,7 +1746,8 @@ public class KineticAdminTest extends IntegrationTestCase {
             getAdminClient().lockDevice(incorrectLockPinB);
             fail("should throw exception");
         } catch (KineticException e) {
-            assertTrue(e.getMessage().contains("NOT_AUTHORIZED"));
+            assertTrue(e.getResponseMessage().getCommand().getStatus()
+                    .getCode().equals(StatusCode.NOT_AUTHORIZED));
         }
 
         try {
@@ -1867,14 +1870,16 @@ public class KineticAdminTest extends IntegrationTestCase {
             getAdminClient().unLockDevice(incorrectunLockPinB);
             fail("should throw exception");
         } catch (KineticException e) {
-            assertTrue(e.getMessage().contains("NOT_AUTHORIZED"));
+            assertTrue(e.getResponseMessage().getCommand().getStatus()
+                    .getCode().equals(StatusCode.NOT_AUTHORIZED));
         }
 
         try {
             getAdminClient().getLog();
             fail("should throw exception");
         } catch (KineticException e) {
-            assertTrue(e.getMessage().contains("DEVICE_LOCKED"));
+            assertTrue(e.getResponseMessage().getCommand().getStatus()
+                    .getCode().equals(StatusCode.DEVICE_LOCKED));
         }
 
         // clean up: unlock device

@@ -29,6 +29,7 @@ import kinetic.client.KineticException;
 import org.junit.Test;
 
 import com.seagate.kinetic.IntegrationTestCase;
+import com.seagate.kinetic.proto.Kinetic.Command.Status.StatusCode;
 
 public class SecurityEraseTest extends IntegrationTestCase {
 
@@ -59,7 +60,8 @@ public class SecurityEraseTest extends IntegrationTestCase {
             getAdminClient().instantErase(wrongPin);
             fail("should throw exception");
         } catch (KineticException e) {
-            assertTrue(e.getMessage().contains("NOT_AUTHORIZED"));
+            assertTrue(e.getResponseMessage().getCommand().getStatus()
+                    .getCode().equals(StatusCode.NOT_AUTHORIZED));
         }
 
         try {

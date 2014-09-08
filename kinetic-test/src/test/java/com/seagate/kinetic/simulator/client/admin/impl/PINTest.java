@@ -27,6 +27,7 @@ import kinetic.client.KineticException;
 import org.junit.Test;
 
 import com.seagate.kinetic.IntegrationTestCase;
+import com.seagate.kinetic.proto.Kinetic.Command.Status.StatusCode;
 
 /**
  *
@@ -47,7 +48,7 @@ public class PINTest extends IntegrationTestCase {
         } catch (KineticException e) {
             fail("set pin throw exception: " + e.getMessage());
         }
-        
+
         try {
             getAdminClient().instantErase(newErasePin);
         } catch (KineticException e1) {
@@ -95,7 +96,8 @@ public class PINTest extends IntegrationTestCase {
             getAdminClient().setErasePin(oldIncorrectErasePin, newErasePin);
             fail("should throw exception");
         } catch (KineticException e) {
-            assertTrue(e.getMessage().contains("NOT_AUTHORIZED"));
+            assertTrue(e.getResponseMessage().getCommand().getStatus()
+                    .getCode().equals(StatusCode.NOT_AUTHORIZED));
         }
 
         try {
@@ -159,7 +161,8 @@ public class PINTest extends IntegrationTestCase {
             getAdminClient().setErasePin(oldIncorrectErasePin, newErasePin);
             fail("should throw exception");
         } catch (KineticException e) {
-            assertTrue(e.getMessage().contains("NOT_AUTHORIZED"));
+            assertTrue(e.getResponseMessage().getCommand().getStatus()
+                    .getCode().equals(StatusCode.NOT_AUTHORIZED));
         }
 
         try {
