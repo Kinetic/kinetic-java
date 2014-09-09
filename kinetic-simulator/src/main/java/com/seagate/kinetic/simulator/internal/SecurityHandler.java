@@ -184,7 +184,7 @@ public abstract class SecurityHandler {
         }
        
         // check if request has ICE pin
-        if (requestSecurity.hasNewErasePIN()) {
+        if (requestSecurity.hasNewErasePIN() || requestSecurity.hasOldErasePIN()) {
             
          // get current erase pin
             ByteString currentErasePin = engine.getSecurityPin().getErasePin();
@@ -212,8 +212,8 @@ public abstract class SecurityHandler {
             engine.getSecurityPin().setErasePin(requestSecurity.getNewErasePIN());  
         } 
         
-        if (requestSecurity.hasNewLockPIN()) {
-         // get current lock pin
+        if (requestSecurity.hasNewLockPIN() || requestSecurity.hasOldLockPIN()) {
+            // get current lock pin
             ByteString currentLockPin = engine.getSecurityPin().getLockPin();
             
             // need to compare if we need the old pin
@@ -379,18 +379,20 @@ public abstract class SecurityHandler {
         
         int count = 0;
         
+        Security security = request.getCommand().getBody().getSecurity();
+        
         // if acl has value
-        if (request.getCommand().getBody().getSecurity().getAclCount() > 0) {
+        if (security.getAclCount() > 0) {
             count ++;
         }
         
         // if erase pin has value
-        if (request.getCommand().getBody().getSecurity().hasNewErasePIN()) {
+        if (security.hasNewErasePIN() || security.hasOldErasePIN()) {
             count ++;
         }
         
         // if lock pin has value
-        if (request.getCommand().getBody().getSecurity().hasNewLockPIN()) {
+        if (security.hasNewLockPIN() || security.hasOldLockPIN()) {
             count ++;
         }
         
