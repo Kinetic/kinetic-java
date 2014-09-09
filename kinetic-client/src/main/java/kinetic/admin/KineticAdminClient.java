@@ -20,6 +20,7 @@ package kinetic.admin;
 import java.util.List;
 
 import kinetic.client.KineticException;
+import kinetic.client.p2p.KineticP2pClient;
 
 /**
  * 
@@ -36,7 +37,7 @@ import kinetic.client.KineticException;
  * @author Chiaming Yang
  * @author Chenchong Li
  */
-public interface KineticAdminClient {
+public interface KineticAdminClient extends KineticP2pClient {
 
     /**
      * Setup the Kinetic drive.
@@ -270,13 +271,4 @@ public interface KineticAdminClient {
      * @throws KineticException
      */
     public void setClusterVersion (long newClusterVersion) throws KineticException;
-
-    /**
-     * Close the connection and release all resources allocated by this
-     * instance.
-     * 
-     * @throws KineticException
-     *             if any internal error occurred.
-     */
-    public void close() throws KineticException;
 }

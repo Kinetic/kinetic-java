@@ -28,14 +28,15 @@ import kinetic.admin.KineticLog;
 import kinetic.admin.KineticLogType;
 import kinetic.admin.Role;
 import kinetic.client.ClientConfiguration;
-import kinetic.client.KineticClient;
-import kinetic.client.KineticClientFactory;
+//import kinetic.client.KineticClient;
+//import kinetic.client.KineticClientFactory;
 import kinetic.client.KineticException;
 
 import com.google.protobuf.ByteString;
 //import com.google.protobuf.Message;
 //import com.google.protobuf.Message.Builder;
 import com.seagate.kinetic.client.internal.MessageFactory;
+import com.seagate.kinetic.client.internal.p2p.DefaultKineticP2pClient;
 import com.seagate.kinetic.common.lib.HMACAlgorithmUtil;
 import com.seagate.kinetic.common.lib.KineticMessage;
 import com.seagate.kinetic.proto.Kinetic.Command;
@@ -49,7 +50,6 @@ import com.seagate.kinetic.proto.Kinetic.Command.Setup;
 import com.seagate.kinetic.proto.Kinetic.Command.Status;
 import com.seagate.kinetic.proto.Kinetic.Command.Status.StatusCode;
 import com.seagate.kinetic.proto.Kinetic.Message.AuthType;
-
 import com.seagate.kinetic.proto.Kinetic.Message;
 import com.seagate.kinetic.proto.Kinetic.Message.PINauth;
 
@@ -58,11 +58,7 @@ import com.seagate.kinetic.proto.Kinetic.Message.PINauth;
  * configure a kinetic server/service/drive.
  *
  */
-public class DefaultAdminClient implements KineticAdminClient {
-
-    private ClientConfiguration clientConfig = null;
-
-    private KineticClient kineticClient = null;
+public class DefaultAdminClient extends DefaultKineticP2pClient implements KineticAdminClient {
 
     /**
      * Construct a new instance of kinetic admin client.
@@ -74,9 +70,7 @@ public class DefaultAdminClient implements KineticAdminClient {
      */
     public DefaultAdminClient(ClientConfiguration config)
             throws KineticException {
-        this.clientConfig = config;
-
-        kineticClient = KineticClientFactory.createInstance(clientConfig);
+        super (config);
     }
 
     /**
@@ -98,27 +92,12 @@ public class DefaultAdminClient implements KineticAdminClient {
                 .setMessageType(MessageType.SECURITY);
 
         // send security request to server.
-        KineticMessage respond = this.kineticClient.request(km);
+        KineticMessage respond = request(km);
 
         // return respond message.
 
         return respond;
     }
-
-    /**
-     * XXX: protocol-3.0.0
-     */
-            
-//    public Message configureSecurityPolicy(Message.Builder request)
-//            throws KineticException {
-//
-//        KineticMessage km = new KineticMessage();
-//        km.setMessage(request);
-//
-//        KineticMessage kmresp = this.configureSecurityPolicy(km);
-//
-//        return (Message) kmresp.getMessage();
-//    }
 
     /**
      * Configure setup policies for a kinetic drive.
@@ -137,7 +116,7 @@ public class DefaultAdminClient implements KineticAdminClient {
         commandBuilder.getHeaderBuilder()
                 .setMessageType(MessageType.SETUP);
 
-        KineticMessage response = this.kineticClient.request(km);
+        KineticMessage response = request(km);
         return response;
     }
 
@@ -157,14 +136,9 @@ public class DefaultAdminClient implements KineticAdminClient {
         request.getHeaderBuilder()
                 .setMessageType(MessageType.GETLOG);
         
-        KineticMessage response = this.kineticClient.request(km);
+        KineticMessage response = request(km);
 
         return response;
-    }
-
-    @Override
-    public void close() throws KineticException {
-        this.kineticClient.close();
     }
 
     @Override
@@ -186,7 +160,7 @@ public class DefaultAdminClient implements KineticAdminClient {
         
         commandBuilder.getBodyBuilder().getPinOpBuilder().setPinOpType(PinOpType.ERASE_PINOP);
         
-        KineticMessage response = this.kineticClient.request(km);
+        KineticMessage response = request(km);
         
         if (response.getCommand().getStatus().getCode() != StatusCode.SUCCESS) {
             
@@ -553,7 +527,7 @@ public class DefaultAdminClient implements KineticAdminClient {
         commandBuilder.getHeaderBuilder()
                 .setMessageType(MessageType.SETUP);
 
-        KineticMessage kmresp = this.kineticClient.request(km);
+        KineticMessage kmresp = request(km);
 
         if (kmresp.getCommand().getHeader().getMessageType() != MessageType.SETUP_RESPONSE) {
             throw new KineticException("received wrong message type.");
@@ -660,7 +634,7 @@ public class DefaultAdminClient implements KineticAdminClient {
         
         commandBuilder.getBodyBuilder().getPinOpBuilder().setPinOpType(PinOpType.LOCK_PINOP);
         
-        KineticMessage response = this.kineticClient.request(km);
+        KineticMessage response = request(km);
         
         if (response.getCommand().getStatus().getCode() != StatusCode.SUCCESS) {
             
@@ -694,7 +668,7 @@ public class DefaultAdminClient implements KineticAdminClient {
         
         commandBuilder.getBodyBuilder().getPinOpBuilder().setPinOpType(PinOpType.UNLOCK_PINOP);
         
-        KineticMessage response = this.kineticClient.request(km);
+        KineticMessage response = request(km);
         
         if (response.getCommand().getStatus().getCode() != StatusCode.SUCCESS) {
             
