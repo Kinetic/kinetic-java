@@ -1633,6 +1633,113 @@ public class KineticAdminTest extends IntegrationTestCase {
     }
 
     /**
+     * Test set security, set erase pin with null, throw exception.
+     * <p>
+     */
+//    @Test
+    public void testSetSecurity_setErasePin_withNull() {
+        byte[] erasePinB = null;
+
+        try {
+            getAdminClient().setErasePin(null, erasePinB);
+            fail("should throw exception");
+        } catch (KineticException e) {
+            assertTrue(e.getResponseMessage().getCommand().getStatus()
+                    .getCode().equals(StatusCode.INVALID_REQUEST));
+        }
+
+        logger.info(this.testEndInfo());
+    }
+
+    /**
+     * Test set security, set erase pin with empty, should success.
+     * <p>
+     */
+    @Test
+    public void testSetSecurity_setErasePin_withEmpty() {
+        byte[] erasePinB = toByteArray("");
+
+        try {
+            getAdminClient().setErasePin(null, erasePinB);
+        } catch (KineticException e) {
+            fail("set erase pin is empty throw exception: " + e.getMessage());
+        }
+
+        // erase pin
+        try {
+            getAdminClient().instantErase(erasePinB);
+        } catch (KineticException e) {
+            fail("instant erase throw exception" + e.getMessage());
+        }
+
+        logger.info(this.testEndInfo());
+    }
+
+    /**
+     * Test set security, modify erase pin with null.
+     * <p>
+     */
+//    @Test
+    public void testSetSecurity_modifyErasePin_withNull() {
+        String oldErasePin = "oldErasePin";
+        byte[] oldErasePinB = toByteArray(oldErasePin);
+        try {
+            getAdminClient().setErasePin(null, oldErasePinB);
+        } catch (KineticException e) {
+            fail("Change erase pin throw exception" + e.getMessage());
+        }
+
+        byte[] newErasePinB = null;
+        try {
+            getAdminClient().setErasePin(oldErasePinB, newErasePinB);
+            fail("should throw exception");
+        } catch (KineticException e) {
+            assertTrue(e.getResponseMessage().getCommand().getStatus()
+                    .getCode().equals(StatusCode.INVALID_REQUEST));
+        }
+
+        // erase pin
+        try {
+            getAdminClient().instantErase(oldErasePinB);
+        } catch (KineticException e) {
+            fail("instant erase throw exception" + e.getMessage());
+        }
+
+        logger.info(this.testEndInfo());
+    }
+
+    /**
+     * Test set security, modify erase pin with empty.
+     * <p>
+     */
+    @Test
+    public void testSetSecurity_modifyErasePin_withEmpty() {
+        String oldErasePin = "oldErasePin";
+        byte[] oldErasePinB = toByteArray(oldErasePin);
+        try {
+            getAdminClient().setErasePin(null, oldErasePinB);
+        } catch (KineticException e) {
+            fail("Change erase pin throw exception" + e.getMessage());
+        }
+
+        byte[] newErasePinB = toByteArray("");
+        try {
+            getAdminClient().setErasePin(oldErasePinB, newErasePinB);
+        } catch (KineticException e) {
+            fail("set erase pin with empty throw exception: " + e.getMessage());
+        }
+
+        // erase pin
+        try {
+            getAdminClient().instantErase(newErasePinB);
+        } catch (KineticException e) {
+            fail("instant erase throw exception" + e.getMessage());
+        }
+
+        logger.info(this.testEndInfo());
+    }
+
+    /**
      * Test set security, set lock pin.
      * <p>
      */
@@ -1680,6 +1787,113 @@ public class KineticAdminTest extends IntegrationTestCase {
         }
 
         // erase
+        try {
+            getAdminClient().instantErase(null);
+        } catch (KineticException e) {
+            fail("instant erase throw exception" + e.getMessage());
+        }
+
+        logger.info(this.testEndInfo());
+    }
+
+    /**
+     * Test set security, set lock pin with null, throw exception.
+     * <p>
+     */
+//    @Test
+    public void testSetSecurity_setLockPin_withNull() {
+        byte[] lockPinB = null;
+
+        try {
+            getAdminClient().setLockPin(null, lockPinB);
+            fail("should throw exception");
+        } catch (KineticException e) {
+            assertTrue(e.getResponseMessage().getCommand().getStatus()
+                    .getCode().equals(StatusCode.INVALID_REQUEST));
+        }
+
+        logger.info(this.testEndInfo());
+    }
+
+    /**
+     * Test set security, set lock pin with empty, should success.
+     * <p>
+     */
+    @Test
+    public void testSetSecurity_setLockPin_withEmpty() {
+        byte[] lockPinB = toByteArray("");
+
+        try {
+            getAdminClient().setLockPin(null, lockPinB);
+        } catch (KineticException e) {
+            fail("set lock pin is empty throw exception: " + e.getMessage());
+        }
+
+        // erase pin
+        try {
+            getAdminClient().instantErase(null);
+        } catch (KineticException e) {
+            fail("instant erase throw exception" + e.getMessage());
+        }
+
+        logger.info(this.testEndInfo());
+    }
+
+    /**
+     * Test set security, modify lock pin with null.
+     * <p>
+     */
+//    @Test
+    public void testSetSecurity_modifyLockPin_withNull() {
+        String oldLockPin = "oldLockPin";
+        byte[] oldLockPinB = toByteArray(oldLockPin);
+        try {
+            getAdminClient().setErasePin(null, oldLockPinB);
+        } catch (KineticException e) {
+            fail("set lock pin throw exception" + e.getMessage());
+        }
+
+        byte[] newLockPinB = null;
+        try {
+            getAdminClient().setErasePin(oldLockPinB, newLockPinB);
+            fail("should throw exception");
+        } catch (KineticException e) {
+            assertTrue(e.getResponseMessage().getCommand().getStatus()
+                    .getCode().equals(StatusCode.INVALID_REQUEST));
+        }
+
+        // erase pin
+        try {
+            getAdminClient().instantErase(null);
+        } catch (KineticException e) {
+            fail("instant erase throw exception" + e.getMessage());
+        }
+
+        logger.info(this.testEndInfo());
+    }
+
+    /**
+     * Test set security, modify lock pin with empty.
+     * <p>
+     */
+    @Test
+    public void testSetSecurity_modifyLockPin_withEmpty() {
+        String oldLockPin = "oldLockPin";
+        byte[] oldLockPinB = toByteArray(oldLockPin);
+        try {
+            getAdminClient().setLockPin(null, oldLockPinB);
+        } catch (KineticException e) {
+            fail("Change erase pin throw exception" + e.getMessage());
+        }
+
+        byte[] newLockPinB = toByteArray("");
+        try {
+            getAdminClient().setLockPin(oldLockPinB, newLockPinB);
+        } catch (KineticException e) {
+            fail("set erase pin with empty throw exception: " + e.getMessage());
+        }
+
+        // erase pin
         try {
             getAdminClient().instantErase(null);
         } catch (KineticException e) {
