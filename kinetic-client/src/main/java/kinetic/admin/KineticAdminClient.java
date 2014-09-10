@@ -19,6 +19,11 @@ package kinetic.admin;
 
 import java.util.List;
 
+import com.seagate.kinetic.common.lib.KineticMessage;
+import com.seagate.kinetic.proto.Kinetic.Command.BackgroundOperation.BackOpType;
+import com.seagate.kinetic.proto.Kinetic.Command.Priority;
+import com.seagate.kinetic.proto.Kinetic.Command.Range;
+
 import kinetic.client.KineticException;
 import kinetic.client.p2p.KineticP2pClient;
 
@@ -271,4 +276,19 @@ public interface KineticAdminClient extends KineticP2pClient {
      * @throws KineticException
      */
     public void setClusterVersion (long newClusterVersion) throws KineticException;
+    
+    /**
+     * Performs Background operation to the Kinetic drive.
+     * <p>
+     * 
+     * @param backupType type of background op
+     * @param range range of background op
+     * @param priority priority of background op
+     * @return kinetic response message.
+     * @throws KineticException if any internal error occurred
+     * 
+     * @see BackOpType
+     * @see Priority
+     */
+    public KineticMessage backgroundOperation (BackOpType backupType, Range range, Priority priority) throws KineticException;
 }

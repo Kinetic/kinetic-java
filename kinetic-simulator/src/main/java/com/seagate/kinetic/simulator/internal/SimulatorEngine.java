@@ -514,6 +514,8 @@ public class SimulatorEngine implements MessageService {
                 if (hasPermission) {
                     this.p2pHandler.push(aclmap, store, kmreq, kmresp);
                 }
+            } else if (kmreq.getCommand().getBody().hasBackgroundOperation()) {
+                BackGroundOpHandler.handleOperation(kmreq, kmresp, this);
             }
         } catch (DeviceLockedException ire) {
             

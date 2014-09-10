@@ -40,10 +40,15 @@ import com.seagate.kinetic.client.internal.p2p.DefaultKineticP2pClient;
 import com.seagate.kinetic.common.lib.HMACAlgorithmUtil;
 import com.seagate.kinetic.common.lib.KineticMessage;
 import com.seagate.kinetic.proto.Kinetic.Command;
+import com.seagate.kinetic.proto.Kinetic.Command.BackgroundOperation;
+import com.seagate.kinetic.proto.Kinetic.Command.BackgroundOperation.BackOpType;
 import com.seagate.kinetic.proto.Kinetic.Command.GetLog;
 import com.seagate.kinetic.proto.Kinetic.Command.GetLog.Type;
+import com.seagate.kinetic.proto.Kinetic.Command.Header;
 import com.seagate.kinetic.proto.Kinetic.Command.MessageType;
 import com.seagate.kinetic.proto.Kinetic.Command.PinOperation.PinOpType;
+import com.seagate.kinetic.proto.Kinetic.Command.Priority;
+import com.seagate.kinetic.proto.Kinetic.Command.Range;
 import com.seagate.kinetic.proto.Kinetic.Command.Security;
 import com.seagate.kinetic.proto.Kinetic.Command.Security.ACL.HMACAlgorithm;
 import com.seagate.kinetic.proto.Kinetic.Command.Setup;
@@ -770,6 +775,55 @@ public class DefaultAdminClient extends DefaultKineticP2pClient implements Kinet
                     + response.getCommand().getStatus().getStatusMessage());
         }
         
+    }
+
+    @Override
+    public KineticMessage backgroundOperation(BackOpType backopType,
+            Range range, Priority priority) throws KineticException {
+        
+        // create request message
+        KineticMessage kmreq = MessageFactory.createKineticMessageWithBuilder();
+        
+        Command.Builder commandBuilder = (Command.Builder) kmreq.getCommand(); 
+        
+        Header.Builder header = commandBuilder.getHeaderBuilder();
+        
+        // set message type
+        header.setMessageType(MessageType.BACKOP);
+
+        // set priority
+        header.setPriority(priority);
+        
+        // get back ground op builder
+        BackgroundOperation.Builder backop = 
+                commandBuilder.getBodyBuilder().getBackgroundOperationBuilder();
+        
+        // set back up type
+        backop.setBackOpType(backopType);
+        
+        // set range
+        backop.setRange(range);
+        
+        KineticMessage kmresp = request (kmreq);
+
+        if (kmresp.getCommand().getHeader().getMessageType() != MessageType.BACKOP_RESPONSE) {
+            throw new KineticException("received wrong message type.");
+        }
+
+        if (kmresp.getCommand().getStatus().getCode() == Status.StatusCode.NOT_AUTHORIZED) {
+
+            throw new KineticException("Authorized Exception: "
+                    + kmresp.getCommand().getStatus().getCode() + ": "
+                    + kmresp.getCommand().getStatus().getStatusMessage());
+        }
+
+        if (kmresp.getCommand().getStatus().getCode() != Status.StatusCode.SUCCESS) {
+            throw new KineticException("Unknown Error: "
+                    + kmresp.getCommand().getStatus().getCode() + ": "
+                    + kmresp.getCommand().getStatus().getStatusMessage());
+        }
+        
+        return kmresp;
     }
     
 }
