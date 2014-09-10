@@ -76,9 +76,9 @@ import com.seagate.kinetic.proto.Kinetic.Command.Status.StatusCode;
  * <p>
  * setSecurity(List<ACL> acls)
  * <p>
- *
+ * 
  * @see KineticAdminClient
- *
+ * 
  */
 public class KineticAdminTest extends IntegrationTestCase {
     private static final Logger logger = IntegrationTestLoggerFactory
@@ -102,7 +102,7 @@ public class KineticAdminTest extends IntegrationTestCase {
     /**
      * Test setup API, erase data in simulator/drive. The result should be true.
      * <p>
-     *
+     * 
      * @throws KineticException
      *             if any internal error occurred.
      */
@@ -207,7 +207,7 @@ public class KineticAdminTest extends IntegrationTestCase {
      * Test setup API, set cluster version for simulator/drive first, then erase
      * data with wrong cluster version. The result should be fine.
      * <p>
-     *
+     * 
      */
     @Test
     public void testSetup_ClusterVersionHonored() {
@@ -279,7 +279,7 @@ public class KineticAdminTest extends IntegrationTestCase {
      * simulator/drive, then modify again with correct administrator client. The
      * result should be success.
      * <p>
-     *
+     * 
      */
     @Test
     public void testSetup_ModifyClusterVersion_UseRightAdminClientModifyAgain() {
@@ -1636,16 +1636,16 @@ public class KineticAdminTest extends IntegrationTestCase {
      * Test set security, set erase pin with null, throw exception.
      * <p>
      */
-//    @Test
+    @Test
     public void testSetSecurity_setErasePin_withNull() {
         byte[] erasePinB = null;
 
         try {
             getAdminClient().setErasePin(null, erasePinB);
-            fail("should throw exception");
+
         } catch (KineticException e) {
-            assertTrue(e.getResponseMessage().getCommand().getStatus()
-                    .getCode().equals(StatusCode.INVALID_REQUEST));
+            fail("set new erase pin with null throw exception: "
+                    + e.getMessage());
         }
 
         logger.info(this.testEndInfo());
@@ -1679,7 +1679,7 @@ public class KineticAdminTest extends IntegrationTestCase {
      * Test set security, modify erase pin with null.
      * <p>
      */
-//    @Test
+    @Test
     public void testSetSecurity_modifyErasePin_withNull() {
         String oldErasePin = "oldErasePin";
         byte[] oldErasePinB = toByteArray(oldErasePin);
@@ -1692,10 +1692,8 @@ public class KineticAdminTest extends IntegrationTestCase {
         byte[] newErasePinB = null;
         try {
             getAdminClient().setErasePin(oldErasePinB, newErasePinB);
-            fail("should throw exception");
         } catch (KineticException e) {
-            assertTrue(e.getResponseMessage().getCommand().getStatus()
-                    .getCode().equals(StatusCode.INVALID_REQUEST));
+            fail("modify erase pin to null throw exception: " + e.getMessage());
         }
 
         // erase pin
@@ -1800,16 +1798,14 @@ public class KineticAdminTest extends IntegrationTestCase {
      * Test set security, set lock pin with null, throw exception.
      * <p>
      */
-//    @Test
+    @Test
     public void testSetSecurity_setLockPin_withNull() {
         byte[] lockPinB = null;
 
         try {
             getAdminClient().setLockPin(null, lockPinB);
-            fail("should throw exception");
         } catch (KineticException e) {
-            assertTrue(e.getResponseMessage().getCommand().getStatus()
-                    .getCode().equals(StatusCode.INVALID_REQUEST));
+            fail("set lock pin to null throw exception: " + e.getMessage());
         }
 
         logger.info(this.testEndInfo());
@@ -1843,23 +1839,21 @@ public class KineticAdminTest extends IntegrationTestCase {
      * Test set security, modify lock pin with null.
      * <p>
      */
-//    @Test
+    @Test
     public void testSetSecurity_modifyLockPin_withNull() {
         String oldLockPin = "oldLockPin";
         byte[] oldLockPinB = toByteArray(oldLockPin);
         try {
-            getAdminClient().setErasePin(null, oldLockPinB);
+            getAdminClient().setLockPin(null, oldLockPinB);
         } catch (KineticException e) {
             fail("set lock pin throw exception" + e.getMessage());
         }
 
         byte[] newLockPinB = null;
         try {
-            getAdminClient().setErasePin(oldLockPinB, newLockPinB);
-            fail("should throw exception");
+            getAdminClient().setLockPin(oldLockPinB, newLockPinB);
         } catch (KineticException e) {
-            assertTrue(e.getResponseMessage().getCommand().getStatus()
-                    .getCode().equals(StatusCode.INVALID_REQUEST));
+            fail("modify lock pin to null throw exception: " + e.getMessage());
         }
 
         // erase pin
@@ -2614,11 +2608,11 @@ public class KineticAdminTest extends IntegrationTestCase {
     /**
      * Reset cluster version method.
      * <p>
-     *
+     * 
      * @throws KineticException
      * 
      *             if any internal error occurred.
-     *
+     * 
      */
     private void resetClusterVersionToDefault(long currentClusterVersion)
             throws KineticException {
