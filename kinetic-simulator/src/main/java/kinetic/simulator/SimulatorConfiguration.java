@@ -112,7 +112,7 @@ public class SimulatorConfiguration extends Properties {
 	/**
 	 * heartbeat tick time in milli-seconds.
 	 */
-	private long tickTime = 30000;
+	private long tickTime = 5000;
 
 	/**
 	 * heart beat destination address
@@ -524,7 +524,7 @@ public class SimulatorConfiguration extends Properties {
 	/**
 	 * Get heart beat tick time (in milli-seconds) for the simulator.
 	 * <p>
-	 * Default is set to 30000 milli-seconds.
+	 * Default is set to 5000 milli-seconds.
 	 * 
 	 * @return heart beat tick time for the simulator.
 	 */
