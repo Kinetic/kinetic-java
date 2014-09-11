@@ -874,10 +874,10 @@ public class SimulatorEngine implements MessageService {
 
         try {
             Configuration configuration = ConfigurationUtil
-                    .getConfiguration(this.config);
+                    .getConfiguration(this);
             cb.getBodyBuilder().getGetLogBuilder().getConfigurationBuilder()
                     .mergeFrom(configuration);
-        } catch (UnknownHostException e) {
+        } catch (Exception e) {
             logger.log(Level.WARNING, e.getMessage(), e);
         }
 

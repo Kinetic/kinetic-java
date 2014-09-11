@@ -19,6 +19,7 @@
  */
 package com.seagate.kinetic.simulator.internal;
 
+import java.io.UnsupportedEncodingException;
 import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.List;
@@ -29,7 +30,6 @@ import com.seagate.kinetic.common.lib.KineticMessage;
 import com.seagate.kinetic.heartbeat.message.ByteCounter;
 import com.seagate.kinetic.heartbeat.message.OperationCounter;
 import com.seagate.kinetic.proto.Kinetic.Command;
-
 import com.seagate.kinetic.proto.Kinetic.Command.GetLog.Capacity;
 import com.seagate.kinetic.proto.Kinetic.Command.GetLog.Configuration;
 import com.seagate.kinetic.proto.Kinetic.Command.GetLog.Limits;
@@ -93,7 +93,7 @@ public class GetLogHandler {
         return hasPermission;
     }
 
-    public static void handleGetLog(SimulatorEngine engine, KineticMessage request, KineticMessage kmresp) throws UnknownHostException {
+    public static void handleGetLog(SimulatorEngine engine, KineticMessage request, KineticMessage kmresp) throws UnknownHostException, UnsupportedEncodingException {
         
         Command.Builder respCommandBuilder = (Command.Builder) kmresp.getCommand();
         
@@ -126,7 +126,7 @@ public class GetLogHandler {
                 }
                 break;
             case CONFIGURATION:
-                Configuration configuration = ConfigurationUtil.getConfiguration(engine.getServiceConfiguration());
+                Configuration configuration = ConfigurationUtil.getConfiguration(engine);
                 getLog.setConfiguration(configuration);
                 break;
 
