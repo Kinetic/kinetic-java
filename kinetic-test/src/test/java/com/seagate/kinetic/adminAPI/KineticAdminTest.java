@@ -57,8 +57,15 @@ import kinetic.client.KineticException;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.google.protobuf.ByteString;
 import com.seagate.kinetic.IntegrationTestCase;
 import com.seagate.kinetic.IntegrationTestLoggerFactory;
+import com.seagate.kinetic.client.internal.MessageFactory;
+import com.seagate.kinetic.common.lib.KineticMessage;
+import com.seagate.kinetic.proto.Kinetic.Command;
+import com.seagate.kinetic.proto.Kinetic.Command.BackgroundOperation.BackOpType;
+import com.seagate.kinetic.proto.Kinetic.Command.Priority;
+import com.seagate.kinetic.proto.Kinetic.Command.Range;
 import com.seagate.kinetic.proto.Kinetic.Command.Status.StatusCode;
 
 /**
@@ -2600,6 +2607,208 @@ public class KineticAdminTest extends IntegrationTestCase {
             }
         } catch (KineticException e) {
             fail("get utilization throw exception: " + e.getMessage());
+        }
+
+        logger.info(this.testEndInfo());
+    }
+
+    /**
+     * Test back ground operation API with valid back op type: MEDIASCAN. Check
+     * the response message field.
+     * <p>
+     */
+    @Test
+    public void testBackGroundOperation_BackOpTypeIsMediaScan() {
+        // create request message
+        KineticMessage kmreq = MessageFactory.createKineticMessageWithBuilder();
+
+        Command.Builder commandBuilder = (Command.Builder) kmreq.getCommand();
+
+        Range.Builder rangeBuilder = commandBuilder.getBodyBuilder()
+                .getRangeBuilder();
+
+        // set message type
+        ByteString startKey = ByteString.copyFromUtf8("start_key");
+        ByteString endKey = ByteString.copyFromUtf8("end_key");
+
+        BackOpType backOpType = BackOpType.MEDIAOPTIMIZE;
+
+        rangeBuilder.setStartKey(startKey);
+        rangeBuilder.setEndKey(endKey);
+        rangeBuilder.setStartKeyInclusive(false);
+        rangeBuilder.setEndKeyInclusive(true);
+
+        Range range = rangeBuilder.build();
+
+        try {
+            KineticMessage kmrsp = getAdminClient().backgroundOperation(
+                    backOpType, range, Priority.HIGHEST);
+            assertEquals(backOpType, kmrsp.getCommand().getBody()
+                    .getBackgroundOperation().getBackOpType());
+            assertArrayEquals(endKey.toByteArray(), kmrsp.getCommand()
+                    .getBody().getBackgroundOperation().getRange().getEndKey()
+                    .toByteArray());
+        } catch (KineticException e) {
+            fail("back ground operation throw exception: " + e.getMessage());
+        }
+
+        logger.info(this.testEndInfo());
+    }
+
+    /**
+     * Test back ground operation API with valid back op type: MEDIAOPTIMIZE.
+     * Check the response message field.
+     * <p>
+     */
+    @Test
+    public void testBackGroundOperation_BackOpTypeIsMediaOptimize() {
+        // create request message
+        KineticMessage kmreq = MessageFactory.createKineticMessageWithBuilder();
+
+        Command.Builder commandBuilder = (Command.Builder) kmreq.getCommand();
+
+        Range.Builder rangeBuilder = commandBuilder.getBodyBuilder()
+                .getRangeBuilder();
+
+        ByteString startKey = ByteString.copyFromUtf8("start_key");
+        ByteString endKey = ByteString.copyFromUtf8("end_key");
+
+        BackOpType backOpType = BackOpType.MEDIAOPTIMIZE;
+
+        rangeBuilder.setStartKey(startKey);
+        rangeBuilder.setEndKey(endKey);
+        rangeBuilder.setStartKeyInclusive(false);
+        rangeBuilder.setEndKeyInclusive(true);
+
+        Range range = rangeBuilder.build();
+
+        try {
+            KineticMessage kmrsp = getAdminClient().backgroundOperation(
+                    backOpType, range, Priority.HIGHEST);
+            assertEquals(backOpType, kmrsp.getCommand().getBody()
+                    .getBackgroundOperation().getBackOpType());
+            assertArrayEquals(endKey.toByteArray(), kmrsp.getCommand()
+                    .getBody().getBackgroundOperation().getRange().getEndKey()
+                    .toByteArray());
+            assertEquals(StatusCode.SUCCESS, kmrsp.getCommand().getStatus()
+                    .getCode());
+        } catch (KineticException e) {
+            fail("back ground operation throw exception: " + e.getMessage());
+        }
+
+        logger.info(this.testEndInfo());
+    }
+
+    /**
+     * Test back ground operation API with invalid back op type: INVALID_BACKOP.
+     * Check the exception message field.
+     * <p>
+     */
+    @Test
+    public void testBackGroundOperation_BackOpTypeIsInvalidBackOp() {
+        // create request message
+        KineticMessage kmreq = MessageFactory.createKineticMessageWithBuilder();
+
+        Command.Builder commandBuilder = (Command.Builder) kmreq.getCommand();
+
+        Range.Builder rangeBuilder = commandBuilder.getBodyBuilder()
+                .getRangeBuilder();
+
+        ByteString startKey = ByteString.copyFromUtf8("start_key");
+        ByteString endKey = ByteString.copyFromUtf8("end_key");
+
+        BackOpType backOpType = BackOpType.INVALID_BACKOP;
+
+        rangeBuilder.setStartKey(startKey);
+        rangeBuilder.setEndKey(endKey);
+        rangeBuilder.setStartKeyInclusive(false);
+        rangeBuilder.setEndKeyInclusive(true);
+
+        Range range = rangeBuilder.build();
+
+        try {
+            getAdminClient().backgroundOperation(backOpType, range,
+                    Priority.HIGHEST);
+            fail("should throw exception");
+        } catch (KineticException e) {
+            assertTrue(e.getResponseMessage().getCommand().getStatus()
+                    .getCode().equals(StatusCode.INVALID_REQUEST));
+        }
+
+        logger.info(this.testEndInfo());
+    }
+
+    /**
+     * Test back ground operation API without range permission: INVALID_BACKOP.
+     * Check the exception message field.
+     * <p>
+     */
+    @Test
+    public void testBackGroundOperation_BackOpNoPermission() {
+        List<Role> roles = new ArrayList<Role>();
+        roles.add(Role.DELETE);
+        roles.add(Role.GETLOG);
+        roles.add(Role.READ);
+        roles.add(Role.SECURITY);
+        roles.add(Role.SETUP);
+        roles.add(Role.WRITE);
+        roles.add(Role.P2POP);
+
+        Domain domain = new Domain();
+        domain.setRoles(roles);
+
+        List<Domain> domains = new ArrayList<Domain>();
+        domains.add(domain);
+
+        List<ACL> acls = new ArrayList<ACL>();
+        ACL acl1 = new ACL();
+        acl1.setDomains(domains);
+        acl1.setUserId(1);
+        acl1.setKey("asdfasdf");
+
+        acls.add(acl1);
+
+        try {
+            getAdminClient().setAcl(acls);
+        } catch (KineticException e1) {
+            fail("set acls without range permission throw exception:"
+                    + e1.getMessage());
+        }
+
+        // create request message
+        KineticMessage kmreq = MessageFactory.createKineticMessageWithBuilder();
+
+        Command.Builder commandBuilder = (Command.Builder) kmreq.getCommand();
+
+        Range.Builder rangeBuilder = commandBuilder.getBodyBuilder()
+                .getRangeBuilder();
+
+        ByteString startKey = ByteString.copyFromUtf8("start_key");
+        ByteString endKey = ByteString.copyFromUtf8("end_key");
+
+        BackOpType backOpType = BackOpType.MEDIASCAN;
+
+        rangeBuilder.setStartKey(startKey);
+        rangeBuilder.setEndKey(endKey);
+        rangeBuilder.setStartKeyInclusive(false);
+        rangeBuilder.setEndKeyInclusive(true);
+
+        Range range = rangeBuilder.build();
+
+        try {
+            getAdminClient().backgroundOperation(backOpType, range,
+                    Priority.HIGHEST);
+            fail("should throw exception");
+        } catch (KineticException e) {
+            assertTrue(e.getResponseMessage().getCommand().getStatus()
+                    .getCode().equals(StatusCode.NOT_AUTHORIZED));
+        }
+
+        // clean up acls
+        try {
+            getAdminClient().instantErase(null);
+        } catch (KineticException e) {
+            fail("clean up acls throw excaption: " + e.getMessage());
         }
 
         logger.info(this.testEndInfo());
