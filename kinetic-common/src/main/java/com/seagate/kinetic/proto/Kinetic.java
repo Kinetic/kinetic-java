@@ -11,17 +11,17 @@ public final class Kinetic {
   public interface LocalOrBuilder
       extends com.google.protobuf.MessageOrBuilder {
 
-    // optional string protocolVersion = 1 [default = "3.0.0"];
+    // optional string protocolVersion = 1 [default = "3.0.5"];
     /**
-     * <code>optional string protocolVersion = 1 [default = "3.0.0"];</code>
+     * <code>optional string protocolVersion = 1 [default = "3.0.5"];</code>
      */
     boolean hasProtocolVersion();
     /**
-     * <code>optional string protocolVersion = 1 [default = "3.0.0"];</code>
+     * <code>optional string protocolVersion = 1 [default = "3.0.5"];</code>
      */
     java.lang.String getProtocolVersion();
     /**
-     * <code>optional string protocolVersion = 1 [default = "3.0.0"];</code>
+     * <code>optional string protocolVersion = 1 [default = "3.0.5"];</code>
      */
     com.google.protobuf.ByteString
         getProtocolVersionBytes();
@@ -128,17 +128,17 @@ public final class Kinetic {
     }
 
     private int bitField0_;
-    // optional string protocolVersion = 1 [default = "3.0.0"];
+    // optional string protocolVersion = 1 [default = "3.0.5"];
     public static final int PROTOCOLVERSION_FIELD_NUMBER = 1;
     private java.lang.Object protocolVersion_;
     /**
-     * <code>optional string protocolVersion = 1 [default = "3.0.0"];</code>
+     * <code>optional string protocolVersion = 1 [default = "3.0.5"];</code>
      */
     public boolean hasProtocolVersion() {
       return ((bitField0_ & 0x00000001) == 0x00000001);
     }
     /**
-     * <code>optional string protocolVersion = 1 [default = "3.0.0"];</code>
+     * <code>optional string protocolVersion = 1 [default = "3.0.5"];</code>
      */
     public java.lang.String getProtocolVersion() {
       java.lang.Object ref = protocolVersion_;
@@ -155,7 +155,7 @@ public final class Kinetic {
       }
     }
     /**
-     * <code>optional string protocolVersion = 1 [default = "3.0.0"];</code>
+     * <code>optional string protocolVersion = 1 [default = "3.0.5"];</code>
      */
     public com.google.protobuf.ByteString
         getProtocolVersionBytes() {
@@ -172,7 +172,7 @@ public final class Kinetic {
     }
 
     private void initFields() {
-      protocolVersion_ = "3.0.0";
+      protocolVersion_ = "3.0.5";
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -324,7 +324,7 @@ public final class Kinetic {
 
       public Builder clear() {
         super.clear();
-        protocolVersion_ = "3.0.0";
+        protocolVersion_ = "3.0.5";
         bitField0_ = (bitField0_ & ~0x00000001);
         return this;
       }
@@ -406,16 +406,16 @@ public final class Kinetic {
       }
       private int bitField0_;
 
-      // optional string protocolVersion = 1 [default = "3.0.0"];
-      private java.lang.Object protocolVersion_ = "3.0.0";
+      // optional string protocolVersion = 1 [default = "3.0.5"];
+      private java.lang.Object protocolVersion_ = "3.0.5";
       /**
-       * <code>optional string protocolVersion = 1 [default = "3.0.0"];</code>
+       * <code>optional string protocolVersion = 1 [default = "3.0.5"];</code>
        */
       public boolean hasProtocolVersion() {
         return ((bitField0_ & 0x00000001) == 0x00000001);
       }
       /**
-       * <code>optional string protocolVersion = 1 [default = "3.0.0"];</code>
+       * <code>optional string protocolVersion = 1 [default = "3.0.5"];</code>
        */
       public java.lang.String getProtocolVersion() {
         java.lang.Object ref = protocolVersion_;
@@ -429,7 +429,7 @@ public final class Kinetic {
         }
       }
       /**
-       * <code>optional string protocolVersion = 1 [default = "3.0.0"];</code>
+       * <code>optional string protocolVersion = 1 [default = "3.0.5"];</code>
        */
       public com.google.protobuf.ByteString
           getProtocolVersionBytes() {
@@ -445,7 +445,7 @@ public final class Kinetic {
         }
       }
       /**
-       * <code>optional string protocolVersion = 1 [default = "3.0.0"];</code>
+       * <code>optional string protocolVersion = 1 [default = "3.0.5"];</code>
        */
       public Builder setProtocolVersion(
           java.lang.String value) {
@@ -458,7 +458,7 @@ public final class Kinetic {
         return this;
       }
       /**
-       * <code>optional string protocolVersion = 1 [default = "3.0.0"];</code>
+       * <code>optional string protocolVersion = 1 [default = "3.0.5"];</code>
        */
       public Builder clearProtocolVersion() {
         bitField0_ = (bitField0_ & ~0x00000001);
@@ -467,7 +467,7 @@ public final class Kinetic {
         return this;
       }
       /**
-       * <code>optional string protocolVersion = 1 [default = "3.0.0"];</code>
+       * <code>optional string protocolVersion = 1 [default = "3.0.5"];</code>
        */
       public Builder setProtocolVersionBytes(
           com.google.protobuf.ByteString value) {
@@ -3435,29 +3435,45 @@ public final class Kinetic {
        */
       FLUSHALLDATA_RESPONSE(26, 31),
       /**
-       * <code>BACKOP = 34;</code>
-       *
-       * <pre>
-       * background operations
-       * </pre>
-       */
-      BACKOP(27, 34),
-      /**
-       * <code>BACKOP_RESPONSE = 33;</code>
-       */
-      BACKOP_RESPONSE(28, 33),
-      /**
        * <code>PINOP = 36;</code>
        *
        * <pre>
-       * Pin based operations
+       * 33, 34 are reserved
        * </pre>
        */
-      PINOP(29, 36),
+      PINOP(27, 36),
       /**
        * <code>PINOP_RESPONSE = 35;</code>
        */
-      PINOP_RESPONSE(30, 35),
+      PINOP_RESPONSE(28, 35),
+      /**
+       * <code>MEDIASCAN = 38;</code>
+       *
+       * <pre>
+       * Media scan is to check that the user data is readable, and
+       * if the end to end integrity is known to the device, if the
+       * end to end integrity field is correct.
+       * </pre>
+       */
+      MEDIASCAN(29, 38),
+      /**
+       * <code>MEDIASCAN_RESPONSE = 37;</code>
+       */
+      MEDIASCAN_RESPONSE(30, 37),
+      /**
+       * <code>MEDIAOPTIMIZE = 40;</code>
+       *
+       * <pre>
+       * This performs optimizations of the media. Things like
+       * defragmentation, compaction, garbage collection, compression
+       * could be things accomplished using the media optimize command.
+       * </pre>
+       */
+      MEDIAOPTIMIZE(31, 40),
+      /**
+       * <code>MEDIAOPTIMIZE_RESPONSE = 39;</code>
+       */
+      MEDIAOPTIMIZE_RESPONSE(32, 39),
       ;
 
       /**
@@ -3593,22 +3609,10 @@ public final class Kinetic {
        */
       public static final int FLUSHALLDATA_RESPONSE_VALUE = 31;
       /**
-       * <code>BACKOP = 34;</code>
-       *
-       * <pre>
-       * background operations
-       * </pre>
-       */
-      public static final int BACKOP_VALUE = 34;
-      /**
-       * <code>BACKOP_RESPONSE = 33;</code>
-       */
-      public static final int BACKOP_RESPONSE_VALUE = 33;
-      /**
        * <code>PINOP = 36;</code>
        *
        * <pre>
-       * Pin based operations
+       * 33, 34 are reserved
        * </pre>
        */
       public static final int PINOP_VALUE = 36;
@@ -3616,6 +3620,34 @@ public final class Kinetic {
        * <code>PINOP_RESPONSE = 35;</code>
        */
       public static final int PINOP_RESPONSE_VALUE = 35;
+      /**
+       * <code>MEDIASCAN = 38;</code>
+       *
+       * <pre>
+       * Media scan is to check that the user data is readable, and
+       * if the end to end integrity is known to the device, if the
+       * end to end integrity field is correct.
+       * </pre>
+       */
+      public static final int MEDIASCAN_VALUE = 38;
+      /**
+       * <code>MEDIASCAN_RESPONSE = 37;</code>
+       */
+      public static final int MEDIASCAN_RESPONSE_VALUE = 37;
+      /**
+       * <code>MEDIAOPTIMIZE = 40;</code>
+       *
+       * <pre>
+       * This performs optimizations of the media. Things like
+       * defragmentation, compaction, garbage collection, compression
+       * could be things accomplished using the media optimize command.
+       * </pre>
+       */
+      public static final int MEDIAOPTIMIZE_VALUE = 40;
+      /**
+       * <code>MEDIAOPTIMIZE_RESPONSE = 39;</code>
+       */
+      public static final int MEDIAOPTIMIZE_RESPONSE_VALUE = 39;
 
 
       public final int getNumber() { return value; }
@@ -3649,10 +3681,12 @@ public final class Kinetic {
           case 29: return NOOP_RESPONSE;
           case 32: return FLUSHALLDATA;
           case 31: return FLUSHALLDATA_RESPONSE;
-          case 34: return BACKOP;
-          case 33: return BACKOP_RESPONSE;
           case 36: return PINOP;
           case 35: return PINOP_RESPONSE;
+          case 38: return MEDIASCAN;
+          case 37: return MEDIASCAN_RESPONSE;
+          case 40: return MEDIAOPTIMIZE;
+          case 39: return MEDIAOPTIMIZE_RESPONSE;
           default: return null;
         }
       }
@@ -5405,35 +5439,6 @@ public final class Kinetic {
        */
       com.seagate.kinetic.proto.Kinetic.Command.SecurityOrBuilder getSecurityOrBuilder();
 
-      // optional .com.seagate.kinetic.proto.Command.BackgroundOperation backgroundOperation = 5;
-      /**
-       * <code>optional .com.seagate.kinetic.proto.Command.BackgroundOperation backgroundOperation = 5;</code>
-       *
-       * <pre>
-       * Defined long running commands that are device dependent and
-       * typically background operations.
-       * </pre>
-       */
-      boolean hasBackgroundOperation();
-      /**
-       * <code>optional .com.seagate.kinetic.proto.Command.BackgroundOperation backgroundOperation = 5;</code>
-       *
-       * <pre>
-       * Defined long running commands that are device dependent and
-       * typically background operations.
-       * </pre>
-       */
-      com.seagate.kinetic.proto.Kinetic.Command.BackgroundOperation getBackgroundOperation();
-      /**
-       * <code>optional .com.seagate.kinetic.proto.Command.BackgroundOperation backgroundOperation = 5;</code>
-       *
-       * <pre>
-       * Defined long running commands that are device dependent and
-       * typically background operations.
-       * </pre>
-       */
-      com.seagate.kinetic.proto.Kinetic.Command.BackgroundOperationOrBuilder getBackgroundOperationOrBuilder();
-
       // optional .com.seagate.kinetic.proto.Command.PinOperation pinOp = 8;
       /**
        * <code>optional .com.seagate.kinetic.proto.Command.PinOperation pinOp = 8;</code>
@@ -5567,19 +5572,6 @@ public final class Kinetic {
                 bitField0_ |= 0x00000008;
                 break;
               }
-              case 42: {
-                com.seagate.kinetic.proto.Kinetic.Command.BackgroundOperation.Builder subBuilder = null;
-                if (((bitField0_ & 0x00000040) == 0x00000040)) {
-                  subBuilder = backgroundOperation_.toBuilder();
-                }
-                backgroundOperation_ = input.readMessage(com.seagate.kinetic.proto.Kinetic.Command.BackgroundOperation.PARSER, extensionRegistry);
-                if (subBuilder != null) {
-                  subBuilder.mergeFrom(backgroundOperation_);
-                  backgroundOperation_ = subBuilder.buildPartial();
-                }
-                bitField0_ |= 0x00000040;
-                break;
-              }
               case 50: {
                 com.seagate.kinetic.proto.Kinetic.Command.GetLog.Builder subBuilder = null;
                 if (((bitField0_ & 0x00000010) == 0x00000010)) {
@@ -5608,7 +5600,7 @@ public final class Kinetic {
               }
               case 66: {
                 com.seagate.kinetic.proto.Kinetic.Command.PinOperation.Builder subBuilder = null;
-                if (((bitField0_ & 0x00000080) == 0x00000080)) {
+                if (((bitField0_ & 0x00000040) == 0x00000040)) {
                   subBuilder = pinOp_.toBuilder();
                 }
                 pinOp_ = input.readMessage(com.seagate.kinetic.proto.Kinetic.Command.PinOperation.PARSER, extensionRegistry);
@@ -5616,7 +5608,7 @@ public final class Kinetic {
                   subBuilder.mergeFrom(pinOp_);
                   pinOp_ = subBuilder.buildPartial();
                 }
-                bitField0_ |= 0x00000080;
+                bitField0_ |= 0x00000040;
                 break;
               }
             }
@@ -5863,43 +5855,6 @@ public final class Kinetic {
         return security_;
       }
 
-      // optional .com.seagate.kinetic.proto.Command.BackgroundOperation backgroundOperation = 5;
-      public static final int BACKGROUNDOPERATION_FIELD_NUMBER = 5;
-      private com.seagate.kinetic.proto.Kinetic.Command.BackgroundOperation backgroundOperation_;
-      /**
-       * <code>optional .com.seagate.kinetic.proto.Command.BackgroundOperation backgroundOperation = 5;</code>
-       *
-       * <pre>
-       * Defined long running commands that are device dependent and
-       * typically background operations.
-       * </pre>
-       */
-      public boolean hasBackgroundOperation() {
-        return ((bitField0_ & 0x00000040) == 0x00000040);
-      }
-      /**
-       * <code>optional .com.seagate.kinetic.proto.Command.BackgroundOperation backgroundOperation = 5;</code>
-       *
-       * <pre>
-       * Defined long running commands that are device dependent and
-       * typically background operations.
-       * </pre>
-       */
-      public com.seagate.kinetic.proto.Kinetic.Command.BackgroundOperation getBackgroundOperation() {
-        return backgroundOperation_;
-      }
-      /**
-       * <code>optional .com.seagate.kinetic.proto.Command.BackgroundOperation backgroundOperation = 5;</code>
-       *
-       * <pre>
-       * Defined long running commands that are device dependent and
-       * typically background operations.
-       * </pre>
-       */
-      public com.seagate.kinetic.proto.Kinetic.Command.BackgroundOperationOrBuilder getBackgroundOperationOrBuilder() {
-        return backgroundOperation_;
-      }
-
       // optional .com.seagate.kinetic.proto.Command.PinOperation pinOp = 8;
       public static final int PINOP_FIELD_NUMBER = 8;
       private com.seagate.kinetic.proto.Kinetic.Command.PinOperation pinOp_;
@@ -5911,7 +5866,7 @@ public final class Kinetic {
        * </pre>
        */
       public boolean hasPinOp() {
-        return ((bitField0_ & 0x00000080) == 0x00000080);
+        return ((bitField0_ & 0x00000040) == 0x00000040);
       }
       /**
        * <code>optional .com.seagate.kinetic.proto.Command.PinOperation pinOp = 8;</code>
@@ -5941,7 +5896,6 @@ public final class Kinetic {
         p2POperation_ = com.seagate.kinetic.proto.Kinetic.Command.P2POperation.getDefaultInstance();
         getLog_ = com.seagate.kinetic.proto.Kinetic.Command.GetLog.getDefaultInstance();
         security_ = com.seagate.kinetic.proto.Kinetic.Command.Security.getDefaultInstance();
-        backgroundOperation_ = com.seagate.kinetic.proto.Kinetic.Command.BackgroundOperation.getDefaultInstance();
         pinOp_ = com.seagate.kinetic.proto.Kinetic.Command.PinOperation.getDefaultInstance();
       }
       private byte memoizedIsInitialized = -1;
@@ -5968,16 +5922,13 @@ public final class Kinetic {
         if (((bitField0_ & 0x00000008) == 0x00000008)) {
           output.writeMessage(4, p2POperation_);
         }
-        if (((bitField0_ & 0x00000040) == 0x00000040)) {
-          output.writeMessage(5, backgroundOperation_);
-        }
         if (((bitField0_ & 0x00000010) == 0x00000010)) {
           output.writeMessage(6, getLog_);
         }
         if (((bitField0_ & 0x00000020) == 0x00000020)) {
           output.writeMessage(7, security_);
         }
-        if (((bitField0_ & 0x00000080) == 0x00000080)) {
+        if (((bitField0_ & 0x00000040) == 0x00000040)) {
           output.writeMessage(8, pinOp_);
         }
         getUnknownFields().writeTo(output);
@@ -6005,10 +5956,6 @@ public final class Kinetic {
           size += com.google.protobuf.CodedOutputStream
             .computeMessageSize(4, p2POperation_);
         }
-        if (((bitField0_ & 0x00000040) == 0x00000040)) {
-          size += com.google.protobuf.CodedOutputStream
-            .computeMessageSize(5, backgroundOperation_);
-        }
         if (((bitField0_ & 0x00000010) == 0x00000010)) {
           size += com.google.protobuf.CodedOutputStream
             .computeMessageSize(6, getLog_);
@@ -6017,7 +5964,7 @@ public final class Kinetic {
           size += com.google.protobuf.CodedOutputStream
             .computeMessageSize(7, security_);
         }
-        if (((bitField0_ & 0x00000080) == 0x00000080)) {
+        if (((bitField0_ & 0x00000040) == 0x00000040)) {
           size += com.google.protobuf.CodedOutputStream
             .computeMessageSize(8, pinOp_);
         }
@@ -6139,7 +6086,6 @@ public final class Kinetic {
             getP2POperationFieldBuilder();
             getGetLogFieldBuilder();
             getSecurityFieldBuilder();
-            getBackgroundOperationFieldBuilder();
             getPinOpFieldBuilder();
           }
         }
@@ -6185,18 +6131,12 @@ public final class Kinetic {
             securityBuilder_.clear();
           }
           bitField0_ = (bitField0_ & ~0x00000020);
-          if (backgroundOperationBuilder_ == null) {
-            backgroundOperation_ = com.seagate.kinetic.proto.Kinetic.Command.BackgroundOperation.getDefaultInstance();
-          } else {
-            backgroundOperationBuilder_.clear();
-          }
-          bitField0_ = (bitField0_ & ~0x00000040);
           if (pinOpBuilder_ == null) {
             pinOp_ = com.seagate.kinetic.proto.Kinetic.Command.PinOperation.getDefaultInstance();
           } else {
             pinOpBuilder_.clear();
           }
-          bitField0_ = (bitField0_ & ~0x00000080);
+          bitField0_ = (bitField0_ & ~0x00000040);
           return this;
         }
 
@@ -6276,14 +6216,6 @@ public final class Kinetic {
           if (((from_bitField0_ & 0x00000040) == 0x00000040)) {
             to_bitField0_ |= 0x00000040;
           }
-          if (backgroundOperationBuilder_ == null) {
-            result.backgroundOperation_ = backgroundOperation_;
-          } else {
-            result.backgroundOperation_ = backgroundOperationBuilder_.build();
-          }
-          if (((from_bitField0_ & 0x00000080) == 0x00000080)) {
-            to_bitField0_ |= 0x00000080;
-          }
           if (pinOpBuilder_ == null) {
             result.pinOp_ = pinOp_;
           } else {
@@ -6322,9 +6254,6 @@ public final class Kinetic {
           }
           if (other.hasSecurity()) {
             mergeSecurity(other.getSecurity());
-          }
-          if (other.hasBackgroundOperation()) {
-            mergeBackgroundOperation(other.getBackgroundOperation());
           }
           if (other.hasPinOp()) {
             mergePinOp(other.getPinOp());
@@ -7274,168 +7203,6 @@ public final class Kinetic {
           return securityBuilder_;
         }
 
-        // optional .com.seagate.kinetic.proto.Command.BackgroundOperation backgroundOperation = 5;
-        private com.seagate.kinetic.proto.Kinetic.Command.BackgroundOperation backgroundOperation_ = com.seagate.kinetic.proto.Kinetic.Command.BackgroundOperation.getDefaultInstance();
-        private com.google.protobuf.SingleFieldBuilder<
-            com.seagate.kinetic.proto.Kinetic.Command.BackgroundOperation, com.seagate.kinetic.proto.Kinetic.Command.BackgroundOperation.Builder, com.seagate.kinetic.proto.Kinetic.Command.BackgroundOperationOrBuilder> backgroundOperationBuilder_;
-        /**
-         * <code>optional .com.seagate.kinetic.proto.Command.BackgroundOperation backgroundOperation = 5;</code>
-         *
-         * <pre>
-         * Defined long running commands that are device dependent and
-         * typically background operations.
-         * </pre>
-         */
-        public boolean hasBackgroundOperation() {
-          return ((bitField0_ & 0x00000040) == 0x00000040);
-        }
-        /**
-         * <code>optional .com.seagate.kinetic.proto.Command.BackgroundOperation backgroundOperation = 5;</code>
-         *
-         * <pre>
-         * Defined long running commands that are device dependent and
-         * typically background operations.
-         * </pre>
-         */
-        public com.seagate.kinetic.proto.Kinetic.Command.BackgroundOperation getBackgroundOperation() {
-          if (backgroundOperationBuilder_ == null) {
-            return backgroundOperation_;
-          } else {
-            return backgroundOperationBuilder_.getMessage();
-          }
-        }
-        /**
-         * <code>optional .com.seagate.kinetic.proto.Command.BackgroundOperation backgroundOperation = 5;</code>
-         *
-         * <pre>
-         * Defined long running commands that are device dependent and
-         * typically background operations.
-         * </pre>
-         */
-        public Builder setBackgroundOperation(com.seagate.kinetic.proto.Kinetic.Command.BackgroundOperation value) {
-          if (backgroundOperationBuilder_ == null) {
-            if (value == null) {
-              throw new NullPointerException();
-            }
-            backgroundOperation_ = value;
-            onChanged();
-          } else {
-            backgroundOperationBuilder_.setMessage(value);
-          }
-          bitField0_ |= 0x00000040;
-          return this;
-        }
-        /**
-         * <code>optional .com.seagate.kinetic.proto.Command.BackgroundOperation backgroundOperation = 5;</code>
-         *
-         * <pre>
-         * Defined long running commands that are device dependent and
-         * typically background operations.
-         * </pre>
-         */
-        public Builder setBackgroundOperation(
-            com.seagate.kinetic.proto.Kinetic.Command.BackgroundOperation.Builder builderForValue) {
-          if (backgroundOperationBuilder_ == null) {
-            backgroundOperation_ = builderForValue.build();
-            onChanged();
-          } else {
-            backgroundOperationBuilder_.setMessage(builderForValue.build());
-          }
-          bitField0_ |= 0x00000040;
-          return this;
-        }
-        /**
-         * <code>optional .com.seagate.kinetic.proto.Command.BackgroundOperation backgroundOperation = 5;</code>
-         *
-         * <pre>
-         * Defined long running commands that are device dependent and
-         * typically background operations.
-         * </pre>
-         */
-        public Builder mergeBackgroundOperation(com.seagate.kinetic.proto.Kinetic.Command.BackgroundOperation value) {
-          if (backgroundOperationBuilder_ == null) {
-            if (((bitField0_ & 0x00000040) == 0x00000040) &&
-                backgroundOperation_ != com.seagate.kinetic.proto.Kinetic.Command.BackgroundOperation.getDefaultInstance()) {
-              backgroundOperation_ =
-                com.seagate.kinetic.proto.Kinetic.Command.BackgroundOperation.newBuilder(backgroundOperation_).mergeFrom(value).buildPartial();
-            } else {
-              backgroundOperation_ = value;
-            }
-            onChanged();
-          } else {
-            backgroundOperationBuilder_.mergeFrom(value);
-          }
-          bitField0_ |= 0x00000040;
-          return this;
-        }
-        /**
-         * <code>optional .com.seagate.kinetic.proto.Command.BackgroundOperation backgroundOperation = 5;</code>
-         *
-         * <pre>
-         * Defined long running commands that are device dependent and
-         * typically background operations.
-         * </pre>
-         */
-        public Builder clearBackgroundOperation() {
-          if (backgroundOperationBuilder_ == null) {
-            backgroundOperation_ = com.seagate.kinetic.proto.Kinetic.Command.BackgroundOperation.getDefaultInstance();
-            onChanged();
-          } else {
-            backgroundOperationBuilder_.clear();
-          }
-          bitField0_ = (bitField0_ & ~0x00000040);
-          return this;
-        }
-        /**
-         * <code>optional .com.seagate.kinetic.proto.Command.BackgroundOperation backgroundOperation = 5;</code>
-         *
-         * <pre>
-         * Defined long running commands that are device dependent and
-         * typically background operations.
-         * </pre>
-         */
-        public com.seagate.kinetic.proto.Kinetic.Command.BackgroundOperation.Builder getBackgroundOperationBuilder() {
-          bitField0_ |= 0x00000040;
-          onChanged();
-          return getBackgroundOperationFieldBuilder().getBuilder();
-        }
-        /**
-         * <code>optional .com.seagate.kinetic.proto.Command.BackgroundOperation backgroundOperation = 5;</code>
-         *
-         * <pre>
-         * Defined long running commands that are device dependent and
-         * typically background operations.
-         * </pre>
-         */
-        public com.seagate.kinetic.proto.Kinetic.Command.BackgroundOperationOrBuilder getBackgroundOperationOrBuilder() {
-          if (backgroundOperationBuilder_ != null) {
-            return backgroundOperationBuilder_.getMessageOrBuilder();
-          } else {
-            return backgroundOperation_;
-          }
-        }
-        /**
-         * <code>optional .com.seagate.kinetic.proto.Command.BackgroundOperation backgroundOperation = 5;</code>
-         *
-         * <pre>
-         * Defined long running commands that are device dependent and
-         * typically background operations.
-         * </pre>
-         */
-        private com.google.protobuf.SingleFieldBuilder<
-            com.seagate.kinetic.proto.Kinetic.Command.BackgroundOperation, com.seagate.kinetic.proto.Kinetic.Command.BackgroundOperation.Builder, com.seagate.kinetic.proto.Kinetic.Command.BackgroundOperationOrBuilder> 
-            getBackgroundOperationFieldBuilder() {
-          if (backgroundOperationBuilder_ == null) {
-            backgroundOperationBuilder_ = new com.google.protobuf.SingleFieldBuilder<
-                com.seagate.kinetic.proto.Kinetic.Command.BackgroundOperation, com.seagate.kinetic.proto.Kinetic.Command.BackgroundOperation.Builder, com.seagate.kinetic.proto.Kinetic.Command.BackgroundOperationOrBuilder>(
-                    backgroundOperation_,
-                    getParentForChildren(),
-                    isClean());
-            backgroundOperation_ = null;
-          }
-          return backgroundOperationBuilder_;
-        }
-
         // optional .com.seagate.kinetic.proto.Command.PinOperation pinOp = 8;
         private com.seagate.kinetic.proto.Kinetic.Command.PinOperation pinOp_ = com.seagate.kinetic.proto.Kinetic.Command.PinOperation.getDefaultInstance();
         private com.google.protobuf.SingleFieldBuilder<
@@ -7448,7 +7215,7 @@ public final class Kinetic {
          * </pre>
          */
         public boolean hasPinOp() {
-          return ((bitField0_ & 0x00000080) == 0x00000080);
+          return ((bitField0_ & 0x00000040) == 0x00000040);
         }
         /**
          * <code>optional .com.seagate.kinetic.proto.Command.PinOperation pinOp = 8;</code>
@@ -7481,7 +7248,7 @@ public final class Kinetic {
           } else {
             pinOpBuilder_.setMessage(value);
           }
-          bitField0_ |= 0x00000080;
+          bitField0_ |= 0x00000040;
           return this;
         }
         /**
@@ -7499,7 +7266,7 @@ public final class Kinetic {
           } else {
             pinOpBuilder_.setMessage(builderForValue.build());
           }
-          bitField0_ |= 0x00000080;
+          bitField0_ |= 0x00000040;
           return this;
         }
         /**
@@ -7511,7 +7278,7 @@ public final class Kinetic {
          */
         public Builder mergePinOp(com.seagate.kinetic.proto.Kinetic.Command.PinOperation value) {
           if (pinOpBuilder_ == null) {
-            if (((bitField0_ & 0x00000080) == 0x00000080) &&
+            if (((bitField0_ & 0x00000040) == 0x00000040) &&
                 pinOp_ != com.seagate.kinetic.proto.Kinetic.Command.PinOperation.getDefaultInstance()) {
               pinOp_ =
                 com.seagate.kinetic.proto.Kinetic.Command.PinOperation.newBuilder(pinOp_).mergeFrom(value).buildPartial();
@@ -7522,7 +7289,7 @@ public final class Kinetic {
           } else {
             pinOpBuilder_.mergeFrom(value);
           }
-          bitField0_ |= 0x00000080;
+          bitField0_ |= 0x00000040;
           return this;
         }
         /**
@@ -7539,7 +7306,7 @@ public final class Kinetic {
           } else {
             pinOpBuilder_.clear();
           }
-          bitField0_ = (bitField0_ & ~0x00000080);
+          bitField0_ = (bitField0_ & ~0x00000040);
           return this;
         }
         /**
@@ -7550,7 +7317,7 @@ public final class Kinetic {
          * </pre>
          */
         public com.seagate.kinetic.proto.Kinetic.Command.PinOperation.Builder getPinOpBuilder() {
-          bitField0_ |= 0x00000080;
+          bitField0_ |= 0x00000040;
           onChanged();
           return getPinOpFieldBuilder().getBuilder();
         }
@@ -18079,6 +17846,10 @@ public final class Kinetic {
         }
         /**
          * Protobuf type {@code com.seagate.kinetic.proto.Command.GetLog.Configuration.Interface}
+         *
+         * <pre>
+         * 18, 19 are reserved.
+         * </pre>
          */
         public static final class Interface extends
             com.google.protobuf.GeneratedMessage
@@ -18414,6 +18185,10 @@ public final class Kinetic {
           }
           /**
            * Protobuf type {@code com.seagate.kinetic.proto.Command.GetLog.Configuration.Interface}
+           *
+           * <pre>
+           * 18, 19 are reserved.
+           * </pre>
            */
           public static final class Builder extends
               com.google.protobuf.GeneratedMessage.Builder<Builder>
@@ -21759,6 +21534,16 @@ public final class Kinetic {
          * <code>optional uint32 maxIdentityCount = 10;</code>
          */
         int getMaxIdentityCount();
+
+        // optional uint32 maxPinSize = 11;
+        /**
+         * <code>optional uint32 maxPinSize = 11;</code>
+         */
+        boolean hasMaxPinSize();
+        /**
+         * <code>optional uint32 maxPinSize = 11;</code>
+         */
+        int getMaxPinSize();
       }
       /**
        * Protobuf type {@code com.seagate.kinetic.proto.Command.GetLog.Limits}
@@ -21859,6 +21644,11 @@ public final class Kinetic {
                 case 80: {
                   bitField0_ |= 0x00000200;
                   maxIdentityCount_ = input.readUInt32();
+                  break;
+                }
+                case 88: {
+                  bitField0_ |= 0x00000400;
+                  maxPinSize_ = input.readUInt32();
                   break;
                 }
               }
@@ -22061,6 +21851,22 @@ public final class Kinetic {
           return maxIdentityCount_;
         }
 
+        // optional uint32 maxPinSize = 11;
+        public static final int MAXPINSIZE_FIELD_NUMBER = 11;
+        private int maxPinSize_;
+        /**
+         * <code>optional uint32 maxPinSize = 11;</code>
+         */
+        public boolean hasMaxPinSize() {
+          return ((bitField0_ & 0x00000400) == 0x00000400);
+        }
+        /**
+         * <code>optional uint32 maxPinSize = 11;</code>
+         */
+        public int getMaxPinSize() {
+          return maxPinSize_;
+        }
+
         private void initFields() {
           maxKeySize_ = 0;
           maxValueSize_ = 0;
@@ -22072,6 +21878,7 @@ public final class Kinetic {
           maxMessageSize_ = 0;
           maxKeyRangeCount_ = 0;
           maxIdentityCount_ = 0;
+          maxPinSize_ = 0;
         }
         private byte memoizedIsInitialized = -1;
         public final boolean isInitialized() {
@@ -22114,6 +21921,9 @@ public final class Kinetic {
           }
           if (((bitField0_ & 0x00000200) == 0x00000200)) {
             output.writeUInt32(10, maxIdentityCount_);
+          }
+          if (((bitField0_ & 0x00000400) == 0x00000400)) {
+            output.writeUInt32(11, maxPinSize_);
           }
           getUnknownFields().writeTo(output);
         }
@@ -22163,6 +21973,10 @@ public final class Kinetic {
           if (((bitField0_ & 0x00000200) == 0x00000200)) {
             size += com.google.protobuf.CodedOutputStream
               .computeUInt32Size(10, maxIdentityCount_);
+          }
+          if (((bitField0_ & 0x00000400) == 0x00000400)) {
+            size += com.google.protobuf.CodedOutputStream
+              .computeUInt32Size(11, maxPinSize_);
           }
           size += getUnknownFields().getSerializedSize();
           memoizedSerializedSize = size;
@@ -22300,6 +22114,8 @@ public final class Kinetic {
             bitField0_ = (bitField0_ & ~0x00000100);
             maxIdentityCount_ = 0;
             bitField0_ = (bitField0_ & ~0x00000200);
+            maxPinSize_ = 0;
+            bitField0_ = (bitField0_ & ~0x00000400);
             return this;
           }
 
@@ -22368,6 +22184,10 @@ public final class Kinetic {
               to_bitField0_ |= 0x00000200;
             }
             result.maxIdentityCount_ = maxIdentityCount_;
+            if (((from_bitField0_ & 0x00000400) == 0x00000400)) {
+              to_bitField0_ |= 0x00000400;
+            }
+            result.maxPinSize_ = maxPinSize_;
             result.bitField0_ = to_bitField0_;
             onBuilt();
             return result;
@@ -22413,6 +22233,9 @@ public final class Kinetic {
             }
             if (other.hasMaxIdentityCount()) {
               setMaxIdentityCount(other.getMaxIdentityCount());
+            }
+            if (other.hasMaxPinSize()) {
+              setMaxPinSize(other.getMaxPinSize());
             }
             this.mergeUnknownFields(other.getUnknownFields());
             return this;
@@ -22767,6 +22590,39 @@ public final class Kinetic {
           public Builder clearMaxIdentityCount() {
             bitField0_ = (bitField0_ & ~0x00000200);
             maxIdentityCount_ = 0;
+            onChanged();
+            return this;
+          }
+
+          // optional uint32 maxPinSize = 11;
+          private int maxPinSize_ ;
+          /**
+           * <code>optional uint32 maxPinSize = 11;</code>
+           */
+          public boolean hasMaxPinSize() {
+            return ((bitField0_ & 0x00000400) == 0x00000400);
+          }
+          /**
+           * <code>optional uint32 maxPinSize = 11;</code>
+           */
+          public int getMaxPinSize() {
+            return maxPinSize_;
+          }
+          /**
+           * <code>optional uint32 maxPinSize = 11;</code>
+           */
+          public Builder setMaxPinSize(int value) {
+            bitField0_ |= 0x00000400;
+            maxPinSize_ = value;
+            onChanged();
+            return this;
+          }
+          /**
+           * <code>optional uint32 maxPinSize = 11;</code>
+           */
+          public Builder clearMaxPinSize() {
+            bitField0_ = (bitField0_ & ~0x00000400);
+            maxPinSize_ = 0;
             onChanged();
             return this;
           }
@@ -28835,824 +28691,6 @@ public final class Kinetic {
       // @@protoc_insertion_point(class_scope:com.seagate.kinetic.proto.Command.Security)
     }
 
-    public interface BackgroundOperationOrBuilder
-        extends com.google.protobuf.MessageOrBuilder {
-
-      // optional .com.seagate.kinetic.proto.Command.BackgroundOperation.BackOpType backOpType = 1;
-      /**
-       * <code>optional .com.seagate.kinetic.proto.Command.BackgroundOperation.BackOpType backOpType = 1;</code>
-       *
-       * <pre>
-       * Determine the operation type
-       * </pre>
-       */
-      boolean hasBackOpType();
-      /**
-       * <code>optional .com.seagate.kinetic.proto.Command.BackgroundOperation.BackOpType backOpType = 1;</code>
-       *
-       * <pre>
-       * Determine the operation type
-       * </pre>
-       */
-      com.seagate.kinetic.proto.Kinetic.Command.BackgroundOperation.BackOpType getBackOpType();
-
-      // optional .com.seagate.kinetic.proto.Command.Range range = 2;
-      /**
-       * <code>optional .com.seagate.kinetic.proto.Command.Range range = 2;</code>
-       *
-       * <pre>
-       * The range on the request and results on the response
-       * </pre>
-       */
-      boolean hasRange();
-      /**
-       * <code>optional .com.seagate.kinetic.proto.Command.Range range = 2;</code>
-       *
-       * <pre>
-       * The range on the request and results on the response
-       * </pre>
-       */
-      com.seagate.kinetic.proto.Kinetic.Command.Range getRange();
-      /**
-       * <code>optional .com.seagate.kinetic.proto.Command.Range range = 2;</code>
-       *
-       * <pre>
-       * The range on the request and results on the response
-       * </pre>
-       */
-      com.seagate.kinetic.proto.Kinetic.Command.RangeOrBuilder getRangeOrBuilder();
-    }
-    /**
-     * Protobuf type {@code com.seagate.kinetic.proto.Command.BackgroundOperation}
-     *
-     * <pre>
-     * These are long running background operations. The value of the
-     * system controlling background operations is that the system
-     * can make sure that during high performance periods that
-     * background operations are not being performed.
-     * </pre>
-     */
-    public static final class BackgroundOperation extends
-        com.google.protobuf.GeneratedMessage
-        implements BackgroundOperationOrBuilder {
-      // Use BackgroundOperation.newBuilder() to construct.
-      private BackgroundOperation(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
-        super(builder);
-        this.unknownFields = builder.getUnknownFields();
-      }
-      private BackgroundOperation(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
-
-      private static final BackgroundOperation defaultInstance;
-      public static BackgroundOperation getDefaultInstance() {
-        return defaultInstance;
-      }
-
-      public BackgroundOperation getDefaultInstanceForType() {
-        return defaultInstance;
-      }
-
-      private final com.google.protobuf.UnknownFieldSet unknownFields;
-      @java.lang.Override
-      public final com.google.protobuf.UnknownFieldSet
-          getUnknownFields() {
-        return this.unknownFields;
-      }
-      private BackgroundOperation(
-          com.google.protobuf.CodedInputStream input,
-          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-          throws com.google.protobuf.InvalidProtocolBufferException {
-        initFields();
-        int mutable_bitField0_ = 0;
-        com.google.protobuf.UnknownFieldSet.Builder unknownFields =
-            com.google.protobuf.UnknownFieldSet.newBuilder();
-        try {
-          boolean done = false;
-          while (!done) {
-            int tag = input.readTag();
-            switch (tag) {
-              case 0:
-                done = true;
-                break;
-              default: {
-                if (!parseUnknownField(input, unknownFields,
-                                       extensionRegistry, tag)) {
-                  done = true;
-                }
-                break;
-              }
-              case 8: {
-                int rawValue = input.readEnum();
-                com.seagate.kinetic.proto.Kinetic.Command.BackgroundOperation.BackOpType value = com.seagate.kinetic.proto.Kinetic.Command.BackgroundOperation.BackOpType.valueOf(rawValue);
-                if (value == null) {
-                  unknownFields.mergeVarintField(1, rawValue);
-                } else {
-                  bitField0_ |= 0x00000001;
-                  backOpType_ = value;
-                }
-                break;
-              }
-              case 18: {
-                com.seagate.kinetic.proto.Kinetic.Command.Range.Builder subBuilder = null;
-                if (((bitField0_ & 0x00000002) == 0x00000002)) {
-                  subBuilder = range_.toBuilder();
-                }
-                range_ = input.readMessage(com.seagate.kinetic.proto.Kinetic.Command.Range.PARSER, extensionRegistry);
-                if (subBuilder != null) {
-                  subBuilder.mergeFrom(range_);
-                  range_ = subBuilder.buildPartial();
-                }
-                bitField0_ |= 0x00000002;
-                break;
-              }
-            }
-          }
-        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          throw e.setUnfinishedMessage(this);
-        } catch (java.io.IOException e) {
-          throw new com.google.protobuf.InvalidProtocolBufferException(
-              e.getMessage()).setUnfinishedMessage(this);
-        } finally {
-          this.unknownFields = unknownFields.build();
-          makeExtensionsImmutable();
-        }
-      }
-      public static final com.google.protobuf.Descriptors.Descriptor
-          getDescriptor() {
-        return com.seagate.kinetic.proto.Kinetic.internal_static_com_seagate_kinetic_proto_Command_BackgroundOperation_descriptor;
-      }
-
-      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
-          internalGetFieldAccessorTable() {
-        return com.seagate.kinetic.proto.Kinetic.internal_static_com_seagate_kinetic_proto_Command_BackgroundOperation_fieldAccessorTable
-            .ensureFieldAccessorsInitialized(
-                com.seagate.kinetic.proto.Kinetic.Command.BackgroundOperation.class, com.seagate.kinetic.proto.Kinetic.Command.BackgroundOperation.Builder.class);
-      }
-
-      public static com.google.protobuf.Parser<BackgroundOperation> PARSER =
-          new com.google.protobuf.AbstractParser<BackgroundOperation>() {
-        public BackgroundOperation parsePartialFrom(
-            com.google.protobuf.CodedInputStream input,
-            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-            throws com.google.protobuf.InvalidProtocolBufferException {
-          return new BackgroundOperation(input, extensionRegistry);
-        }
-      };
-
-      @java.lang.Override
-      public com.google.protobuf.Parser<BackgroundOperation> getParserForType() {
-        return PARSER;
-      }
-
-      /**
-       * Protobuf enum {@code com.seagate.kinetic.proto.Command.BackgroundOperation.BackOpType}
-       */
-      public enum BackOpType
-          implements com.google.protobuf.ProtocolMessageEnum {
-        /**
-         * <code>INVALID_BACKOP = -1;</code>
-         */
-        INVALID_BACKOP(0, -1),
-        /**
-         * <code>MEDIASCAN = 1;</code>
-         *
-         * <pre>
-         * Media scan is to check that the user data is readable, and
-         * if the end to end integrity is known to the device, if the
-         * end to end integrity field is correct.
-         * </pre>
-         */
-        MEDIASCAN(1, 1),
-        /**
-         * <code>MEDIAOPTIMIZE = 2;</code>
-         *
-         * <pre>
-         * This performs optimizations of the media. Things like
-         * defragmentation, compaction, garbage collection, compression
-         * could be things accomplished using the media optimize command.
-         * </pre>
-         */
-        MEDIAOPTIMIZE(2, 2),
-        ;
-
-        /**
-         * <code>INVALID_BACKOP = -1;</code>
-         */
-        public static final int INVALID_BACKOP_VALUE = -1;
-        /**
-         * <code>MEDIASCAN = 1;</code>
-         *
-         * <pre>
-         * Media scan is to check that the user data is readable, and
-         * if the end to end integrity is known to the device, if the
-         * end to end integrity field is correct.
-         * </pre>
-         */
-        public static final int MEDIASCAN_VALUE = 1;
-        /**
-         * <code>MEDIAOPTIMIZE = 2;</code>
-         *
-         * <pre>
-         * This performs optimizations of the media. Things like
-         * defragmentation, compaction, garbage collection, compression
-         * could be things accomplished using the media optimize command.
-         * </pre>
-         */
-        public static final int MEDIAOPTIMIZE_VALUE = 2;
-
-
-        public final int getNumber() { return value; }
-
-        public static BackOpType valueOf(int value) {
-          switch (value) {
-            case -1: return INVALID_BACKOP;
-            case 1: return MEDIASCAN;
-            case 2: return MEDIAOPTIMIZE;
-            default: return null;
-          }
-        }
-
-        public static com.google.protobuf.Internal.EnumLiteMap<BackOpType>
-            internalGetValueMap() {
-          return internalValueMap;
-        }
-        private static com.google.protobuf.Internal.EnumLiteMap<BackOpType>
-            internalValueMap =
-              new com.google.protobuf.Internal.EnumLiteMap<BackOpType>() {
-                public BackOpType findValueByNumber(int number) {
-                  return BackOpType.valueOf(number);
-                }
-              };
-
-        public final com.google.protobuf.Descriptors.EnumValueDescriptor
-            getValueDescriptor() {
-          return getDescriptor().getValues().get(index);
-        }
-        public final com.google.protobuf.Descriptors.EnumDescriptor
-            getDescriptorForType() {
-          return getDescriptor();
-        }
-        public static final com.google.protobuf.Descriptors.EnumDescriptor
-            getDescriptor() {
-          return com.seagate.kinetic.proto.Kinetic.Command.BackgroundOperation.getDescriptor().getEnumTypes().get(0);
-        }
-
-        private static final BackOpType[] VALUES = values();
-
-        public static BackOpType valueOf(
-            com.google.protobuf.Descriptors.EnumValueDescriptor desc) {
-          if (desc.getType() != getDescriptor()) {
-            throw new java.lang.IllegalArgumentException(
-              "EnumValueDescriptor is not for this type.");
-          }
-          return VALUES[desc.getIndex()];
-        }
-
-        private final int index;
-        private final int value;
-
-        private BackOpType(int index, int value) {
-          this.index = index;
-          this.value = value;
-        }
-
-        // @@protoc_insertion_point(enum_scope:com.seagate.kinetic.proto.Command.BackgroundOperation.BackOpType)
-      }
-
-      private int bitField0_;
-      // optional .com.seagate.kinetic.proto.Command.BackgroundOperation.BackOpType backOpType = 1;
-      public static final int BACKOPTYPE_FIELD_NUMBER = 1;
-      private com.seagate.kinetic.proto.Kinetic.Command.BackgroundOperation.BackOpType backOpType_;
-      /**
-       * <code>optional .com.seagate.kinetic.proto.Command.BackgroundOperation.BackOpType backOpType = 1;</code>
-       *
-       * <pre>
-       * Determine the operation type
-       * </pre>
-       */
-      public boolean hasBackOpType() {
-        return ((bitField0_ & 0x00000001) == 0x00000001);
-      }
-      /**
-       * <code>optional .com.seagate.kinetic.proto.Command.BackgroundOperation.BackOpType backOpType = 1;</code>
-       *
-       * <pre>
-       * Determine the operation type
-       * </pre>
-       */
-      public com.seagate.kinetic.proto.Kinetic.Command.BackgroundOperation.BackOpType getBackOpType() {
-        return backOpType_;
-      }
-
-      // optional .com.seagate.kinetic.proto.Command.Range range = 2;
-      public static final int RANGE_FIELD_NUMBER = 2;
-      private com.seagate.kinetic.proto.Kinetic.Command.Range range_;
-      /**
-       * <code>optional .com.seagate.kinetic.proto.Command.Range range = 2;</code>
-       *
-       * <pre>
-       * The range on the request and results on the response
-       * </pre>
-       */
-      public boolean hasRange() {
-        return ((bitField0_ & 0x00000002) == 0x00000002);
-      }
-      /**
-       * <code>optional .com.seagate.kinetic.proto.Command.Range range = 2;</code>
-       *
-       * <pre>
-       * The range on the request and results on the response
-       * </pre>
-       */
-      public com.seagate.kinetic.proto.Kinetic.Command.Range getRange() {
-        return range_;
-      }
-      /**
-       * <code>optional .com.seagate.kinetic.proto.Command.Range range = 2;</code>
-       *
-       * <pre>
-       * The range on the request and results on the response
-       * </pre>
-       */
-      public com.seagate.kinetic.proto.Kinetic.Command.RangeOrBuilder getRangeOrBuilder() {
-        return range_;
-      }
-
-      private void initFields() {
-        backOpType_ = com.seagate.kinetic.proto.Kinetic.Command.BackgroundOperation.BackOpType.INVALID_BACKOP;
-        range_ = com.seagate.kinetic.proto.Kinetic.Command.Range.getDefaultInstance();
-      }
-      private byte memoizedIsInitialized = -1;
-      public final boolean isInitialized() {
-        byte isInitialized = memoizedIsInitialized;
-        if (isInitialized != -1) return isInitialized == 1;
-
-        memoizedIsInitialized = 1;
-        return true;
-      }
-
-      public void writeTo(com.google.protobuf.CodedOutputStream output)
-                          throws java.io.IOException {
-        getSerializedSize();
-        if (((bitField0_ & 0x00000001) == 0x00000001)) {
-          output.writeEnum(1, backOpType_.getNumber());
-        }
-        if (((bitField0_ & 0x00000002) == 0x00000002)) {
-          output.writeMessage(2, range_);
-        }
-        getUnknownFields().writeTo(output);
-      }
-
-      private int memoizedSerializedSize = -1;
-      public int getSerializedSize() {
-        int size = memoizedSerializedSize;
-        if (size != -1) return size;
-
-        size = 0;
-        if (((bitField0_ & 0x00000001) == 0x00000001)) {
-          size += com.google.protobuf.CodedOutputStream
-            .computeEnumSize(1, backOpType_.getNumber());
-        }
-        if (((bitField0_ & 0x00000002) == 0x00000002)) {
-          size += com.google.protobuf.CodedOutputStream
-            .computeMessageSize(2, range_);
-        }
-        size += getUnknownFields().getSerializedSize();
-        memoizedSerializedSize = size;
-        return size;
-      }
-
-      private static final long serialVersionUID = 0L;
-      @java.lang.Override
-      protected java.lang.Object writeReplace()
-          throws java.io.ObjectStreamException {
-        return super.writeReplace();
-      }
-
-      public static com.seagate.kinetic.proto.Kinetic.Command.BackgroundOperation parseFrom(
-          com.google.protobuf.ByteString data)
-          throws com.google.protobuf.InvalidProtocolBufferException {
-        return PARSER.parseFrom(data);
-      }
-      public static com.seagate.kinetic.proto.Kinetic.Command.BackgroundOperation parseFrom(
-          com.google.protobuf.ByteString data,
-          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-          throws com.google.protobuf.InvalidProtocolBufferException {
-        return PARSER.parseFrom(data, extensionRegistry);
-      }
-      public static com.seagate.kinetic.proto.Kinetic.Command.BackgroundOperation parseFrom(byte[] data)
-          throws com.google.protobuf.InvalidProtocolBufferException {
-        return PARSER.parseFrom(data);
-      }
-      public static com.seagate.kinetic.proto.Kinetic.Command.BackgroundOperation parseFrom(
-          byte[] data,
-          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-          throws com.google.protobuf.InvalidProtocolBufferException {
-        return PARSER.parseFrom(data, extensionRegistry);
-      }
-      public static com.seagate.kinetic.proto.Kinetic.Command.BackgroundOperation parseFrom(java.io.InputStream input)
-          throws java.io.IOException {
-        return PARSER.parseFrom(input);
-      }
-      public static com.seagate.kinetic.proto.Kinetic.Command.BackgroundOperation parseFrom(
-          java.io.InputStream input,
-          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-          throws java.io.IOException {
-        return PARSER.parseFrom(input, extensionRegistry);
-      }
-      public static com.seagate.kinetic.proto.Kinetic.Command.BackgroundOperation parseDelimitedFrom(java.io.InputStream input)
-          throws java.io.IOException {
-        return PARSER.parseDelimitedFrom(input);
-      }
-      public static com.seagate.kinetic.proto.Kinetic.Command.BackgroundOperation parseDelimitedFrom(
-          java.io.InputStream input,
-          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-          throws java.io.IOException {
-        return PARSER.parseDelimitedFrom(input, extensionRegistry);
-      }
-      public static com.seagate.kinetic.proto.Kinetic.Command.BackgroundOperation parseFrom(
-          com.google.protobuf.CodedInputStream input)
-          throws java.io.IOException {
-        return PARSER.parseFrom(input);
-      }
-      public static com.seagate.kinetic.proto.Kinetic.Command.BackgroundOperation parseFrom(
-          com.google.protobuf.CodedInputStream input,
-          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-          throws java.io.IOException {
-        return PARSER.parseFrom(input, extensionRegistry);
-      }
-
-      public static Builder newBuilder() { return Builder.create(); }
-      public Builder newBuilderForType() { return newBuilder(); }
-      public static Builder newBuilder(com.seagate.kinetic.proto.Kinetic.Command.BackgroundOperation prototype) {
-        return newBuilder().mergeFrom(prototype);
-      }
-      public Builder toBuilder() { return newBuilder(this); }
-
-      @java.lang.Override
-      protected Builder newBuilderForType(
-          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
-        Builder builder = new Builder(parent);
-        return builder;
-      }
-      /**
-       * Protobuf type {@code com.seagate.kinetic.proto.Command.BackgroundOperation}
-       *
-       * <pre>
-       * These are long running background operations. The value of the
-       * system controlling background operations is that the system
-       * can make sure that during high performance periods that
-       * background operations are not being performed.
-       * </pre>
-       */
-      public static final class Builder extends
-          com.google.protobuf.GeneratedMessage.Builder<Builder>
-         implements com.seagate.kinetic.proto.Kinetic.Command.BackgroundOperationOrBuilder {
-        public static final com.google.protobuf.Descriptors.Descriptor
-            getDescriptor() {
-          return com.seagate.kinetic.proto.Kinetic.internal_static_com_seagate_kinetic_proto_Command_BackgroundOperation_descriptor;
-        }
-
-        protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
-            internalGetFieldAccessorTable() {
-          return com.seagate.kinetic.proto.Kinetic.internal_static_com_seagate_kinetic_proto_Command_BackgroundOperation_fieldAccessorTable
-              .ensureFieldAccessorsInitialized(
-                  com.seagate.kinetic.proto.Kinetic.Command.BackgroundOperation.class, com.seagate.kinetic.proto.Kinetic.Command.BackgroundOperation.Builder.class);
-        }
-
-        // Construct using com.seagate.kinetic.proto.Kinetic.Command.BackgroundOperation.newBuilder()
-        private Builder() {
-          maybeForceBuilderInitialization();
-        }
-
-        private Builder(
-            com.google.protobuf.GeneratedMessage.BuilderParent parent) {
-          super(parent);
-          maybeForceBuilderInitialization();
-        }
-        private void maybeForceBuilderInitialization() {
-          if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
-            getRangeFieldBuilder();
-          }
-        }
-        private static Builder create() {
-          return new Builder();
-        }
-
-        public Builder clear() {
-          super.clear();
-          backOpType_ = com.seagate.kinetic.proto.Kinetic.Command.BackgroundOperation.BackOpType.INVALID_BACKOP;
-          bitField0_ = (bitField0_ & ~0x00000001);
-          if (rangeBuilder_ == null) {
-            range_ = com.seagate.kinetic.proto.Kinetic.Command.Range.getDefaultInstance();
-          } else {
-            rangeBuilder_.clear();
-          }
-          bitField0_ = (bitField0_ & ~0x00000002);
-          return this;
-        }
-
-        public Builder clone() {
-          return create().mergeFrom(buildPartial());
-        }
-
-        public com.google.protobuf.Descriptors.Descriptor
-            getDescriptorForType() {
-          return com.seagate.kinetic.proto.Kinetic.internal_static_com_seagate_kinetic_proto_Command_BackgroundOperation_descriptor;
-        }
-
-        public com.seagate.kinetic.proto.Kinetic.Command.BackgroundOperation getDefaultInstanceForType() {
-          return com.seagate.kinetic.proto.Kinetic.Command.BackgroundOperation.getDefaultInstance();
-        }
-
-        public com.seagate.kinetic.proto.Kinetic.Command.BackgroundOperation build() {
-          com.seagate.kinetic.proto.Kinetic.Command.BackgroundOperation result = buildPartial();
-          if (!result.isInitialized()) {
-            throw newUninitializedMessageException(result);
-          }
-          return result;
-        }
-
-        public com.seagate.kinetic.proto.Kinetic.Command.BackgroundOperation buildPartial() {
-          com.seagate.kinetic.proto.Kinetic.Command.BackgroundOperation result = new com.seagate.kinetic.proto.Kinetic.Command.BackgroundOperation(this);
-          int from_bitField0_ = bitField0_;
-          int to_bitField0_ = 0;
-          if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
-            to_bitField0_ |= 0x00000001;
-          }
-          result.backOpType_ = backOpType_;
-          if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
-            to_bitField0_ |= 0x00000002;
-          }
-          if (rangeBuilder_ == null) {
-            result.range_ = range_;
-          } else {
-            result.range_ = rangeBuilder_.build();
-          }
-          result.bitField0_ = to_bitField0_;
-          onBuilt();
-          return result;
-        }
-
-        public Builder mergeFrom(com.google.protobuf.Message other) {
-          if (other instanceof com.seagate.kinetic.proto.Kinetic.Command.BackgroundOperation) {
-            return mergeFrom((com.seagate.kinetic.proto.Kinetic.Command.BackgroundOperation)other);
-          } else {
-            super.mergeFrom(other);
-            return this;
-          }
-        }
-
-        public Builder mergeFrom(com.seagate.kinetic.proto.Kinetic.Command.BackgroundOperation other) {
-          if (other == com.seagate.kinetic.proto.Kinetic.Command.BackgroundOperation.getDefaultInstance()) return this;
-          if (other.hasBackOpType()) {
-            setBackOpType(other.getBackOpType());
-          }
-          if (other.hasRange()) {
-            mergeRange(other.getRange());
-          }
-          this.mergeUnknownFields(other.getUnknownFields());
-          return this;
-        }
-
-        public final boolean isInitialized() {
-          return true;
-        }
-
-        public Builder mergeFrom(
-            com.google.protobuf.CodedInputStream input,
-            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-            throws java.io.IOException {
-          com.seagate.kinetic.proto.Kinetic.Command.BackgroundOperation parsedMessage = null;
-          try {
-            parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
-          } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-            parsedMessage = (com.seagate.kinetic.proto.Kinetic.Command.BackgroundOperation) e.getUnfinishedMessage();
-            throw e;
-          } finally {
-            if (parsedMessage != null) {
-              mergeFrom(parsedMessage);
-            }
-          }
-          return this;
-        }
-        private int bitField0_;
-
-        // optional .com.seagate.kinetic.proto.Command.BackgroundOperation.BackOpType backOpType = 1;
-        private com.seagate.kinetic.proto.Kinetic.Command.BackgroundOperation.BackOpType backOpType_ = com.seagate.kinetic.proto.Kinetic.Command.BackgroundOperation.BackOpType.INVALID_BACKOP;
-        /**
-         * <code>optional .com.seagate.kinetic.proto.Command.BackgroundOperation.BackOpType backOpType = 1;</code>
-         *
-         * <pre>
-         * Determine the operation type
-         * </pre>
-         */
-        public boolean hasBackOpType() {
-          return ((bitField0_ & 0x00000001) == 0x00000001);
-        }
-        /**
-         * <code>optional .com.seagate.kinetic.proto.Command.BackgroundOperation.BackOpType backOpType = 1;</code>
-         *
-         * <pre>
-         * Determine the operation type
-         * </pre>
-         */
-        public com.seagate.kinetic.proto.Kinetic.Command.BackgroundOperation.BackOpType getBackOpType() {
-          return backOpType_;
-        }
-        /**
-         * <code>optional .com.seagate.kinetic.proto.Command.BackgroundOperation.BackOpType backOpType = 1;</code>
-         *
-         * <pre>
-         * Determine the operation type
-         * </pre>
-         */
-        public Builder setBackOpType(com.seagate.kinetic.proto.Kinetic.Command.BackgroundOperation.BackOpType value) {
-          if (value == null) {
-            throw new NullPointerException();
-          }
-          bitField0_ |= 0x00000001;
-          backOpType_ = value;
-          onChanged();
-          return this;
-        }
-        /**
-         * <code>optional .com.seagate.kinetic.proto.Command.BackgroundOperation.BackOpType backOpType = 1;</code>
-         *
-         * <pre>
-         * Determine the operation type
-         * </pre>
-         */
-        public Builder clearBackOpType() {
-          bitField0_ = (bitField0_ & ~0x00000001);
-          backOpType_ = com.seagate.kinetic.proto.Kinetic.Command.BackgroundOperation.BackOpType.INVALID_BACKOP;
-          onChanged();
-          return this;
-        }
-
-        // optional .com.seagate.kinetic.proto.Command.Range range = 2;
-        private com.seagate.kinetic.proto.Kinetic.Command.Range range_ = com.seagate.kinetic.proto.Kinetic.Command.Range.getDefaultInstance();
-        private com.google.protobuf.SingleFieldBuilder<
-            com.seagate.kinetic.proto.Kinetic.Command.Range, com.seagate.kinetic.proto.Kinetic.Command.Range.Builder, com.seagate.kinetic.proto.Kinetic.Command.RangeOrBuilder> rangeBuilder_;
-        /**
-         * <code>optional .com.seagate.kinetic.proto.Command.Range range = 2;</code>
-         *
-         * <pre>
-         * The range on the request and results on the response
-         * </pre>
-         */
-        public boolean hasRange() {
-          return ((bitField0_ & 0x00000002) == 0x00000002);
-        }
-        /**
-         * <code>optional .com.seagate.kinetic.proto.Command.Range range = 2;</code>
-         *
-         * <pre>
-         * The range on the request and results on the response
-         * </pre>
-         */
-        public com.seagate.kinetic.proto.Kinetic.Command.Range getRange() {
-          if (rangeBuilder_ == null) {
-            return range_;
-          } else {
-            return rangeBuilder_.getMessage();
-          }
-        }
-        /**
-         * <code>optional .com.seagate.kinetic.proto.Command.Range range = 2;</code>
-         *
-         * <pre>
-         * The range on the request and results on the response
-         * </pre>
-         */
-        public Builder setRange(com.seagate.kinetic.proto.Kinetic.Command.Range value) {
-          if (rangeBuilder_ == null) {
-            if (value == null) {
-              throw new NullPointerException();
-            }
-            range_ = value;
-            onChanged();
-          } else {
-            rangeBuilder_.setMessage(value);
-          }
-          bitField0_ |= 0x00000002;
-          return this;
-        }
-        /**
-         * <code>optional .com.seagate.kinetic.proto.Command.Range range = 2;</code>
-         *
-         * <pre>
-         * The range on the request and results on the response
-         * </pre>
-         */
-        public Builder setRange(
-            com.seagate.kinetic.proto.Kinetic.Command.Range.Builder builderForValue) {
-          if (rangeBuilder_ == null) {
-            range_ = builderForValue.build();
-            onChanged();
-          } else {
-            rangeBuilder_.setMessage(builderForValue.build());
-          }
-          bitField0_ |= 0x00000002;
-          return this;
-        }
-        /**
-         * <code>optional .com.seagate.kinetic.proto.Command.Range range = 2;</code>
-         *
-         * <pre>
-         * The range on the request and results on the response
-         * </pre>
-         */
-        public Builder mergeRange(com.seagate.kinetic.proto.Kinetic.Command.Range value) {
-          if (rangeBuilder_ == null) {
-            if (((bitField0_ & 0x00000002) == 0x00000002) &&
-                range_ != com.seagate.kinetic.proto.Kinetic.Command.Range.getDefaultInstance()) {
-              range_ =
-                com.seagate.kinetic.proto.Kinetic.Command.Range.newBuilder(range_).mergeFrom(value).buildPartial();
-            } else {
-              range_ = value;
-            }
-            onChanged();
-          } else {
-            rangeBuilder_.mergeFrom(value);
-          }
-          bitField0_ |= 0x00000002;
-          return this;
-        }
-        /**
-         * <code>optional .com.seagate.kinetic.proto.Command.Range range = 2;</code>
-         *
-         * <pre>
-         * The range on the request and results on the response
-         * </pre>
-         */
-        public Builder clearRange() {
-          if (rangeBuilder_ == null) {
-            range_ = com.seagate.kinetic.proto.Kinetic.Command.Range.getDefaultInstance();
-            onChanged();
-          } else {
-            rangeBuilder_.clear();
-          }
-          bitField0_ = (bitField0_ & ~0x00000002);
-          return this;
-        }
-        /**
-         * <code>optional .com.seagate.kinetic.proto.Command.Range range = 2;</code>
-         *
-         * <pre>
-         * The range on the request and results on the response
-         * </pre>
-         */
-        public com.seagate.kinetic.proto.Kinetic.Command.Range.Builder getRangeBuilder() {
-          bitField0_ |= 0x00000002;
-          onChanged();
-          return getRangeFieldBuilder().getBuilder();
-        }
-        /**
-         * <code>optional .com.seagate.kinetic.proto.Command.Range range = 2;</code>
-         *
-         * <pre>
-         * The range on the request and results on the response
-         * </pre>
-         */
-        public com.seagate.kinetic.proto.Kinetic.Command.RangeOrBuilder getRangeOrBuilder() {
-          if (rangeBuilder_ != null) {
-            return rangeBuilder_.getMessageOrBuilder();
-          } else {
-            return range_;
-          }
-        }
-        /**
-         * <code>optional .com.seagate.kinetic.proto.Command.Range range = 2;</code>
-         *
-         * <pre>
-         * The range on the request and results on the response
-         * </pre>
-         */
-        private com.google.protobuf.SingleFieldBuilder<
-            com.seagate.kinetic.proto.Kinetic.Command.Range, com.seagate.kinetic.proto.Kinetic.Command.Range.Builder, com.seagate.kinetic.proto.Kinetic.Command.RangeOrBuilder> 
-            getRangeFieldBuilder() {
-          if (rangeBuilder_ == null) {
-            rangeBuilder_ = new com.google.protobuf.SingleFieldBuilder<
-                com.seagate.kinetic.proto.Kinetic.Command.Range, com.seagate.kinetic.proto.Kinetic.Command.Range.Builder, com.seagate.kinetic.proto.Kinetic.Command.RangeOrBuilder>(
-                    range_,
-                    getParentForChildren(),
-                    isClean());
-            range_ = null;
-          }
-          return rangeBuilder_;
-        }
-
-        // @@protoc_insertion_point(builder_scope:com.seagate.kinetic.proto.Command.BackgroundOperation)
-      }
-
-      static {
-        defaultInstance = new BackgroundOperation(true);
-        defaultInstance.initFields();
-      }
-
-      // @@protoc_insertion_point(class_scope:com.seagate.kinetic.proto.Command.BackgroundOperation)
-    }
-
     public interface PinOperationOrBuilder
         extends com.google.protobuf.MessageOrBuilder {
 
@@ -29673,7 +28711,7 @@ public final class Kinetic {
      * Pin Operations are used for special commands that are valid when the device
      * is locked or to be locked. These are unlock, lock and erase.
      * This must come over the TLS connection to protect the confidentiality and
-     * integrity. This operations must be used with PinAuth.    
+     * integrity. This operations must be used with PinAuth.
      * </pre>
      */
     public static final class PinOperation extends
@@ -30062,7 +29100,7 @@ public final class Kinetic {
        * Pin Operations are used for special commands that are valid when the device
        * is locked or to be locked. These are unlock, lock and erase.
        * This must come over the TLS connection to protect the confidentiality and
-       * integrity. This operations must be used with PinAuth.    
+       * integrity. This operations must be used with PinAuth.
        * </pre>
        */
       public static final class Builder extends
@@ -31219,11 +30257,6 @@ public final class Kinetic {
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_com_seagate_kinetic_proto_Command_Security_ACL_Scope_fieldAccessorTable;
   private static com.google.protobuf.Descriptors.Descriptor
-    internal_static_com_seagate_kinetic_proto_Command_BackgroundOperation_descriptor;
-  private static
-    com.google.protobuf.GeneratedMessage.FieldAccessorTable
-      internal_static_com_seagate_kinetic_proto_Command_BackgroundOperation_fieldAccessorTable;
-  private static com.google.protobuf.Descriptors.Descriptor
     internal_static_com_seagate_kinetic_proto_Command_PinOperation_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
@@ -31239,7 +30272,7 @@ public final class Kinetic {
     java.lang.String[] descriptorData = {
       "\n\rkinetic.proto\022\031com.seagate.kinetic.pro" +
       "to\"\'\n\005Local\022\036\n\017protocolVersion\030\001 \001(\t:\0053." +
-      "0.0\"\374\002\n\007Message\022=\n\010authType\030\004 \001(\0162+.com." +
+      "0.5\"\374\002\n\007Message\022=\n\010authType\030\004 \001(\0162+.com." +
       "seagate.kinetic.proto.Message.AuthType\022=" +
       "\n\010hmacAuth\030\005 \001(\0132+.com.seagate.kinetic.p" +
       "roto.Message.HMACauth\022;\n\007pinAuth\030\006 \001(\0132*" +
@@ -31248,7 +30281,7 @@ public final class Kinetic {
       "identity\030\001 \001(\003\022\014\n\004hmac\030\002 \001(\014\032\026\n\007PINauth\022" +
       "\013\n\003pin\030\001 \001(\014\"\\\n\010AuthType\022\036\n\021INVALID_AUTH",
       "_TYPE\020\377\377\377\377\377\377\377\377\377\001\022\014\n\010HMACAUTH\020\001\022\013\n\007PINAUT" +
-      "H\020\002\022\025\n\021UNSOLICITEDSTATUS\020\003\"\2212\n\007Command\0229" +
+      "H\020\002\022\025\n\021UNSOLICITEDSTATUS\020\003\"\2200\n\007Command\0229" +
       "\n\006header\030\001 \001(\0132).com.seagate.kinetic.pro" +
       "to.Command.Header\0225\n\004body\030\002 \001(\0132\'.com.se" +
       "agate.kinetic.proto.Command.Body\0229\n\006stat" +
@@ -31260,7 +30293,7 @@ public final class Kinetic {
       "mand.MessageType\022\017\n\007timeout\030\t \001(\003\022\021\n\tear" +
       "lyExit\030\n \001(\010\022=\n\010priority\030\014 \001(\0162+.com.sea" +
       "gate.kinetic.proto.Command.Priority\022\022\n\nT" +
-      "imeQuanta\030\r \001(\003\032\215\004\n\004Body\022=\n\010keyValue\030\001 \001" +
+      "imeQuanta\030\r \001(\003\032\270\003\n\004Body\022=\n\010keyValue\030\001 \001" +
       "(\0132+.com.seagate.kinetic.proto.Command.K" +
       "eyValue\0227\n\005range\030\002 \001(\0132(.com.seagate.kin" +
       "etic.proto.Command.Range\0227\n\005setup\030\003 \001(\0132" +
@@ -31269,147 +30302,140 @@ public final class Kinetic {
       "netic.proto.Command.P2POperation\0229\n\006getL",
       "og\030\006 \001(\0132).com.seagate.kinetic.proto.Com" +
       "mand.GetLog\022=\n\010security\030\007 \001(\0132+.com.seag" +
-      "ate.kinetic.proto.Command.Security\022S\n\023ba" +
-      "ckgroundOperation\030\005 \001(\01326.com.seagate.ki" +
-      "netic.proto.Command.BackgroundOperation\022" +
-      ">\n\005pinOp\030\010 \001(\0132/.com.seagate.kinetic.pro" +
-      "to.Command.PinOperation\032\336\004\n\006Status\022B\n\004co" +
-      "de\030\001 \001(\01624.com.seagate.kinetic.proto.Com" +
-      "mand.Status.StatusCode\022\025\n\rstatusMessage\030" +
-      "\002 \001(\t\022\027\n\017detailedMessage\030\003 \001(\014\"\337\003\n\nStatu",
-      "sCode\022 \n\023INVALID_STATUS_CODE\020\377\377\377\377\377\377\377\377\377\001\022" +
-      "\021\n\rNOT_ATTEMPTED\020\000\022\013\n\007SUCCESS\020\001\022\020\n\014HMAC_" +
-      "FAILURE\020\002\022\022\n\016NOT_AUTHORIZED\020\003\022\023\n\017VERSION" +
-      "_FAILURE\020\004\022\022\n\016INTERNAL_ERROR\020\005\022\023\n\017HEADER" +
-      "_REQUIRED\020\006\022\r\n\tNOT_FOUND\020\007\022\024\n\020VERSION_MI" +
-      "SMATCH\020\010\022\020\n\014SERVICE_BUSY\020\t\022\013\n\007EXPIRED\020\n\022" +
-      "\016\n\nDATA_ERROR\020\013\022\023\n\017PERM_DATA_ERROR\020\014\022\033\n\027" +
-      "REMOTE_CONNECTION_ERROR\020\r\022\014\n\010NO_SPACE\020\016\022" +
-      "\032\n\026NO_SUCH_HMAC_ALGORITHM\020\017\022\023\n\017INVALID_R" +
-      "EQUEST\020\020\022\033\n\027NESTED_OPERATION_ERRORS\020\021\022\021\n",
-      "\rDEVICE_LOCKED\020\022\022\033\n\027DEVICE_ALREADY_UNLOC" +
-      "KED\020\023\022\031\n\025CONNECTION_TERMINATED\020\024\032\376\001\n\010Key" +
-      "Value\022\022\n\nnewVersion\030\002 \001(\014\022\r\n\005force\030\010 \001(\010" +
-      "\022\013\n\003key\030\003 \001(\014\022\021\n\tdbVersion\030\004 \001(\014\022\013\n\003tag\030" +
-      "\005 \001(\014\022?\n\talgorithm\030\006 \001(\0162,.com.seagate.k" +
-      "inetic.proto.Command.Algorithm\022\024\n\014metada" +
-      "taOnly\030\007 \001(\010\022K\n\017synchronization\030\t \001(\01622." +
-      "com.seagate.kinetic.proto.Command.Synchr" +
-      "onization\032\221\001\n\005Range\022\020\n\010startKey\030\001 \001(\014\022\016\n" +
-      "\006endKey\030\002 \001(\014\022\031\n\021startKeyInclusive\030\003 \001(\010",
-      "\022\027\n\017endKeyInclusive\030\004 \001(\010\022\023\n\013maxReturned" +
-      "\030\005 \001(\005\022\017\n\007reverse\030\006 \001(\010\022\014\n\004keys\030\010 \003(\014\032<\n" +
-      "\005Setup\022\031\n\021newClusterVersion\030\001 \001(\003\022\030\n\020fir" +
-      "mwareDownload\030\005 \001(\010\032\300\003\n\014P2POperation\022B\n\004" +
-      "peer\030\001 \001(\01324.com.seagate.kinetic.proto.C" +
-      "ommand.P2POperation.Peer\022L\n\toperation\030\002 " +
-      "\003(\01329.com.seagate.kinetic.proto.Command." +
-      "P2POperation.Operation\022#\n\033allChildOperat" +
-      "ionsSucceeded\030\003 \001(\010\032\303\001\n\tOperation\022\013\n\003key" +
-      "\030\003 \001(\014\022\017\n\007version\030\004 \001(\014\022\016\n\006newKey\030\005 \001(\014\022",
-      "\r\n\005force\030\006 \001(\010\0229\n\006status\030\007 \001(\0132).com.sea" +
-      "gate.kinetic.proto.Command.Status\022>\n\005p2p" +
-      "op\030\010 \001(\0132/.com.seagate.kinetic.proto.Com" +
-      "mand.P2POperation\0323\n\004Peer\022\020\n\010hostname\030\001 " +
-      "\001(\t\022\014\n\004port\030\002 \001(\005\022\013\n\003tls\030\003 \001(\010\032\225\016\n\006GetLo" +
-      "g\022=\n\005types\030\001 \003(\0162..com.seagate.kinetic.p" +
-      "roto.Command.GetLog.Type\022K\n\014utilizations" +
-      "\030\002 \003(\01325.com.seagate.kinetic.proto.Comma" +
-      "nd.GetLog.Utilization\022K\n\014temperatures\030\003 " +
-      "\003(\01325.com.seagate.kinetic.proto.Command.",
-      "GetLog.Temperature\022D\n\010capacity\030\004 \001(\01322.c" +
-      "om.seagate.kinetic.proto.Command.GetLog." +
-      "Capacity\022N\n\rconfiguration\030\005 \001(\01327.com.se" +
-      "agate.kinetic.proto.Command.GetLog.Confi" +
-      "guration\022H\n\nstatistics\030\006 \003(\01324.com.seaga" +
-      "te.kinetic.proto.Command.GetLog.Statisti" +
-      "cs\022\020\n\010messages\030\007 \001(\014\022@\n\006limits\030\010 \001(\01320.c" +
-      "om.seagate.kinetic.proto.Command.GetLog." +
-      "Limits\022@\n\006device\030\t \001(\01320.com.seagate.kin" +
-      "etic.proto.Command.GetLog.Device\032*\n\013Util",
-      "ization\022\014\n\004name\030\001 \001(\t\022\r\n\005value\030\002 \001(\002\032^\n\013" +
-      "Temperature\022\014\n\004name\030\001 \001(\t\022\017\n\007current\030\002 \001" +
-      "(\002\022\017\n\007minimum\030\003 \001(\002\022\017\n\007maximum\030\004 \001(\002\022\016\n\006" +
-      "target\030\005 \001(\002\032?\n\010Capacity\022\036\n\026nominalCapac" +
-      "ityInBytes\030\004 \001(\004\022\023\n\013portionFull\030\005 \001(\002\032\266\003" +
-      "\n\rConfiguration\022\016\n\006vendor\030\005 \001(\t\022\r\n\005model" +
-      "\030\006 \001(\t\022\024\n\014serialNumber\030\007 \001(\014\022\025\n\rworldWid" +
-      "eName\030\016 \001(\014\022\017\n\007version\030\010 \001(\t\022\027\n\017compilat" +
-      "ionDate\030\014 \001(\t\022\022\n\nsourceHash\030\r \001(\t\022\027\n\017pro" +
-      "tocolVersion\030\017 \001(\t\022\037\n\027protocolCompilatio",
-      "nDate\030\020 \001(\t\022\032\n\022protocolSourceHash\030\021 \001(\t\022" +
-      "T\n\tinterface\030\t \003(\0132A.com.seagate.kinetic" +
-      ".proto.Command.GetLog.Configuration.Inte" +
-      "rface\022\014\n\004port\030\n \001(\005\022\017\n\007tlsPort\030\013 \001(\005\032P\n\t" +
-      "Interface\022\014\n\004name\030\001 \001(\t\022\013\n\003MAC\030\002 \001(\014\022\023\n\013" +
-      "ipv4Address\030\003 \001(\014\022\023\n\013ipv6Address\030\004 \001(\014\032o" +
-      "\n\nStatistics\022C\n\013messageType\030\001 \001(\0162..com." +
-      "seagate.kinetic.proto.Command.MessageTyp" +
-      "e\022\r\n\005count\030\004 \001(\004\022\r\n\005bytes\030\005 \001(\004\032\213\002\n\006Limi" +
-      "ts\022\022\n\nmaxKeySize\030\001 \001(\r\022\024\n\014maxValueSize\030\002",
-      " \001(\r\022\026\n\016maxVersionSize\030\003 \001(\r\022\022\n\nmaxTagSi" +
-      "ze\030\004 \001(\r\022\026\n\016maxConnections\030\005 \001(\r\022\"\n\032maxO" +
-      "utstandingReadRequests\030\006 \001(\r\022#\n\033maxOutst" +
-      "andingWriteRequests\030\007 \001(\r\022\026\n\016maxMessageS" +
-      "ize\030\010 \001(\r\022\030\n\020maxKeyRangeCount\030\t \001(\r\022\030\n\020m" +
-      "axIdentityCount\030\n \001(\r\032\026\n\006Device\022\014\n\004name\030" +
-      "\001 \001(\014\"\236\001\n\004Type\022\031\n\014INVALID_TYPE\020\377\377\377\377\377\377\377\377\377" +
-      "\001\022\020\n\014UTILIZATIONS\020\000\022\020\n\014TEMPERATURES\020\001\022\016\n" +
-      "\nCAPACITIES\020\002\022\021\n\rCONFIGURATION\020\003\022\016\n\nSTAT" +
-      "ISTICS\020\004\022\014\n\010MESSAGES\020\005\022\n\n\006LIMITS\020\006\022\n\n\006DE",
-      "VICE\020\007\032\375\005\n\010Security\022<\n\003acl\030\002 \003(\0132/.com.s" +
-      "eagate.kinetic.proto.Command.Security.AC" +
-      "L\022\022\n\noldLockPIN\030\003 \001(\014\022\022\n\nnewLockPIN\030\004 \001(" +
-      "\014\022\023\n\013oldErasePIN\030\005 \001(\014\022\023\n\013newErasePIN\030\006 " +
-      "\001(\014\032\340\004\n\003ACL\022\020\n\010identity\030\001 \001(\003\022\013\n\003key\030\002 \001" +
-      "(\014\022T\n\rhmacAlgorithm\030\003 \001(\0162=.com.seagate." +
-      "kinetic.proto.Command.Security.ACL.HMACA" +
-      "lgorithm\022D\n\005scope\030\004 \003(\01325.com.seagate.ki" +
-      "netic.proto.Command.Security.ACL.Scope\022@" +
-      "\n\013maxPriority\030\005 \001(\0162+.com.seagate.kineti",
-      "c.proto.Command.Priority\032\213\001\n\005Scope\022\016\n\006of" +
-      "fset\030\001 \001(\003\022\r\n\005value\030\002 \001(\014\022N\n\npermission\030" +
-      "\003 \003(\0162:.com.seagate.kinetic.proto.Comman" +
-      "d.Security.ACL.Permission\022\023\n\013TlsRequired" +
-      "\030\004 \001(\010\"B\n\rHMACAlgorithm\022#\n\026INVALID_HMAC_" +
-      "ALGORITHM\020\377\377\377\377\377\377\377\377\377\001\022\014\n\010HmacSHA1\020\001\"\211\001\n\nP" +
-      "ermission\022\037\n\022INVALID_PERMISSION\020\377\377\377\377\377\377\377\377" +
-      "\377\001\022\010\n\004READ\020\000\022\t\n\005WRITE\020\001\022\n\n\006DELETE\020\002\022\t\n\005R" +
-      "ANGE\020\003\022\t\n\005SETUP\020\004\022\t\n\005P2POP\020\005\022\n\n\006GETLOG\020\007" +
-      "\022\014\n\010SECURITY\020\010\032\362\001\n\023BackgroundOperation\022U",
-      "\n\nbackOpType\030\001 \001(\0162A.com.seagate.kinetic" +
-      ".proto.Command.BackgroundOperation.BackO" +
-      "pType\0227\n\005range\030\002 \001(\0132(.com.seagate.kinet" +
-      "ic.proto.Command.Range\"K\n\nBackOpType\022\033\n\016" +
-      "INVALID_BACKOP\020\377\377\377\377\377\377\377\377\377\001\022\r\n\tMEDIASCAN\020\001" +
-      "\022\021\n\rMEDIAOPTIMIZE\020\002\032\320\001\n\014PinOperation\022L\n\t" +
-      "pinOpType\030\001 \001(\01629.com.seagate.kinetic.pr" +
-      "oto.Command.PinOperation.PinOpType\"r\n\tPi" +
-      "nOpType\022\032\n\rINVALID_PINOP\020\377\377\377\377\377\377\377\377\377\001\022\020\n\014U" +
-      "NLOCK_PINOP\020\001\022\016\n\nLOCK_PINOP\020\002\022\017\n\013ERASE_P",
-      "INOP\020\003\022\026\n\022SECURE_ERASE_PINOP\020\004\"c\n\017Synchr" +
-      "onization\022$\n\027INVALID_SYNCHRONIZATION\020\377\377\377" +
-      "\377\377\377\377\377\377\001\022\020\n\014WRITETHROUGH\020\001\022\r\n\tWRITEBACK\020\002" +
-      "\022\t\n\005FLUSH\020\003\"F\n\010Priority\022\n\n\006NORMAL\020\005\022\n\n\006L" +
-      "OWEST\020\001\022\t\n\005LOWER\020\003\022\n\n\006HIGHER\020\007\022\013\n\007HIGHES" +
-      "T\020\t\"_\n\tAlgorithm\022\036\n\021INVALID_ALGORITHM\020\377\377" +
-      "\377\377\377\377\377\377\377\001\022\010\n\004SHA1\020\001\022\010\n\004SHA2\020\002\022\010\n\004SHA3\020\003\022\t" +
-      "\n\005CRC32\020\004\022\t\n\005CRC64\020\005\"\307\004\n\013MessageType\022!\n\024" +
-      "INVALID_MESSAGE_TYPE\020\377\377\377\377\377\377\377\377\377\001\022\007\n\003GET\020\002" +
-      "\022\020\n\014GET_RESPONSE\020\001\022\007\n\003PUT\020\004\022\020\n\014PUT_RESPO",
-      "NSE\020\003\022\n\n\006DELETE\020\006\022\023\n\017DELETE_RESPONSE\020\005\022\013" +
-      "\n\007GETNEXT\020\010\022\024\n\020GETNEXT_RESPONSE\020\007\022\017\n\013GET" +
-      "PREVIOUS\020\n\022\030\n\024GETPREVIOUS_RESPONSE\020\t\022\017\n\013" +
-      "GETKEYRANGE\020\014\022\030\n\024GETKEYRANGE_RESPONSE\020\013\022" +
-      "\016\n\nGETVERSION\020\020\022\027\n\023GETVERSION_RESPONSE\020\017" +
-      "\022\t\n\005SETUP\020\026\022\022\n\016SETUP_RESPONSE\020\025\022\n\n\006GETLO" +
-      "G\020\030\022\023\n\017GETLOG_RESPONSE\020\027\022\014\n\010SECURITY\020\032\022\025" +
-      "\n\021SECURITY_RESPONSE\020\031\022\021\n\rPEER2PEERPUSH\020\034" +
-      "\022\032\n\026PEER2PEERPUSH_RESPONSE\020\033\022\010\n\004NOOP\020\036\022\021" +
-      "\n\rNOOP_RESPONSE\020\035\022\020\n\014FLUSHALLDATA\020 \022\031\n\025F",
-      "LUSHALLDATA_RESPONSE\020\037\022\n\n\006BACKOP\020\"\022\023\n\017BA" +
-      "CKOP_RESPONSE\020!\022\t\n\005PINOP\020$\022\022\n\016PINOP_RESP" +
-      "ONSE\020#B\tB\007Kinetic"
+      "ate.kinetic.proto.Command.Security\022>\n\005pi" +
+      "nOp\030\010 \001(\0132/.com.seagate.kinetic.proto.Co" +
+      "mmand.PinOperation\032\336\004\n\006Status\022B\n\004code\030\001 " +
+      "\001(\01624.com.seagate.kinetic.proto.Command." +
+      "Status.StatusCode\022\025\n\rstatusMessage\030\002 \001(\t" +
+      "\022\027\n\017detailedMessage\030\003 \001(\014\"\337\003\n\nStatusCode" +
+      "\022 \n\023INVALID_STATUS_CODE\020\377\377\377\377\377\377\377\377\377\001\022\021\n\rNO" +
+      "T_ATTEMPTED\020\000\022\013\n\007SUCCESS\020\001\022\020\n\014HMAC_FAILU",
+      "RE\020\002\022\022\n\016NOT_AUTHORIZED\020\003\022\023\n\017VERSION_FAIL" +
+      "URE\020\004\022\022\n\016INTERNAL_ERROR\020\005\022\023\n\017HEADER_REQU" +
+      "IRED\020\006\022\r\n\tNOT_FOUND\020\007\022\024\n\020VERSION_MISMATC" +
+      "H\020\010\022\020\n\014SERVICE_BUSY\020\t\022\013\n\007EXPIRED\020\n\022\016\n\nDA" +
+      "TA_ERROR\020\013\022\023\n\017PERM_DATA_ERROR\020\014\022\033\n\027REMOT" +
+      "E_CONNECTION_ERROR\020\r\022\014\n\010NO_SPACE\020\016\022\032\n\026NO" +
+      "_SUCH_HMAC_ALGORITHM\020\017\022\023\n\017INVALID_REQUES" +
+      "T\020\020\022\033\n\027NESTED_OPERATION_ERRORS\020\021\022\021\n\rDEVI" +
+      "CE_LOCKED\020\022\022\033\n\027DEVICE_ALREADY_UNLOCKED\020\023" +
+      "\022\031\n\025CONNECTION_TERMINATED\020\024\032\376\001\n\010KeyValue",
+      "\022\022\n\nnewVersion\030\002 \001(\014\022\r\n\005force\030\010 \001(\010\022\013\n\003k" +
+      "ey\030\003 \001(\014\022\021\n\tdbVersion\030\004 \001(\014\022\013\n\003tag\030\005 \001(\014" +
+      "\022?\n\talgorithm\030\006 \001(\0162,.com.seagate.kineti" +
+      "c.proto.Command.Algorithm\022\024\n\014metadataOnl" +
+      "y\030\007 \001(\010\022K\n\017synchronization\030\t \001(\01622.com.s" +
+      "eagate.kinetic.proto.Command.Synchroniza" +
+      "tion\032\221\001\n\005Range\022\020\n\010startKey\030\001 \001(\014\022\016\n\006endK" +
+      "ey\030\002 \001(\014\022\031\n\021startKeyInclusive\030\003 \001(\010\022\027\n\017e" +
+      "ndKeyInclusive\030\004 \001(\010\022\023\n\013maxReturned\030\005 \001(" +
+      "\005\022\017\n\007reverse\030\006 \001(\010\022\014\n\004keys\030\010 \003(\014\032<\n\005Setu",
+      "p\022\031\n\021newClusterVersion\030\001 \001(\003\022\030\n\020firmware" +
+      "Download\030\005 \001(\010\032\300\003\n\014P2POperation\022B\n\004peer\030" +
+      "\001 \001(\01324.com.seagate.kinetic.proto.Comman" +
+      "d.P2POperation.Peer\022L\n\toperation\030\002 \003(\01329" +
+      ".com.seagate.kinetic.proto.Command.P2POp" +
+      "eration.Operation\022#\n\033allChildOperationsS" +
+      "ucceeded\030\003 \001(\010\032\303\001\n\tOperation\022\013\n\003key\030\003 \001(" +
+      "\014\022\017\n\007version\030\004 \001(\014\022\016\n\006newKey\030\005 \001(\014\022\r\n\005fo" +
+      "rce\030\006 \001(\010\0229\n\006status\030\007 \001(\0132).com.seagate." +
+      "kinetic.proto.Command.Status\022>\n\005p2pop\030\010 ",
+      "\001(\0132/.com.seagate.kinetic.proto.Command." +
+      "P2POperation\0323\n\004Peer\022\020\n\010hostname\030\001 \001(\t\022\014" +
+      "\n\004port\030\002 \001(\005\022\013\n\003tls\030\003 \001(\010\032\251\016\n\006GetLog\022=\n\005" +
+      "types\030\001 \003(\0162..com.seagate.kinetic.proto." +
+      "Command.GetLog.Type\022K\n\014utilizations\030\002 \003(" +
+      "\01325.com.seagate.kinetic.proto.Command.Ge" +
+      "tLog.Utilization\022K\n\014temperatures\030\003 \003(\01325" +
+      ".com.seagate.kinetic.proto.Command.GetLo" +
+      "g.Temperature\022D\n\010capacity\030\004 \001(\01322.com.se" +
+      "agate.kinetic.proto.Command.GetLog.Capac",
+      "ity\022N\n\rconfiguration\030\005 \001(\01327.com.seagate" +
+      ".kinetic.proto.Command.GetLog.Configurat" +
+      "ion\022H\n\nstatistics\030\006 \003(\01324.com.seagate.ki" +
+      "netic.proto.Command.GetLog.Statistics\022\020\n" +
+      "\010messages\030\007 \001(\014\022@\n\006limits\030\010 \001(\01320.com.se" +
+      "agate.kinetic.proto.Command.GetLog.Limit" +
+      "s\022@\n\006device\030\t \001(\01320.com.seagate.kinetic." +
+      "proto.Command.GetLog.Device\032*\n\013Utilizati" +
+      "on\022\014\n\004name\030\001 \001(\t\022\r\n\005value\030\002 \001(\002\032^\n\013Tempe" +
+      "rature\022\014\n\004name\030\001 \001(\t\022\017\n\007current\030\002 \001(\002\022\017\n",
+      "\007minimum\030\003 \001(\002\022\017\n\007maximum\030\004 \001(\002\022\016\n\006targe" +
+      "t\030\005 \001(\002\032?\n\010Capacity\022\036\n\026nominalCapacityIn" +
+      "Bytes\030\004 \001(\004\022\023\n\013portionFull\030\005 \001(\002\032\266\003\n\rCon" +
+      "figuration\022\016\n\006vendor\030\005 \001(\t\022\r\n\005model\030\006 \001(" +
+      "\t\022\024\n\014serialNumber\030\007 \001(\014\022\025\n\rworldWideName" +
+      "\030\016 \001(\014\022\017\n\007version\030\010 \001(\t\022\027\n\017compilationDa" +
+      "te\030\014 \001(\t\022\022\n\nsourceHash\030\r \001(\t\022\027\n\017protocol" +
+      "Version\030\017 \001(\t\022\037\n\027protocolCompilationDate" +
+      "\030\020 \001(\t\022\032\n\022protocolSourceHash\030\021 \001(\t\022T\n\tin" +
+      "terface\030\t \003(\0132A.com.seagate.kinetic.prot",
+      "o.Command.GetLog.Configuration.Interface" +
+      "\022\014\n\004port\030\n \001(\005\022\017\n\007tlsPort\030\013 \001(\005\032P\n\tInter" +
+      "face\022\014\n\004name\030\001 \001(\t\022\013\n\003MAC\030\002 \001(\014\022\023\n\013ipv4A" +
+      "ddress\030\003 \001(\014\022\023\n\013ipv6Address\030\004 \001(\014\032o\n\nSta" +
+      "tistics\022C\n\013messageType\030\001 \001(\0162..com.seaga" +
+      "te.kinetic.proto.Command.MessageType\022\r\n\005" +
+      "count\030\004 \001(\004\022\r\n\005bytes\030\005 \001(\004\032\237\002\n\006Limits\022\022\n" +
+      "\nmaxKeySize\030\001 \001(\r\022\024\n\014maxValueSize\030\002 \001(\r\022" +
+      "\026\n\016maxVersionSize\030\003 \001(\r\022\022\n\nmaxTagSize\030\004 " +
+      "\001(\r\022\026\n\016maxConnections\030\005 \001(\r\022\"\n\032maxOutsta",
+      "ndingReadRequests\030\006 \001(\r\022#\n\033maxOutstandin" +
+      "gWriteRequests\030\007 \001(\r\022\026\n\016maxMessageSize\030\010" +
+      " \001(\r\022\030\n\020maxKeyRangeCount\030\t \001(\r\022\030\n\020maxIde" +
+      "ntityCount\030\n \001(\r\022\022\n\nmaxPinSize\030\013 \001(\r\032\026\n\006" +
+      "Device\022\014\n\004name\030\001 \001(\014\"\236\001\n\004Type\022\031\n\014INVALID" +
+      "_TYPE\020\377\377\377\377\377\377\377\377\377\001\022\020\n\014UTILIZATIONS\020\000\022\020\n\014TE" +
+      "MPERATURES\020\001\022\016\n\nCAPACITIES\020\002\022\021\n\rCONFIGUR" +
+      "ATION\020\003\022\016\n\nSTATISTICS\020\004\022\014\n\010MESSAGES\020\005\022\n\n" +
+      "\006LIMITS\020\006\022\n\n\006DEVICE\020\007\032\375\005\n\010Security\022<\n\003ac" +
+      "l\030\002 \003(\0132/.com.seagate.kinetic.proto.Comm",
+      "and.Security.ACL\022\022\n\noldLockPIN\030\003 \001(\014\022\022\n\n" +
+      "newLockPIN\030\004 \001(\014\022\023\n\013oldErasePIN\030\005 \001(\014\022\023\n" +
+      "\013newErasePIN\030\006 \001(\014\032\340\004\n\003ACL\022\020\n\010identity\030\001" +
+      " \001(\003\022\013\n\003key\030\002 \001(\014\022T\n\rhmacAlgorithm\030\003 \001(\016" +
+      "2=.com.seagate.kinetic.proto.Command.Sec" +
+      "urity.ACL.HMACAlgorithm\022D\n\005scope\030\004 \003(\01325" +
+      ".com.seagate.kinetic.proto.Command.Secur" +
+      "ity.ACL.Scope\022@\n\013maxPriority\030\005 \001(\0162+.com" +
+      ".seagate.kinetic.proto.Command.Priority\032" +
+      "\213\001\n\005Scope\022\016\n\006offset\030\001 \001(\003\022\r\n\005value\030\002 \001(\014",
+      "\022N\n\npermission\030\003 \003(\0162:.com.seagate.kinet" +
+      "ic.proto.Command.Security.ACL.Permission" +
+      "\022\023\n\013TlsRequired\030\004 \001(\010\"B\n\rHMACAlgorithm\022#" +
+      "\n\026INVALID_HMAC_ALGORITHM\020\377\377\377\377\377\377\377\377\377\001\022\014\n\010H" +
+      "macSHA1\020\001\"\211\001\n\nPermission\022\037\n\022INVALID_PERM" +
+      "ISSION\020\377\377\377\377\377\377\377\377\377\001\022\010\n\004READ\020\000\022\t\n\005WRITE\020\001\022\n" +
+      "\n\006DELETE\020\002\022\t\n\005RANGE\020\003\022\t\n\005SETUP\020\004\022\t\n\005P2PO" +
+      "P\020\005\022\n\n\006GETLOG\020\007\022\014\n\010SECURITY\020\010\032\320\001\n\014PinOpe" +
+      "ration\022L\n\tpinOpType\030\001 \001(\01629.com.seagate." +
+      "kinetic.proto.Command.PinOperation.PinOp",
+      "Type\"r\n\tPinOpType\022\032\n\rINVALID_PINOP\020\377\377\377\377\377" +
+      "\377\377\377\377\001\022\020\n\014UNLOCK_PINOP\020\001\022\016\n\nLOCK_PINOP\020\002\022" +
+      "\017\n\013ERASE_PINOP\020\003\022\026\n\022SECURE_ERASE_PINOP\020\004" +
+      "\"c\n\017Synchronization\022$\n\027INVALID_SYNCHRONI" +
+      "ZATION\020\377\377\377\377\377\377\377\377\377\001\022\020\n\014WRITETHROUGH\020\001\022\r\n\tW" +
+      "RITEBACK\020\002\022\t\n\005FLUSH\020\003\"F\n\010Priority\022\n\n\006NOR" +
+      "MAL\020\005\022\n\n\006LOWEST\020\001\022\t\n\005LOWER\020\003\022\n\n\006HIGHER\020\007" +
+      "\022\013\n\007HIGHEST\020\t\"_\n\tAlgorithm\022\036\n\021INVALID_AL" +
+      "GORITHM\020\377\377\377\377\377\377\377\377\377\001\022\010\n\004SHA1\020\001\022\010\n\004SHA2\020\002\022\010" +
+      "\n\004SHA3\020\003\022\t\n\005CRC32\020\004\022\t\n\005CRC64\020\005\"\374\004\n\013Messa",
+      "geType\022!\n\024INVALID_MESSAGE_TYPE\020\377\377\377\377\377\377\377\377\377" +
+      "\001\022\007\n\003GET\020\002\022\020\n\014GET_RESPONSE\020\001\022\007\n\003PUT\020\004\022\020\n" +
+      "\014PUT_RESPONSE\020\003\022\n\n\006DELETE\020\006\022\023\n\017DELETE_RE" +
+      "SPONSE\020\005\022\013\n\007GETNEXT\020\010\022\024\n\020GETNEXT_RESPONS" +
+      "E\020\007\022\017\n\013GETPREVIOUS\020\n\022\030\n\024GETPREVIOUS_RESP" +
+      "ONSE\020\t\022\017\n\013GETKEYRANGE\020\014\022\030\n\024GETKEYRANGE_R" +
+      "ESPONSE\020\013\022\016\n\nGETVERSION\020\020\022\027\n\023GETVERSION_" +
+      "RESPONSE\020\017\022\t\n\005SETUP\020\026\022\022\n\016SETUP_RESPONSE\020" +
+      "\025\022\n\n\006GETLOG\020\030\022\023\n\017GETLOG_RESPONSE\020\027\022\014\n\010SE" +
+      "CURITY\020\032\022\025\n\021SECURITY_RESPONSE\020\031\022\021\n\rPEER2",
+      "PEERPUSH\020\034\022\032\n\026PEER2PEERPUSH_RESPONSE\020\033\022\010" +
+      "\n\004NOOP\020\036\022\021\n\rNOOP_RESPONSE\020\035\022\020\n\014FLUSHALLD" +
+      "ATA\020 \022\031\n\025FLUSHALLDATA_RESPONSE\020\037\022\t\n\005PINO" +
+      "P\020$\022\022\n\016PINOP_RESPONSE\020#\022\r\n\tMEDIASCAN\020&\022\026" +
+      "\n\022MEDIASCAN_RESPONSE\020%\022\021\n\rMEDIAOPTIMIZE\020" +
+      "(\022\032\n\026MEDIAOPTIMIZE_RESPONSE\020\'B\tB\007Kinetic"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -31457,7 +30483,7 @@ public final class Kinetic {
           internal_static_com_seagate_kinetic_proto_Command_Body_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_com_seagate_kinetic_proto_Command_Body_descriptor,
-              new java.lang.String[] { "KeyValue", "Range", "Setup", "P2POperation", "GetLog", "Security", "BackgroundOperation", "PinOp", });
+              new java.lang.String[] { "KeyValue", "Range", "Setup", "P2POperation", "GetLog", "Security", "PinOp", });
           internal_static_com_seagate_kinetic_proto_Command_Status_descriptor =
             internal_static_com_seagate_kinetic_proto_Command_descriptor.getNestedTypes().get(2);
           internal_static_com_seagate_kinetic_proto_Command_Status_fieldAccessorTable = new
@@ -31547,7 +30573,7 @@ public final class Kinetic {
           internal_static_com_seagate_kinetic_proto_Command_GetLog_Limits_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_com_seagate_kinetic_proto_Command_GetLog_Limits_descriptor,
-              new java.lang.String[] { "MaxKeySize", "MaxValueSize", "MaxVersionSize", "MaxTagSize", "MaxConnections", "MaxOutstandingReadRequests", "MaxOutstandingWriteRequests", "MaxMessageSize", "MaxKeyRangeCount", "MaxIdentityCount", });
+              new java.lang.String[] { "MaxKeySize", "MaxValueSize", "MaxVersionSize", "MaxTagSize", "MaxConnections", "MaxOutstandingReadRequests", "MaxOutstandingWriteRequests", "MaxMessageSize", "MaxKeyRangeCount", "MaxIdentityCount", "MaxPinSize", });
           internal_static_com_seagate_kinetic_proto_Command_GetLog_Device_descriptor =
             internal_static_com_seagate_kinetic_proto_Command_GetLog_descriptor.getNestedTypes().get(6);
           internal_static_com_seagate_kinetic_proto_Command_GetLog_Device_fieldAccessorTable = new
@@ -31572,14 +30598,8 @@ public final class Kinetic {
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_com_seagate_kinetic_proto_Command_Security_ACL_Scope_descriptor,
               new java.lang.String[] { "Offset", "Value", "Permission", "TlsRequired", });
-          internal_static_com_seagate_kinetic_proto_Command_BackgroundOperation_descriptor =
-            internal_static_com_seagate_kinetic_proto_Command_descriptor.getNestedTypes().get(9);
-          internal_static_com_seagate_kinetic_proto_Command_BackgroundOperation_fieldAccessorTable = new
-            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_com_seagate_kinetic_proto_Command_BackgroundOperation_descriptor,
-              new java.lang.String[] { "BackOpType", "Range", });
           internal_static_com_seagate_kinetic_proto_Command_PinOperation_descriptor =
-            internal_static_com_seagate_kinetic_proto_Command_descriptor.getNestedTypes().get(10);
+            internal_static_com_seagate_kinetic_proto_Command_descriptor.getNestedTypes().get(9);
           internal_static_com_seagate_kinetic_proto_Command_PinOperation_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_com_seagate_kinetic_proto_Command_PinOperation_descriptor,

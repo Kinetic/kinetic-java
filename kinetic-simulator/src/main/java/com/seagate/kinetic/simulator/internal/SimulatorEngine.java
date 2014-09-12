@@ -451,9 +451,8 @@ public class SimulatorEngine implements MessageService {
         // get user key
         Key key = this.hmacKeyMap.get(Long.valueOf(userId));
         
-        // moved to top as instance variable
-        //String kineticHome = kineticHome(config);
-
+        MessageType mtype = kmreq.getCommand().getHeader().getMessageType();
+        
         try {
             
             HeaderOp.checkHeader(kmreq, kmresp, key, clusterVersion);
@@ -463,17 +462,17 @@ public class SimulatorEngine implements MessageService {
             if (kmreq.getMessage().getAuthType() == AuthType.PINAUTH) {
                 //perform pin op
                 PinOperationHandler.handleOperation(kmreq, kmresp, this); 
-            } else if (kmreq.getCommand().getHeader().getMessageType() == MessageType.FLUSHALLDATA) {
+            } else if (mtype == MessageType.FLUSHALLDATA) {
                 commandBuilder.getHeaderBuilder()
                 .setMessageType(MessageType.FLUSHALLDATA_RESPONSE);
                 logger.warning("received flush data command, this is a no op on simulator at this time ...");
-            } else if (kmreq.getCommand().getHeader().getMessageType() == MessageType.NOOP) {
+            } else if (mtype == MessageType.NOOP) {
                 commandBuilder.getHeaderBuilder()
                 .setMessageType(MessageType.NOOP_RESPONSE);
             } else if (kmreq.getCommand().getBody()
                     .hasKeyValue()) {
                 KVOp.Op(aclmap, store, kmreq, kmresp);
-            } else if (kmreq.getCommand().getBody().hasRange()) {
+            } else if (mtype == MessageType.GETKEYRANGE) {
                 RangeOp.operation(store, kmreq, kmresp, aclmap);
             } else if (kmreq.getCommand().getBody()
                     .hasSecurity()) {
@@ -514,8 +513,10 @@ public class SimulatorEngine implements MessageService {
                 if (hasPermission) {
                     this.p2pHandler.push(aclmap, store, kmreq, kmresp);
                 }
-            } else if (kmreq.getCommand().getBody().hasBackgroundOperation()) {
-                BackGroundOpHandler.handleOperation(kmreq, kmresp, this);
+            } else if (mtype == MessageType.MEDIASCAN) {
+                BackGroundOpHandler.mediaScan (kmreq, kmresp, this);
+            } else if (mtype == MessageType.MEDIAOPTIMIZE) {
+                BackGroundOpHandler.mediaOptimize (kmreq, kmresp, this);
             }
         } catch (DeviceLockedException ire) {
             

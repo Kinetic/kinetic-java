@@ -25,8 +25,6 @@ import kinetic.client.KineticException;
 
 import com.seagate.kinetic.common.lib.KineticMessage;
 import com.seagate.kinetic.proto.Kinetic.Command;
-import com.seagate.kinetic.proto.Kinetic.Command.BackgroundOperation;
-import com.seagate.kinetic.proto.Kinetic.Command.BackgroundOperation.BackOpType;
 
 import com.seagate.kinetic.proto.Kinetic.Command.MessageType;
 
@@ -45,10 +43,10 @@ import com.seagate.kinetic.proto.Kinetic.Command.Status.StatusCode;
  */
 public abstract class BackGroundOpHandler {
     
-    private final static Logger logger = Logger.getLogger(BackgroundOperation.class
+    private final static Logger logger = Logger.getLogger(BackGroundOpHandler.class
             .getName());
-
-    public static void handleOperation(KineticMessage request,
+    
+    public static void mediaScan(KineticMessage request,
             KineticMessage respond, SimulatorEngine engine)
             throws KVStoreException, KineticException {
 
@@ -56,7 +54,7 @@ public abstract class BackGroundOpHandler {
 
         // set reply type
         commandBuilder.getHeaderBuilder().setMessageType(
-                MessageType.BACKOP_RESPONSE);
+                MessageType.MEDIASCAN_RESPONSE);
 
         // set ack sequence
         commandBuilder.getHeaderBuilder().setAckSequence(
@@ -64,7 +62,6 @@ public abstract class BackGroundOpHandler {
 
         try {
             
-            //check if message is valid
             checkIsMessageValid (request);
             
             // check permission
@@ -79,29 +76,70 @@ public abstract class BackGroundOpHandler {
              *  The following statements are for testing purpose only
              */
             
-            // set response back op type
-            commandBuilder
-                    .getBodyBuilder()
-                    .getBackgroundOperationBuilder()
-                    .setBackOpType(
-                            request.getCommand().getBody()
-                                    .getBackgroundOperation().getBackOpType());
-            
             // set endkey in response
             commandBuilder
                     .getBodyBuilder()
-                    .getBackgroundOperationBuilder()
                     .getRangeBuilder()
                     .setEndKey(
-                            request.getCommand().getBody()
-                                    .getBackgroundOperation().getRange()
+                            request.getCommand().getBody().getRange()
                                     .getEndKey());
 
         } catch (KVSecurityException se) {
             commandBuilder.getStatusBuilder()
                     .setCode(StatusCode.NOT_AUTHORIZED);
             commandBuilder.getStatusBuilder().setStatusMessage(se.getMessage());
-            logger.warning("unauthorized pin opeartion request");
+            logger.warning("unauthorized media scan opeartion request");
+        } catch (InvalidRequestException ire) {
+            commandBuilder.getStatusBuilder().setCode(
+                    StatusCode.INVALID_REQUEST);
+            commandBuilder.getStatusBuilder()
+                    .setStatusMessage(ire.getMessage());
+        }
+    }
+    
+    public static void mediaOptimize(KineticMessage request,
+            KineticMessage respond, SimulatorEngine engine)
+            throws KVStoreException, KineticException {
+
+        Command.Builder commandBuilder = (Command.Builder) respond.getCommand();
+
+        // set reply type
+        commandBuilder.getHeaderBuilder().setMessageType(
+                MessageType.MEDIAOPTIMIZE_RESPONSE);
+
+        // set ack sequence
+        commandBuilder.getHeaderBuilder().setAckSequence(
+                request.getCommand().getHeader().getSequence());
+
+        try {
+            
+            checkIsMessageValid (request);
+            
+            // check permission
+            checkPermission (request, engine);  
+            
+            /**
+             *  XXX 09/11/2014 chiaming:
+             *  framework to start media optimize op
+             *  the job should be stoppable by a higher priority received
+             *  before/after the long running bg ops.
+             *  
+             *  The following statements are for testing purpose only
+             */
+            
+            // set endkey in response
+            commandBuilder
+                    .getBodyBuilder()
+                    .getRangeBuilder()
+                    .setEndKey(
+                            request.getCommand().getBody().getRange()
+                                    .getEndKey());
+
+        } catch (KVSecurityException se) {
+            commandBuilder.getStatusBuilder()
+                    .setCode(StatusCode.NOT_AUTHORIZED);
+            commandBuilder.getStatusBuilder().setStatusMessage(se.getMessage());
+            logger.warning("unauthorized media optimize opeartion request");
         } catch (InvalidRequestException ire) {
             commandBuilder.getStatusBuilder().setCode(
                     StatusCode.INVALID_REQUEST);
@@ -112,16 +150,15 @@ public abstract class BackGroundOpHandler {
     
     private static void checkIsMessageValid (KineticMessage request) throws InvalidRequestException {
         
-        BackgroundOperation bgo = request.getCommand().getBody().getBackgroundOperation();
-        BackOpType boType = bgo.getBackOpType();
+        MessageType mtype = request.getCommand().getHeader().getMessageType();
         
-        switch (boType) {
+        switch (mtype) {
         case MEDIASCAN:
         case MEDIAOPTIMIZE:
             // XXX: more request message validation here
             return;
         default:
-            throw new InvalidRequestException ("not a valid back ground op type: " + boType.name());
+            throw new InvalidRequestException ("not a valid back ground op type: " + mtype.name());
         }
         
     }

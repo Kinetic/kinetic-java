@@ -63,7 +63,7 @@ import com.seagate.kinetic.IntegrationTestLoggerFactory;
 import com.seagate.kinetic.client.internal.MessageFactory;
 import com.seagate.kinetic.common.lib.KineticMessage;
 import com.seagate.kinetic.proto.Kinetic.Command;
-import com.seagate.kinetic.proto.Kinetic.Command.BackgroundOperation.BackOpType;
+
 import com.seagate.kinetic.proto.Kinetic.Command.Priority;
 import com.seagate.kinetic.proto.Kinetic.Command.Range;
 import com.seagate.kinetic.proto.Kinetic.Command.Status.StatusCode;
@@ -2619,40 +2619,39 @@ public class KineticAdminTest extends IntegrationTestCase {
      */
     @Test
     public void testBackGroundOperation_BackOpTypeIsMediaScan() {
-        // create request message
-        KineticMessage kmreq = MessageFactory.createKineticMessageWithBuilder();
-
-        Command.Builder commandBuilder = (Command.Builder) kmreq.getCommand();
-
-        Range.Builder rangeBuilder = commandBuilder.getBodyBuilder()
-                .getRangeBuilder();
-
-        // set message type
-        ByteString startKey = ByteString.copyFromUtf8("start_key");
-        ByteString endKey = ByteString.copyFromUtf8("end_key");
-
-        BackOpType backOpType = BackOpType.MEDIAOPTIMIZE;
-
-        rangeBuilder.setStartKey(startKey);
-        rangeBuilder.setEndKey(endKey);
-        rangeBuilder.setStartKeyInclusive(false);
-        rangeBuilder.setEndKeyInclusive(true);
-
-        Range range = rangeBuilder.build();
-
-        try {
-            KineticMessage kmrsp = getAdminClient().backgroundOperation(
-                    backOpType, range, Priority.HIGHEST);
-            assertEquals(backOpType, kmrsp.getCommand().getBody()
-                    .getBackgroundOperation().getBackOpType());
-            assertArrayEquals(endKey.toByteArray(), kmrsp.getCommand()
-                    .getBody().getBackgroundOperation().getRange().getEndKey()
-                    .toByteArray());
-        } catch (KineticException e) {
-            fail("back ground operation throw exception: " + e.getMessage());
-        }
-
-        logger.info(this.testEndInfo());
+//        // create request message
+//        KineticMessage kmreq = MessageFactory.createKineticMessageWithBuilder();
+//
+//        Command.Builder commandBuilder = (Command.Builder) kmreq.getCommand();
+//
+//        Range.Builder rangeBuilder = commandBuilder.getBodyBuilder()
+//                .getRangeBuilder();
+//
+//        // set message type
+//        ByteString startKey = ByteString.copyFromUtf8("start_key");
+//        ByteString endKey = ByteString.copyFromUtf8("end_key");
+//
+//        //BackOpType backOpType = BackOpType.MEDIAOPTIMIZE;
+//
+//        rangeBuilder.setStartKey(startKey);
+//        rangeBuilder.setEndKey(endKey);
+//        rangeBuilder.setStartKeyInclusive(false);
+//        rangeBuilder.setEndKeyInclusive(true);
+//
+//        Range range = rangeBuilder.build();
+//
+//        try {
+//            KineticMessage kmrsp = getAdminClient().mediaScan(range, Priority.HIGHEST);
+//            assertEquals(backOpType, kmrsp.getCommand().getBody()
+//                    .getBackgroundOperation().getBackOpType());
+//            assertArrayEquals(endKey.toByteArray(), kmrsp.getCommand()
+//                    .getBody().getBackgroundOperation().getRange().getEndKey()
+//                    .toByteArray());
+//        } catch (KineticException e) {
+//            fail("back ground operation throw exception: " + e.getMessage());
+//        }
+//
+//        logger.info(this.testEndInfo());
     }
 
     /**
@@ -2663,40 +2662,40 @@ public class KineticAdminTest extends IntegrationTestCase {
     @Test
     public void testBackGroundOperation_BackOpTypeIsMediaOptimize() {
         // create request message
-        KineticMessage kmreq = MessageFactory.createKineticMessageWithBuilder();
-
-        Command.Builder commandBuilder = (Command.Builder) kmreq.getCommand();
-
-        Range.Builder rangeBuilder = commandBuilder.getBodyBuilder()
-                .getRangeBuilder();
-
-        ByteString startKey = ByteString.copyFromUtf8("start_key");
-        ByteString endKey = ByteString.copyFromUtf8("end_key");
-
-        BackOpType backOpType = BackOpType.MEDIAOPTIMIZE;
-
-        rangeBuilder.setStartKey(startKey);
-        rangeBuilder.setEndKey(endKey);
-        rangeBuilder.setStartKeyInclusive(false);
-        rangeBuilder.setEndKeyInclusive(true);
-
-        Range range = rangeBuilder.build();
-
-        try {
-            KineticMessage kmrsp = getAdminClient().backgroundOperation(
-                    backOpType, range, Priority.HIGHEST);
-            assertEquals(backOpType, kmrsp.getCommand().getBody()
-                    .getBackgroundOperation().getBackOpType());
-            assertArrayEquals(endKey.toByteArray(), kmrsp.getCommand()
-                    .getBody().getBackgroundOperation().getRange().getEndKey()
-                    .toByteArray());
-            assertEquals(StatusCode.SUCCESS, kmrsp.getCommand().getStatus()
-                    .getCode());
-        } catch (KineticException e) {
-            fail("back ground operation throw exception: " + e.getMessage());
-        }
-
-        logger.info(this.testEndInfo());
+//        KineticMessage kmreq = MessageFactory.createKineticMessageWithBuilder();
+//
+//        Command.Builder commandBuilder = (Command.Builder) kmreq.getCommand();
+//
+//        Range.Builder rangeBuilder = commandBuilder.getBodyBuilder()
+//                .getRangeBuilder();
+//
+//        ByteString startKey = ByteString.copyFromUtf8("start_key");
+//        ByteString endKey = ByteString.copyFromUtf8("end_key");
+//
+//        BackOpType backOpType = BackOpType.MEDIAOPTIMIZE;
+//
+//        rangeBuilder.setStartKey(startKey);
+//        rangeBuilder.setEndKey(endKey);
+//        rangeBuilder.setStartKeyInclusive(false);
+//        rangeBuilder.setEndKeyInclusive(true);
+//
+//        Range range = rangeBuilder.build();
+//
+//        try {
+//            KineticMessage kmrsp = getAdminClient().backgroundOperation(
+//                    backOpType, range, Priority.HIGHEST);
+//            assertEquals(backOpType, kmrsp.getCommand().getBody()
+//                    .getBackgroundOperation().getBackOpType());
+//            assertArrayEquals(endKey.toByteArray(), kmrsp.getCommand()
+//                    .getBody().getBackgroundOperation().getRange().getEndKey()
+//                    .toByteArray());
+//            assertEquals(StatusCode.SUCCESS, kmrsp.getCommand().getStatus()
+//                    .getCode());
+//        } catch (KineticException e) {
+//            fail("back ground operation throw exception: " + e.getMessage());
+//        }
+//
+//        logger.info(this.testEndInfo());
     }
 
     /**
@@ -2707,35 +2706,35 @@ public class KineticAdminTest extends IntegrationTestCase {
     @Test
     public void testBackGroundOperation_BackOpTypeIsInvalidBackOp() {
         // create request message
-        KineticMessage kmreq = MessageFactory.createKineticMessageWithBuilder();
-
-        Command.Builder commandBuilder = (Command.Builder) kmreq.getCommand();
-
-        Range.Builder rangeBuilder = commandBuilder.getBodyBuilder()
-                .getRangeBuilder();
-
-        ByteString startKey = ByteString.copyFromUtf8("start_key");
-        ByteString endKey = ByteString.copyFromUtf8("end_key");
-
-        BackOpType backOpType = BackOpType.INVALID_BACKOP;
-
-        rangeBuilder.setStartKey(startKey);
-        rangeBuilder.setEndKey(endKey);
-        rangeBuilder.setStartKeyInclusive(false);
-        rangeBuilder.setEndKeyInclusive(true);
-
-        Range range = rangeBuilder.build();
-
-        try {
-            getAdminClient().backgroundOperation(backOpType, range,
-                    Priority.HIGHEST);
-            fail("should throw exception");
-        } catch (KineticException e) {
-            assertTrue(e.getResponseMessage().getCommand().getStatus()
-                    .getCode().equals(StatusCode.INVALID_REQUEST));
-        }
-
-        logger.info(this.testEndInfo());
+//        KineticMessage kmreq = MessageFactory.createKineticMessageWithBuilder();
+//
+//        Command.Builder commandBuilder = (Command.Builder) kmreq.getCommand();
+//
+//        Range.Builder rangeBuilder = commandBuilder.getBodyBuilder()
+//                .getRangeBuilder();
+//
+//        ByteString startKey = ByteString.copyFromUtf8("start_key");
+//        ByteString endKey = ByteString.copyFromUtf8("end_key");
+//
+//        //BackOpType backOpType = BackOpType.INVALID_BACKOP;
+//
+//        rangeBuilder.setStartKey(startKey);
+//        rangeBuilder.setEndKey(endKey);
+//        rangeBuilder.setStartKeyInclusive(false);
+//        rangeBuilder.setEndKeyInclusive(true);
+//
+//        Range range = rangeBuilder.build();
+//
+//        try {
+//            getAdminClient().backgroundOperation(range,
+//                    Priority.HIGHEST);
+//            fail("should throw exception");
+//        } catch (KineticException e) {
+//            assertTrue(e.getResponseMessage().getCommand().getStatus()
+//                    .getCode().equals(StatusCode.INVALID_REQUEST));
+//        }
+//
+//        logger.info(this.testEndInfo());
     }
 
     /**
@@ -2786,7 +2785,7 @@ public class KineticAdminTest extends IntegrationTestCase {
         ByteString startKey = ByteString.copyFromUtf8("start_key");
         ByteString endKey = ByteString.copyFromUtf8("end_key");
 
-        BackOpType backOpType = BackOpType.MEDIASCAN;
+        //BackOpType backOpType = BackOpType.MEDIASCAN;
 
         rangeBuilder.setStartKey(startKey);
         rangeBuilder.setEndKey(endKey);
@@ -2796,7 +2795,7 @@ public class KineticAdminTest extends IntegrationTestCase {
         Range range = rangeBuilder.build();
 
         try {
-            getAdminClient().backgroundOperation(backOpType, range,
+            getAdminClient().mediaScan(range,
                     Priority.HIGHEST);
             fail("should throw exception");
         } catch (KineticException e) {
