@@ -45,31 +45,6 @@ import kinetic.client.p2p.KineticP2pClient;
 public interface KineticAdminClient extends KineticP2pClient {
 
     /**
-     * Setup the Kinetic drive.
-     * 
-     * @param pin
-     *            Compare the pin with drive's pin. If equal, can setup the
-     *            information for the drive, if not, drive will reject the setup
-     *            request.
-     * 
-     * @param setPin
-     *            new pin will replace the pin in the drive.
-     * 
-     * @param newClusterVersion
-     *            set the new cluster version for the drive.
-     * 
-     * @param secureErase
-     *            If secureErase is set true, all data in database will be
-     *            deleted.
-     * 
-     * @throws KineticException
-     *             if any internal error occurred.
-     * @deprecated
-     */
-    public void setup(byte[] pin, byte[] setPin, long newClusterVersion,
-            boolean secureErase) throws KineticException;
-
-    /**
      * Load firmware byte[] to the drive.
      * <p>
      * The firmware byte[] is itself protected on its own for integrity,
@@ -156,35 +131,7 @@ public interface KineticAdminClient extends KineticP2pClient {
      */
     public Device getVendorSpecificDeviceLog (byte[] name) throws KineticException;
 
-    /**
-     * Set the access control list to the Kinetic drive.  
-     * <p>
-     * This API only supports setting ACL or LOCK Pin or Erase PIn one at a time.
-     * <p>
-     * Lock Enable: Will be utilized to enable lock on power cycle. 
-     * <p>
-     * If the Client sets a non-empty value for the lock pin, device will be locked after a power cycle. 
-     * Access to the data is not immediately impacted, but a subsequent power cycle will result in a locked drive.
-     * <p>
-     * Lock Disable: If the Client sets an empty value for the lock pin, lock enable feature is turned off. 
-     * This provides the Client with a mechanism for turning off the locking feature after previously enabling it.
-     * <p>
-     * A device must be in unlock mode before a Security operation can be performed.
-     * <p>
-     *  
-     * @param acls
-     *            ACL information needs to be set.
-     * 
-     * @throws KineticException
-     *             if any internal error occurred.
-     * @see ACL
-     * @see Domain
-     * @see Role
-     * 
-     * @deprecated
-     */
-    public void setSecurity(List<ACL> acls, byte[] oldLockPin, byte[] newLockPin, byte[] oldErasePin, byte[] newErasePin) throws KineticException;
-
+    
     /**
      * Set Security ACL list.
      * 
@@ -238,7 +185,7 @@ public interface KineticAdminClient extends KineticP2pClient {
      * 
      * @throws KineticException if unable to perform the pin operation.
      * 
-     * @see #setSecurity(List, byte[], byte[], byte[], byte[])
+     * @see #setErasePin(byte[], byte[])
      */
     public void secureErase (byte[] pin) throws KineticException;
     
@@ -252,7 +199,7 @@ public interface KineticAdminClient extends KineticP2pClient {
      *
      * @throws KineticException if any internal error occurred.
      * 
-     * @see #setSecurity(List, byte[], byte[], byte[], byte[])
+     * @see #setLockPin(byte[], byte[])
      */
     public void lockDevice (byte[] pin) throws KineticException;
     
@@ -265,7 +212,7 @@ public interface KineticAdminClient extends KineticP2pClient {
      * 
      * @throws KineticException if any internal error occurred.
      * 
-     * @see #setSecurity(List, byte[], byte[], byte[], byte[])
+     * @see #lockDevice(byte[])
      */
     public void unLockDevice (byte[] pin) throws KineticException;
     
@@ -286,17 +233,16 @@ public interface KineticAdminClient extends KineticP2pClient {
      * @return kinetic response message.
      * @throws KineticException if any internal error occurred
      * 
-     * @see BackOpType
-     * @see Priority
      */
     public KineticMessage mediaScan (Range range, Priority priority) throws KineticException;
     
     /**
-     * 
-     * @param range
-     * @param priority
-     * @return
-     * @throws KineticException
+     * Perform media optimize with the specified range and priority.
+     * <p>
+     * @param range range of the optimization
+     * @param priority priority of this task
+     * @return response message.
+     * @throws KineticException if any internal error occurred.
      */
     public KineticMessage mediaOptimize(Range range, Priority priority) throws KineticException;
 }

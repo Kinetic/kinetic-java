@@ -17,7 +17,6 @@
  */
 package com.seagate.kinetic.admin.impl;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import kinetic.admin.ACL;
@@ -26,15 +25,13 @@ import kinetic.admin.Domain;
 import kinetic.admin.KineticAdminClient;
 import kinetic.admin.KineticLog;
 import kinetic.admin.KineticLogType;
-import kinetic.admin.Role;
+
 import kinetic.client.ClientConfiguration;
-//import kinetic.client.KineticClient;
-//import kinetic.client.KineticClientFactory;
+
 import kinetic.client.KineticException;
 
 import com.google.protobuf.ByteString;
-//import com.google.protobuf.Message;
-//import com.google.protobuf.Message.Builder;
+
 import com.seagate.kinetic.client.internal.MessageFactory;
 import com.seagate.kinetic.client.internal.p2p.DefaultKineticP2pClient;
 import com.seagate.kinetic.common.lib.HMACAlgorithmUtil;
@@ -222,7 +219,7 @@ public class DefaultAdminClient extends DefaultKineticP2pClient implements Kinet
         }
     }
 
-    @Override
+    
     public void setSecurity(List<ACL> acls, byte[] oldLockPin,
            byte[] newLockPin, byte[] oldErasePin, byte[] newErasePin) throws KineticException {
 
@@ -317,52 +314,7 @@ public class DefaultAdminClient extends DefaultKineticP2pClient implements Kinet
         }
 
     }
-    
-    
-    private void setPinsWithDeafultAcl(byte[] oldLockPin, byte[] newLockPin,
-            byte[] oldErasePin, byte[] newErasePin) throws KineticException {
-        
-        List<Role> roles = new ArrayList<Role>();
-        roles.add(Role.DELETE);
-        roles.add(Role.GETLOG);
-        roles.add(Role.READ);
-        roles.add(Role.RANGE);
-        roles.add(Role.SECURITY);
-        roles.add(Role.SETUP);
-        roles.add(Role.WRITE);
-        roles.add(Role.P2POP);
-
-        Domain domain = new Domain();
-        domain.setRoles(roles);
-
-        List<Domain> domains = new ArrayList<Domain>();
-        domains.add(domain);
-
-        List<ACL> acls = new ArrayList<ACL>();
-        ACL acl1 = new ACL();
-        acl1.setDomains(domains);
-        acl1.setUserId(1);
-        acl1.setKey("asdfasdf");
-
-        acls.add(acl1);
-
-        this.setSecurity(acls, oldLockPin, newLockPin, oldErasePin, newErasePin);
-    }
-
-    @Override
-    public void setup(byte[] oldErasePin, byte[] newErasePin, long newClusterVersion,
-            boolean secureErase) throws KineticException {
-        
-        this.setPinsWithDeafultAcl(null, null, oldErasePin, newErasePin);
-        
-        if (secureErase) {
-            this.instantErase(newErasePin);
-        }
-        
-        this.setClusterVersion(newClusterVersion);
-        
-    }
-    
+     
     @Override
     public void setClusterVersion (long newClusterVersion) throws KineticException {
         
