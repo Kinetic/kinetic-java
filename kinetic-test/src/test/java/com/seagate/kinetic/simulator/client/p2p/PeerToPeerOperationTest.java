@@ -63,7 +63,7 @@ public class PeerToPeerOperationTest extends IntegrationTestCase {
 
         KineticAdminClient adminClient = KineticAdminClientFactory
                 .createInstance(secondaryTestTarget.getAdminClientConfig());
-        adminClient.setup(null, null, 0, true);
+        adminClient.instantErase(null);
         adminClient.close();
 
         secondaryClient = secondaryTestTarget.createKineticClient();

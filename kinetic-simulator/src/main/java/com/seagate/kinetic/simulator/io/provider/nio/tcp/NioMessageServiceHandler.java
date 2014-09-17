@@ -29,7 +29,6 @@ import com.seagate.kinetic.common.lib.KineticMessage;
 import com.seagate.kinetic.simulator.internal.ConnectionInfo;
 import com.seagate.kinetic.simulator.internal.FaultInjectedCloseConnectionException;
 import com.seagate.kinetic.simulator.internal.SimulatorEngine;
-import com.seagate.kinetic.simulator.internal.StatefulMessage;
 import com.seagate.kinetic.simulator.io.provider.nio.NioConnectionStateManager;
 import com.seagate.kinetic.simulator.io.provider.nio.NioQueuedRequestProcessRunner;
 import com.seagate.kinetic.simulator.io.provider.nio.RequestProcessRunner;
@@ -71,10 +70,10 @@ public class NioMessageServiceHandler extends
 	    super.channelActive(ctx);
 	    
 	    // register connection info with the channel handler context
-	    @SuppressWarnings("unused")
-        ConnectionInfo info = SimulatorEngine.registerNewConnection(ctx);
+        @SuppressWarnings("unused")
+        ConnectionInfo info = this.lcservice.registerNewConnection(ctx);
 	    
-	    //logger.info("***** connection registered., id = " + info.getConnectionId());
+	    //logger.info("***** connection registered., sent UNSOLICITEDSTATUS with cid = " + info.getConnectionId());
 	}
 
 	@Override
@@ -87,25 +86,19 @@ public class NioMessageServiceHandler extends
 					"Fault injected for the simulator");
 		}
 		
-		StatefulMessage sm = NioConnectionStateManager.checkAndGetStatefulMessage(ctx, request);
+		// set ssl channel flag to false
+		request.setIsSecureChannel(false);
+		
+		// check if conn id is set
+		NioConnectionStateManager.checkIfConnectionIdSet(ctx, request);
 
 		if (enforceOrdering) {
 			// process request sequentially
-		    if (sm != null) {
-		        queuedRequestProcessRunner.processRequest(ctx, sm);
-		    } else {
-		        queuedRequestProcessRunner.processRequest(ctx, request);
-		    }
+		    queuedRequestProcessRunner.processRequest(ctx, request);
 		} else {
 			// each request is independently processed
 			RequestProcessRunner rpr = null;
-			
-			if (sm != null) {
-			    rpr = new RequestProcessRunner(lcservice, ctx,sm);
-			} else {
-			    rpr = new RequestProcessRunner(lcservice, ctx,request);
-			}
-			
+			rpr = new RequestProcessRunner(lcservice, ctx,request);
 			this.lcservice.execute(rpr);
 		}
 	}

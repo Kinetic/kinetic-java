@@ -32,7 +32,9 @@ import java.net.Socket;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.google.protobuf.InvalidProtocolBufferException;
 import com.seagate.kinetic.common.lib.KineticMessage;
+import com.seagate.kinetic.proto.Kinetic.Command;
 import com.seagate.kinetic.proto.Kinetic.Message;
 import com.seagate.kinetic.proto.Kinetic.Message.Builder;
 import com.seagate.kinetic.simulator.internal.MessageHandler;
@@ -251,6 +253,16 @@ public class IoHandler implements Runnable {
 				if (request == null) {
 					break;
 				}
+				
+				// build command
+                Command.Builder commandBuilder = Command.newBuilder();
+
+                try {
+                    commandBuilder.mergeFrom(request.getCommandBytes());
+                    km.setCommand(commandBuilder.build());
+                } catch (InvalidProtocolBufferException e) {
+                    logger.log(Level.WARNING, e.getMessage(), e);
+                }
 
 				if (logger.isLoggable(Level.FINEST)) {
 					logger.finest("received request message: " + request);

@@ -32,7 +32,7 @@ import kinetic.simulator.SimulatorConfiguration;
  */
 public class VirtualDrives {
     
-    public static final int MAX_SIMULATOR = 1000;
+    public static final int MAX_SIMULATOR = 100;
 
     private int maxSimulator = MAX_SIMULATOR;
     

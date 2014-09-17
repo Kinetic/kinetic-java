@@ -34,10 +34,12 @@ import kinetic.simulator.SimulatorConfiguration;
 import com.google.common.collect.Lists;
 import com.google.protobuf.ByteString;
 import com.seagate.kinetic.common.lib.Hmac;
-import com.seagate.kinetic.proto.Kinetic.Message;
-import com.seagate.kinetic.proto.Kinetic.Message.MessageType;
-import com.seagate.kinetic.proto.Kinetic.Message.Range;
-import com.seagate.kinetic.proto.Kinetic.Message.Status;
+import com.seagate.kinetic.common.lib.KineticMessage;
+import com.seagate.kinetic.proto.Kinetic.Command;
+
+import com.seagate.kinetic.proto.Kinetic.Command.MessageType;
+import com.seagate.kinetic.proto.Kinetic.Command.Range;
+import com.seagate.kinetic.proto.Kinetic.Command.Status;
 import com.seagate.kinetic.simulator.internal.Authorizer;
 import com.seagate.kinetic.simulator.internal.InvalidRequestException;
 import com.seagate.kinetic.simulator.internal.KVSecurityException;
@@ -75,12 +77,14 @@ public class RangeOp {
 
     @SuppressWarnings("unchecked")
     public static void operation(Store<ByteString, ByteString, KVValue> store,
-            Message request, Message.Builder respond, Map<Long, Message.Security.ACL> aclMap) {
+            KineticMessage request, KineticMessage respond, Map<Long, Command.Security.ACL> aclMap) {
 
         ByteString k1 = null, k2 = null;
         boolean i1, i2, reverse;
         int n;
 
+        Command.Builder commandBuilder = (Command.Builder) respond.getCommand();
+        
         try {
              
             try {
@@ -119,15 +123,14 @@ public class RangeOp {
                                 k1, i1, k2, i2, n);
                         LOG.fine("getKeyRangeReversed returned " + l.size() + " entries");
 
-                        kvKeys = filterRawKeysToAuthorizedKeys(l, request
-                                .getCommand().getHeader().getIdentity(), aclMap);
+                        kvKeys = filterRawKeysToAuthorizedKeys(l, request.getMessage().getHmacAuth().getIdentity(), aclMap);
                     } else {
                         SortedMap<KVKey, KVValue> m = (SortedMap<KVKey, KVValue>) store
                                 .getRange(k1, i1, k2, i2, n);
                         LOG.fine("getKeyRange returned " + m.size() + " entries");
 
                         kvKeys = filterRawKeysToAuthorizedKeys(m.keySet(),
-                                request.getCommand().getHeader().getIdentity(),
+                                request.getMessage().getHmacAuth().getIdentity(),
                                 aclMap);
                     }
                     break;
@@ -139,20 +142,20 @@ public class RangeOp {
                     LOG.fine("key="
                             + Hmac.toString(kvKey.toByteString()));
 
-                    respond.getCommandBuilder().getBodyBuilder()
+                    commandBuilder.getBodyBuilder()
                     .getRangeBuilder()
-                    .addKey(kvKey.toByteString());
+                    .addKeys(kvKey.toByteString());
 
                 }
 
                 // set ack sequence
-                respond.getCommandBuilder()
+                commandBuilder
                 .getHeaderBuilder()
                 .setAckSequence(
                         request.getCommand().getHeader().getSequence());
 
                 // set status
-                respond.getCommandBuilder().getStatusBuilder()
+                commandBuilder.getStatusBuilder()
                 .setCode(Status.StatusCode.SUCCESS);
 
                 // TODO check multi-tenant key prefix
@@ -171,14 +174,14 @@ public class RangeOp {
        
             
         } catch (RangeException e) {
-            respond.getCommandBuilder().getStatusBuilder().setCode(e.status);
-            respond.getCommandBuilder().getStatusBuilder()
+            commandBuilder.getStatusBuilder().setCode(e.status);
+            commandBuilder.getStatusBuilder()
             .setStatusMessage(e.getMessage());
         } finally {
 
             switch (request.getCommand().getHeader().getMessageType()) {
             case GETKEYRANGE:
-                respond.getCommandBuilder().getHeaderBuilder()
+                commandBuilder.getHeaderBuilder()
                 .setMessageType(MessageType.GETKEYRANGE_RESPONSE);
                 break;
             default:
@@ -198,14 +201,14 @@ public class RangeOp {
      * @return
      * @throws KVSecurityException
      */
-    public static List<KVKey> filterRawKeysToAuthorizedKeys(Iterable<KVKey> rawKeys, long user, Map<Long, Message.Security.ACL> aclMap) throws KVSecurityException {
+    public static List<KVKey> filterRawKeysToAuthorizedKeys(Iterable<KVKey> rawKeys, long user, Map<Long, Command.Security.ACL> aclMap) throws KVSecurityException {
         List<KVKey> rangeAllowedKeys = Lists.newArrayList();
 
         for (KVKey key : rawKeys) {
             LOG.fine("Checking RANGE permission on key <" + key + "> for user <" + user + "> ");
 
             if (Authorizer.hasPermission(aclMap, user,
-                    Message.Security.ACL.Permission.RANGE, key.toByteString())) {
+                    Command.Security.ACL.Permission.RANGE, key.toByteString())) {
                 LOG.fine("Permission found");
                 rangeAllowedKeys.add(key);
             } else {

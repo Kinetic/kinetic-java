@@ -17,35 +17,36 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  *
  */
-package com.seagate.kinetic.simulator.lib;
+package com.seagate.kinetic.simulator.internal;
 
-/**
- * 
- * Setup info
- * <p>
- * 
- * @author Chenchong(Emma) Li
- * 
- */
-public class SetupInfo {
-	private long clusterVersion = 0L;
+public class DeviceLockedException extends Exception {
 
-	// pin used for default.
-	private byte[] pin = new byte[] {};
+    /**
+     * 
+     */
+    private static final long serialVersionUID = 7677042683846221836L;
 
-	public long getClusterVersion() {
-		return clusterVersion;
-	}
+    public DeviceLockedException() {
+       ;
+    }
 
-	public void setClusterVersion(long clusterVersion) {
-		this.clusterVersion = clusterVersion;
-	}
+    public DeviceLockedException(String message) {
+        super(message);
+    }
 
-	public byte[] getPin() {
-		return pin;
-	}
+    public DeviceLockedException(Throwable cause) {
+        super(cause);
+    }
 
-	public void setPin(byte[] pin) {
-		this.pin = pin;
-	}
+    public DeviceLockedException(String message, Throwable cause) {
+        super(message, cause);
+      
+    }
+
+    public DeviceLockedException(String message, Throwable cause,
+            boolean enableSuppression, boolean writableStackTrace) {
+        super(message, cause, enableSuppression, writableStackTrace);
+        
+    }
+
 }

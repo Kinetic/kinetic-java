@@ -31,11 +31,11 @@ import com.seagate.kinetic.client.internal.DefaultKineticClient;
 import com.seagate.kinetic.client.internal.MessageFactory;
 import com.seagate.kinetic.client.lib.ClientLogger;
 import com.seagate.kinetic.common.lib.KineticMessage;
-import com.seagate.kinetic.proto.Kinetic.Message;
-import com.seagate.kinetic.proto.Kinetic.Message.Builder;
-import com.seagate.kinetic.proto.Kinetic.Message.MessageType;
-import com.seagate.kinetic.proto.Kinetic.Message.P2POperation;
-import com.seagate.kinetic.proto.Kinetic.Message.Status.StatusCode;
+import com.seagate.kinetic.proto.Kinetic.Command;
+
+import com.seagate.kinetic.proto.Kinetic.Command.MessageType;
+import com.seagate.kinetic.proto.Kinetic.Command.P2POperation;
+import com.seagate.kinetic.proto.Kinetic.Command.Status.StatusCode;
 
 /**
  *
@@ -91,15 +91,14 @@ KineticP2pClient {
 		KineticMessage km = MessageFactory.createKineticMessageWithBuilder();
 
 		// create request message.
-		Message.Builder request = (Builder) km.getMessage();
+		Command.Builder commandBuilder = (Command.Builder) km.getCommand();
 
 		// set request type
-		request.getCommandBuilder().getHeaderBuilder()
+		commandBuilder.getHeaderBuilder()
 		.setMessageType(MessageType.PEER2PEERPUSH);
 
 		// p2p builder
-		P2POperation.Builder p2pBuilder = request.getCommandBuilder()
-				.getBodyBuilder().getP2POperationBuilder();
+		P2POperation.Builder p2pBuilder = commandBuilder.getBodyBuilder().getP2POperationBuilder();
 
 		// set peer hots/port/tls
 		p2pBuilder.getPeerBuilder().setHostname(
@@ -113,8 +112,7 @@ KineticP2pClient {
 		for (Operation op : operationList) {
 
 			// operation builder
-			Message.P2POperation.Operation.Builder operationBuilder = Message.P2POperation.Operation
-					.newBuilder();
+			Command.P2POperation.Operation.Builder operationBuilder = Command.P2POperation.Operation.newBuilder();
 
 			// set force flag
 			operationBuilder.setForce(op.getForced());
@@ -141,11 +139,10 @@ KineticP2pClient {
 		KineticMessage response = PeerToPeerPush(km);
 
 		// get p2p op response
-		P2POperation peerToPeerOperationResponse = response.getMessage()
-				.getCommand()
+		P2POperation peerToPeerOperationResponse = response.getCommand()
 				.getBody().getP2POperation();
 
-		StatusCode respScode = response.getMessage().getCommand().getStatus()
+		StatusCode respScode = response.getCommand().getStatus()
 				.getCode();
 
 		/**
@@ -154,7 +151,7 @@ KineticP2pClient {
 		if (respScode != StatusCode.SUCCESS) {
 
 			// get status message
-			String msg = response.getMessage().getCommand().getStatus()
+			String msg = response.getCommand().getStatus()
 					.getStatusMessage();
 
 			// get exception message from response
@@ -171,10 +168,9 @@ KineticP2pClient {
 		}
 
 		// set overall status and message
-		p2pOperation
-.setStatus(response.getMessage().getCommand().getStatus()
+		p2pOperation.setStatus(response.getCommand().getStatus()
 				.getCode() == StatusCode.SUCCESS);
-		p2pOperation.setErrorMessage(response.getMessage().getCommand()
+		p2pOperation.setErrorMessage(response.getCommand()
 				.getStatus()
 				.getStatusMessage());
 

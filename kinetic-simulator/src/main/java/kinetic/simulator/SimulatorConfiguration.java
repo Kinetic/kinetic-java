@@ -20,9 +20,12 @@
 package kinetic.simulator;
 
 import java.util.Properties;
+import java.util.logging.Logger;
 
+import com.seagate.kinetic.proto.Kinetic;
 import com.seagate.kinetic.simulator.heartbeat.HeartbeatProvider;
 import com.seagate.kinetic.simulator.heartbeat.provider.MulticastHeartbeatProvider;
+
 
 /**
  * 
@@ -30,6 +33,9 @@ import com.seagate.kinetic.simulator.heartbeat.provider.MulticastHeartbeatProvid
  * 
  */
 public class SimulatorConfiguration extends Properties {
+    
+    private final static Logger logger = Logger.getLogger(SimulatorConfiguration.class
+            .getName());
 
 	private static final long serialVersionUID = 1132514490479251740L;
 
@@ -110,7 +116,7 @@ public class SimulatorConfiguration extends Properties {
 	/**
 	 * heartbeat tick time in milli-seconds.
 	 */
-	private long tickTime = 30000;
+	private long tickTime = 5000;
 
 	/**
 	 * heart beat destination address
@@ -198,22 +204,22 @@ public class SimulatorConfiguration extends Properties {
     /**
      * current simulator version.
      */
-    public static final String SIMULATOR_VERSION = "0.7.0.2-SNAPSHOT";
+    public static final String SIMULATOR_VERSION = "0.8.0.1-SNAPSHOT";
     
     /**
      * simulator source commit hash.
      */
-    public static final String SIMULATOR_SOURCE_HASH = "d1b6eb31cf7ce2a34d5e5f65fadc82151990b8dd";
+    public static final String SIMULATOR_SOURCE_HASH = "955392502ae15c9f59fd48a4a0b41f1450080dc8";
     
     /**
      * current supported protocol version defined at kinetic-protocol repository.
      */
-    public static final String PROTOCOL_VERSION = "2.0.6";
+    public static final String PROTOCOL_VERSION = Kinetic.Local.getDefaultInstance().getProtocolVersion();
     
     /**
      * current supported protocol source commit hash value obtained from kinetic-protocol repository.
      */
-    public static final String PROTOCOL_SOURCE_HASH = "c3b5e37bb236785b12ec2cdae03b682185e7279f";
+    public static final String PROTOCOL_SOURCE_HASH = "f74698fba2df685cbfa9b6b9de54f1d2398f8615";
     
     /**
      * heart beat provider.
@@ -348,7 +354,11 @@ public class SimulatorConfiguration extends Properties {
 	 * 
 	 */
 	public void setUseNio(boolean flag) {
-		this.useNio = flag;
+	    
+	    // XXX chiaming 07/19/2014: This will be re-enabled when it is compatible with 3.0.0 
+	    logger.warning("Method is disabled., Only NIO is supported.");
+	    
+		//this.useNio = flag;
 	}
 
 	/**
@@ -522,7 +532,7 @@ public class SimulatorConfiguration extends Properties {
 	/**
 	 * Get heart beat tick time (in milli-seconds) for the simulator.
 	 * <p>
-	 * Default is set to 30000 milli-seconds.
+	 * Default is set to 5000 milli-seconds.
 	 * 
 	 * @return heart beat tick time for the simulator.
 	 */

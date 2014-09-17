@@ -23,9 +23,9 @@ import java.util.Map;
 import java.util.logging.Logger;
 
 import com.google.protobuf.ByteString;
-import com.seagate.kinetic.proto.Kinetic.Message.Security.ACL;
-import com.seagate.kinetic.proto.Kinetic.Message.Security.ACL.Permission;
-import com.seagate.kinetic.proto.Kinetic.Message.Security.ACL.Scope;
+import com.seagate.kinetic.proto.Kinetic.Command.Security.ACL;
+import com.seagate.kinetic.proto.Kinetic.Command.Security.ACL.Permission;
+import com.seagate.kinetic.proto.Kinetic.Command.Security.ACL.Scope;
 
 /**
  * Prototype.

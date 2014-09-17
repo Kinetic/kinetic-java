@@ -229,9 +229,9 @@ public final class KineticDb {
        */
       com.google.protobuf.ByteString getTag();
 
-      // optional .com.seagate.kinetic.proto.Message.Algorithm algorithm = 4;
+      // optional .com.seagate.kinetic.proto.Command.Algorithm algorithm = 4;
       /**
-       * <code>optional .com.seagate.kinetic.proto.Message.Algorithm algorithm = 4;</code>
+       * <code>optional .com.seagate.kinetic.proto.Command.Algorithm algorithm = 4;</code>
        *
        * <pre>
        * The following is for the protection of the data. If the data is protected with a hash or CRC, then
@@ -242,7 +242,7 @@ public final class KineticDb {
        */
       boolean hasAlgorithm();
       /**
-       * <code>optional .com.seagate.kinetic.proto.Message.Algorithm algorithm = 4;</code>
+       * <code>optional .com.seagate.kinetic.proto.Command.Algorithm algorithm = 4;</code>
        *
        * <pre>
        * The following is for the protection of the data. If the data is protected with a hash or CRC, then
@@ -251,7 +251,7 @@ public final class KineticDb {
        * encrypted key/value store.(See security document).
        * </pre>
        */
-      com.seagate.kinetic.proto.Kinetic.Message.Algorithm getAlgorithm();
+      com.seagate.kinetic.proto.Kinetic.Command.Algorithm getAlgorithm();
     }
     /**
      * Protobuf type {@code com.seagate.kinetic.proto.Versioned.Metadata}
@@ -325,7 +325,7 @@ public final class KineticDb {
               }
               case 32: {
                 int rawValue = input.readEnum();
-                com.seagate.kinetic.proto.Kinetic.Message.Algorithm value = com.seagate.kinetic.proto.Kinetic.Message.Algorithm.valueOf(rawValue);
+                com.seagate.kinetic.proto.Kinetic.Command.Algorithm value = com.seagate.kinetic.proto.Kinetic.Command.Algorithm.valueOf(rawValue);
                 if (value == null) {
                   unknownFields.mergeVarintField(4, rawValue);
                 } else {
@@ -448,11 +448,11 @@ public final class KineticDb {
         return tag_;
       }
 
-      // optional .com.seagate.kinetic.proto.Message.Algorithm algorithm = 4;
+      // optional .com.seagate.kinetic.proto.Command.Algorithm algorithm = 4;
       public static final int ALGORITHM_FIELD_NUMBER = 4;
-      private com.seagate.kinetic.proto.Kinetic.Message.Algorithm algorithm_;
+      private com.seagate.kinetic.proto.Kinetic.Command.Algorithm algorithm_;
       /**
-       * <code>optional .com.seagate.kinetic.proto.Message.Algorithm algorithm = 4;</code>
+       * <code>optional .com.seagate.kinetic.proto.Command.Algorithm algorithm = 4;</code>
        *
        * <pre>
        * The following is for the protection of the data. If the data is protected with a hash or CRC, then
@@ -465,7 +465,7 @@ public final class KineticDb {
         return ((bitField0_ & 0x00000008) == 0x00000008);
       }
       /**
-       * <code>optional .com.seagate.kinetic.proto.Message.Algorithm algorithm = 4;</code>
+       * <code>optional .com.seagate.kinetic.proto.Command.Algorithm algorithm = 4;</code>
        *
        * <pre>
        * The following is for the protection of the data. If the data is protected with a hash or CRC, then
@@ -474,7 +474,7 @@ public final class KineticDb {
        * encrypted key/value store.(See security document).
        * </pre>
        */
-      public com.seagate.kinetic.proto.Kinetic.Message.Algorithm getAlgorithm() {
+      public com.seagate.kinetic.proto.Kinetic.Command.Algorithm getAlgorithm() {
         return algorithm_;
       }
 
@@ -482,7 +482,7 @@ public final class KineticDb {
         key_ = com.google.protobuf.ByteString.EMPTY;
         dbVersion_ = com.google.protobuf.ByteString.EMPTY;
         tag_ = com.google.protobuf.ByteString.EMPTY;
-        algorithm_ = com.seagate.kinetic.proto.Kinetic.Message.Algorithm.INVALID_ALGORITHM;
+        algorithm_ = com.seagate.kinetic.proto.Kinetic.Command.Algorithm.INVALID_ALGORITHM;
       }
       private byte memoizedIsInitialized = -1;
       public final boolean isInitialized() {
@@ -659,7 +659,7 @@ public final class KineticDb {
           bitField0_ = (bitField0_ & ~0x00000002);
           tag_ = com.google.protobuf.ByteString.EMPTY;
           bitField0_ = (bitField0_ & ~0x00000004);
-          algorithm_ = com.seagate.kinetic.proto.Kinetic.Message.Algorithm.INVALID_ALGORITHM;
+          algorithm_ = com.seagate.kinetic.proto.Kinetic.Command.Algorithm.INVALID_ALGORITHM;
           bitField0_ = (bitField0_ & ~0x00000008);
           return this;
         }
@@ -920,10 +920,10 @@ public final class KineticDb {
           return this;
         }
 
-        // optional .com.seagate.kinetic.proto.Message.Algorithm algorithm = 4;
-        private com.seagate.kinetic.proto.Kinetic.Message.Algorithm algorithm_ = com.seagate.kinetic.proto.Kinetic.Message.Algorithm.INVALID_ALGORITHM;
+        // optional .com.seagate.kinetic.proto.Command.Algorithm algorithm = 4;
+        private com.seagate.kinetic.proto.Kinetic.Command.Algorithm algorithm_ = com.seagate.kinetic.proto.Kinetic.Command.Algorithm.INVALID_ALGORITHM;
         /**
-         * <code>optional .com.seagate.kinetic.proto.Message.Algorithm algorithm = 4;</code>
+         * <code>optional .com.seagate.kinetic.proto.Command.Algorithm algorithm = 4;</code>
          *
          * <pre>
          * The following is for the protection of the data. If the data is protected with a hash or CRC, then
@@ -936,7 +936,7 @@ public final class KineticDb {
           return ((bitField0_ & 0x00000008) == 0x00000008);
         }
         /**
-         * <code>optional .com.seagate.kinetic.proto.Message.Algorithm algorithm = 4;</code>
+         * <code>optional .com.seagate.kinetic.proto.Command.Algorithm algorithm = 4;</code>
          *
          * <pre>
          * The following is for the protection of the data. If the data is protected with a hash or CRC, then
@@ -945,11 +945,11 @@ public final class KineticDb {
          * encrypted key/value store.(See security document).
          * </pre>
          */
-        public com.seagate.kinetic.proto.Kinetic.Message.Algorithm getAlgorithm() {
+        public com.seagate.kinetic.proto.Kinetic.Command.Algorithm getAlgorithm() {
           return algorithm_;
         }
         /**
-         * <code>optional .com.seagate.kinetic.proto.Message.Algorithm algorithm = 4;</code>
+         * <code>optional .com.seagate.kinetic.proto.Command.Algorithm algorithm = 4;</code>
          *
          * <pre>
          * The following is for the protection of the data. If the data is protected with a hash or CRC, then
@@ -958,7 +958,7 @@ public final class KineticDb {
          * encrypted key/value store.(See security document).
          * </pre>
          */
-        public Builder setAlgorithm(com.seagate.kinetic.proto.Kinetic.Message.Algorithm value) {
+        public Builder setAlgorithm(com.seagate.kinetic.proto.Kinetic.Command.Algorithm value) {
           if (value == null) {
             throw new NullPointerException();
           }
@@ -968,7 +968,7 @@ public final class KineticDb {
           return this;
         }
         /**
-         * <code>optional .com.seagate.kinetic.proto.Message.Algorithm algorithm = 4;</code>
+         * <code>optional .com.seagate.kinetic.proto.Command.Algorithm algorithm = 4;</code>
          *
          * <pre>
          * The following is for the protection of the data. If the data is protected with a hash or CRC, then
@@ -979,7 +979,7 @@ public final class KineticDb {
          */
         public Builder clearAlgorithm() {
           bitField0_ = (bitField0_ & ~0x00000008);
-          algorithm_ = com.seagate.kinetic.proto.Kinetic.Message.Algorithm.INVALID_ALGORITHM;
+          algorithm_ = com.seagate.kinetic.proto.Kinetic.Command.Algorithm.INVALID_ALGORITHM;
           onChanged();
           return this;
         }
@@ -1555,7 +1555,7 @@ public final class KineticDb {
       "Versioned.Metadata\022\r\n\005value\030\002 \001(\014\032x\n\010Met" +
       "adata\022\013\n\003key\030\001 \001(\014\022\021\n\tdbVersion\030\002 \001(\014\022\013\n" +
       "\003tag\030\003 \001(\014\022?\n\talgorithm\030\004 \001(\0162,.com.seag" +
-      "ate.kinetic.proto.Message.AlgorithmB\013B\tK" +
+      "ate.kinetic.proto.Command.AlgorithmB\013B\tK" +
       "ineticDb"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =

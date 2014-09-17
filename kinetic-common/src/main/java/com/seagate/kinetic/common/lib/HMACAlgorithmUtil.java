@@ -17,7 +17,7 @@
  */
 package com.seagate.kinetic.common.lib;
 
-import com.seagate.kinetic.proto.Kinetic.Message.Security.ACL.HMACAlgorithm;
+import com.seagate.kinetic.proto.Kinetic.Command.Security.ACL.HMACAlgorithm;
 
 /**
  * Get HMAC Algorithm list from proto and give the method to judge the

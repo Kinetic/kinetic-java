@@ -23,7 +23,7 @@ import java.net.UnknownHostException;
 
 import kinetic.simulator.SimulatorConfiguration;
 
-import com.seagate.kinetic.proto.Kinetic.Message.GetLog.Limits;
+import com.seagate.kinetic.proto.Kinetic.Command.GetLog.Limits;
 
 public abstract class LimitsUtil {
 

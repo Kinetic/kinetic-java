@@ -111,7 +111,7 @@ public abstract class AbstractIntegrationTestTarget {
     protected void performISE() throws KineticException {
         KineticAdminClient kineticAdminClient = KineticAdminClientFactory
                 .createInstance(getAdminClientConfig());
-        kineticAdminClient.setup(null, null, 0, true);
+        kineticAdminClient.instantErase(null);
         kineticAdminClient.close();
     }
 }

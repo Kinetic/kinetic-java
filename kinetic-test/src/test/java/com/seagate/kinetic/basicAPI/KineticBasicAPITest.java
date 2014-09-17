@@ -607,10 +607,6 @@ public class KineticBasicAPITest extends IntegrationTestCase {
                 toByteArray("0xff"), true, 200);
 
         assertEquals(200, keysRange.size());
-        // System.out.println("get key range order are as follows:");
-        // for (byte[] key : keysRange) {
-        // System.out.println(new String(key));
-        // }
 
         assertListOfArraysEqual(keys, keysRange);
 

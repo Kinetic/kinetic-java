@@ -19,21 +19,15 @@
  */
 package com.seagate.kinetic.simulator.client.admin.impl;
 
-import static com.seagate.kinetic.KineticTestHelpers.cleanPin;
+import static com.seagate.kinetic.KineticTestHelpers.toByteArray;
 import static org.junit.Assert.assertTrue;
-
-import java.io.IOException;
-
+import static org.junit.Assert.fail;
 import kinetic.client.KineticException;
 
 import org.junit.Test;
 
-import com.google.protobuf.ByteString;
 import com.seagate.kinetic.IntegrationTestCase;
-import com.seagate.kinetic.common.lib.KineticMessage;
-import com.seagate.kinetic.proto.Kinetic.Message;
-import com.seagate.kinetic.proto.Kinetic.Message.Setup;
-import com.seagate.kinetic.proto.Kinetic.Message.Status;
+import com.seagate.kinetic.proto.Kinetic.Command.Status.StatusCode;
 
 /**
  *
@@ -44,181 +38,138 @@ import com.seagate.kinetic.proto.Kinetic.Message.Status;
  *
  */
 public class PINTest extends IntegrationTestCase {
-	@Test
-	public void testSetPin() throws KineticException, IOException,
-	InterruptedException {
-		Message.Builder request = Message.newBuilder();
-		Setup.Builder setup = request.getCommandBuilder().getBodyBuilder()
-				.getSetupBuilder();
-		setup.setNewClusterVersion(0);
-		setup.setInstantSecureErase(false);
-		String setPin = "pin001";
-		setup.setSetPin(ByteString.copyFromUtf8(setPin));
 
-		KineticMessage km = new KineticMessage();
-		km.setMessage(request);
-
-		Message respond = (Message) getAdminClient().configureSetupPolicy(km)
-				.getMessage();
-		assertTrue(respond.getCommand().getStatus().getCode()
-				.equals(Status.StatusCode.SUCCESS));
-
-		cleanPin(setPin, this.getAdminClient());
-	}
-
-	@Test
-	public void testModifyOldPin_WithRightOldPin() throws KineticException,
-	IOException, InterruptedException {
-		Message.Builder request = Message.newBuilder();
-		Setup.Builder setup = request.getCommandBuilder().getBodyBuilder()
-				.getSetupBuilder();
-		setup.setNewClusterVersion(0);
-		setup.setInstantSecureErase(false);
-		String firstPin = "pin001";
-		setup.setSetPin(ByteString.copyFromUtf8(firstPin));
-
-		KineticMessage km = new KineticMessage();
-		km.setMessage(request);
-
-		getAdminClient().configureSetupPolicy(km);
-
-		Message.Builder request1 = Message.newBuilder();
-		Setup.Builder setup1 = request1.getCommandBuilder().getBodyBuilder()
-				.getSetupBuilder();
-		setup1.setNewClusterVersion(0);
-		setup1.setInstantSecureErase(false);
-		String secondPin = "pin002";
-		setup1.setSetPin(ByteString.copyFromUtf8(secondPin));
-		setup1.setPin(ByteString.copyFromUtf8(firstPin));
-
-		KineticMessage km1 = new KineticMessage();
-		km1.setMessage(request1);
-
-		Message respond1 = (Message) getAdminClient().configureSetupPolicy(km1)
-				.getMessage();
-		assertTrue(respond1.getCommand().getStatus().getCode()
-				.equals(Status.StatusCode.SUCCESS));
-
-		cleanPin(secondPin, this.getAdminClient());
-	}
-
-	@Test
-	public void testModifyOldPin_WithWrongOldPin() throws KineticException,
-	IOException, InterruptedException {
-		Message.Builder request = Message.newBuilder();
-		Setup.Builder setup = request.getCommandBuilder().getBodyBuilder()
-				.getSetupBuilder();
-		setup.setNewClusterVersion(0);
-		setup.setInstantSecureErase(false);
-		String firstPin = "pin001";
-		setup.setSetPin(ByteString.copyFromUtf8(firstPin));
-
-		KineticMessage km = new KineticMessage();
-		km.setMessage(request);
-
-		getAdminClient().configureSetupPolicy(km);
-
-		Message.Builder request1 = Message.newBuilder();
-		Setup.Builder setup1 = request1.getCommandBuilder().getBodyBuilder()
-				.getSetupBuilder();
-		setup1.setNewClusterVersion(0);
-		setup1.setInstantSecureErase(false);
-		setup1.setSetPin(ByteString.copyFromUtf8("pin002"));
-		setup1.setPin(ByteString.copyFromUtf8("pin003"));
-
-		KineticMessage km1 = new KineticMessage();
-		km1.setMessage(request1);
+    @Test
+    public void testSetErasePin() {
+        byte[] newErasePin = toByteArray("123");
 
         try {
-            @SuppressWarnings("unused")
-            Message respond1 = (Message) getAdminClient().configureSetupPolicy(
-                    km1).getMessage();
-        } catch (KineticException ke) {
-            assertTrue(ke.getResponseMessage().getMessage().getCommand()
-                    .getStatus().getCode()
-                    .equals(Status.StatusCode.INTERNAL_ERROR));
-        } finally {
-
-            cleanPin(firstPin, this.getAdminClient());
+            getAdminClient().setErasePin(null, newErasePin);
+        } catch (KineticException e) {
+            fail("set pin throw exception: " + e.getMessage());
         }
-	}
-
-	@Test
-	public void testModifyOldPinWithRightPin_AfterRestartServer()
-			throws Exception {
-		Message.Builder request = Message.newBuilder();
-		Setup.Builder setup = request.getCommandBuilder().getBodyBuilder()
-				.getSetupBuilder();
-		String firstPin = "pin001";
-		setup.setSetPin(ByteString.copyFromUtf8(firstPin));
-
-		KineticMessage km = new KineticMessage();
-		km.setMessage(request);
-
-		Message respond = (Message) this.getAdminClient()
-				.configureSetupPolicy(km).getMessage();
-		assertTrue(respond.getCommand().getStatus().getCode()
-				.equals(Status.StatusCode.SUCCESS));
-
-		// restart server
-		restartServer();
-
-		Message.Builder request1 = Message.newBuilder();
-		Setup.Builder setup1 = request1.getCommandBuilder().getBodyBuilder()
-				.getSetupBuilder();
-		String secondPin = "pin002";
-		setup1.setSetPin(ByteString.copyFromUtf8(secondPin));
-		setup1.setPin(ByteString.copyFromUtf8(firstPin));
-
-		KineticMessage km1 = new KineticMessage();
-		km1.setMessage(request1);
-
-		Message respond1 = (Message) getAdminClient().configureSetupPolicy(km1)
-				.getMessage();
-		assertTrue(respond1.getCommand().getStatus().getCode()
-				.equals(Status.StatusCode.SUCCESS));
-
-		cleanPin(secondPin, this.getAdminClient());
-
-	}
-
-	@Test
-	public void testModifyOldPin_WithWrongPin_AfterRestartServer()
-			throws Exception {
-		Message.Builder request = Message.newBuilder();
-		Setup.Builder setup = request.getCommandBuilder().getBodyBuilder()
-				.getSetupBuilder();
-		String firstPin = "pin001";
-		setup.setSetPin(ByteString.copyFromUtf8(firstPin));
-
-		KineticMessage km = new KineticMessage();
-		km.setMessage(request);
-
-		getAdminClient().configureSetupPolicy(km);
-
-		// restart server
-		restartServer();
-
-		Message.Builder request1 = Message.newBuilder();
-		Setup.Builder setup1 = request1.getCommandBuilder().getBodyBuilder()
-				.getSetupBuilder();
-		setup1.setSetPin(ByteString.copyFromUtf8("pin002"));
-		setup1.setPin(ByteString.copyFromUtf8("pin002"));
-
-		KineticMessage km1 = new KineticMessage();
-		km1.setMessage(request1);
 
         try {
-            @SuppressWarnings("unused")
-            Message respond1 = (Message) getAdminClient().configureSetupPolicy(
-                    km1).getMessage();
-        } catch (KineticException ke) {
-            assertTrue(ke.getResponseMessage().getMessage().getCommand()
-                    .getStatus().getCode()
-                    .equals(Status.StatusCode.INTERNAL_ERROR));
-        } finally {
-            cleanPin(firstPin, this.getAdminClient());
+            getAdminClient().instantErase(newErasePin);
+        } catch (KineticException e1) {
+            fail("instant erase throw exception: " + e1.getMessage());
         }
-	}
+    }
+
+    @Test
+    public void testModifyOldPin_WithRightOldPin() {
+        byte[] oldErasePin = toByteArray("123");
+        byte[] newErasePin = toByteArray("456");
+
+        try {
+            getAdminClient().setErasePin(null, oldErasePin);
+        } catch (KineticException e) {
+            fail("set pin throw exception: " + e.getMessage());
+        }
+
+        try {
+            getAdminClient().setErasePin(oldErasePin, newErasePin);
+        } catch (KineticException e) {
+            fail("modify pin throw exception: " + e.getMessage());
+        }
+
+        try {
+            getAdminClient().instantErase(newErasePin);
+        } catch (KineticException e1) {
+            fail("instant erase throw exception: " + e1.getMessage());
+        }
+    }
+
+    @Test
+    public void testModifyOldPin_WithWrongOldPin() {
+        byte[] oldErasePin = toByteArray("123");
+        byte[] oldIncorrectErasePin = toByteArray("456");
+        byte[] newErasePin = toByteArray("789");
+
+        try {
+            getAdminClient().setErasePin(null, oldErasePin);
+        } catch (KineticException e) {
+            fail("set pin throw exception: " + e.getMessage());
+        }
+
+        try {
+            getAdminClient().setErasePin(oldIncorrectErasePin, newErasePin);
+            fail("should throw exception");
+        } catch (KineticException e) {
+            assertTrue(e.getResponseMessage().getCommand().getStatus()
+                    .getCode().equals(StatusCode.NOT_AUTHORIZED));
+        }
+
+        try {
+            getAdminClient().instantErase(oldErasePin);
+        } catch (KineticException e1) {
+            fail("instant erase throw exception: " + e1.getMessage());
+        }
+    }
+
+    @Test
+    public void testModifyOldPinWithRightPin_AfterRestartServer() {
+        byte[] oldErasePin = toByteArray("123");
+        byte[] newErasePin = toByteArray("456");
+
+        try {
+            getAdminClient().setErasePin(null, oldErasePin);
+        } catch (KineticException e) {
+            fail("set pin throw exception: " + e.getMessage());
+        }
+
+        // restart server
+        try {
+            restartServer();
+        } catch (Exception e1) {
+            fail("restart server throw exception: " + e1.getMessage());
+        }
+
+        try {
+            getAdminClient().setErasePin(oldErasePin, newErasePin);
+        } catch (KineticException e) {
+            fail("modify pin throw exception: " + e.getMessage());
+        }
+
+        try {
+            getAdminClient().instantErase(newErasePin);
+        } catch (KineticException e1) {
+            fail("instant erase throw exception: " + e1.getMessage());
+        }
+    }
+
+    @Test
+    public void testModifyOldPin_WithWrongPin_AfterRestartServer() {
+        byte[] oldErasePin = toByteArray("123");
+        byte[] oldIncorrectErasePin = toByteArray("456");
+        byte[] newErasePin = toByteArray("789");
+
+        try {
+            getAdminClient().setErasePin(null, oldErasePin);
+        } catch (KineticException e) {
+            fail("set pin throw exception: " + e.getMessage());
+        }
+
+        // restart server
+        try {
+            restartServer();
+        } catch (Exception e1) {
+            fail("restart server throw exception: " + e1.getMessage());
+        }
+
+        try {
+            getAdminClient().setErasePin(oldIncorrectErasePin, newErasePin);
+            fail("should throw exception");
+        } catch (KineticException e) {
+            assertTrue(e.getResponseMessage().getCommand().getStatus()
+                    .getCode().equals(StatusCode.NOT_AUTHORIZED));
+        }
+
+        try {
+            getAdminClient().instantErase(oldErasePin);
+        } catch (KineticException e1) {
+            fail("instant erase throw exception: " + e1.getMessage());
+        }
+    }
 
 }

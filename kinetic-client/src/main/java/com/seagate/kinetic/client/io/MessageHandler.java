@@ -43,7 +43,8 @@ import com.seagate.kinetic.client.internal.async.GetMetadataAsyncCallbackHandler
 import com.seagate.kinetic.client.internal.async.PutAsyncCallbackHandler;
 import com.seagate.kinetic.client.io.provider.spi.ClientMessageService;
 import com.seagate.kinetic.common.lib.KineticMessage;
-import com.seagate.kinetic.proto.Kinetic.Message.MessageType;
+import com.seagate.kinetic.proto.Kinetic.Command.MessageType;
+import com.seagate.kinetic.proto.Kinetic.Message.AuthType;
 
 /**
  *
@@ -84,6 +85,8 @@ public class MessageHandler implements ClientMessageService, Runnable {
 	private long requestTimeout = 30000;
 
 	private final Object syncObj = new Object();
+	
+	private boolean isStatusMessageReceived = false;
 
 	/**
 	 * Constructor.
@@ -102,15 +105,8 @@ public class MessageHandler implements ClientMessageService, Runnable {
 
 		this.requestTimeout = this.client.getConfiguration()
 				.getRequestTimeoutMillis();
-
-		// this.myThread = new Thread(this);
-
-		// this.myThread.setName("ClientMessageHandler-"
-		// + client.getConfiguration().getHost() + "-"
-		// + client.getConfiguration().getPort());
-		//
-		// this.myThread.start();
 	}
+	
 
 	/**
 	 * process message from IoHandler.
@@ -129,8 +125,24 @@ public class MessageHandler implements ClientMessageService, Runnable {
 		if (logger.isLoggable(Level.FINEST)) {
 			logger.info("read/routing message: " + message);
 		}
+		
+		/**
+		 * check status message has received.
+		 */
+		if (this.isStatusMessageReceived == false) {
+		    
+		    if (message.getMessage().getAuthType() == AuthType.UNSOLICITEDSTATUS) {
+		        this.client.setConnectionId(message);
+		        this.isStatusMessageReceived = true;
+		        return;
+		    } else {
+		        if (this.iohandler.shouldWaitForStatusMessage()) {
+		            logger.warning("received unexpected message ..." + message.getMessage() + ", command=" + message.getCommand());
+		        }
+		    }
+		}
 
-		Long seq = Long.valueOf(message.getMessage().getCommand().getHeader()
+		Long seq = Long.valueOf(message.getCommand().getHeader()
 				.getAckSequence());
 
 		Object obj = this.ackmap.get(seq);
@@ -197,7 +209,7 @@ public class MessageHandler implements ClientMessageService, Runnable {
 			throws InterruptedException {
 
 		// get ack seq
-		Long seq = Long.valueOf(message.getMessage().getCommand().getHeader()
+		Long seq = Long.valueOf(message.getCommand().getHeader()
 				.getAckSequence());
 		// get callback instance
 		Object context = this.ackmap.get(seq);
@@ -225,7 +237,7 @@ public class MessageHandler implements ClientMessageService, Runnable {
 		LinkedBlockingQueue<KineticMessage> lbq = new LinkedBlockingQueue<KineticMessage>(
 				1);
 
-		Long seq = Long.valueOf(message.getMessage().getCommand().getHeader()
+		Long seq = Long.valueOf(message.getCommand().getHeader()
 				.getSequence());
 
 		this.ackmap.put(seq, lbq);
@@ -251,7 +263,7 @@ public class MessageHandler implements ClientMessageService, Runnable {
 			throws IOException,
 			InterruptedException {
 
-		Long seq = Long.valueOf(message.getMessage().getCommand().getHeader()
+		Long seq = Long.valueOf(message.getCommand().getHeader()
 				.getSequence());
 
 		synchronized (this) {
@@ -269,7 +281,7 @@ public class MessageHandler implements ClientMessageService, Runnable {
 	@SuppressWarnings("rawtypes")
 	private void invokeCallbackHandler(Object cbContext, KineticMessage response) {
 
-		MessageType type = response.getMessage().getCommand().getHeader()
+		MessageType type = response.getCommand().getHeader()
 				.getMessageType();
 
 		AsyncKineticException exception = this
@@ -284,7 +296,7 @@ public class MessageHandler implements ClientMessageService, Runnable {
 			break;
 		case GET_RESPONSE:
 			boolean isMetadataOnly = ((CallbackContext) cbContext)
-					.getRequestMessage().getMessage().getCommand().getBody()
+					.getRequestMessage().getCommand().getBody()
 					.getKeyValue().getMetadataOnly();
 			if (isMetadataOnly)
 			{
@@ -431,9 +443,14 @@ public class MessageHandler implements ClientMessageService, Runnable {
 
 		AsyncKineticException asyncException = null;
 
-		if (this.client.checkHmac(response) == false) {
-			asyncException = new AsyncKineticException(
-					"Hmac did not compare");
+		/**
+		 * Pin Auth does not require Hmac calculation.
+		 */
+		if (response.getMessage().getAuthType() == AuthType.HMACAUTH) {
+		    if (this.client.checkHmac(response) == false) {
+		        asyncException = new AsyncKineticException(
+		                "Hmac did not compare");
+		    }
 		}
 
 		return asyncException;

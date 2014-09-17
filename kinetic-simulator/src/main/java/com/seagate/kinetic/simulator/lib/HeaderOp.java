@@ -21,21 +21,23 @@
 package com.seagate.kinetic.simulator.lib;
 
 import java.security.Key;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.seagate.kinetic.common.lib.Hmac;
 import com.seagate.kinetic.common.lib.KineticMessage;
-import com.seagate.kinetic.proto.Kinetic.Message;
-import com.seagate.kinetic.proto.Kinetic.Message.Status;
-import com.seagate.kinetic.proto.Kinetic.Message.Status.StatusCode;
-import com.seagate.kinetic.simulator.internal.StatefulMessage;
+import com.seagate.kinetic.proto.Kinetic.Command;
+import com.seagate.kinetic.proto.Kinetic.Command.MessageType;
+import com.seagate.kinetic.proto.Kinetic.Command.Status;
+import com.seagate.kinetic.proto.Kinetic.Command.Status.StatusCode;
+import com.seagate.kinetic.proto.Kinetic.Message.AuthType;
 
 class HeaderException extends Exception {
 	private static final long serialVersionUID = 5201751340412081922L;
 
-	Message.Status.StatusCode status;
+	Status.StatusCode status;
 
-	HeaderException(Message.Status.StatusCode status, String s) {
+	HeaderException(Status.StatusCode status, String s) {
 		super(s);
 		this.status = status;
 	}
@@ -77,61 +79,73 @@ public class HeaderOp {
 	private HeaderOp() {
 	}
 
-	public static void checkHeader(KineticMessage km, Message.Builder respond,
+	public static void checkHeader(KineticMessage km, KineticMessage kmresp,
 			Key key, long clusterVersion) throws HeaderException {
 
 		LOG.fine("Header processing");
-
-		Message request = (Message) km.getMessage();
+		
+		Command.Builder respCommandBuilder = (Command.Builder) kmresp.getCommand();
 
 		try {
 
-			if (!request.getCommand().hasHeader()) {
+			if (!km.getCommand().hasHeader()) {
 				throw new HeaderException(StatusCode.HEADER_REQUIRED,
 						"no header");
 			}
 
-			Message.Header in = request.getCommand().getHeader();
+			Command.Header in = km.getCommand().getHeader();
 
 			// set ack sequence
-			respond.getCommandBuilder().getHeaderBuilder()
+			respCommandBuilder.getHeaderBuilder()
 			.setAckSequence(in.getSequence());
 
-			// check hmac
-			checkHmac(km, key);
+            if (km.getMessage().getAuthType() == AuthType.PINAUTH) {
+                // sanity check only
+                if (in.getMessageType() != MessageType.PINOP) {
+                    throw new HeaderException(
+                            Status.StatusCode.INVALID_REQUEST,
+                            "Invalid message type for pin operation.");
+                }
+            } else {
+                // check hmac
+                checkHmac(km, key);
 
-			if (in.getClusterVersion() != clusterVersion) {
-			    
-			    //set cluster version in response message
-			    respond.getCommandBuilder().getHeaderBuilder().setClusterVersion(clusterVersion);
-			    
-				throw new HeaderException(
-						Message.Status.StatusCode.VERSION_FAILURE,
-						"CLUSTER_VERSION_FAILURE: Simulator cluster version is "
-								+ clusterVersion
-								+ "; Received request cluster version is "
-								+ in.getClusterVersion());
-			}
+                if (in.getClusterVersion() != clusterVersion) {
 
+                    // set cluster version in response message
+                    respCommandBuilder.getHeaderBuilder().setClusterVersion(
+                            clusterVersion);
+
+                    throw new HeaderException(
+                            Status.StatusCode.VERSION_FAILURE,
+                            "CLUSTER_VERSION_FAILURE: Simulator cluster version is "
+                                    + clusterVersion
+                                    + "; Received request cluster version is "
+                                    + in.getClusterVersion());
+                }
+            }
+			
 			// set status code
-			respond.getCommandBuilder().getStatusBuilder()
+			respCommandBuilder.getStatusBuilder()
 			.setCode(Status.StatusCode.SUCCESS);
 		
 			LOG.fine("Header processed successfully. status code="
-					+ respond.getCommand().getStatus().getCode());
+					+ respCommandBuilder.getStatus().getCode());
 
 		} catch (HeaderException he) {
 			LOG.fine("Header Processing Failed: " + he.getMessage());
 
-			respond.getCommandBuilder().getStatusBuilder().setCode(he.status);
-			respond.getCommandBuilder().getStatusBuilder()
+			respCommandBuilder.getStatusBuilder().setCode(he.status);
+			respCommandBuilder.getStatusBuilder()
 			.setStatusMessage(he.getMessage());
 
 			throw he;
 		} catch (Exception ex) {
-			respond.getCommandBuilder().getStatusBuilder()
+		    
+		    LOG.log(Level.WARNING, ex.getMessage(), ex);
+		    respCommandBuilder.getStatusBuilder()
 			.setCode(Status.StatusCode.INTERNAL_ERROR);
-			respond.getCommandBuilder().getStatusBuilder()
+		    respCommandBuilder.getStatusBuilder()
 			.setStatusMessage(ex.getMessage());
 
 			throw new HeaderException(StatusCode.INTERNAL_ERROR,
@@ -139,12 +153,10 @@ public class HeaderOp {
 		} finally {
 		    
             try {
-                // set connection Id if necessary
-                if (km instanceof StatefulMessage) {
-                    long cid = ((StatefulMessage) km).getConnectionId();
-                    respond.getCommandBuilder().getHeaderBuilder()
-                            .setConnectionID(cid);
-                }
+                // set connection Id in the response message
+                long cid = km.getCommand().getHeader().getConnectionID();
+                respCommandBuilder.getHeaderBuilder().setConnectionID(cid);
+
             } catch (Exception e) {
                 LOG.warning(e.getMessage());
             }

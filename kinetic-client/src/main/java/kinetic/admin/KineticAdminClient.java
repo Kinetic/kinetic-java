@@ -19,7 +19,13 @@ package kinetic.admin;
 
 import java.util.List;
 
+import com.seagate.kinetic.common.lib.KineticMessage;
+
+import com.seagate.kinetic.proto.Kinetic.Command.Priority;
+import com.seagate.kinetic.proto.Kinetic.Command.Range;
+
 import kinetic.client.KineticException;
+import kinetic.client.p2p.KineticP2pClient;
 
 /**
  * 
@@ -30,37 +36,13 @@ import kinetic.client.KineticException;
  * <p>
  * All administrative operations by default use SSL connections to connect to the Drive or Simulator. 
  * And this is the only supported transport for all administrative operations.
+ * <p>
  * 
  * @author James Hughes.
  * @author Chiaming Yang
  * @author Chenchong Li
  */
-public interface KineticAdminClient {
-
-    /**
-     * Setup the Kinetic drive.
-     * 
-     * @param pin
-     *            Compare the pin with drive's pin. If equal, can setup the
-     *            information for the drive, if not, drive will reject the setup
-     *            request.
-     * 
-     * @param setPin
-     *            new pin will replace the pin in the drive.
-     * 
-     * @param newClusterVersion
-     *            set the new cluster version for the drive.
-     * 
-     * @param secureErase
-     *            If secureErase is set true, all data in database will be
-     *            deleted.
-     * 
-     * @throws KineticException
-     *             if any internal error occurred.
-     * 
-     */
-    public void setup(byte[] pin, byte[] setPin, long newClusterVersion,
-            boolean secureErase) throws KineticException;
+public interface KineticAdminClient extends KineticP2pClient {
 
     /**
      * Load firmware byte[] to the drive.
@@ -149,20 +131,34 @@ public interface KineticAdminClient {
      */
     public Device getVendorSpecificDeviceLog (byte[] name) throws KineticException;
 
+    
     /**
-     * Set the access control list to the Kinetic drive.
+     * Set Security ACL list.
      * 
-     * @param acls
-     *            ACL information needs to be set.
+     * @param acls the ACL list to be set to drive/simulator.
      * 
-     * @throws KineticException
-     *             if any internal error occurred.
-     * @see ACL
-     * @see Domain
-     * @see Role
+     * @throws KineticException if any internal error occurred.
      */
-    public void setSecurity(List<ACL> acls) throws KineticException;
-
+    public void setAcl (List<ACL> acls) throws KineticException;
+    
+    /**
+     * Set Security Lock pin.
+     * 
+     * @param oldLockPin old lock pin used to authenticate.
+     * @param newLockPin the new lock pin to set to the kinetic drive/simulator.
+     * 
+     * @throws KineticException if any internal error occurred.
+     */
+    public void setLockPin (byte[] oldLockPin, byte[] newLockPin) throws KineticException;
+    
+    /**
+     * 
+     * @param oldErasePin old erase pin used to authenticate.
+     * @param newErasePin new pin to set.
+     * @throws KineticException if any internal error occurred.
+     */
+    public void setErasePin (byte[] oldErasePin, byte[] newErasePin) throws KineticException;
+    
     /**
      * Erase all data in database for the drive.
      * <p>
@@ -176,15 +172,77 @@ public interface KineticAdminClient {
      * 
      * @throws KineticException
      *             if unable to load firmware bytes to the drive.
+     *             
+     * 
      */
     public void instantErase(byte[] pin) throws KineticException;
-
+    
     /**
-     * Close the connection and release all resources allocated by this
-     * instance.
+     * Securely erase all user data, configurations, and setup information on the 
+     * drive.
      * 
-     * @throws KineticException
-     *             if any internal error occurred.
+     * @param pin the pin used to authenticate for this operation.
+     * 
+     * @throws KineticException if unable to perform the pin operation.
+     * 
+     * @see #setErasePin(byte[], byte[])
      */
-    public void close() throws KineticException;
+    public void secureErase (byte[] pin) throws KineticException;
+    
+    /**
+     * Lock the device with the specified pin.
+     * <p>
+     * If the Client has set a non-zero length locking pin (to enable locking), a subsequent call to lockDevice will
+     * lock the device.  
+     * 
+     * @param pin the pin to authenticate to the service.
+     *
+     * @throws KineticException if any internal error occurred.
+     * 
+     * @see #setLockPin(byte[], byte[])
+     */
+    public void lockDevice (byte[] pin) throws KineticException;
+    
+    /**
+     * Unlock the device with the specified pin.
+     * <p>
+     * A successful unLockDevice call will unlock the previous locked device.
+     * 
+     * @param pin the pin to authenticate to the service.
+     * 
+     * @throws KineticException if any internal error occurred.
+     * 
+     * @see #lockDevice(byte[])
+     */
+    public void unLockDevice (byte[] pin) throws KineticException;
+    
+    /**
+     * Set cluster version with the specified version.
+     * 
+     * @param newClusterVersion
+     * @throws KineticException
+     */
+    public void setClusterVersion (long newClusterVersion) throws KineticException;
+    
+    /**
+     * Performs media scan operation to the Kinetic drive.
+     * <p>
+     * 
+     * @param range range of background op
+     * @param priority priority of background op
+     * @return kinetic response message.
+     * @throws KineticException if any internal error occurred
+     * 
+     */
+    public KineticMessage mediaScan (Range range, Priority priority) throws KineticException;
+    
+    /**
+     * Perform media optimize with the specified range and priority.
+     * <p>
+     * @param range range of the optimization
+     * @param priority priority of this task
+     * @return response message.
+     * @throws KineticException if any internal error occurred.
+     */
+    public KineticMessage mediaOptimize(Range range, Priority priority) throws KineticException;
 }

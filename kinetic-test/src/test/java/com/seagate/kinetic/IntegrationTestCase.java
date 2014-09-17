@@ -29,6 +29,8 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 import kinetic.admin.AdminClientConfiguration;
+import kinetic.admin.KineticAdminClient;
+import kinetic.admin.KineticAdminClientFactory;
 import kinetic.client.ClientConfiguration;
 import kinetic.client.Entry;
 import kinetic.client.KineticClient;
@@ -41,11 +43,12 @@ import org.junit.Before;
 
 import com.google.protobuf.ByteString;
 import com.jcraft.jsch.JSchException;
-import com.seagate.kinetic.admin.impl.DefaultAdminClient;
+import com.seagate.kinetic.client.internal.MessageFactory;
 import com.seagate.kinetic.common.lib.KineticMessage;
 import com.seagate.kinetic.proto.Kinetic;
-import com.seagate.kinetic.proto.Kinetic.Message;
-import com.seagate.kinetic.proto.Kinetic.Message.Security.ACL.Permission;
+import com.seagate.kinetic.proto.Kinetic.Command;
+import com.seagate.kinetic.proto.Kinetic.Command.Header;
+import com.seagate.kinetic.proto.Kinetic.Command.Security.ACL.Permission;
 
 /**
  * Kinetic client integration test case.
@@ -61,7 +64,7 @@ public class IntegrationTestCase {
     public KineticTestRunner.TestClientConfigConfigurator testClientConfigurator;
 
     private KineticP2pClient kineticClient;
-    private DefaultAdminClient adminClient;
+    private KineticAdminClient adminClient;
     private AbstractIntegrationTestTarget testTarget;
 
     /**
@@ -81,7 +84,7 @@ public class IntegrationTestCase {
         testTarget = IntegrationTestTargetFactory.createTestTarget(true);
         kineticClient = KineticP2PClientFactory
                 .createP2pClient(getClientConfig());
-        adminClient = new DefaultAdminClient(getClientConfig());
+        adminClient = KineticAdminClientFactory.createInstance(getAdminClientConfig());
     }
 
     /**
@@ -108,7 +111,7 @@ public class IntegrationTestCase {
         return kineticClient;
     }
 
-    protected DefaultAdminClient getAdminClient() {
+    protected KineticAdminClient getAdminClient() {
         return adminClient;
     }
 
@@ -151,14 +154,35 @@ public class IntegrationTestCase {
     }
 
     /**
+     * Get a Kinetic client configuration with default setting.
+     * <p>
+     */
+    protected AdminClientConfiguration getAdminClientConfig() {
+        AdminClientConfiguration adminClientConfiguration = testTarget
+                .getAdminClientConfig();
+        return adminClientConfiguration;
+    }
+    
+    /**
      * Get a Kinetic client configuration with setting cluster version flexible.
      * <p>
      */
     protected AdminClientConfiguration getAdminClientConfig(long clusterVersion) {
-        AdminClientConfiguration clientConfiguration = testTarget
+        AdminClientConfiguration adminClientConfiguration = testTarget
                 .getAdminClientConfig();
-        clientConfiguration.setClusterVersion(clusterVersion);
-        return clientConfiguration;
+        adminClientConfiguration.setClusterVersion(clusterVersion);
+        return adminClientConfiguration;
+    }
+    
+    /**
+     * Get a Kinetic admin client configuration with setting userId and key flexible.
+     * <p>
+     */
+    protected AdminClientConfiguration getAdminClientConfig(int userId, String key) {
+        AdminClientConfiguration adminClientConfiguration = getAdminClientConfig();
+        adminClientConfiguration.setUserId(userId);
+        adminClientConfiguration.setKey(key);
+        return adminClientConfiguration;
     }
 
     /**
@@ -173,7 +197,7 @@ public class IntegrationTestCase {
         testTarget = IntegrationTestTargetFactory.createTestTarget(false);
         kineticClient = KineticP2PClientFactory
                 .createP2pClient(getClientConfig());
-        adminClient = new DefaultAdminClient(getClientConfig());
+        adminClient = KineticAdminClientFactory.createInstance(getAdminClientConfig());
     }
 
     /**
@@ -206,12 +230,12 @@ public class IntegrationTestCase {
      * @throws KineticException
      */
     public void createClientAclWithRoles(int clientId, String clientKeyString,
-            List<Kinetic.Message.Security.ACL.Permission> roles)
+            List<Kinetic.Command.Security.ACL.Permission> roles)
             throws KineticException {
 
-        Kinetic.Message.Security.ACL.Scope.Builder domain = Kinetic.Message.Security.ACL.Scope
+        Kinetic.Command.Security.ACL.Scope.Builder domain = Kinetic.Command.Security.ACL.Scope
                 .newBuilder();
-        for (Kinetic.Message.Security.ACL.Permission role : roles) {
+        for (Kinetic.Command.Security.ACL.Permission role : roles) {
             domain.addPermission(role);
         }
 
@@ -219,7 +243,7 @@ public class IntegrationTestCase {
                 Collections.singletonList(domain.build()));
 
         // create a admin clientId with all permission to avoid user nor found.
-        List<Kinetic.Message.Security.ACL.Permission> rolesAll = new ArrayList<Kinetic.Message.Security.ACL.Permission>();
+        List<Kinetic.Command.Security.ACL.Permission> rolesAll = new ArrayList<Kinetic.Command.Security.ACL.Permission>();
         rolesAll.add(Permission.DELETE);
         rolesAll.add(Permission.GETLOG);
         rolesAll.add(Permission.P2POP);
@@ -231,9 +255,9 @@ public class IntegrationTestCase {
 
         int clientIdAdmin = 1;
         String clientIdAdminKey = "asdfasdf";
-        Kinetic.Message.Security.ACL.Scope.Builder domainAll = Kinetic.Message.Security.ACL.Scope
+        Kinetic.Command.Security.ACL.Scope.Builder domainAll = Kinetic.Command.Security.ACL.Scope
                 .newBuilder();
-        for (Kinetic.Message.Security.ACL.Permission role : rolesAll) {
+        for (Kinetic.Command.Security.ACL.Permission role : rolesAll) {
             domainAll.addPermission(role);
         }
         createClientAclWithDomains(clientIdAdmin, clientIdAdminKey,
@@ -252,36 +276,36 @@ public class IntegrationTestCase {
      */
     public void createClientAclWithDomains(int clientId,
             String clientKeyString,
-            List<Kinetic.Message.Security.ACL.Scope> domains)
+            List<Kinetic.Command.Security.ACL.Scope> domains)
             throws KineticException {
-        Kinetic.Message.Builder request = Kinetic.Message.newBuilder();
+        
+        KineticMessage km = MessageFactory.createKineticMessageWithBuilder();
+        
+        //Kinetic.Message.Builder request = (Kinetic.Message.Builder) km.getMessage();
 
-        Kinetic.Message.Header.Builder header = request.getCommandBuilder()
-                .getHeaderBuilder();
-        header.setMessageType(Kinetic.Message.MessageType.SECURITY);
+        Kinetic.Command.Builder commandBuilder = (Kinetic.Command.Builder) km.getCommand();
+        Header.Builder header = commandBuilder.getHeaderBuilder();
+        
+        header.setMessageType(Command.MessageType.SECURITY);
 
-        Kinetic.Message.Security.Builder security = request.getCommandBuilder()
+        Kinetic.Command.Security.Builder security = commandBuilder
                 .getBodyBuilder().getSecurityBuilder();
 
-        Kinetic.Message.Security.ACL.Builder acl = Kinetic.Message.Security.ACL
+        Kinetic.Command.Security.ACL.Builder acl = Kinetic.Command.Security.ACL
                 .newBuilder();
         acl.setIdentity(clientId);
         acl.setKey(ByteString.copyFromUtf8(clientKeyString));
-        acl.setHmacAlgorithm(Kinetic.Message.Security.ACL.HMACAlgorithm.HmacSHA1);
+        acl.setHmacAlgorithm(Kinetic.Command.Security.ACL.HMACAlgorithm.HmacSHA1);
 
-        for (Kinetic.Message.Security.ACL.Scope domain : domains) {
+        for (Kinetic.Command.Security.ACL.Scope domain : domains) {
             acl.addScope(domain);
         }
         security.addAcl(acl);
 
-        KineticMessage km = new KineticMessage();
-        km.setMessage(request);
-
-        Kinetic.Message response = (Message) getClient().request(km)
-                .getMessage();
+        KineticMessage response = getClient().request(km);
 
         // Ensure setup succeeded, or else fail the calling test.
-        assertEquals(Kinetic.Message.Status.StatusCode.SUCCESS, response
+        assertEquals(Kinetic.Command.Status.StatusCode.SUCCESS, response
                 .getCommand().getStatus().getCode());
     }
 

@@ -24,18 +24,19 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.sql.Timestamp;
-import java.util.Arrays;
+
 import java.util.Date;
 import java.util.Map;
 import java.util.logging.Logger;
 
 import com.seagate.kinetic.common.lib.KineticMessage;
-import com.seagate.kinetic.proto.Kinetic.Message;
-import com.seagate.kinetic.proto.Kinetic.Message.MessageType;
-import com.seagate.kinetic.proto.Kinetic.Message.Security.ACL;
-import com.seagate.kinetic.proto.Kinetic.Message.Security.ACL.Permission;
-import com.seagate.kinetic.proto.Kinetic.Message.Setup;
-import com.seagate.kinetic.proto.Kinetic.Message.Status.StatusCode;
+import com.seagate.kinetic.proto.Kinetic.Command;
+
+import com.seagate.kinetic.proto.Kinetic.Command.MessageType;
+import com.seagate.kinetic.proto.Kinetic.Command.Security.ACL;
+import com.seagate.kinetic.proto.Kinetic.Command.Security.ACL.Permission;
+import com.seagate.kinetic.proto.Kinetic.Command.Setup;
+import com.seagate.kinetic.proto.Kinetic.Command.Status.StatusCode;
 import com.seagate.kinetic.simulator.lib.SetupInfo;
 import com.seagate.kinetic.simulator.persist.Store;
 
@@ -51,15 +52,18 @@ public abstract class SetupHandler {
     private final static Logger logger = Logger.getLogger(SetupHandler.class
             .getName());
 
-    public static boolean checkPermission(Message request,
-            Message.Builder respond, Map<Long, ACL> currentMap) {
+    public static boolean checkPermission(KineticMessage request,
+            KineticMessage respond, Map<Long, ACL> currentMap) {
+        
         boolean hasPermission = false;
 
+        Command.Builder commandBuilder = (Command.Builder) respond.getCommand();
+        
         // set reply type
-        respond.getCommandBuilder().getHeaderBuilder()
+        commandBuilder.getHeaderBuilder()
         .setMessageType(MessageType.SETUP_RESPONSE);
         // set ack sequence
-        respond.getCommandBuilder().getHeaderBuilder()
+        commandBuilder.getHeaderBuilder()
         .setAckSequence(request.getCommand().getHeader().getSequence());
 
         // check if has permission to set security
@@ -68,14 +72,13 @@ public abstract class SetupHandler {
         } else {
             try {
                 // check if client has permission
-                Authorizer.checkPermission(currentMap, request.getCommand()
-                        .getHeader().getIdentity(), Permission.SETUP);
+                Authorizer.checkPermission(currentMap, request.getMessage().getHmacAuth().getIdentity(), Permission.SETUP);
 
                 hasPermission = true;
             } catch (KVSecurityException e) {
-                respond.getCommandBuilder().getStatusBuilder()
+                commandBuilder.getStatusBuilder()
                 .setCode(StatusCode.NOT_AUTHORIZED);
-                respond.getCommandBuilder().getStatusBuilder()
+                commandBuilder.getStatusBuilder()
                 .setStatusMessage(e.getMessage());
             }
         }
@@ -83,79 +86,54 @@ public abstract class SetupHandler {
         return hasPermission;
     }
 
+   
     @SuppressWarnings("rawtypes")
-    public static synchronized SetupInfo handleSetup(KineticMessage request,
-            Message.Builder respond, byte[] myPin, Store store,
-            String kineticHome) throws KVStoreException, IOException {
-        SetupInfo setupInfo = null;
-
-        byte[] newPin = request.getMessage().getCommand().getBody().getSetup()
-                .getPin()
-                .toByteArray();
-        if (null == newPin) {
-            return setupInfo;
-        }
-
-        logger.info("parameterPin=" + new String(newPin) + ", internalPin="
-                + new String(myPin));
-
-        if (null == myPin || 0 == myPin.length) {
-            setupInfo = handleSetup(request, respond, myPin, newPin, store,
-                    kineticHome);
-        } else if (Arrays.equals(newPin, myPin)) {
-            setupInfo = handleSetup(request, respond, myPin, newPin, store,
-                    kineticHome);
-        } else {
-            respond.getCommandBuilder().getStatusBuilder()
-            .setCode(StatusCode.INTERNAL_ERROR);
-            respond.getCommandBuilder().getStatusBuilder()
-            .setStatusMessage("Pin not match");
-        }
-
-        return setupInfo;
-    }
-
-    @SuppressWarnings("rawtypes")
-    private static SetupInfo handleSetup(KineticMessage request,
-            Message.Builder respond, byte[] myPin, byte[] newPin, Store store,
+    public static SetupInfo handleSetup(KineticMessage request,
+            KineticMessage respond, Store store,
             String kineticHome) throws IOException, KVStoreException {
+        
         SetupInfo setupInfo = new SetupInfo();
+        
+        Command.Builder commandBuilder = (Command.Builder) respond.getCommand();
+        
         // persist setupInfo
-        SetupHandler.persistSetup(request.getMessage().getCommand().getBody()
+        SetupHandler.persistSetup(request.getCommand().getBody()
                 .getSetup()
                 .toByteArray(), kineticHome);
 
         // modify clusterVersion
-        if (request.getMessage().getCommand().getBody().getSetup()
+        if (request.getCommand().getBody().getSetup()
                 .hasNewClusterVersion()) {
-            Long newClusterVersion = request.getMessage().getCommand()
+            long newClusterVersion = request.getCommand()
                     .getBody().getSetup()
                     .getNewClusterVersion();
-            if (null != newClusterVersion) {
+            //if (null != newClusterVersion) {
                 setupInfo.setClusterVersion(newClusterVersion);
-                logger.info("the cluster version is set: "
-                        + Long.valueOf(newClusterVersion));
-            }
+                logger.info("the cluster version is set to: " + newClusterVersion);
+            //}
         }
 
+        /**
+         * XXX protocol-3.0.0
+         */
         // erase the db data
-        if (request.getMessage().getCommand().getBody().getSetup()
-                .getInstantSecureErase()) {
-            store.reset();
-            logger.info("erase db finish!");
-        }
+        //if (request.getMessage().getCommand().getBody().getSetup()
+        //        .getInstantSecureErase()) {
+        //    store.reset();
+        //    logger.info("erase db finish!");
+        //}
 
         // set pin
-        if (request.getMessage().getCommand().getBody().getSetup().hasSetPin()) {
-            myPin = request.getMessage().getCommand().getBody().getSetup()
-                    .getSetPin()
-                    .toByteArray();
-            setupInfo.setPin(myPin);
-            logger.info("the drive pin is set: " + new String(myPin));
-        }
+        //if (request.getMessage().getCommand().getBody().getSetup().hasSetPin()) {
+        //    myPin = request.getMessage().getCommand().getBody().getSetup()
+        //            .getSetPin()
+        //            .toByteArray();
+        //    setupInfo.setPin(myPin);
+        //    logger.info("the drive pin is set: " + new String(myPin));
+        //}
 
         // persist firmware download
-        if (request.getMessage().getCommand().getBody().getSetup()
+        if (request.getCommand().getBody().getSetup()
                 .getFirmwareDownload()) {
             if (request.getValue() != null) {
                 byte[] firmwareDownloadValue = request.getValue();
@@ -164,13 +142,13 @@ public abstract class SetupHandler {
         }
 
         // TODO handle exception
-        respond.getCommandBuilder().getStatusBuilder()
+        commandBuilder.getStatusBuilder()
         .setCode(StatusCode.SUCCESS);
 
         return setupInfo;
     }
 
-    private static void persistSetup(byte[] contents, String kineticHome)
+     static void persistSetup(byte[] contents, String kineticHome)
             throws IOException {
         String setupPersistFilePath = kineticHome + File.separator + ".setup";
         String setupPersistBakFilePath = setupPersistFilePath + ".bak";
@@ -213,13 +191,16 @@ public abstract class SetupHandler {
         out.close();
     }
 
-    public static SetupInfo loadSetup(String kineticHome) throws IOException {
-        String setupPersistFilePath = kineticHome + File.separator + ".setup";
+    public static void loadSetup(SimulatorEngine engine) throws IOException {
+        
+        String setupPersistFilePath = engine.getKineticHome() + File.separator + ".setup";
 
         File setupFile = new File(setupPersistFilePath);
-        SetupInfo setupInfo = new SetupInfo();
+        
         if (setupFile.exists()) {
+            
             Long fileLength = setupFile.length();
+            
             if (fileLength != 0) {
                 // read info from file
                 byte[] fileContent = new byte[fileLength.intValue()];
@@ -227,16 +208,10 @@ public abstract class SetupHandler {
                 in.read(fileContent);
                 in.close();
                 Setup setup = Setup.parseFrom(fileContent);
-                setupInfo.setClusterVersion(setup.getNewClusterVersion());
-                if (!setup.getSetPin().isEmpty()) {
-                    setupInfo.setPin(setup.getSetPin().toByteArray());
-                } else {
-                    // setupInfo.setPin(setup.getPin().toByteArray());
-                    setupInfo.setPin("".getBytes());
-                }
+                
+                // set cluster version
+                engine.setClusterVersion(setup.getNewClusterVersion());
             }
         }
-
-        return setupInfo;
     }
 }

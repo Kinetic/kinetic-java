@@ -17,6 +17,9 @@
  */
 package com.seagate.kinetic.common.lib;
 
+import com.google.protobuf.MessageOrBuilder;
+import com.seagate.kinetic.proto.Kinetic.Command;
+import com.seagate.kinetic.proto.Kinetic.CommandOrBuilder;
 import com.seagate.kinetic.proto.Kinetic.Message;
 
 /**
@@ -40,8 +43,31 @@ public class ProtocolMessageUtil {
 	 * @return a readable string format of a kinetic protocol message on the
 	 *         wire.
 	 */
-	public static String toString(Message message, int vLength) {
+	public static String toString(KineticMessage kineticMessage) {
 
+	    int vLength = 0;
+	    
+	    if (kineticMessage.getValue() != null) {
+	        vLength = kineticMessage.getValue().length;
+	    }
+	    
+	    Message message = null;
+	    MessageOrBuilder messageOrBuilder = kineticMessage.getMessage();
+	    
+	    if (messageOrBuilder instanceof Message) {
+	        message = (Message) messageOrBuilder;
+	    } else {
+	        message = ((Message.Builder) messageOrBuilder).build();
+	    }
+	    
+	    Command command = null;
+	    CommandOrBuilder commandOrBuilder = kineticMessage.getCommand();
+	    if (commandOrBuilder instanceof Command) {
+	        command = (Command) commandOrBuilder;
+	    } else {
+	        command = ((Command.Builder) commandOrBuilder).build();
+	    }
+	    
 		/**
 		 * This method is intended to be called for debugging purposes. The
 		 * String type for printMsg is used intentionally for readability.
@@ -53,7 +79,8 @@ public class ProtocolMessageUtil {
 				+ "\n] \n" +
 
 				// readable proto message
-				"[" + message + "]";
+				"[" + message + "]" + "\n" +
+				"command: [" + command + "]";
 
 		// value size
 		if (vLength > 0) {

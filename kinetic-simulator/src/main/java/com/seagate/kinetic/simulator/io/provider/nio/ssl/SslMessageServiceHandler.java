@@ -28,7 +28,7 @@ import java.util.logging.Logger;
 import com.seagate.kinetic.common.lib.KineticMessage;
 import com.seagate.kinetic.simulator.internal.ConnectionInfo;
 import com.seagate.kinetic.simulator.internal.SimulatorEngine;
-import com.seagate.kinetic.simulator.internal.StatefulMessage;
+
 import com.seagate.kinetic.simulator.io.provider.nio.NioConnectionStateManager;
 import com.seagate.kinetic.simulator.io.provider.nio.NioQueuedRequestProcessRunner;
 import com.seagate.kinetic.simulator.io.provider.nio.RequestProcessRunner;
@@ -68,40 +68,31 @@ public class SslMessageServiceHandler extends
 	    
 	    // register connection info with the channel handler context
         @SuppressWarnings("unused")
-        ConnectionInfo info = SimulatorEngine.registerNewConnection(ctx);
+        ConnectionInfo info = this.lcservice.registerNewConnection(ctx);
         
         //logger.info("TLS channel is active, connection registered., id = " + info.getConnectionId());
 	}
 
 	@Override
-	protected void channelRead0(ChannelHandlerContext ctx,
-			KineticMessage request)
-			throws Exception {
+    protected void channelRead0(ChannelHandlerContext ctx,
+            KineticMessage request) throws Exception {
+
+	    // set secure channel flag
+	    request.setIsSecureChannel(true);
 	    
-	    StatefulMessage sm = NioConnectionStateManager.checkAndGetStatefulMessage(ctx, request);
+	    // check if client set conn id
+        NioConnectionStateManager.checkIfConnectionIdSet(ctx, request);
 
-		if (enforceOrdering) {
-		    // process request sequentially
-            if (sm != null) {
-                queuedRequestProcessRunner.processRequest(ctx, sm);
-            } else {
-                queuedRequestProcessRunner.processRequest(ctx, request);
-            }
-		} else {
-		    
-		 // each request is independently processed
+        if (enforceOrdering) {
+            // process request sequentially
+            queuedRequestProcessRunner.processRequest(ctx, request);
+        } else {
+            // each request is independently processed
             RequestProcessRunner rpr = null;
-            
-            if (sm != null) {
-                rpr = new RequestProcessRunner(lcservice, ctx,sm);
-            } else {
-                rpr = new RequestProcessRunner(lcservice, ctx,request);
-            }
-			
-			this.lcservice.execute(rpr);
-		}
-
-	}
+            rpr = new RequestProcessRunner(lcservice, ctx, request);
+            this.lcservice.execute(rpr);
+        }
+    }
 
 	@Override
 	public void channelReadComplete(ChannelHandlerContext ctx) throws Exception {

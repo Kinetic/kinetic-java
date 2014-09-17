@@ -48,6 +48,9 @@ public class StatefulMessage extends KineticMessage {
         
         //set value
         super.setValue(km.getValue());
+        
+        //set command
+        super.setCommand(km.getCommand());
     }
     
     /**

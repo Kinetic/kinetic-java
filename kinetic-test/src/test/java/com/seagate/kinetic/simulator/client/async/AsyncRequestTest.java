@@ -36,11 +36,13 @@ import org.junit.Test;
 
 import com.google.protobuf.ByteString;
 import com.seagate.kinetic.IntegrationTestCase;
+import com.seagate.kinetic.client.internal.MessageFactory;
 import com.seagate.kinetic.common.lib.KineticMessage;
-import com.seagate.kinetic.proto.Kinetic.Message;
-import com.seagate.kinetic.proto.Kinetic.Message.KeyValue;
-import com.seagate.kinetic.proto.Kinetic.Message.MessageType;
-import com.seagate.kinetic.proto.Kinetic.Message.Synchronization;
+import com.seagate.kinetic.proto.Kinetic.Command;
+
+import com.seagate.kinetic.proto.Kinetic.Command.KeyValue;
+import com.seagate.kinetic.proto.Kinetic.Command.MessageType;
+import com.seagate.kinetic.proto.Kinetic.Command.Synchronization;
 
 public class AsyncRequestTest extends IntegrationTestCase {
 
@@ -115,16 +117,16 @@ public class AsyncRequestTest extends IntegrationTestCase {
 	private static KineticMessage createPutMessage(Entry versioned,
 			byte[] newVersion) {
 
-		KineticMessage km = new KineticMessage();
-		Message.Builder message = Message.newBuilder();
-		km.setMessage(message);
+		KineticMessage km = MessageFactory.createKineticMessageWithBuilder();
+		
+		Command.Builder commandBuilder = (Command.Builder) km.getCommand();
 
-		message.getCommandBuilder().getHeaderBuilder()
+		commandBuilder.getHeaderBuilder()
 		.setMessageType(MessageType.PUT);
 		
-		message.getCommandBuilder().getBodyBuilder().getKeyValueBuilder().setSynchronization(Synchronization.WRITETHROUGH);
+		commandBuilder.getBodyBuilder().getKeyValueBuilder().setSynchronization(Synchronization.WRITETHROUGH);
 		
-		KeyValue.Builder kv = message.getCommandBuilder().getBodyBuilder()
+		KeyValue.Builder kv = commandBuilder.getBodyBuilder()
 				.getKeyValueBuilder();
 
 		// ket

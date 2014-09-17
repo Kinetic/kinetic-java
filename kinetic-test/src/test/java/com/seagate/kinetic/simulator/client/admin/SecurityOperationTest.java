@@ -19,11 +19,15 @@
  */
 package com.seagate.kinetic.simulator.client.admin;
 
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Logger;
 
+import kinetic.admin.ACL;
+import kinetic.admin.Domain;
+import kinetic.admin.Role;
 import kinetic.client.KineticClient;
 import kinetic.client.KineticClientFactory;
 import kinetic.client.KineticException;
@@ -36,13 +40,6 @@ import com.google.protobuf.ByteString;
 import com.seagate.kinetic.IntegrationTestCase;
 import com.seagate.kinetic.admin.impl.DefaultAdminClient;
 import com.seagate.kinetic.client.internal.ClientProxy.LCException;
-import com.seagate.kinetic.proto.Kinetic.Message;
-import com.seagate.kinetic.proto.Kinetic.Message.Security;
-import com.seagate.kinetic.proto.Kinetic.Message.Security.ACL;
-import com.seagate.kinetic.proto.Kinetic.Message.Security.ACL.HMACAlgorithm;
-import com.seagate.kinetic.proto.Kinetic.Message.Security.ACL.Permission;
-import com.seagate.kinetic.proto.Kinetic.Message.Security.ACL.Scope;
-import com.seagate.kinetic.proto.Kinetic.Message.Status;
 
 public class SecurityOperationTest extends IntegrationTestCase {
 
@@ -62,33 +59,35 @@ public class SecurityOperationTest extends IntegrationTestCase {
 
     @Test
     public void addAclTest() throws LCException, KineticException {
-        Message.Builder request = Message.newBuilder();
+        List<Role> roles1 = new ArrayList<Role>();
+        roles1.add(Role.DELETE);
+        roles1.add(Role.GETLOG);
+        roles1.add(Role.READ);
+        roles1.add(Role.RANGE);
+        roles1.add(Role.SECURITY);
+        roles1.add(Role.SETUP);
+        roles1.add(Role.WRITE);
+        roles1.add(Role.P2POP);
 
-        Security.Builder sb = request.getCommandBuilder().getBodyBuilder()
-                .getSecurityBuilder();
+        Domain domain1 = new Domain();
+        domain1.setRoles(roles1);
 
-        ACL.Builder acl = ACL.newBuilder();
-        acl.setIdentity(1);
-        acl.setKey(ByteString.copyFromUtf8("asdfasdf"));
-        acl.setHmacAlgorithm(HMACAlgorithm.HmacSHA1);
+        List<Domain> domains1 = new ArrayList<Domain>();
+        domains1.add(domain1);
 
-        Scope.Builder domain = Scope.newBuilder();
+        List<ACL> acls = new ArrayList<ACL>();
+        ACL acl1 = new ACL();
+        acl1.setDomains(domains1);
+        acl1.setUserId(1);
+        acl1.setKey("asdfasdf");
 
-        for (Permission role : Permission.values()) {
-            if (!role.equals(Permission.INVALID_PERMISSION)) {
-                domain.addPermission(role);
-            }
+        acls.add(acl1);
+
+        try {
+            getAdminClient().setAcl(acls);
+        } catch (KineticException e1) {
+            fail("set security throw exception: " + e1.getMessage());
         }
-
-        acl.addScope(domain);
-
-        sb.addAcl(acl.build());
-
-        Message respond = this.kineticClient.configureSecurityPolicy(request);
-
-        assertTrue(respond.getCommand().getStatus().getCode()
-                .equals(Status.StatusCode.SUCCESS));
-        this.kineticClient.close();
 
         // right user, wrong key
         KineticClient kineticClient2 = KineticClientFactory
@@ -117,17 +116,18 @@ public class SecurityOperationTest extends IntegrationTestCase {
 
         kineticClient3.close();
 
-        // wrong user, right key
-        KineticClient kineticClient4 = KineticClientFactory
-                .createInstance(getClientConfig(2, "asdfasdf"));
-        try {
+//        // wrong user, right key
+//        KineticClient kineticClient4 = KineticClientFactory
+//                .createInstance(getClientConfig(2, "asdfasdf"));
+//        try {
+//
+//            kineticClient4.get(ByteString.copyFromUtf8("1234").toByteArray());
+//            fail("no exception was thrown");
+//        } catch (Exception e) {
+//            logger.info("caught expected exception");
+//        } finally {
+//            kineticClient4.close();
+//        }
 
-            kineticClient4.get(ByteString.copyFromUtf8("1234").toByteArray());
-            fail("no exception was thrown");
-        } catch (Exception e) {
-            logger.info("caught expected exception");
-        }
-
-        kineticClient4.close();
     }
 }

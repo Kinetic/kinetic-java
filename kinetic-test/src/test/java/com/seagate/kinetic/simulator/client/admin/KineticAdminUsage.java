@@ -43,7 +43,10 @@ public class KineticAdminUsage {
                 .createInstance(config);
 
         // setup, set pin, clusterVersion and erase db
-        adminClient.setup(null, "pin001".getBytes(), 1, true);
+        adminClient.instantErase(null);
+        adminClient.setErasePin(null, "pin001".getBytes());
+        adminClient.setClusterVersion(1);
+        
         adminClient.close();
 
         config.setClusterVersion(1);
@@ -85,7 +88,11 @@ public class KineticAdminUsage {
         config.setClusterVersion(1);
         KineticAdminClient adminClient2 = KineticAdminClientFactory
                 .createInstance(config);
-        adminClient2.setSecurity(acls);
+        
+        byte[] pin = "1".getBytes();
+        
+        adminClient2.setErasePin(null, pin);
+        adminClient2.setLockPin(null, pin);
 
         adminClient2.close();
 

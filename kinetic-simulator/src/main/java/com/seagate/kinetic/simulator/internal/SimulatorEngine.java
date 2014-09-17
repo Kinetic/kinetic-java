@@ -19,7 +19,10 @@
  */
 package com.seagate.kinetic.simulator.internal;
 
+import io.netty.channel.ChannelHandlerContext;
+
 import java.io.File;
+import java.net.UnknownHostException;
 import java.security.Key;
 import java.util.ArrayList;
 import java.util.Map;
@@ -29,13 +32,22 @@ import java.util.logging.Logger;
 
 import kinetic.simulator.SimulatorConfiguration;
 
+import com.google.protobuf.ByteString;
 import com.seagate.kinetic.common.lib.Hmac;
 import com.seagate.kinetic.common.lib.KineticMessage;
 import com.seagate.kinetic.heartbeat.message.ByteCounter;
 import com.seagate.kinetic.heartbeat.message.OperationCounter;
+import com.seagate.kinetic.proto.Kinetic.Command;
+import com.seagate.kinetic.proto.Kinetic.Command.GetLog.Configuration;
+import com.seagate.kinetic.proto.Kinetic.Command.GetLog.Limits;
+import com.seagate.kinetic.proto.Kinetic.Command.PinOperation.PinOpType;
+
+import com.seagate.kinetic.proto.Kinetic.Command.Status.StatusCode;
+import com.seagate.kinetic.proto.Kinetic.Local;
 import com.seagate.kinetic.proto.Kinetic.Message;
-import com.seagate.kinetic.proto.Kinetic.Message.MessageType;
-import com.seagate.kinetic.proto.Kinetic.Message.Security.ACL;
+import com.seagate.kinetic.proto.Kinetic.Message.AuthType;
+import com.seagate.kinetic.proto.Kinetic.Command.MessageType;
+import com.seagate.kinetic.proto.Kinetic.Command.Security.ACL;
 import com.seagate.kinetic.simulator.heartbeat.Heartbeat;
 import com.seagate.kinetic.simulator.internal.p2p.P2POperationHandler;
 import com.seagate.kinetic.simulator.io.provider.nio.NioEventLoopGroupManager;
@@ -48,6 +60,8 @@ import com.seagate.kinetic.simulator.persist.KVOp;
 import com.seagate.kinetic.simulator.persist.RangeOp;
 import com.seagate.kinetic.simulator.persist.Store;
 import com.seagate.kinetic.simulator.persist.StoreFactory;
+import com.seagate.kinetic.simulator.utility.ConfigurationUtil;
+import com.seagate.kinetic.simulator.utility.LimitsUtil;
 
 /**
  *
@@ -79,6 +93,10 @@ public class SimulatorEngine implements MessageService {
 
     private final static Logger logger = Logger.getLogger(SimulatorEngine.class
             .getName());
+    
+    // protocol version
+    public static final String PROTOCOL_VERSION = 
+            Local.getDefaultInstance().getProtocolVersion();
 
     private SimulatorConfiguration config = null;
 
@@ -91,12 +109,12 @@ public class SimulatorEngine implements MessageService {
 
     // ack map
     private Map<Long, ACL> aclmap = null;
+    
+    private SecurityPin securityPin = new SecurityPin();
 
     private Map<Long, Key> hmacKeyMap = null;
 
-    private Long clusterVersion = null;
-
-    private byte[] pin = null;
+    private long clusterVersion = 0;
 
     private final boolean isHttp = Boolean.getBoolean("kinetic.io.http");
 
@@ -136,6 +154,8 @@ public class SimulatorEngine implements MessageService {
 
     // flag to indicate if the simulator is closing
     private volatile boolean isClosing = false;
+    
+    private String kineticHome = null;
 
     // resource for all the simulator instances
     private static ThreadPoolService tpService = new ThreadPoolService();
@@ -149,6 +169,8 @@ public class SimulatorEngine implements MessageService {
     
     // last connection Id. 
     private static long lastConnectionId = System.currentTimeMillis();
+    
+    private volatile boolean deviceLocked = false;
     
     static {
         // add shutdown hook to clean up resources
@@ -179,27 +201,23 @@ public class SimulatorEngine implements MessageService {
         p2pHandler = new P2POperationHandler();
 
         try {
-            String kineticHome = kineticHome(config);
-            Map<Long, ACL> loadedAclMap = SecurityHandler.loadACL(kineticHome);
-            if (loadedAclMap.size() > 0) {
-                this.aclmap = loadedAclMap;
-                this.hmacKeyMap = HmacStore.getHmacKeyMap(loadedAclMap);
-            } else {
-                // get ack map
-                this.aclmap = HmacStore.getAclMap();
-
-                // get hmac key map
-                this.hmacKeyMap = HmacStore.getHmacKeyMap(aclmap);
-            }
-            SetupInfo setupInfo = SetupHandler.loadSetup(kineticHome);
-            clusterVersion = setupInfo.getClusterVersion();
-            pin = setupInfo.getPin();
+            
+            // calculate my home
+            kineticHome = kineticHome(config);
+            
+            // load acl and pins
+            SecurityHandler.loadACL(this);
+            
+            // load set up 
+            SetupHandler.loadSetup(this);
 
             // initialize db store
             this.initStore();
 
             // init network io service
             this.initIoService();
+            
+            logger.info("simulator protocol version = " + SimulatorConfiguration.getProtocolVersion());
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -296,7 +314,15 @@ public class SimulatorEngine implements MessageService {
     public Map<Long, ACL> getAclMap() {
         return this.aclmap;
     }
-
+    
+    public void setAclMap ( Map<Long, ACL> aclmap) {
+        this.aclmap = aclmap;
+    }
+    
+    public void setHmacKeyMap(Map<Long, Key> hmacKeyMap) {
+        this.hmacKeyMap = hmacKeyMap;
+    }
+        
     public Map<Long, Key> getHmacKeyMap() {
         return this.hmacKeyMap;
     }
@@ -304,6 +330,18 @@ public class SimulatorEngine implements MessageService {
     @SuppressWarnings("rawtypes")
     public Store getStore() {
         return this.store;
+    }
+    
+    public void setClusterVersion (long cversion) {
+        this.clusterVersion = cversion;
+    }
+    
+    public SecurityPin getSecurityPin() {
+        return this.securityPin;
+    }
+    
+    public String getKineticHome() {
+        return this.kineticHome;
     }
 
     /**
@@ -381,6 +419,7 @@ public class SimulatorEngine implements MessageService {
     }
 
     private static String kineticHome(SimulatorConfiguration config) {
+        
         String defaultHome = System.getProperty("user.home") + File.separator
                 + "kinetic";
         String kineticHome = config.getProperty(
@@ -397,95 +436,164 @@ public class SimulatorEngine implements MessageService {
     @SuppressWarnings("unchecked")
     public KineticMessage processRequest(KineticMessage kmreq) {
         
-        Message request = (Message) kmreq.getMessage();
-
-        KineticMessage kmresp = new KineticMessage();
-        Message.Builder response = Message.newBuilder();
-        kmresp.setMessage(response);
-
-        long userId = request.getCommand().getHeader().getIdentity();
+        // create response message
+        KineticMessage kmresp = createKineticMessageWithBuilder();
+        
+        // get command builder
+        Command.Builder commandBuilder = (Command.Builder) kmresp.getCommand();
+        
+        // get message builder
+        Message.Builder messageBuilder = (Message.Builder) kmresp.getMessage();
+        
+        // get user identity for this message
+        long userId = kmreq.getMessage().getHmacAuth().getIdentity();
+        
+        // get user key
         Key key = this.hmacKeyMap.get(Long.valueOf(userId));
-
-        String kineticHome = kineticHome(config);
-
+        
+        MessageType mtype = kmreq.getCommand().getHeader().getMessageType();
+        
         try {
-            HeaderOp.checkHeader(kmreq, response, key, clusterVersion);
-
-            if (request.getCommand().getHeader().getMessageType() == MessageType.FLUSHALLDATA) {
-                response.getCommandBuilder().getHeaderBuilder()
+            
+            HeaderOp.checkHeader(kmreq, kmresp, key, clusterVersion);
+            
+            checkDeviceLocked (kmreq, kmresp);
+            
+            if (kmreq.getMessage().getAuthType() == AuthType.PINAUTH) {
+                //perform pin op
+                PinOperationHandler.handleOperation(kmreq, kmresp, this); 
+            } else if (mtype == MessageType.FLUSHALLDATA) {
+                commandBuilder.getHeaderBuilder()
                 .setMessageType(MessageType.FLUSHALLDATA_RESPONSE);
                 logger.warning("received flush data command, this is a no op on simulator at this time ...");
-            } else if (request.getCommand().getHeader().getMessageType() == MessageType.NOOP) {
-                response.getCommandBuilder().getHeaderBuilder()
+            } else if (mtype == MessageType.NOOP) {
+                commandBuilder.getHeaderBuilder()
                 .setMessageType(MessageType.NOOP_RESPONSE);
-            } else if (request.getCommand().getBody()
+            } else if (kmreq.getCommand().getBody()
                     .hasKeyValue()) {
                 KVOp.Op(aclmap, store, kmreq, kmresp);
-            } else if (request.getCommand().getBody().hasRange()) {
-                RangeOp.operation(store, request, response, aclmap);
-            } else if (request.getCommand().getBody()
+            } else if (mtype == MessageType.GETKEYRANGE) {
+                RangeOp.operation(store, kmreq, kmresp, aclmap);
+            } else if (kmreq.getCommand().getBody()
                     .hasSecurity()) {
                 boolean hasPermission = SecurityHandler.checkPermission(
-                        request, response, aclmap);
+                        kmreq, kmresp, aclmap);
                 if (hasPermission) {
                     synchronized (this.hmacKeyMap) {
-                        aclmap = SecurityHandler.handleSecurity(request,
-                                response, aclmap, kineticHome);
+                        SecurityHandler.handleSecurity(kmreq,
+                                kmresp, this);
                         this.hmacKeyMap = HmacStore.getHmacKeyMap(aclmap);
                     }
                 }
 
-            } else if (request.getCommand().getBody().hasSetup()) {
-                boolean hasPermission = SetupHandler.checkPermission(request,
-                        response, aclmap);
+            } else if (kmreq.getCommand().getBody().hasSetup()) {
+                boolean hasPermission = SetupHandler.checkPermission(kmreq,
+                        kmresp, aclmap);
                 if (hasPermission) {
                     SetupInfo setupInfo = SetupHandler.handleSetup(kmreq,
-                            response, pin, store, kineticHome);
+                            kmresp, store, kineticHome);
                     if (setupInfo != null) {
                         this.clusterVersion = setupInfo.getClusterVersion();
-                        this.pin = setupInfo.getPin();
+                        //this.pin = setupInfo.getPin();
                     }
                 }
-            } else if (request.getCommand().getBody().hasGetLog()) {
-                boolean hasPermission = GetLogHandler.checkPermission(request,
-                        response, aclmap);
+            } else if (kmreq.getCommand().getBody().hasGetLog()) {
+                boolean hasPermission = GetLogHandler.checkPermission(kmreq,
+                        kmresp, aclmap);
                 if (hasPermission) {
-                    GetLogHandler.handleGetLog(this, request, kmresp);
+                    GetLogHandler.handleGetLog(this, kmreq, kmresp);
                 }
-            } else if (request.getCommand().getBody()
+            } else if (kmreq.getCommand().getBody()
                     .hasP2POperation()) {
 
                 // check permission
                 boolean hasPermission = P2POperationHandler.checkPermission(
-                        request, response, aclmap);
+                        kmreq, kmresp, aclmap);
 
                 if (hasPermission) {
-                    this.p2pHandler.push(aclmap, store, request, response);
+                    this.p2pHandler.push(aclmap, store, kmreq, kmresp);
                 }
+            } else if (mtype == MessageType.MEDIASCAN) {
+                BackGroundOpHandler.mediaScan (kmreq, kmresp, this);
+            } else if (mtype == MessageType.MEDIAOPTIMIZE) {
+                BackGroundOpHandler.mediaOptimize (kmreq, kmresp, this);
             }
-
-        } catch (Exception e) {
-
-            int number = request.getCommand().getHeader()
+        } catch (DeviceLockedException ire) {
+            
+            int number = kmreq.getCommand().getHeader()
                     .getMessageType()
                     .getNumber() - 1;
 
-            response.getCommandBuilder().getHeaderBuilder()
+            commandBuilder.getHeaderBuilder()
+            .setMessageType(MessageType.valueOf(number));
+           
+            commandBuilder.getStatusBuilder().setCode(
+                    StatusCode.DEVICE_LOCKED);
+            
+            commandBuilder.getStatusBuilder().setStatusMessage("Device is locked");
+            
+        } catch (Exception e) {
+            
+            logger.log(Level.WARNING, e.getMessage(), e);
+
+            int number = kmreq.getCommand().getHeader()
+                    .getMessageType()
+                    .getNumber() - 1;
+
+            commandBuilder.getHeaderBuilder()
             .setMessageType(MessageType.valueOf(number));
 
             logger.log(Level.WARNING, e.getMessage(), e);
         } finally {
 
             try {
-                response.setHmac(Hmac.calc(kmresp, key));
+                // get command byte stirng
+                ByteString commandByteString = commandBuilder.build()
+                        .toByteString();
+
+                // get command byte[]
+                byte[] commandByte = commandByteString.toByteArray();
+
+                // require Hmac calculation ?
+                if (kmreq.getMessage().getAuthType() == AuthType.HMACAUTH) {
+                    
+                    // calculate hmac
+                    ByteString hmac = Hmac.calc(commandByte, key);
+
+                    // set identity
+                    messageBuilder.getHmacAuthBuilder().setIdentity(userId);
+
+                    // set hmac
+                    messageBuilder.getHmacAuthBuilder().setHmac(hmac);
+                }
+
+                // set command bytes
+                messageBuilder.setCommandBytes(commandByteString);
             } catch (Exception e2) {
                 logger.log(Level.WARNING, e2.getMessage(), e2);
             }
-            
+
             this.addStatisticCounter(kmreq, kmresp);
         }
 
         return kmresp;
+    }
+    
+    private void checkDeviceLocked(KineticMessage kmreq, KineticMessage kmresp)
+            throws DeviceLockedException {
+
+        if (this.deviceLocked == false) {
+            return;
+        }
+
+        PinOpType pinOpType = kmreq.getCommand().getBody().getPinOp()
+                .getPinOpType();
+
+        if (pinOpType != PinOpType.UNLOCK_PINOP
+                && pinOpType != PinOpType.LOCK_PINOP) {
+            throw new DeviceLockedException ();
+        }
+
     }
 
     private void addStatisticCounter(KineticMessage kmreq, KineticMessage kmresp) {
@@ -496,7 +604,7 @@ public class SimulatorEngine implements MessageService {
             
             Message response = ((Message.Builder) kmresp.getMessage()).build();
             
-            MessageType mtype = request.getCommand().getHeader()
+            MessageType mtype = kmreq.getCommand().getHeader()
                     .getMessageType();
 
             int inCount = 0;
@@ -746,10 +854,62 @@ public class SimulatorEngine implements MessageService {
      * 
      * @return the connection info instance associated with the connection.
      */
-    public static ConnectionInfo registerNewConnection (Object connection) {
+    public ConnectionInfo registerNewConnection(ChannelHandlerContext ctx) {
         ConnectionInfo info = newConnectionInfo();
-        putConnectionInfo (connection, info);
-        
+        putConnectionInfo(ctx, info);
+
+        KineticMessage km = new KineticMessage();
+
+        Message.Builder mb = Message.newBuilder();
+        mb.setAuthType(AuthType.UNSOLICITEDSTATUS);
+
+        Command.Builder cb = Command.newBuilder();
+
+        // connection id
+        cb.getHeaderBuilder().setConnectionID(info.getConnectionId());
+
+        // cluster version
+        cb.getHeaderBuilder().setClusterVersion(this.clusterVersion);
+
+        // configurations
+
+        try {
+            Configuration configuration = ConfigurationUtil
+                    .getConfiguration(this);
+            cb.getBodyBuilder().getGetLogBuilder().getConfigurationBuilder()
+                    .mergeFrom(configuration);
+        } catch (Exception e) {
+            logger.log(Level.WARNING, e.getMessage(), e);
+        }
+
+        // cb.getBodyBuilder().getGetLogBuilder().getConfigurationBuilder().setProtocolVersion(PROTOCOL_VERSION);
+        // cb.getBodyBuilder().getGetLogBuilder().getConfigurationBuilder().setCompilationDate(ConfigurationUtil.COMPILATION_DATE);
+        // cb.getBodyBuilder().getGetLogBuilder().getConfigurationBuilder().setModel(ConfigurationUtil.MODEL);
+        // cb.getBodyBuilder().getGetLogBuilder().getConfigurationBuilder().setVersion(SimulatorConfiguration.getSimulatorVersion());
+        // cb.getBodyBuilder().getGetLogBuilder().getConfigurationBuilder().setSerialNumber(ByteString.copyFrom(ConfigurationUtil.SERIAL_NUMBER));
+        //
+        // limits
+        try {
+            Limits limits = LimitsUtil.getLimits(this.config);
+            cb.getBodyBuilder().getGetLogBuilder().getLimitsBuilder()
+                    .mergeFrom(limits);
+        } catch (UnknownHostException e) {
+            logger.log(Level.WARNING, e.getMessage(), e);
+        }
+
+        // status
+        cb.getStatusBuilder().setCode(StatusCode.SUCCESS);
+
+        mb.setCommandBytes(cb.build().toByteString());
+
+        km.setMessage(mb);
+        km.setCommand(cb);
+
+        ctx.writeAndFlush(km);
+
+        logger.info("***** connection registered., sent UNSOLICITEDSTATUS with cid = "
+                + info.getConnectionId());
+
         return info;
     }
     
@@ -788,6 +948,51 @@ public class SimulatorEngine implements MessageService {
         lastConnectionId = id;
         
         return id;
+    }
+    
+    /**
+     * create an internal message with empty builder message.
+     *
+     * @return an internal message with empty builder message
+     */
+    public static KineticMessage createKineticMessageWithBuilder() {
+
+        // new instance of internal message
+        KineticMessage kineticMessage = new KineticMessage();
+
+        // new builder message
+        Message.Builder message = Message.newBuilder();
+
+        // set to im
+        kineticMessage.setMessage(message);
+        
+        //set hmac auth type
+        message.setAuthType(AuthType.HMACAUTH);
+        
+        // create command builder
+        Command.Builder commandBuilder = Command.newBuilder();
+        
+        // set command
+        kineticMessage.setCommand(commandBuilder);
+        
+        return kineticMessage;
+    }
+    
+    /**
+     * Lock/unlock the device/simulator
+     * @param flag
+     */
+    public void setDeviceLocked (boolean flag) {
+        this.deviceLocked = flag;
+    }
+    
+    /**
+     * Get device lock flag.
+     * 
+     * @return true if locked. Otherwise, return false.
+     */
+    public boolean getDeviceLocked() {
+        return this.deviceLocked;
     }
     
 }

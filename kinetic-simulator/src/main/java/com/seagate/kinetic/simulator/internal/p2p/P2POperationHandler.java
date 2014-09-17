@@ -28,13 +28,15 @@ import kinetic.client.Entry;
 import kinetic.client.KineticClient;
 
 import com.google.protobuf.ByteString;
-import com.seagate.kinetic.proto.Kinetic.Message;
-import com.seagate.kinetic.proto.Kinetic.Message.MessageType;
-import com.seagate.kinetic.proto.Kinetic.Message.P2POperation;
-import com.seagate.kinetic.proto.Kinetic.Message.P2POperation.Operation;
-import com.seagate.kinetic.proto.Kinetic.Message.Security.ACL;
-import com.seagate.kinetic.proto.Kinetic.Message.Security.ACL.Permission;
-import com.seagate.kinetic.proto.Kinetic.Message.Status.StatusCode;
+import com.seagate.kinetic.common.lib.KineticMessage;
+import com.seagate.kinetic.proto.Kinetic.Command;
+
+import com.seagate.kinetic.proto.Kinetic.Command.MessageType;
+import com.seagate.kinetic.proto.Kinetic.Command.P2POperation;
+import com.seagate.kinetic.proto.Kinetic.Command.P2POperation.Operation;
+import com.seagate.kinetic.proto.Kinetic.Command.Security.ACL;
+import com.seagate.kinetic.proto.Kinetic.Command.Security.ACL.Permission;
+import com.seagate.kinetic.proto.Kinetic.Command.Status.StatusCode;
 import com.seagate.kinetic.simulator.internal.Authorizer;
 import com.seagate.kinetic.simulator.internal.KVSecurityException;
 import com.seagate.kinetic.simulator.internal.KVStoreNotFound;
@@ -52,16 +54,19 @@ public class P2POperationHandler {
         pool = new P2PConnectionPool();
     }
 
-    public static boolean checkPermission(Message request,
-            Message.Builder respond, Map<Long, ACL> currentMap) {
+    public static boolean checkPermission(KineticMessage request,
+            KineticMessage respond, Map<Long, ACL> currentMap) {
+        
         boolean hasPermission = false;
+        
+        Command.Builder commandBuilder = (Command.Builder) respond.getCommand();
 
         // set reply type
-        respond.getCommandBuilder().getHeaderBuilder()
+        commandBuilder.getHeaderBuilder()
         .setMessageType(MessageType.PEER2PEERPUSH_RESPONSE);
 
         // set ack sequence
-        respond.getCommandBuilder().getHeaderBuilder()
+        commandBuilder.getHeaderBuilder()
         .setAckSequence(request.getCommand().getHeader().getSequence());
 
         // check if has permission to set security
@@ -70,14 +75,13 @@ public class P2POperationHandler {
         } else {
             try {
                 // check if client has permission
-                Authorizer.checkPermission(currentMap, request.getCommand()
-                        .getHeader().getIdentity(), Permission.P2POP);
+                Authorizer.checkPermission(currentMap, request.getMessage().getHmacAuth().getIdentity(), Permission.P2POP);
 
                 hasPermission = true;
             } catch (KVSecurityException e) {
-                respond.getCommandBuilder().getStatusBuilder()
+                commandBuilder.getStatusBuilder()
                 .setCode(StatusCode.NOT_AUTHORIZED);
-                respond.getCommandBuilder().getStatusBuilder()
+                commandBuilder.getStatusBuilder()
                 .setStatusMessage(e.getMessage());
             }
         }
@@ -86,8 +90,10 @@ public class P2POperationHandler {
     }
 
     public void push (Map<Long, ACL> aclmap,
-            Store<ByteString, ByteString, KVValue> store, Message request,
-            Message.Builder response) {
+            Store<ByteString, ByteString, KVValue> store, KineticMessage request,
+            KineticMessage response) {
+        
+        Command.Builder commandBuilder = (Command.Builder) response.getCommand();
 
         // get client instance
         KineticClient client = this.getClient(request, response);
@@ -104,7 +110,7 @@ public class P2POperationHandler {
             List<Operation> opList = p2pOp.getOperationList();
 
             // response operation builder
-            P2POperation.Builder respP2POpBuilder = response.getCommandBuilder()
+            P2POperation.Builder respP2POpBuilder = commandBuilder
                     .getBodyBuilder()
                     .getP2POperationBuilder();
 
@@ -211,9 +217,11 @@ public class P2POperationHandler {
      * @return client instance if created and cached. Return null if any error
      *         occurred.
      */
-    private KineticClient getClient(Message request, Message.Builder response) {
+    private KineticClient getClient(KineticMessage request, KineticMessage response) {
 
         KineticClient client = null;
+        
+        Command.Builder commandBuilder = (Command.Builder) response.getCommand();
 
         try {
             client = this.pool.getKineticClient(request);
@@ -223,12 +231,12 @@ public class P2POperationHandler {
             logger.log(Level.WARNING, e.getMessage(), e);
 
             // set status
-            response.getCommandBuilder().getStatusBuilder()
+            commandBuilder.getStatusBuilder()
             .setCode(StatusCode.REMOTE_CONNECTION_ERROR);
 
             // set status message
             if (e.getMessage() != null) {
-                response.getCommandBuilder().getStatusBuilder()
+                commandBuilder.getStatusBuilder()
                 .setStatusMessage(e.getMessage());
             }
         }

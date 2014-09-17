@@ -38,14 +38,14 @@ import com.google.protobuf.ByteString;
 import com.seagate.kinetic.admin.impl.JsonUtil;
 import com.seagate.kinetic.client.internal.MessageFactory;
 import com.seagate.kinetic.common.lib.KineticMessage;
-import com.seagate.kinetic.proto.Kinetic.Message;
-import com.seagate.kinetic.proto.Kinetic.Message.Builder;
-import com.seagate.kinetic.proto.Kinetic.Message.GetLog;
-import com.seagate.kinetic.proto.Kinetic.Message.GetLog.Type;
-import com.seagate.kinetic.proto.Kinetic.Message.Header;
-import com.seagate.kinetic.proto.Kinetic.Message.MessageType;
-import com.seagate.kinetic.proto.Kinetic.Message.Security;
-import com.seagate.kinetic.proto.Kinetic.Message.Status.StatusCode;
+import com.seagate.kinetic.proto.Kinetic.Command;
+
+import com.seagate.kinetic.proto.Kinetic.Command.GetLog;
+import com.seagate.kinetic.proto.Kinetic.Command.GetLog.Type;
+import com.seagate.kinetic.proto.Kinetic.Command.Header;
+import com.seagate.kinetic.proto.Kinetic.Command.MessageType;
+import com.seagate.kinetic.proto.Kinetic.Command.Security;
+import com.seagate.kinetic.proto.Kinetic.Command.Status.StatusCode;
 
 /**
  *
@@ -150,13 +150,14 @@ public class KineticAdminCLI {
 
         KineticMessage km = MessageFactory.createKineticMessageWithBuilder();
 
-        Message.Builder request = (Builder) km.getMessage();
+        Command.Builder commandBuilder = (Command.Builder) km.getCommand();
 
-        Header.Builder header = request.getCommandBuilder().getHeaderBuilder();
+        Header.Builder header = commandBuilder.getHeaderBuilder();
         header.setMessageType(MessageType.SECURITY);
         Security security = JsonUtil.parseSecurity(ByteString.copyFrom(content)
                 .toStringUtf8());
-        request.getCommandBuilder().getBodyBuilder().setSecurity(security);
+        
+        commandBuilder.getBodyBuilder().setSecurity(security);
 
         return kineticClient.request(km);
     }
@@ -180,36 +181,38 @@ public class KineticAdminCLI {
      */
     public KineticMessage getLog(String type) throws KineticException {
         KineticMessage km = MessageFactory.createKineticMessageWithBuilder();
-        Message.Builder request = (Builder) km.getMessage();
-        Header.Builder header = request.getCommandBuilder().getHeaderBuilder();
+        
+        Command.Builder commandBuilder = (Command.Builder) km.getCommand();
+        
+        Header.Builder header = commandBuilder.getHeaderBuilder();
         header.setMessageType(MessageType.GETLOG);
-        GetLog.Builder getLog = request.getCommandBuilder().getBodyBuilder()
+        GetLog.Builder getLog = commandBuilder.getBodyBuilder()
                 .getGetLogBuilder();
 
         validateLogType(type);
         if (type.equalsIgnoreCase(ALL)) {
-            getLog.addType(Type.UTILIZATIONS);
-            getLog.addType(Type.CAPACITIES);
-            getLog.addType(Type.TEMPERATURES);
-            getLog.addType(Type.CONFIGURATION);
-            getLog.addType(Type.MESSAGES);
-            getLog.addType(Type.STATISTICS);
-            getLog.addType(Type.LIMITS);
+            getLog.addTypes(Type.UTILIZATIONS);
+            getLog.addTypes(Type.CAPACITIES);
+            getLog.addTypes(Type.TEMPERATURES);
+            getLog.addTypes(Type.CONFIGURATION);
+            getLog.addTypes(Type.MESSAGES);
+            getLog.addTypes(Type.STATISTICS);
+            getLog.addTypes(Type.LIMITS);
 
         } else if (type.equalsIgnoreCase(UTILIZATION)) {
-            getLog.addType(Type.UTILIZATIONS);
+            getLog.addTypes(Type.UTILIZATIONS);
         } else if (type.equalsIgnoreCase(CAPACITY)) {
-            getLog.addType(Type.CAPACITIES);
+            getLog.addTypes(Type.CAPACITIES);
         } else if (type.equalsIgnoreCase(TEMPERATURE)) {
-            getLog.addType(Type.TEMPERATURES);
+            getLog.addTypes(Type.TEMPERATURES);
         } else if (type.equalsIgnoreCase(CONFIGURATION)) {
-            getLog.addType(Type.CONFIGURATION);
+            getLog.addTypes(Type.CONFIGURATION);
         } else if (type.equalsIgnoreCase(MESSAGES)) {
-            getLog.addType(Type.MESSAGES);
+            getLog.addTypes(Type.MESSAGES);
         } else if (type.equalsIgnoreCase(STATISTICS)) {
-            getLog.addType(Type.STATISTICS);
+            getLog.addTypes(Type.STATISTICS);
         } else if (type.equalsIgnoreCase(LIMITS)) {
-            getLog.addType(Type.LIMITS);
+            getLog.addTypes(Type.LIMITS);
         }else {
             throw new IllegalArgumentException(
                     "Type should be utilization, capacity, temperature, configuration, message, statistic, limits or all");
@@ -224,31 +227,32 @@ public class KineticAdminCLI {
             String newClusterVersion, String erase) throws KineticException {
 
         KineticMessage km = MessageFactory.createKineticMessageWithBuilder();
-        Message.Builder request = (Builder) km.getMessage();
+        Command.Builder commandBuilder = (Command.Builder) km.getCommand();
 
-        Header.Builder header = request.getCommandBuilder().getHeaderBuilder();
+        Header.Builder header = commandBuilder.getHeaderBuilder();
         header.setMessageType(MessageType.SETUP);
-        com.seagate.kinetic.proto.Kinetic.Message.Setup.Builder setup = com.seagate.kinetic.proto.Kinetic.Message.Setup
+        com.seagate.kinetic.proto.Kinetic.Command.Setup.Builder setup = com.seagate.kinetic.proto.Kinetic.Command.Setup
                 .newBuilder();
-        if (pin != null) {
-            setup.setPin(ByteString.copyFromUtf8(pin));
-        }
+        
+//        if (pin != null) {
+//            setup.setPin(ByteString.copyFromUtf8(pin));
+//        }
 
-        if (setPin != null) {
-            setup.setSetPin(ByteString.copyFromUtf8(setPin));
-        }
+//        if (setPin != null) {
+//            setup.setSetPin(ByteString.copyFromUtf8(setPin));
+//        }
 
         if (newClusterVersion != null) {
             validateClusterVersion(newClusterVersion);
             setup.setNewClusterVersion(Long.parseLong(newClusterVersion));
         }
 
-        if (erase != null) {
-            validateErase(erase);
-            setup.setInstantSecureErase(Boolean.parseBoolean(erase));
-        }
+//        if (erase != null) {
+//            validateErase(erase);
+//            setup.setInstantSecureErase(Boolean.parseBoolean(erase));
+//        }
 
-        request.getCommandBuilder().getBodyBuilder().setSetup(setup);
+        commandBuilder.getBodyBuilder().setSetup(setup);
 
         return kineticClient.request(km);
     }
@@ -259,19 +263,25 @@ public class KineticAdminCLI {
 
         KineticMessage km = MessageFactory.createKineticMessageWithBuilder();
 
-        Message.Builder request = (Builder) km.getMessage();
+        Command.Builder commandBuilder = (Command.Builder) km.getCommand();
 
-        Header.Builder header = request.getCommandBuilder().getHeaderBuilder();
+        Header.Builder header = commandBuilder.getHeaderBuilder();
         header.setMessageType(MessageType.SETUP);
-        com.seagate.kinetic.proto.Kinetic.Message.Setup.Builder setup = com.seagate.kinetic.proto.Kinetic.Message.Setup
+        
+        com.seagate.kinetic.proto.Kinetic.Command.Setup.Builder setup = com.seagate.kinetic.proto.Kinetic.Command.Setup
                 .newBuilder();
-        if (pin != null) {
-            setup.setPin(ByteString.copyFromUtf8(pin));
-        }
+      
+        /**
+         * XXX: protocol-3.0.0
+         */
+        
+//        if (pin != null) {
+//            setup.setPin(ByteString.copyFromUtf8(pin));
+//        }
 
         setup.setFirmwareDownload(true);
 
-        request.getCommandBuilder().getBodyBuilder().setSetup(setup);
+        commandBuilder.getBodyBuilder().setSetup(setup);
 
         if (null != content && content.length > 0) {
             km.setValue(content);
@@ -321,32 +331,35 @@ public class KineticAdminCLI {
     /*
      * handle the response to print
      */
-    public void printResponse(Message response) {
-        if (null == response) {
+    public void printResponse(KineticMessage km) {
+        
+        if (null == km) {
             return;
         }
 
-        MessageType messageType = response.getCommand().getHeader()
+        MessageType messageType = km.getCommand().getHeader()
                 .getMessageType();
-        StatusCode statusCode = response.getCommand().getStatus().getCode();
+        
+        StatusCode statusCode = km.getCommand().getStatus().getCode();
+        
         if (messageType.equals(MessageType.SETUP_RESPONSE)
                 || messageType.equals(MessageType.SECURITY_RESPONSE)) {
             if (statusCode.equals(StatusCode.SUCCESS)) {
                 System.out.println(StatusCode.SUCCESS);
             } else {
-                System.err.println(response.getCommand().getStatus().getCode());
-                System.err.println(response.getCommand().getStatus()
+                System.err.println(km.getCommand().getStatus().getCode());
+                System.err.println(km.getCommand().getStatus()
                         .getStatusMessage());
             }
 
         } else if (messageType.equals(MessageType.GETLOG_RESPONSE)) {
             if (statusCode.equals(StatusCode.SUCCESS)) {
                 System.out.println(StatusCode.SUCCESS);
-                System.out.print(response.getCommand().getBody().getGetLog()
+                System.out.print(km.getCommand().getBody().getGetLog()
                         .toString());
             } else {
-                System.err.println(response.getCommand().getStatus().getCode());
-                System.err.println(response.getCommand().getStatus()
+                System.err.println(km.getCommand().getStatus().getCode());
+                System.err.println(km.getCommand().getStatus()
                         .getDetailedMessage().toStringUtf8());
             }
 
@@ -401,14 +414,14 @@ public class KineticAdminCLI {
                 String erase = kineticAdminCLI.getArgValue("-erase", args);
                 response = kineticAdminCLI.setup(pin, setPin,
                         newClusterVersion, erase);
-                kineticAdminCLI.printResponse((Message) response.getMessage());
+                kineticAdminCLI.printResponse(response);
 
             } else if (args[0].equalsIgnoreCase("-security")) {
                 initAdminClient(args, kineticAdminCLI);
 
                 String file = kineticAdminCLI.getArgValue("-security", args);
                 response = kineticAdminCLI.security(file);
-                kineticAdminCLI.printResponse((Message) response.getMessage());
+                kineticAdminCLI.printResponse(response);
 
             } else if (args[0].equalsIgnoreCase("-getlog")) {
                 initAdminClient(args, kineticAdminCLI);
@@ -416,7 +429,7 @@ public class KineticAdminCLI {
                 String type = kineticAdminCLI.getArgValue("-type", args);
                 type = type == null ? ALL : type;
                 response = kineticAdminCLI.getLog(type);
-                kineticAdminCLI.printResponse((Message) response.getMessage());
+                kineticAdminCLI.printResponse(response);
 
             } else if (args[0].equalsIgnoreCase("-firmware")) {
                 initAdminClient(args, kineticAdminCLI);
@@ -425,7 +438,7 @@ public class KineticAdminCLI {
                 String firmwareFile = kineticAdminCLI.getArgValue("-firmware",
                         args);
                 response = kineticAdminCLI.firmwareDownload(pin, firmwareFile);
-                kineticAdminCLI.printResponse((Message) response.getMessage());
+                kineticAdminCLI.printResponse(response);
 
             } else {
                 printHelp();
@@ -543,13 +556,4 @@ public class KineticAdminCLI {
         }
     }
 
-    private void validateErase(String erase) throws IllegalArgumentException {
-        if (erase == null || erase.isEmpty()) {
-            throw new IllegalArgumentException("Erase can not be empty.");
-        }
-
-        if (!erase.equalsIgnoreCase(TRUE) && !erase.equalsIgnoreCase(FALSE)) {
-            throw new IllegalArgumentException("Erase should be true or false.");
-        }
-    }
 }

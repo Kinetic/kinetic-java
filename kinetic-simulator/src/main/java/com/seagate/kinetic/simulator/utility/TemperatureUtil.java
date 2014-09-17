@@ -23,7 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-import com.seagate.kinetic.proto.Kinetic.Message.GetLog.Temperature;
+import com.seagate.kinetic.proto.Kinetic.Command.GetLog.Temperature;
 
 /**
  * 

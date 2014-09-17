@@ -57,9 +57,9 @@ import com.seagate.kinetic.IntegrationTestLoggerFactory;
 import com.seagate.kinetic.KineticTestRunner;
 import com.seagate.kinetic.client.internal.DefaultKineticClient;
 import com.seagate.kinetic.proto.Kinetic;
-import com.seagate.kinetic.proto.Kinetic.Message.Security.ACL;
-import com.seagate.kinetic.proto.Kinetic.Message.Security.ACL.Permission;
-import com.seagate.kinetic.proto.Kinetic.Message.Status.StatusCode;
+import com.seagate.kinetic.proto.Kinetic.Command.Security.ACL;
+import com.seagate.kinetic.proto.Kinetic.Command.Security.ACL.Permission;
+import com.seagate.kinetic.proto.Kinetic.Command.Status.StatusCode;
 
 /**
  * Kinetic Client API Boundary Test.
@@ -298,7 +298,7 @@ public class KineticBoundaryTest extends IntegrationTestCase {
             // ... We would rather have this test than remove it, and it is
             // undesirable for it to fail when run
             // ... against one target. So, we tolerate both cases for now.
-            StatusCode code = e.getResponseMessage().getMessage().getCommand().getStatus().getCode();
+            StatusCode code = e.getResponseMessage().getCommand().getStatus().getCode();
             
             assertEquals (StatusCode.INVALID_REQUEST, code);
         }
@@ -320,7 +320,7 @@ public class KineticBoundaryTest extends IntegrationTestCase {
         // Give the client a "Read" permission but no Write
         createClientAclWithRoles(clientId, clientKeyString,
                 Collections
-                .singletonList(Kinetic.Message.Security.ACL.Permission.READ));
+                .singletonList(Kinetic.Command.Security.ACL.Permission.READ));
 
         KineticClient clientWithoutPutPermission = KineticClientFactory
                 .createInstance(getClientConfig(clientId, clientKeyString));
@@ -493,7 +493,7 @@ public class KineticBoundaryTest extends IntegrationTestCase {
         // Give the client a "Write" permission but no delete
         createClientAclWithRoles(clientId, clientKeyString,
                 Collections
-                .singletonList(Kinetic.Message.Security.ACL.Permission.WRITE));
+                .singletonList(Kinetic.Command.Security.ACL.Permission.WRITE));
 
         KineticClient clientWithoutDelete = KineticClientFactory
                 .createInstance(getClientConfig(clientId, clientKeyString));
@@ -2179,18 +2179,18 @@ public class KineticBoundaryTest extends IntegrationTestCase {
         // Client will not have RANGE on this
         Entry entry09 = new Entry(toByteArray("k09"), toByteArray("v09"));
 
-        Map<List<Entry>, List<Kinetic.Message.Security.ACL.Permission>> entryToRoleMap = Maps
+        Map<List<Entry>, List<Kinetic.Command.Security.ACL.Permission>> entryToRoleMap = Maps
                 .newHashMap();
         // Put the first set with Range
         entryToRoleMap.put(Arrays.asList(entry02, entry03), Collections
-                .singletonList(Kinetic.Message.Security.ACL.Permission.RANGE));
+                .singletonList(Kinetic.Command.Security.ACL.Permission.RANGE));
         // Put the second set, without range, which is a breaking gap
         entryToRoleMap.put(Arrays.asList(entry04, entry05), Collections
-                .singletonList(Kinetic.Message.Security.ACL.Permission.READ));
+                .singletonList(Kinetic.Command.Security.ACL.Permission.READ));
         // Put the third set, also with range, which will not be returned
         // because of the gap
         entryToRoleMap.put(Arrays.asList(entry06, entry08), Collections
-                .singletonList(Kinetic.Message.Security.ACL.Permission.RANGE));
+                .singletonList(Kinetic.Command.Security.ACL.Permission.RANGE));
 
         KineticClient clientWithVisibilityGap = createClientWithSpecifiedRolesForEntries(entryToRoleMap);
 
@@ -2234,20 +2234,20 @@ public class KineticBoundaryTest extends IntegrationTestCase {
         // Client will not have RANGE on this
         Entry entry09 = new Entry(toByteArray("k09"), toByteArray("v09"));
 
-        Map<List<Entry>, List<Kinetic.Message.Security.ACL.Permission>> entryToRoleMap = Maps
+        Map<List<Entry>, List<Kinetic.Command.Security.ACL.Permission>> entryToRoleMap = Maps
                 .newHashMap();
         // Put the first set with Range, which will not be returned because of
         // the gap
         entryToRoleMap.put(Arrays.asList(entry02, entry03), Collections
-                .singletonList(Kinetic.Message.Security.ACL.Permission.RANGE));
+                .singletonList(Kinetic.Command.Security.ACL.Permission.RANGE));
         // Put the second set, without range, which is a breaking gap
         entryToRoleMap.put(Arrays.asList(entry04, entry05), Collections
-                .singletonList(Kinetic.Message.Security.ACL.Permission.READ));
+                .singletonList(Kinetic.Command.Security.ACL.Permission.READ));
         // Put the third set, also with range, which we expect to be returned
         // (reversed range)
         entryToRoleMap
         .put(Arrays.asList(entry06, entry07, entry08), Collections
-                .singletonList(Kinetic.Message.Security.ACL.Permission.RANGE));
+                .singletonList(Kinetic.Command.Security.ACL.Permission.RANGE));
 
         AdvancedKineticClient clientWithVisibilityGap = createClientWithSpecifiedRolesForEntries(entryToRoleMap);
 
@@ -2280,10 +2280,10 @@ public class KineticBoundaryTest extends IntegrationTestCase {
         Map<List<Entry>, List<ACL.Permission>> map = Maps
                 .newHashMap();
         map.put(visibleEntries, Collections
-                .singletonList(Kinetic.Message.Security.ACL.Permission.READ));
+                .singletonList(Kinetic.Command.Security.ACL.Permission.READ));
         map.put(notVisibleEntries,
                 Collections
-                .<Kinetic.Message.Security.ACL.Permission> emptyList());
+                .<Kinetic.Command.Security.ACL.Permission> emptyList());
 
         return createClientWithSpecifiedRolesForEntries(map);
     }
@@ -2305,17 +2305,17 @@ public class KineticBoundaryTest extends IntegrationTestCase {
      * @throws KineticException
      */
     private DefaultKineticClient createClientWithSpecifiedRolesForEntries(
-            Map<List<Entry>, List<Kinetic.Message.Security.ACL.Permission>> entriesToRoleMap)
+            Map<List<Entry>, List<Kinetic.Command.Security.ACL.Permission>> entriesToRoleMap)
                     throws KineticException {
         // Set up a new client with 2 domains which allow the client to read
         // keys that start with "a" or "c"
         int clientId = 2;
         String clientKeyString = "ClientWhoCannotReadEverything";
 
-        List<Kinetic.Message.Security.ACL.Scope> domains = Lists
+        List<Kinetic.Command.Security.ACL.Scope> domains = Lists
                 .newArrayList();
 
-        for (Map.Entry<List<Entry>, List<Kinetic.Message.Security.ACL.Permission>> listListEntry : entriesToRoleMap
+        for (Map.Entry<List<Entry>, List<Kinetic.Command.Security.ACL.Permission>> listListEntry : entriesToRoleMap
                 .entrySet()) {
             domains.addAll(putEntriesAndGetDomains(listListEntry.getKey(),
                     listListEntry.getValue()));
@@ -2344,10 +2344,10 @@ public class KineticBoundaryTest extends IntegrationTestCase {
      * @return The domains to add to the client ACL
      * @throws KineticException
      */
-    private List<Kinetic.Message.Security.ACL.Scope> putEntriesAndGetDomains(
+    private List<Kinetic.Command.Security.ACL.Scope> putEntriesAndGetDomains(
             List<Entry> entriesToPut, List<Permission> rolesToAdd)
                     throws KineticException {
-        List<Kinetic.Message.Security.ACL.Scope> domains = Lists
+        List<Kinetic.Command.Security.ACL.Scope> domains = Lists
                 .newArrayList();
         for (Entry entry : entriesToPut) {
             getClient().put(entry, null);
@@ -2355,9 +2355,9 @@ public class KineticBoundaryTest extends IntegrationTestCase {
             if (!rolesToAdd.isEmpty()) {
                 // Create a domain that allows the given role for this entry's
                 // key
-                Kinetic.Message.Security.ACL.Scope.Builder domain = Kinetic.Message.Security.ACL.Scope
+                Kinetic.Command.Security.ACL.Scope.Builder domain = Kinetic.Command.Security.ACL.Scope
                         .newBuilder();
-                for (Kinetic.Message.Security.ACL.Permission role : rolesToAdd) {
+                for (Kinetic.Command.Security.ACL.Permission role : rolesToAdd) {
                     domain.addPermission(role);
                 }
                 domain.setOffset(0);

@@ -26,15 +26,16 @@ import kinetic.client.VersionMismatchException;
 
 import com.google.protobuf.ByteString;
 import com.seagate.kinetic.common.lib.KineticMessage;
+import com.seagate.kinetic.proto.Kinetic.Command;
 import com.seagate.kinetic.proto.Kinetic.Message;
-import com.seagate.kinetic.proto.Kinetic.Message.Algorithm;
-import com.seagate.kinetic.proto.Kinetic.Message.Builder;
-import com.seagate.kinetic.proto.Kinetic.Message.KeyValue;
-import com.seagate.kinetic.proto.Kinetic.Message.MessageType;
-import com.seagate.kinetic.proto.Kinetic.Message.Range;
-import com.seagate.kinetic.proto.Kinetic.Message.Status.StatusCode;
-import com.seagate.kinetic.proto.Kinetic.Message.Synchronization;
-import com.seagate.kinetic.proto.Kinetic.MessageOrBuilder;
+import com.seagate.kinetic.proto.Kinetic.Command.Algorithm;
+import com.seagate.kinetic.proto.Kinetic.Message.AuthType;
+
+import com.seagate.kinetic.proto.Kinetic.Command.KeyValue;
+import com.seagate.kinetic.proto.Kinetic.Command.MessageType;
+import com.seagate.kinetic.proto.Kinetic.Command.Range;
+import com.seagate.kinetic.proto.Kinetic.Command.Status.StatusCode;
+import com.seagate.kinetic.proto.Kinetic.Command.Synchronization;
 
 /**
  * Kinetic Message factory for the Java API client runtime implementation.
@@ -59,20 +60,27 @@ public class MessageFactory {
             byte[] newVersion) throws KineticException {
 
         // new message holder
-        KineticMessage holder = new KineticMessage();
+        KineticMessage kineticMessage = new KineticMessage();
 
         // new message
         Message.Builder message = Message.newBuilder();
-
+        message.setAuthType(AuthType.HMACAUTH);
+        
+        // create command builder
+        Command.Builder commandBuilder = Command.newBuilder();
+        
         // set proto message
-        holder.setMessage(message);
+        kineticMessage.setMessage(message);
+        
+        // set command
+        kineticMessage.setCommand(commandBuilder);
 
         // set message type
-        message.getCommandBuilder().getHeaderBuilder()
+        commandBuilder.getHeaderBuilder()
         .setMessageType(MessageType.PUT);
 
         // set KeyValue in body
-        KeyValue.Builder kv = message.getCommandBuilder().getBodyBuilder()
+        KeyValue.Builder kv = commandBuilder.getBodyBuilder()
                 .getKeyValueBuilder();
         try {
 
@@ -93,7 +101,7 @@ public class MessageFactory {
             // set value
             if (entry.getValue() != null) {
                 // message.setValue(ByteString.copyFrom(entry.getValue()));
-                holder.setValue(entry.getValue());
+                kineticMessage.setValue(entry.getValue());
             }
 
             // set tag
@@ -119,7 +127,7 @@ public class MessageFactory {
             throw lce;
         }
 
-        return holder;
+        return kineticMessage;
     }
 
     public static boolean checkDeleteReply(KineticMessage request, KineticMessage reply)
@@ -139,32 +147,32 @@ public class MessageFactory {
     public static KineticMessage createGetRequestMessage(byte[] key,
             MessageType requestType) throws KineticException {
 
-        KineticMessage im = createKineticMessageWithBuilder();
+        KineticMessage kineticMessage = createKineticMessageWithBuilder();
 
-        Message.Builder request = (Builder) im.getMessage();
+        Command.Builder commandBuilder = (Command.Builder) kineticMessage.getCommand();
 
-        request.getCommandBuilder().getHeaderBuilder()
+        commandBuilder.getHeaderBuilder()
         .setMessageType(requestType);
 
-        request.getCommandBuilder().getBodyBuilder().getKeyValueBuilder()
+        commandBuilder.getBodyBuilder().getKeyValueBuilder()
         .setKey(ByteString.copyFrom(key));
 
-        return im;
+        return kineticMessage;
     }
 
     public static KineticMessage createGetKeyRangeMessage(byte[] startKey,
             boolean startKeyInclusive, byte[] endKey, boolean endKeyInclusive,
             int maxKeys, boolean reverse) throws KineticException {
 
-        KineticMessage im = createKineticMessageWithBuilder();
+        KineticMessage kineticMessage = createKineticMessageWithBuilder();
 
-        Message.Builder request = (Builder) im.getMessage();
+        Command.Builder commandBuilder = (Command.Builder) kineticMessage.getCommand();
 
         // set message type
-        request.getCommandBuilder().getHeaderBuilder()
+        commandBuilder.getHeaderBuilder()
         .setMessageType(MessageType.GETKEYRANGE);
 
-        Range.Builder op = request.getCommandBuilder().getBodyBuilder()
+        Range.Builder op = commandBuilder.getBodyBuilder()
                 .getRangeBuilder();
 
         op.setStartKey(ByteString.copyFrom(startKey));
@@ -175,107 +183,105 @@ public class MessageFactory {
         op.setReverse(reverse);
         // request.getCommandBuilder().getBodyBuilder().getKeyValueBuilder().get
 
-        return im;
+        return kineticMessage;
     }
 
     public static KineticMessage createGetMetadataMessage(byte[] key,
             MessageType requestType) throws KineticException {
 
-        KineticMessage im = createGetRequestMessage(key, requestType);
+        KineticMessage kineticMessage = createGetRequestMessage(key, requestType);
 
-        Message.Builder request = (Builder) im.getMessage();
+        Command.Builder commandBuilder = (Command.Builder) kineticMessage.getCommand();
 
-        request.getCommandBuilder().getBodyBuilder().getKeyValueBuilder()
+        commandBuilder.getBodyBuilder().getKeyValueBuilder()
         .setMetadataOnly(true);
 
-        return im;
+        return kineticMessage;
     }
 
     public static KineticMessage createDeleteRequestMessage(Entry entry)
             throws KineticException {
 
-        KineticMessage im = createKineticMessageWithBuilder();
+        KineticMessage kineticMessage = createKineticMessageWithBuilder();
 
-        Message.Builder request = (Builder) im.getMessage();
+        Command.Builder commandBuilder = (Command.Builder) kineticMessage.getCommand();
 
         // set message type
-        request.getCommandBuilder().getHeaderBuilder()
+        commandBuilder.getHeaderBuilder()
         .setMessageType(MessageType.DELETE);
 
         // set key
-        request.getCommandBuilder().getBodyBuilder().getKeyValueBuilder()
+        commandBuilder.getBodyBuilder().getKeyValueBuilder()
         .setKey(ByteString.copyFrom(entry.getKey()));
 
         // set version
         byte[] version = entry.getEntryMetadata().getVersion();
         if (version != null && version.length > 0) {
-            request.getCommandBuilder().getBodyBuilder().getKeyValueBuilder()
+            commandBuilder.getBodyBuilder().getKeyValueBuilder()
             .setDbVersion(ByteString.copyFrom(version));
         }
 
         // set synchronization mode if not set
-        if (request.getCommandBuilder().getBodyBuilder().getKeyValueBuilder()
+        if (commandBuilder.getBodyBuilder().getKeyValueBuilder()
                 .hasSynchronization() == false) {
             // logger.info("setting sync flag: " + synchronization.toString());
-            request.getCommandBuilder().getBodyBuilder().getKeyValueBuilder()
+            commandBuilder.getBodyBuilder().getKeyValueBuilder()
             .setSynchronization(synchronization);
         }
 
         // delete request
-        return im;
+        return kineticMessage;
     }
 
     public static KineticMessage createForceDeleteRequestMessage(byte[] key)
             throws KineticException {
 
-        KineticMessage im = createKineticMessageWithBuilder();
+        KineticMessage kineticMessage = createKineticMessageWithBuilder();
 
-        Message.Builder request = (Builder) im.getMessage();
+        Command.Builder commandBuilder = (Command.Builder) kineticMessage.getCommand();
 
-        // set message typr
-        request.getCommandBuilder().getHeaderBuilder()
-        .setMessageType(MessageType.DELETE);
+        // set message type
+        commandBuilder.getHeaderBuilder().setMessageType(MessageType.DELETE);
 
         // set key
-        request.getCommandBuilder().getBodyBuilder().getKeyValueBuilder()
+        commandBuilder.getBodyBuilder().getKeyValueBuilder()
         .setKey(ByteString.copyFrom(key));
 
         // set force bit
-        request.getCommandBuilder().getBodyBuilder().getKeyValueBuilder()
+        commandBuilder.getBodyBuilder().getKeyValueBuilder()
         .setForce(true);
 
         // set synchronization mode if not set
-        if (request.getCommandBuilder().getBodyBuilder().getKeyValueBuilder()
+        if (commandBuilder.getBodyBuilder().getKeyValueBuilder()
                 .hasSynchronization() == false) {
-
             // logger.info("setting sync flag: " + synchronization.toString());
-            request.getCommandBuilder().getBodyBuilder().getKeyValueBuilder()
+            commandBuilder.getBodyBuilder().getKeyValueBuilder()
             .setSynchronization(synchronization);
         }
 
         // delete request
-        return im;
+        return kineticMessage;
     }
 
-    public static Entry responsetoEntry(KineticMessage holder) {
+    public static Entry responsetoEntry(KineticMessage kineticMessage) {
 
-        Message response = (Message) holder.getMessage();
+        Command response = (Command) kineticMessage.getCommand();
 
-        if (response.getCommand().getStatus().getCode() == StatusCode.NOT_FOUND) {
+        if (response.getStatus().getCode() == StatusCode.NOT_FOUND) {
             return null;
         }
 
         Entry entry = new Entry();
 
-        KeyValue kv = response.getCommand().getBody().getKeyValue();
+        KeyValue kv = response.getBody().getKeyValue();
 
         // set key
         entry.setKey(kv.getKey().toByteArray());
 
         // set value
-        if (holder.getValue() != null) {
+        if (kineticMessage.getValue() != null) {
             // entry.setValue(response.getValue().toByteArray());
-            entry.setValue(holder.getValue());
+            entry.setValue(kineticMessage.getValue());
         } else {
             entry.setValue(new byte[0]);
         }
@@ -298,7 +304,7 @@ public class MessageFactory {
     }
 
     public static EntryMetadata responsetoEntryMetadata(
-            MessageOrBuilder response) {
+            KineticMessage response) {
 
         if (response.getCommand().getStatus().getCode() == StatusCode.NOT_FOUND) {
             return null;
@@ -335,9 +341,9 @@ public class MessageFactory {
             throws KineticException {
         
         //request message type
-        MessageType requestType = request.getMessage().getCommand().getHeader().getMessageType();
+        MessageType requestType = request.getCommand().getHeader().getMessageType();
         //response message type
-        MessageType responseType = reply.getMessage().getCommand().getHeader().getMessageType();
+        MessageType responseType = reply.getCommand().getHeader().getMessageType();
         
         //check message type
         //see .proto for message type definition rules
@@ -352,12 +358,12 @@ public class MessageFactory {
         }
 
         //check if contains status message
-        if (!reply.getMessage().getCommand().hasStatus()) {
+        if (!reply.getCommand().hasStatus()) {
             throw new KineticException("No status was set");
         }
 
         //get status code
-        StatusCode statusCode = reply.getMessage().getCommand().getStatus().getCode();
+        StatusCode statusCode = reply.getCommand().getStatus().getCode();
         
         //if success, all is fine.  simply return
         if (statusCode == StatusCode.SUCCESS) {
@@ -368,7 +374,7 @@ public class MessageFactory {
         String errorMessage = "Kinetic Command Exception: "
                 + statusCode
                 + ": "
-                + reply.getMessage().getCommand().getStatus()
+                + reply.getCommand().getStatus()
                         .getStatusMessage();
                         
         switch (statusCode) {
@@ -392,27 +398,25 @@ public class MessageFactory {
     public static KineticMessage createNoOpRequestMessage()
             throws KineticException {
 
-        KineticMessage im = createKineticMessageWithBuilder();
+        KineticMessage kineticMessage = createKineticMessageWithBuilder();
 
-        Message.Builder request = (Builder) im.getMessage();
+        Command.Builder request = (Command.Builder) kineticMessage.getCommand();
 
-        request.getCommandBuilder().getHeaderBuilder()
-        .setMessageType(MessageType.NOOP);
+        request.getHeaderBuilder().setMessageType(MessageType.NOOP);
 
-        return im;
+        return kineticMessage;
     }
     
     public static KineticMessage createFlushDataRequestMessage()
             throws KineticException {
 
-        KineticMessage im = createKineticMessageWithBuilder();
+        KineticMessage kineticMessage = createKineticMessageWithBuilder();
 
-        Message.Builder request = (Builder) im.getMessage();
+        Command.Builder request = (Command.Builder) kineticMessage.getCommand();
 
-        request.getCommandBuilder().getHeaderBuilder()
-        .setMessageType(MessageType.FLUSHALLDATA);
+        request.getHeaderBuilder().setMessageType(MessageType.FLUSHALLDATA);
 
-        return im;
+        return kineticMessage;
     }
     
 
@@ -424,15 +428,24 @@ public class MessageFactory {
     public static KineticMessage createKineticMessageWithBuilder() {
 
         // new instance of internal message
-        KineticMessage im = new KineticMessage();
+        KineticMessage kineticMessage = new KineticMessage();
 
         // new builder message
-        Message.Builder builder = Message.newBuilder();
+        Message.Builder message = Message.newBuilder();
 
         // set to im
-        im.setMessage(builder);
-
-        return im;
+        kineticMessage.setMessage(message);
+        
+        //set hmac auth type
+        message.setAuthType(AuthType.HMACAUTH);
+        
+        // create command builder
+        Command.Builder commandBuilder = Command.newBuilder();
+        
+        // set command
+        kineticMessage.setCommand(commandBuilder);
+        
+        return kineticMessage;
     }
 
 }
