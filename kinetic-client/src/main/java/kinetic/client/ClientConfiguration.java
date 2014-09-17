@@ -256,7 +256,11 @@ public class ClientConfiguration extends Properties {
 	 * 
 	 */
 	public void setUseNio(boolean flag) {
-		this.useNio = flag;
+	    
+	 // XXX chiaming 07/19/2014: This will be re-enabled when it is compatible with 3.0.0 
+        logger.warning("Method is disabled., Only NIO is supported.");
+        
+		//this.useNio = flag;
 	}
 
 	/**

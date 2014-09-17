@@ -20,11 +20,12 @@
 package kinetic.simulator;
 
 import java.util.Properties;
+import java.util.logging.Logger;
 
 import com.seagate.kinetic.proto.Kinetic;
-
 import com.seagate.kinetic.simulator.heartbeat.HeartbeatProvider;
 import com.seagate.kinetic.simulator.heartbeat.provider.MulticastHeartbeatProvider;
+
 
 /**
  * 
@@ -32,6 +33,9 @@ import com.seagate.kinetic.simulator.heartbeat.provider.MulticastHeartbeatProvid
  * 
  */
 public class SimulatorConfiguration extends Properties {
+    
+    private final static Logger logger = Logger.getLogger(SimulatorConfiguration.class
+            .getName());
 
 	private static final long serialVersionUID = 1132514490479251740L;
 
@@ -350,7 +354,11 @@ public class SimulatorConfiguration extends Properties {
 	 * 
 	 */
 	public void setUseNio(boolean flag) {
-		this.useNio = flag;
+	    
+	    // XXX chiaming 07/19/2014: This will be re-enabled when it is compatible with 3.0.0 
+	    logger.warning("Method is disabled., Only NIO is supported.");
+	    
+		//this.useNio = flag;
 	}
 
 	/**

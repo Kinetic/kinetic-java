@@ -34,10 +34,12 @@ import java.util.logging.Logger;
 import kinetic.client.ClientConfiguration;
 import kinetic.client.KineticException;
 
+import com.google.protobuf.InvalidProtocolBufferException;
 import com.seagate.kinetic.client.io.provider.spi.ClientMessageService;
 import com.seagate.kinetic.client.io.provider.spi.ClientTransportProvider;
 import com.seagate.kinetic.common.lib.KineticMessage;
-import com.seagate.kinetic.proto.Kinetic;
+
+import com.seagate.kinetic.proto.Kinetic.Command;
 import com.seagate.kinetic.proto.Kinetic.Message;
 import com.seagate.kinetic.proto.Kinetic.Message.Builder;
 
@@ -57,8 +59,6 @@ public class TcpTransportProvider implements ClientTransportProvider, Runnable {
 	// my logger
 	private final Logger logger = Logger
 			.getLogger(TcpTransportProvider.class.getName());
-
-	private boolean useV2Protocol = true;
 
 	// input socket read thread
 	private Thread myThread = null;
@@ -93,8 +93,6 @@ public class TcpTransportProvider implements ClientTransportProvider, Runnable {
 
 		ClientConfiguration config = mservice.getConfiguration();
 
-		this.useV2Protocol = true;
-
 		this.mservice = mservice;
 
 		/**
@@ -114,10 +112,8 @@ public class TcpTransportProvider implements ClientTransportProvider, Runnable {
 
 			is = socket.getInputStream();
 
-			if (this.useV2Protocol) {
-				dis = new DataInputStream(is);
-			}
-
+			dis = new DataInputStream(is);
+			
 			os = socket.getOutputStream();
 
 			this.myThread = new Thread(this);
@@ -127,8 +123,7 @@ public class TcpTransportProvider implements ClientTransportProvider, Runnable {
 
 			this.myThread.start();
 
-			logger.info("tcp-non-nio is used, use v2 protocol = "
-					+ this.useV2Protocol);
+			logger.info("tcp-non-nio transport initialized ...");
 
 		} catch (IOException e) {
 
@@ -145,77 +140,72 @@ public class TcpTransportProvider implements ClientTransportProvider, Runnable {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public synchronized void write(KineticMessage im) throws IOException {
+    public synchronized void write(KineticMessage km) throws IOException {
 
-		Message.Builder message = (Builder) im.getMessage();
+        Message.Builder message = (Builder) km.getMessage();
 
-		if (logger.isLoggable(Level.FINEST)) {
-			logger.finest("writing message: " + message);
-		}
+        if (logger.isLoggable(Level.FINEST)) {
+            logger.finest("writing message: " + message);
+        }
 
-		if (this.useV2Protocol) {
+        try {
 
-			try {
+            // get value to write separately
+            byte[] value = km.getValue();
 
-				// get value to write separately
-				byte[] value = im.getValue();
+            // write 9 byte header
+            ByteArrayOutputStream baos = new ByteArrayOutputStream(9);
+            DataOutputStream dos = new DataOutputStream(baos);
 
-				// write 9 byte header
-				ByteArrayOutputStream baos = new ByteArrayOutputStream(9);
-				DataOutputStream dos = new DataOutputStream(baos);
+            // magic
+            dos.writeByte((byte) 'F');
+            // set value to an empty value
+            // message.setValue(ByteString.EMPTY);
 
-				// magic
-				dos.writeByte((byte) 'F');
-				// set value to an empty value
-				// message.setValue(ByteString.EMPTY);
+            // build message (without value) to write
+            Message msg = message.build();
 
-				// build message (without value) to write
-				Message msg = message.build();
+            // get proto message bytes
+            byte[] protoMessageBytes = msg.toByteArray();
 
-				// get proto message bytes
-				byte[] protoMessageBytes = msg.toByteArray();
+            // write message len
+            dos.writeInt(protoMessageBytes.length);
 
-				// write message len
-				dos.writeInt(protoMessageBytes.length);
+            // write attached value size, 4 byte
+            int valueLen = 0;
+            if (value != null) {
+                valueLen = value.length;
+            }
+            dos.writeInt(valueLen);
 
-				// write attached value size, 4 byte
-				int valueLen = 0;
-				if (value != null) {
-					valueLen = value.length;
-				}
-				dos.writeInt(valueLen);
+            dos.flush();
 
-				dos.flush();
+            // 9 byte header
+            byte[] beader = baos.toByteArray();
 
-				// 9 byte header
-				byte[] beader = baos.toByteArray();
+            dos.close();
+            baos.close();
 
-				dos.close();
-				baos.close();
+            // 1. write header bytes (9 bytes)
+            os.write(beader);
 
-				// 1. write header bytes (9 bytes)
-				os.write(beader);
+            // 2. write protobuf message byte[]
+            os.write(protoMessageBytes);
 
-				// 2. write protobuf message byte[]
-				os.write(protoMessageBytes);
+            // 3 (optional) write attached value if any
+            if (valueLen > 0) {
+                // write value
+                os.write(value);
+            }
 
-				// 3 (optional) write attached value if any
-				if (valueLen > 0) {
-					// write value
-					os.write(value);
-				}
+            os.flush();
 
-				os.flush();
+        } catch (IOException e) {
+            logger.log(Level.WARNING, e.getMessage(), e);
+            throw e;
+        }
 
-			} catch (IOException e) {
-				logger.log(Level.WARNING, e.getMessage(), e);
-				throw e;
-			}
-
-		} else {
-			message.build().writeDelimitedTo(os);
-		}
-	}
+    }
 
 	/**
 	 * {@inheritDoc}
@@ -227,92 +217,91 @@ public class TcpTransportProvider implements ClientTransportProvider, Runnable {
 			this.isRunning = false;
 			this.mservice.close();
 			this.is.close();
-
-			if (this.useV2Protocol) {
-				this.dis.close();
-			}
-
+			this.dis.close();
 			this.os.close();
 			this.socket.close();
 
-			logger.info("tcp non-nio transport closed, use v2 protocol="
-					+ this.useV2Protocol);
+			logger.info("tcp non-nio transport closed ...");
 		} catch (Exception e) {
 			logger.log(Level.WARNING, e.getMessage(), e);
 		}
 	}
 
 	@Override
-	public void run() {
+    public void run() {
 
-		while (this.isRunning) {
+        while (this.isRunning) {
 
-			try {
+            try {
 
-				Message message = null;
-				KineticMessage im = new KineticMessage();
+                Message message = null;
+                
+                KineticMessage km = new KineticMessage();
 
-				if (this.useV2Protocol) {
+                // 1. Read magic number.
+                int magicNumber = dis.readByte();
 
-					// 1. Read magic number.
-					int magicNumber = dis.readByte();
+                if (magicNumber != 'F') {
+                    throw new CorruptedFrameException("Invalid magic number: "
+                            + magicNumber);
+                }
 
-					if (magicNumber != 'F') {
-						throw new CorruptedFrameException(
-								"Invalid magic number: " + magicNumber);
-					}
+                // 2. protobuf message size
+                int protoMessageLength = dis.readInt();
 
-					// 2. protobuf message size
-					int protoMessageLength = dis.readInt();
+                // 3. attched value size
+                int attachedValueLength = dis.readInt();
 
-					// 3. attched value size
-					int attachedValueLength = dis.readInt();
+                // 4. read protobuf message
+                byte[] decoded = new byte[protoMessageLength];
+                dis.read(decoded);
 
-					// 4. read protobuf message
-					byte[] decoded = new byte[protoMessageLength];
-					dis.read(decoded);
+                // construct protobuf message
+                Message.Builder builder = Message.newBuilder();
 
-					// construct protobuf message
-					Message.Builder builder = Message.newBuilder();
+                try {
+                    builder.mergeFrom(decoded);
+                } catch (Exception e) {
+                    logger.log(Level.WARNING, e.getMessage(), e);
 
-					try {
-						builder.mergeFrom(decoded);
-					} catch (Exception e) {
-						logger.log(Level.WARNING, e.getMessage(), e);
+                    throw new RuntimeException(e);
+                }
 
-						throw new RuntimeException(e);
-					}
+                // 5. read attched value if any
+                if (attachedValueLength > 0) {
+                    // construct byte[]
+                    byte[] attachedValue = new byte[attachedValueLength];
+                    // read from buffer
+                    dis.read(attachedValue);
+                    // set to message
+                    // builder.setValue(ByteString.copyFrom(attachedValue));
+                    km.setValue(attachedValue);
+                }
 
-					// 5. read attched value if any
-					if (attachedValueLength > 0) {
-						// construct byte[]
-						byte[] attachedValue = new byte[attachedValueLength];
-						// read from buffer
-						dis.read(attachedValue);
-						// set to message
-						// builder.setValue(ByteString.copyFrom(attachedValue));
-						im.setValue(attachedValue);
-					}
+                message = builder.build();
 
-					// v2 message
-					message = builder.build();
-				} else {
-					// v1 message
-					message = Kinetic.Message.parseDelimitedFrom(is);
-				}
+                // set message to kietic message
+                km.setMessage(message);
 
-				// set message to kietic message
-				im.setMessage(message);
+                // build command
+                Command.Builder commandBuilder = Command.newBuilder();
 
-				if (logger.isLoggable(Level.FINEST)) {
-					logger.finest("read message: " + message);
-				}
+                try {
+                    commandBuilder.mergeFrom(message.getCommandBytes());
+                    km.setCommand(commandBuilder.build());
+                } catch (InvalidProtocolBufferException e) {
+                    logger.log(Level.WARNING, e.getMessage(), e);
+                }
 
-				this.mservice.routeMessage(im);
-			} catch (Exception e) {
-				this.isRunning = false;
-			}
-		}
-	}
+                if (logger.isLoggable(Level.FINEST)) {
+                    logger.finest("read message: " + message);
+                }
+
+                this.mservice.routeMessage(km);
+            } catch (Exception e) {
+                this.isRunning = false;
+            }
+        }
+    }
 
 }
