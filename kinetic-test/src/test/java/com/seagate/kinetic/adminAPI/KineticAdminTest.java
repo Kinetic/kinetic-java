@@ -55,6 +55,7 @@ import kinetic.client.KineticClientFactory;
 import kinetic.client.KineticException;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.google.protobuf.ByteString;
@@ -1643,6 +1644,7 @@ public class KineticAdminTest extends IntegrationTestCase {
      * Test set security, set erase pin with null, throw exception.
      * <p>
      */
+    @Ignore
     @Test
     public void testSetSecurity_setErasePin_withNull() {
         byte[] erasePinB = null;
@@ -1686,6 +1688,7 @@ public class KineticAdminTest extends IntegrationTestCase {
      * Test set security, modify erase pin with null.
      * <p>
      */
+    @Ignore
     @Test
     public void testSetSecurity_modifyErasePin_withNull() {
         String oldErasePin = "oldErasePin";
@@ -1805,6 +1808,7 @@ public class KineticAdminTest extends IntegrationTestCase {
      * Test set security, set lock pin with null, throw exception.
      * <p>
      */
+    @Ignore
     @Test
     public void testSetSecurity_setLockPin_withNull() {
         byte[] lockPinB = null;
@@ -1846,6 +1850,7 @@ public class KineticAdminTest extends IntegrationTestCase {
      * Test set security, modify lock pin with null.
      * <p>
      */
+    @Ignore
     @Test
     public void testSetSecurity_modifyLockPin_withNull() {
         String oldLockPin = "oldLockPin";
@@ -1986,6 +1991,7 @@ public class KineticAdminTest extends IntegrationTestCase {
      * Test lock device with null lock pin, should throw exception.
      * <p>
      */
+    @Ignore
     @Test
     public void testLockDevice_withNullLockpin() {
         try {
@@ -2111,6 +2117,7 @@ public class KineticAdminTest extends IntegrationTestCase {
      * Test unlock device with null unlock pin, should throw exception.
      * <p>
      */
+    @Ignore
     @Test
     public void testUnLockDevice_withNullLockpin() {
         try {
@@ -2617,6 +2624,7 @@ public class KineticAdminTest extends IntegrationTestCase {
      * field.
      * <p>
      */
+    @Ignore
     @Test
     public void testMediaScan_withPriorityIsHighest_successOperation() {
         // create request message
@@ -2656,6 +2664,7 @@ public class KineticAdminTest extends IntegrationTestCase {
      * range permission, should throw exception.
      * <p>
      */
+    @Ignore
     @Test
     public void testMediaScan_withPriorityIsHighest_withNoRangePermission_throwException() {
         List<Role> roles = new ArrayList<Role>();
@@ -2729,6 +2738,7 @@ public class KineticAdminTest extends IntegrationTestCase {
      * field.
      * <p>
      */
+    @Ignore
     @Test
     public void testMediaOptimize_withPriorityIsHighest_successOperation() {
         // create request message
@@ -2768,6 +2778,7 @@ public class KineticAdminTest extends IntegrationTestCase {
      * no range permission, should throw exception.
      * <p>
      */
+    @Ignore
     @Test
     public void testMediaOptimize_withPriorityIsHighest_withNoRangePermission_throwException() {
         List<Role> roles = new ArrayList<Role>();
