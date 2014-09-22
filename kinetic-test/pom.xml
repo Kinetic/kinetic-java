@@ -3,7 +3,7 @@
 	<parent>
 		<groupId>com.seagate.kinetic</groupId>
 		<artifactId>kinetic-java</artifactId>
-		<version>0.7.0.2-SNAPSHOT</version>
+		<version>0.7.0.2</version>
 	</parent>
 	<artifactId>kinetic-test</artifactId>
 	<name>Kinetic/Test</name>
