@@ -72,11 +72,11 @@ public class LevelDbStore implements Store<ByteString, ByteString, KVValue> {
 
     // sync write option
     private static final WriteOptions syncWriteOption = new WriteOptions()
-    .sync(true);
+            .sync(true);
 
     // async write option
     private static final WriteOptions asyncWriteOption = new WriteOptions()
-    .sync(false);
+            .sync(false);
 
     // default no-arg constructor
     public LevelDbStore() {
@@ -355,7 +355,12 @@ public class LevelDbStore implements Store<ByteString, ByteString, KVValue> {
         byte[] end = endKey.toByteArray();
 
         // Short-circuit when the start key comes after the end key.
-        if (compare(start, end) >= 0) {
+        if (compare(start, end) > 0) {
+            return map;
+        }
+
+        if ((compare(start, end) == 0)
+                && ((startKeyInclusive && endKeyInclusive) == false)) {
             return map;
         }
 
@@ -424,9 +429,13 @@ public class LevelDbStore implements Store<ByteString, ByteString, KVValue> {
         byte[] start = startKey.toByteArray();
         byte[] end = endKey.toByteArray();
 
-
         // Short-circuit when the start key comes after the end key.
-        if (compare(start, end) >= 0) {
+        if (compare(start, end) > 0) {
+            return listOfKVKey;
+        }
+
+        if ((compare(start, end) == 0)
+                && ((startKeyInclusive && endKeyInclusive) == false)) {
             return listOfKVKey;
         }
 

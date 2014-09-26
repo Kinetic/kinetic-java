@@ -27,6 +27,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -38,6 +39,7 @@ import kinetic.client.advanced.AdvancedKineticClient;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import com.google.common.collect.Lists;
 import com.seagate.kinetic.IntegrationTestCase;
 import com.seagate.kinetic.IntegrationTestLoggerFactory;
 import com.seagate.kinetic.KineticTestRunner;
@@ -1525,6 +1527,131 @@ public class AdvancedAPIBoundaryTest extends IntegrationTestCase {
 		List<byte[]> keys = getClient().getKeyRangeReversed(startKey, true,
 				endKey, true, 10);
 		assertEquals(0, keys.size());
+
+		logger.info(this.testEndInfo());
+	}
+	
+	/**
+	 * Test getKeyRangeReversed API: startKey equals endKey, startKey inclusive and
+	 * endKey inclusive, should return endKey.
+	 * <p>
+	 *
+	 * @throws KineticException
+	 *             if any internal error occurred.
+	 */
+	@Test
+	public void testGetKeyRangeReversed_StartKeyEqualsEndKey_StartKeyInclusiveEndKeyInclusive()
+			throws KineticException {
+		List<byte[]> keys = Arrays.asList(toByteArray("00"), toByteArray("01"),
+				toByteArray("02"), toByteArray("03"), toByteArray("04"),
+				toByteArray("05"), toByteArray("06"), toByteArray("07"),
+				toByteArray("08"), toByteArray("09"), toByteArray("10"),
+				toByteArray("11"), toByteArray("12"), toByteArray("13"),
+				toByteArray("14"));
+
+		for (byte[] key : keys) {
+			getClient().putForced(new Entry(key, key));
+		}
+
+		List<byte[]> returnedKeys = Lists.newLinkedList(getClient()
+				.getKeyRangeReversed(keys.get(0), true, keys.get(0), true,
+						keys.size() - 1));
+
+		assertEquals(1, returnedKeys.size());
+		assertArrayEquals(keys.get(0), returnedKeys.get(0));
+
+		logger.info(this.testEndInfo());
+	}
+	
+	/**
+	 * Test getKeyRangeReversed API: startKey equals endKey, startKey exclusive and
+	 * endKey inclusive, should return empty list.
+	 * <p>
+	 *
+	 * @throws KineticException
+	 *             if any internal error occurred.
+	 */
+	@Test
+	public void testGetKeyRangeReversed_StartKeyEqualsEndKey_StartKeyExclusiveEndKeyInclusive()
+			throws KineticException {
+		List<byte[]> keys = Arrays.asList(toByteArray("00"), toByteArray("01"),
+				toByteArray("02"), toByteArray("03"), toByteArray("04"),
+				toByteArray("05"), toByteArray("06"), toByteArray("07"),
+				toByteArray("08"), toByteArray("09"), toByteArray("10"),
+				toByteArray("11"), toByteArray("12"), toByteArray("13"),
+				toByteArray("14"));
+
+		for (byte[] key : keys) {
+			getClient().putForced(new Entry(key, key));
+		}
+
+		List<byte[]> returnedKeys = Lists.newLinkedList(getClient()
+				.getKeyRangeReversed(keys.get(0), false, keys.get(0), true,
+						keys.size() - 1));
+
+		assertEquals(0, returnedKeys.size());
+
+		logger.info(this.testEndInfo());
+	}
+	
+	/**
+	 * Test getKeyRangeReversed API: startKey equals endKey, startKey inclusive and
+	 * endKey exclusive, should return empty list.
+	 * <p>
+	 *
+	 * @throws KineticException
+	 *             if any internal error occurred.
+	 */
+	@Test
+	public void testGetKeyRangeReversed_StartKeyEqualsEndKey_StartKeyinclusiveEndKeyexclusive()
+			throws KineticException {
+		List<byte[]> keys = Arrays.asList(toByteArray("00"), toByteArray("01"),
+				toByteArray("02"), toByteArray("03"), toByteArray("04"),
+				toByteArray("05"), toByteArray("06"), toByteArray("07"),
+				toByteArray("08"), toByteArray("09"), toByteArray("10"),
+				toByteArray("11"), toByteArray("12"), toByteArray("13"),
+				toByteArray("14"));
+
+		for (byte[] key : keys) {
+			getClient().putForced(new Entry(key, key));
+		}
+
+		List<byte[]> returnedKeys = Lists.newLinkedList(getClient()
+				.getKeyRangeReversed(keys.get(0), true, keys.get(0), false,
+						keys.size() - 1));
+
+		assertEquals(0, returnedKeys.size());
+
+		logger.info(this.testEndInfo());
+	}
+	
+	/**
+	 * Test getKeyRangeReversed API: startKey equals endKey, startKey exclusive and
+	 * endKey exclusive, should return empty.
+	 * <p>
+	 *
+	 * @throws KineticException
+	 *             if any internal error occurred.
+	 */
+	@Test
+	public void testGetKeyRangeReversed_StartKeyEqualsEndKey_StartKeyexclusiveEndKeyexclusive()
+			throws KineticException {
+		List<byte[]> keys = Arrays.asList(toByteArray("00"), toByteArray("01"),
+				toByteArray("02"), toByteArray("03"), toByteArray("04"),
+				toByteArray("05"), toByteArray("06"), toByteArray("07"),
+				toByteArray("08"), toByteArray("09"), toByteArray("10"),
+				toByteArray("11"), toByteArray("12"), toByteArray("13"),
+				toByteArray("14"));
+
+		for (byte[] key : keys) {
+			getClient().putForced(new Entry(key, key));
+		}
+
+		List<byte[]> returnedKeys = Lists.newLinkedList(getClient()
+				.getKeyRangeReversed(keys.get(0), false, keys.get(0), false,
+						keys.size() - 1));
+
+		assertEquals(0, returnedKeys.size());
 
 		logger.info(this.testEndInfo());
 	}

@@ -2147,6 +2147,131 @@ public class KineticBoundaryTest extends IntegrationTestCase {
 
         logger.info(this.testEndInfo());
     }
+    
+	/**
+	 * Test getKeyRange API: startKey equals endKey, startKey inclusive and
+	 * endKey inclusive, should return startKey.
+	 * <p>
+	 *
+	 * @throws KineticException
+	 *             if any internal error occurred.
+	 */
+	@Test
+	public void testGetKeyRange_StartKeyEqualsEndKey_StartKeyInclusiveEndKeyInclusive()
+			throws KineticException {
+		List<byte[]> keys = Arrays.asList(toByteArray("00"), toByteArray("01"),
+				toByteArray("02"), toByteArray("03"), toByteArray("04"),
+				toByteArray("05"), toByteArray("06"), toByteArray("07"),
+				toByteArray("08"), toByteArray("09"), toByteArray("10"),
+				toByteArray("11"), toByteArray("12"), toByteArray("13"),
+				toByteArray("14"));
+
+		for (byte[] key : keys) {
+			getClient().putForced(new Entry(key, key));
+		}
+
+		List<byte[]> returnedKeys = Lists.newLinkedList(getClient()
+				.getKeyRange(keys.get(0), true, keys.get(0), true,
+						keys.size() - 1));
+
+		assertEquals(1, returnedKeys.size());
+		assertArrayEquals(keys.get(0), returnedKeys.get(0));
+
+		logger.info(this.testEndInfo());
+	}
+	
+	/**
+	 * Test getKeyRange API: startKey equals endKey, startKey exclusive and
+	 * endKey inclusive, should return empty list.
+	 * <p>
+	 *
+	 * @throws KineticException
+	 *             if any internal error occurred.
+	 */
+	@Test
+	public void testGetKeyRange_StartKeyEqualsEndKey_StartKeyExclusiveEndKeyInclusive()
+			throws KineticException {
+		List<byte[]> keys = Arrays.asList(toByteArray("00"), toByteArray("01"),
+				toByteArray("02"), toByteArray("03"), toByteArray("04"),
+				toByteArray("05"), toByteArray("06"), toByteArray("07"),
+				toByteArray("08"), toByteArray("09"), toByteArray("10"),
+				toByteArray("11"), toByteArray("12"), toByteArray("13"),
+				toByteArray("14"));
+
+		for (byte[] key : keys) {
+			getClient().putForced(new Entry(key, key));
+		}
+
+		List<byte[]> returnedKeys = Lists.newLinkedList(getClient()
+				.getKeyRange(keys.get(0), false, keys.get(0), true,
+						keys.size() - 1));
+
+		assertEquals(0, returnedKeys.size());
+
+		logger.info(this.testEndInfo());
+	}
+	
+	/**
+	 * Test getKeyRange API: startKey equals endKey, startKey inclusive and
+	 * endKey exclusive, should return empty list.
+	 * <p>
+	 *
+	 * @throws KineticException
+	 *             if any internal error occurred.
+	 */
+	@Test
+	public void testGetKeyRange_StartKeyEqualsEndKey_StartKeyinclusiveEndKeyexclusive()
+			throws KineticException {
+		List<byte[]> keys = Arrays.asList(toByteArray("00"), toByteArray("01"),
+				toByteArray("02"), toByteArray("03"), toByteArray("04"),
+				toByteArray("05"), toByteArray("06"), toByteArray("07"),
+				toByteArray("08"), toByteArray("09"), toByteArray("10"),
+				toByteArray("11"), toByteArray("12"), toByteArray("13"),
+				toByteArray("14"));
+
+		for (byte[] key : keys) {
+			getClient().putForced(new Entry(key, key));
+		}
+
+		List<byte[]> returnedKeys = Lists.newLinkedList(getClient()
+				.getKeyRange(keys.get(0), true, keys.get(0), false,
+						keys.size() - 1));
+
+		assertEquals(0, returnedKeys.size());
+
+		logger.info(this.testEndInfo());
+	}
+	
+	/**
+	 * Test getKeyRange API: startKey equals endKey, startKey exclusive and
+	 * endKey exclusive, should return empty.
+	 * <p>
+	 *
+	 * @throws KineticException
+	 *             if any internal error occurred.
+	 */
+	@Test
+	public void testGetKeyRange_StartKeyEqualsEndKey_StartKeyexclusiveEndKeyexclusive()
+			throws KineticException {
+		List<byte[]> keys = Arrays.asList(toByteArray("00"), toByteArray("01"),
+				toByteArray("02"), toByteArray("03"), toByteArray("04"),
+				toByteArray("05"), toByteArray("06"), toByteArray("07"),
+				toByteArray("08"), toByteArray("09"), toByteArray("10"),
+				toByteArray("11"), toByteArray("12"), toByteArray("13"),
+				toByteArray("14"));
+
+		for (byte[] key : keys) {
+			getClient().putForced(new Entry(key, key));
+		}
+
+		List<byte[]> returnedKeys = Lists.newLinkedList(getClient()
+				.getKeyRange(keys.get(0), false, keys.get(0), false,
+						keys.size() - 1));
+
+		assertEquals(0, returnedKeys.size());
+
+		logger.info(this.testEndInfo());
+	}
 
     /**
      * GetKeyRange, returns the first contiguous block of keys for which the
