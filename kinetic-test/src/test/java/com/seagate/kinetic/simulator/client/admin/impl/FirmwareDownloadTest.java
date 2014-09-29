@@ -19,29 +19,26 @@
  */
 package com.seagate.kinetic.simulator.client.admin.impl;
 
+import org.testng.annotations.Test;
+import org.testng.Assert;
 import static com.seagate.kinetic.KineticTestHelpers.toByteArray;
-import static org.junit.Assert.fail;
 import kinetic.client.KineticException;
 
-import org.junit.Test;
-
 import com.seagate.kinetic.IntegrationTestCase;
-import com.seagate.kinetic.SimulatorOnly;
 
+@Test (groups = {"simulator"})
 public class FirmwareDownloadTest extends IntegrationTestCase {
     @Test
-    @SimulatorOnly
     public void testFirmwareDownload_NoPin() {
         byte[] firmwareInfo = "firmware download info".getBytes();
         try {
             getAdminClient().firmwareDownload(null, firmwareInfo);
         } catch (KineticException e) {
-            fail("firmware download failed");
+            Assert.fail("firmware download failed");
         }
     }
 
     @Test
-    @SimulatorOnly
     public void testFirmwareDownload_WithCorrectPin() {
         byte[] firmwareInfo = "firmware download info after pin set".getBytes();
         byte[] newErasePin = toByteArray("123");
@@ -49,7 +46,7 @@ public class FirmwareDownloadTest extends IntegrationTestCase {
         try {
             getAdminClient().setErasePin(null, newErasePin);
         } catch (KineticException e1) {
-            fail("set erase pin failed");
+            Assert.fail("set erase pin failed");
         }
 
         try {
@@ -59,14 +56,13 @@ public class FirmwareDownloadTest extends IntegrationTestCase {
             try {
                 getAdminClient().instantErase(newErasePin);
             } catch (KineticException e1) {
-                fail("instant erase failed: " + e1.getMessage());
+                Assert.fail("instant erase failed: " + e1.getMessage());
             }
-            fail("firmware download failed");
+            Assert.fail("firmware download failed");
         }
     }
 
     @Test
-    @SimulatorOnly
     public void testFirmwareDownload_WithIncorrectPin() {
         byte[] firmwareInfo = "firmware download info after pin set".getBytes();
         byte[] newErasePin = toByteArray("123");
@@ -74,7 +70,7 @@ public class FirmwareDownloadTest extends IntegrationTestCase {
         try {
             getAdminClient().setErasePin(null, newErasePin);
         } catch (KineticException e) {
-            fail("set erase pin throw exception: " + e.getMessage());
+            Assert.fail("set erase pin throw exception: " + e.getMessage());
         }
 
         byte[] incorrectPin = toByteArray("456");
@@ -86,7 +82,7 @@ public class FirmwareDownloadTest extends IntegrationTestCase {
             try {
                 getAdminClient().instantErase(newErasePin);
             } catch (KineticException e1) {
-                fail("instant erase throw exception: " + e1.getMessage());
+                Assert.fail("instant erase throw exception: " + e1.getMessage());
             }
         }
     }

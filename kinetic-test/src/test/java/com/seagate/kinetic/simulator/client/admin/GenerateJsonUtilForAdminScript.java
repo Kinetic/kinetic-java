@@ -19,8 +19,7 @@
  */
 package com.seagate.kinetic.simulator.client.admin;
 
-import org.junit.Test;
-
+import org.testng.annotations.Test;
 import com.google.protobuf.ByteString;
 import com.seagate.kinetic.admin.impl.JsonUtil;
 import com.seagate.kinetic.proto.Kinetic.Command;
@@ -28,6 +27,7 @@ import com.seagate.kinetic.proto.Kinetic.Command;
 import com.seagate.kinetic.proto.Kinetic.Command.GetLog.Type;
 import com.seagate.kinetic.proto.Kinetic.Command.Security.ACL.Permission;
 
+@Test (groups = {"simulator"})
 public class GenerateJsonUtilForAdminScript {
 
     /*

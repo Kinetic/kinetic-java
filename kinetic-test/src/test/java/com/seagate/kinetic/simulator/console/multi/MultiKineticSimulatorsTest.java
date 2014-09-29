@@ -19,8 +19,10 @@
  */
 package com.seagate.kinetic.simulator.console.multi;
 
-import static org.junit.Assert.assertTrue;
-
+import static org.testng.AssertJUnit.assertTrue;
+import org.testng.annotations.AfterMethod;
+import org.testng.annotations.Test;
+import org.testng.annotations.BeforeMethod;
 import java.util.Arrays;
 import java.util.Random;
 import java.util.logging.Logger;
@@ -33,16 +35,13 @@ import kinetic.client.KineticClientFactory;
 import kinetic.simulator.KineticSimulator;
 import kinetic.simulator.SimulatorConfiguration;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-
 /**
  * Test running multiple servers within a JVM.
  * 
  * @author Chiaming Yang
  * 
  */
+@Test(groups = {"simulator"})
 public class MultiKineticSimulatorsTest {
 
 	Logger logger = Logger
@@ -56,8 +55,8 @@ public class MultiKineticSimulatorsTest {
 
 	private final KineticSimulator[] servers = new KineticSimulator[max];
 
-	@Before
-	public void setUp() throws Exception {
+	@BeforeMethod
+    public void setUp() throws Exception {
 		// server configs
 
 		for (int i = 0; i < max; i++) {
@@ -135,8 +134,8 @@ public class MultiKineticSimulatorsTest {
 		}
 	}
 
-	@After
-	public void tearDown() throws Exception {
+	@AfterMethod
+    public void tearDown() throws Exception {
 
 		for (int i = 0; i < max; i++) {
 

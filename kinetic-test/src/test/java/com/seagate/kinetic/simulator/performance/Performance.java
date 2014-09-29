@@ -19,8 +19,8 @@
  */
 package com.seagate.kinetic.simulator.performance;
 
-import static org.junit.Assert.fail;
-
+import org.testng.annotations.Test;
+import org.testng.Assert;
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -364,7 +364,8 @@ public class Performance {
 		}
 	}
 
-	private static String testResult(boolean syncFlag, boolean clientNioFlag,
+	@Test(enabled = false)
+    private static String testResult(boolean syncFlag, boolean clientNioFlag,
 			boolean serverNioFlag, int operationCount, long totalAsyncTime,
 			long messagePerSec) {
 		String syncFlagS;
@@ -411,9 +412,9 @@ public class Performance {
 		try {
 			versionedEntry = kineticClient.get(key);
 		} catch (KineticException e) {
-			fail("get key " + new String(key) + " failed, " + e.getMessage());
+			Assert.fail("get key " + new String(key) + " failed, " + e.getMessage());
 		} catch (Exception e) {
-			fail("get key " + new String(key) + " failed, " + e.getMessage());
+			Assert.fail("get key " + new String(key) + " failed, " + e.getMessage());
 		}
 
 		if (null != versionedEntry && null != versionedEntry.getKey()) {
@@ -421,10 +422,10 @@ public class Performance {
 				kineticClient.delete(versionedEntry);
 				// logger.info("delete key: " + new String(key));
 			} catch (KineticException e) {
-				fail("delete key " + new String(key) + " failed, "
+				Assert.fail("delete key " + new String(key) + " failed, "
 						+ e.getMessage());
 			} catch (Exception e) {
-				fail("delete key " + new String(key) + " failed, "
+				Assert.fail("delete key " + new String(key) + " failed, "
 						+ e.getMessage());
 			}
 		} else {

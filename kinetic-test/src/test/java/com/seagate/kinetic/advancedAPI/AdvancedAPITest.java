@@ -19,15 +19,19 @@
  */
 package com.seagate.kinetic.advancedAPI;
 
+import static org.testng.AssertJUnit.assertArrayEquals;
+import static org.testng.AssertJUnit.assertEquals;
+import static org.testng.AssertJUnit.assertTrue;
+import static org.testng.AssertJUnit.assertNull;
+
+import org.testng.annotations.Test;
+import org.testng.annotations.BeforeMethod;
+
 import static com.seagate.kinetic.KineticAssertions.assertKeyNotFound;
 import static com.seagate.kinetic.KineticTestHelpers.buildSuccessOnlyCallbackHandler;
 import static com.seagate.kinetic.KineticTestHelpers.int32;
 import static com.seagate.kinetic.KineticTestHelpers.toByteArray;
 import static com.seagate.kinetic.KineticTestHelpers.waitForLatch;
-import static junit.framework.TestCase.assertEquals;
-import static junit.framework.TestCase.assertNull;
-import static junit.framework.TestCase.assertTrue;
-import static org.junit.Assert.assertArrayEquals;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -46,16 +50,11 @@ import kinetic.client.KineticException;
 import kinetic.client.advanced.AdvancedKineticClient;
 import kinetic.client.advanced.PersistOption;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
 import com.seagate.kinetic.IntegrationTestCase;
 import com.seagate.kinetic.IntegrationTestLoggerFactory;
 import com.seagate.kinetic.KVGenerator;
 import com.seagate.kinetic.KineticTestHelpers;
 import com.seagate.kinetic.KineticTestHelpers.SuccessAsyncHandler;
-import com.seagate.kinetic.KineticTestRunner;
 
 /**
  * Advanced Kinetic Client Basic API Test.
@@ -93,7 +92,7 @@ import com.seagate.kinetic.KineticTestRunner;
  * @see AdvancedKineticClient
  * 
  */
-@RunWith(KineticTestRunner.class)
+@Test(groups = {"simulator", "drive"})
 public class AdvancedAPITest extends IntegrationTestCase {
 	private static final Logger logger = IntegrationTestLoggerFactory
 			.getLogger(AdvancedAPITest.class.getName());
@@ -106,8 +105,8 @@ public class AdvancedAPITest extends IntegrationTestCase {
 	 * Initialize a key/value pair generator
 	 * <p>
 	 */
-	@Before
-	public void setUp() throws IOException, InterruptedException {
+	@BeforeMethod
+    public void setUp() throws IOException, InterruptedException {
 		kvGenerator = new KVGenerator();
 	}
 
@@ -120,8 +119,8 @@ public class AdvancedAPITest extends IntegrationTestCase {
 	 * @throws KineticException
 	 *             if any internal error occurred.
 	 */
-	@Test
-	public void testPutWithPersistOption_Async() throws KineticException {
+	@Test(dataProvider = "transportProtocolOptions")
+	public void testPutWithPersistOption_Async(String clientName) throws KineticException {
 		PersistOption option = PersistOption.ASYNC;
 
 		Entry versionedPut;
@@ -139,9 +138,9 @@ public class AdvancedAPITest extends IntegrationTestCase {
 			entryMetadata.setAlgorithm(algorithm);
 			versionedPut = new Entry(key, value, entryMetadata);
 
-			getClient().put(versionedPut, int32(i), option);
+			getClient(clientName).put(versionedPut, int32(i), option);
 
-			versionedGetReturn = getClient().get(key);
+			versionedGetReturn = getClient(clientName).get(key);
 			assertArrayEquals(key, versionedGetReturn.getKey());
 			assertArrayEquals(int32(i), versionedGetReturn.getEntryMetadata()
 					.getVersion());
@@ -164,8 +163,8 @@ public class AdvancedAPITest extends IntegrationTestCase {
 	 * @throws KineticException
 	 *             if any internal error occurred.
 	 */
-	@Test
-	public void testPutWithPersistOption_Sync() throws KineticException {
+	@Test(dataProvider = "transportProtocolOptions")
+	public void testPutWithPersistOption_Sync(String clientName) throws KineticException {
 		PersistOption option = PersistOption.SYNC;
 
 		Entry versionedPut;
@@ -183,9 +182,9 @@ public class AdvancedAPITest extends IntegrationTestCase {
 			entryMetadata.setAlgorithm(algorithm);
 			versionedPut = new Entry(key, value, entryMetadata);
 
-			getClient().put(versionedPut, int32(i), option);
+			getClient(clientName).put(versionedPut, int32(i), option);
 
-			versionedGetReturn = getClient().get(key);
+			versionedGetReturn = getClient(clientName).get(key);
 			assertArrayEquals(key, versionedGetReturn.getKey());
 			assertArrayEquals(int32(i), versionedGetReturn.getEntryMetadata()
 					.getVersion());
@@ -208,8 +207,8 @@ public class AdvancedAPITest extends IntegrationTestCase {
 	 * @throws KineticException
 	 *             if any internal error occurred.
 	 */
-	@Test
-	public void testPutWithPersistOption_Flush() throws KineticException {
+	@Test(dataProvider = "transportProtocolOptions")
+	public void testPutWithPersistOption_Flush(String clientName) throws KineticException {
 		PersistOption option = PersistOption.FLUSH;
 
 		Entry versionedPut;
@@ -227,9 +226,9 @@ public class AdvancedAPITest extends IntegrationTestCase {
 			entryMetadata.setAlgorithm(algorithm);
 			versionedPut = new Entry(key, value, entryMetadata);
 
-			getClient().put(versionedPut, int32(i), option);
+			getClient(clientName).put(versionedPut, int32(i), option);
 
-			versionedGetReturn = getClient().get(key);
+			versionedGetReturn = getClient(clientName).get(key);
 			assertArrayEquals(key, versionedGetReturn.getKey());
 			assertArrayEquals(int32(i), versionedGetReturn.getEntryMetadata()
 					.getVersion());
@@ -255,8 +254,8 @@ public class AdvancedAPITest extends IntegrationTestCase {
 	 *             if thread is interrupted, or the specified waiting time
 	 *             elapses.
 	 */
-	@Test
-	public void testPutAsyncWithPersistOption_Async()
+	@Test(dataProvider = "transportProtocolOptions")
+	public void testPutAsyncWithPersistOption_Async(String clientName)
 			throws UnsupportedEncodingException, KineticException,
 			InterruptedException {
 		PersistOption option = PersistOption.ASYNC;
@@ -294,7 +293,7 @@ public class AdvancedAPITest extends IntegrationTestCase {
 				}
 			});
 
-			getClient().putAsync(entryPut, newVersion, option, handler);
+			getClient(clientName).putAsync(entryPut, newVersion, option, handler);
 		}
 
 		waitForLatch(putSignal);
@@ -325,8 +324,8 @@ public class AdvancedAPITest extends IntegrationTestCase {
 	 *             if thread is interrupted, or the specified waiting time
 	 *             elapses.
 	 */
-	@Test
-	public void testPutAsyncWithPersistOption_Sync()
+	@Test(dataProvider = "transportProtocolOptions")
+	public void testPutAsyncWithPersistOption_Sync(String clientName)
 			throws UnsupportedEncodingException, KineticException,
 			InterruptedException {
 		PersistOption option = PersistOption.SYNC;
@@ -364,7 +363,7 @@ public class AdvancedAPITest extends IntegrationTestCase {
 				}
 			});
 
-			getClient().putAsync(entryPut, newVersion, option, handler);
+			getClient(clientName).putAsync(entryPut, newVersion, option, handler);
 		}
 
 		waitForLatch(putSignal);
@@ -395,8 +394,8 @@ public class AdvancedAPITest extends IntegrationTestCase {
 	 *             if thread is interrupted, or the specified waiting time
 	 *             elapses.
 	 */
-	@Test
-	public void testPutAsyncWithPersistOption_Flush()
+	@Test(dataProvider = "transportProtocolOptions")
+	public void testPutAsyncWithPersistOption_Flush(String clientName)
 			throws UnsupportedEncodingException, KineticException,
 			InterruptedException {
 		PersistOption option = PersistOption.FLUSH;
@@ -434,7 +433,7 @@ public class AdvancedAPITest extends IntegrationTestCase {
 				}
 			});
 
-			getClient().putAsync(entryPut, newVersion, option, handler);
+			getClient(clientName).putAsync(entryPut, newVersion, option, handler);
 		}
 
 		waitForLatch(putSignal);
@@ -463,8 +462,8 @@ public class AdvancedAPITest extends IntegrationTestCase {
 	 * @throws KineticException
 	 *             if any internal error occurred.
 	 */
-	@Test
-	public void testPutForcedWithPersistOption_Async() throws KineticException {
+	@Test(dataProvider = "transportProtocolOptions")
+	public void testPutForcedWithPersistOption_Async(String clientName) throws KineticException {
 		PersistOption option = PersistOption.ASYNC;
 		Long start = System.nanoTime();
 
@@ -474,7 +473,7 @@ public class AdvancedAPITest extends IntegrationTestCase {
 			EntryMetadata entryMetadata = new EntryMetadata();
 			Entry versionedPut = new Entry(key, value, entryMetadata);
 
-			getClient().put(versionedPut, int32(i));
+			getClient(clientName).put(versionedPut, int32(i));
 		}
 
 		start = System.nanoTime();
@@ -489,9 +488,9 @@ public class AdvancedAPITest extends IntegrationTestCase {
 
 			Entry versionedPutForced = new Entry(key, value, entryMetadata);
 
-			getClient().putForced(versionedPutForced, option);
+			getClient(clientName).putForced(versionedPutForced, option);
 
-			Entry entryGet = getClient().get(key);
+			Entry entryGet = getClient(clientName).get(key);
 			assertArrayEquals(key, entryGet.getKey());
 			assertArrayEquals(version, entryGet.getEntryMetadata().getVersion());
 			assertArrayEquals(value, entryGet.getValue());
@@ -510,8 +509,8 @@ public class AdvancedAPITest extends IntegrationTestCase {
 	 * @throws KineticException
 	 *             if any internal error occurred.
 	 */
-	@Test
-	public void testPutForcedWithPersistOption_Sync() throws KineticException {
+	@Test(dataProvider = "transportProtocolOptions")
+	public void testPutForcedWithPersistOption_Sync(String clientName) throws KineticException {
 		PersistOption option = PersistOption.SYNC;
 		Long start = System.nanoTime();
 
@@ -521,7 +520,7 @@ public class AdvancedAPITest extends IntegrationTestCase {
 			EntryMetadata entryMetadata = new EntryMetadata();
 			Entry versionedPut = new Entry(key, value, entryMetadata);
 
-			getClient().put(versionedPut, int32(i));
+			getClient(clientName).put(versionedPut, int32(i));
 		}
 
 		start = System.nanoTime();
@@ -536,9 +535,9 @@ public class AdvancedAPITest extends IntegrationTestCase {
 
 			Entry versionedPutForced = new Entry(key, value, entryMetadata);
 
-			getClient().putForced(versionedPutForced, option);
+			getClient(clientName).putForced(versionedPutForced, option);
 
-			Entry entryGet = getClient().get(key);
+			Entry entryGet = getClient(clientName).get(key);
 			assertArrayEquals(key, entryGet.getKey());
 			assertArrayEquals(version, entryGet.getEntryMetadata().getVersion());
 			assertArrayEquals(value, entryGet.getValue());
@@ -557,8 +556,8 @@ public class AdvancedAPITest extends IntegrationTestCase {
 	 * @throws KineticException
 	 *             if any internal error occurred.
 	 */
-	@Test
-	public void testPutForcedWithPersistOption_Flush() throws KineticException {
+	@Test(dataProvider = "transportProtocolOptions")
+	public void testPutForcedWithPersistOption_Flush(String clientName) throws KineticException {
 		PersistOption option = PersistOption.FLUSH;
 		Long start = System.nanoTime();
 
@@ -568,7 +567,7 @@ public class AdvancedAPITest extends IntegrationTestCase {
 			EntryMetadata entryMetadata = new EntryMetadata();
 			Entry versionedPut = new Entry(key, value, entryMetadata);
 
-			getClient().put(versionedPut, int32(i));
+			getClient(clientName).put(versionedPut, int32(i));
 		}
 
 		start = System.nanoTime();
@@ -583,9 +582,9 @@ public class AdvancedAPITest extends IntegrationTestCase {
 
 			Entry versionedPutForced = new Entry(key, value, entryMetadata);
 
-			getClient().putForced(versionedPutForced, option);
+			getClient(clientName).putForced(versionedPutForced, option);
 
-			Entry entryGet = getClient().get(key);
+			Entry entryGet = getClient(clientName).get(key);
 			assertArrayEquals(key, entryGet.getKey());
 			assertArrayEquals(version, entryGet.getEntryMetadata().getVersion());
 			assertArrayEquals(value, entryGet.getValue());
@@ -606,8 +605,8 @@ public class AdvancedAPITest extends IntegrationTestCase {
 	 *             if thread is interrupted, or the specified waiting time
 	 *             elapses.
 	 */
-	@Test
-	public void testPutForcedAsyncWithPersistOption_Async()
+	@Test(dataProvider = "transportProtocolOptions")
+	public void testPutForcedAsyncWithPersistOption_Async(String clientName)
 			throws UnsupportedEncodingException, KineticException,
 			InterruptedException {
 		PersistOption option = PersistOption.ASYNC;
@@ -643,7 +642,7 @@ public class AdvancedAPITest extends IntegrationTestCase {
 				}
 			});
 
-			getClient().putAsync(entryPut, newVersion, handler);
+			getClient(clientName).putAsync(entryPut, newVersion, handler);
 		}
 
 		waitForLatch(putSignal);
@@ -675,14 +674,14 @@ public class AdvancedAPITest extends IntegrationTestCase {
 				}
 			});
 
-			getClient().putForcedAsync(entryPut, option, handler);
+			getClient(clientName).putForcedAsync(entryPut, option, handler);
 		}
 
 		waitForLatch(putForcedSignal);
 		assertEquals(MAX_KEYS, putReturnList.size());
 
 		for (int i = 0; i < MAX_KEYS; i++) {
-			Entry getReturned = getClient().get(toByteArray(keySList.get(i)));
+			Entry getReturned = getClient(clientName).get(toByteArray(keySList.get(i)));
 
 			assertTrue(keySList.contains(new String(getReturned.getKey())));
 			assertTrue(valueSList.contains(new String(getReturned.getValue())));
@@ -707,8 +706,8 @@ public class AdvancedAPITest extends IntegrationTestCase {
 	 *             if thread is interrupted, or the specified waiting time
 	 *             elapses.
 	 */
-	@Test
-	public void testPutForcedAsyncWithPersistOption_Sync()
+	@Test(dataProvider = "transportProtocolOptions")
+	public void testPutForcedAsyncWithPersistOption_Sync(String clientName)
 			throws UnsupportedEncodingException, KineticException,
 			InterruptedException {
 		PersistOption option = PersistOption.SYNC;
@@ -744,7 +743,7 @@ public class AdvancedAPITest extends IntegrationTestCase {
 				}
 			});
 
-			getClient().putAsync(entryPut, newVersion, handler);
+			getClient(clientName).putAsync(entryPut, newVersion, handler);
 		}
 
 		waitForLatch(putSignal);
@@ -776,14 +775,14 @@ public class AdvancedAPITest extends IntegrationTestCase {
 				}
 			});
 
-			getClient().putForcedAsync(entryPut, option, handler);
+			getClient(clientName).putForcedAsync(entryPut, option, handler);
 		}
 
 		waitForLatch(putForcedSignal);
 		assertEquals(MAX_KEYS, putReturnList.size());
 
 		for (int i = 0; i < MAX_KEYS; i++) {
-			Entry getReturned = getClient().get(toByteArray(keySList.get(i)));
+			Entry getReturned = getClient(clientName).get(toByteArray(keySList.get(i)));
 
 			assertTrue(keySList.contains(new String(getReturned.getKey())));
 			assertTrue(valueSList.contains(new String(getReturned.getValue())));
@@ -808,8 +807,8 @@ public class AdvancedAPITest extends IntegrationTestCase {
 	 *             if thread is interrupted, or the specified waiting time
 	 *             elapses.
 	 */
-	@Test
-	public void testPutForcedAsyncWithPersistOption_Flush()
+	@Test(dataProvider = "transportProtocolOptions")
+	public void testPutForcedAsyncWithPersistOption_Flush(String clientName)
 			throws UnsupportedEncodingException, KineticException,
 			InterruptedException {
 		PersistOption option = PersistOption.FLUSH;
@@ -845,7 +844,7 @@ public class AdvancedAPITest extends IntegrationTestCase {
 				}
 			});
 
-			getClient().putAsync(entryPut, newVersion, handler);
+			getClient(clientName).putAsync(entryPut, newVersion, handler);
 		}
 
 		waitForLatch(putSignal);
@@ -877,14 +876,14 @@ public class AdvancedAPITest extends IntegrationTestCase {
 				}
 			});
 
-			getClient().putForcedAsync(entryPut, option, handler);
+			getClient(clientName).putForcedAsync(entryPut, option, handler);
 		}
 
 		waitForLatch(putForcedSignal);
 		assertEquals(MAX_KEYS, putReturnList.size());
 
 		for (int i = 0; i < MAX_KEYS; i++) {
-			Entry getReturned = getClient().get(toByteArray(keySList.get(i)));
+			Entry getReturned = getClient(clientName).get(toByteArray(keySList.get(i)));
 
 			assertTrue(keySList.contains(new String(getReturned.getKey())));
 			assertTrue(valueSList.contains(new String(getReturned.getValue())));
@@ -906,8 +905,8 @@ public class AdvancedAPITest extends IntegrationTestCase {
 	 * @throws KineticException
 	 *             if any internal error occurred.
 	 */
-	@Test
-	public void testDeleteWithPersitOption_Async() throws KineticException {
+	@Test(dataProvider = "transportProtocolOptions")
+	public void testDeleteWithPersitOption_Async(String clientName) throws KineticException {
 		PersistOption option = PersistOption.ASYNC;
 
 		Long start = System.nanoTime();
@@ -918,12 +917,12 @@ public class AdvancedAPITest extends IntegrationTestCase {
 			EntryMetadata entryMetadata = new EntryMetadata();
 			Entry versionedPut = new Entry(key, value, entryMetadata);
 
-			Entry versionedGet = getClient().put(versionedPut, int32(i));
-			assertTrue(getClient().delete(versionedGet, option));
+			Entry versionedGet = getClient(clientName).put(versionedPut, int32(i));
+			assertTrue(getClient(clientName).delete(versionedGet, option));
 		}
 
 		for (int i = 0; i < MAX_KEYS; i++) {
-			assertKeyNotFound(getClient(), toByteArray(KEY_PREFIX + i));
+			assertKeyNotFound(getClient(clientName), toByteArray(KEY_PREFIX + i));
 		}
 
 		logger.info(this.testEndInfo());
@@ -938,8 +937,8 @@ public class AdvancedAPITest extends IntegrationTestCase {
 	 * @throws KineticException
 	 *             if any internal error occurred.
 	 */
-	@Test
-	public void testDeleteWithPersitOption_Sync() throws KineticException {
+	@Test(dataProvider = "transportProtocolOptions")
+	public void testDeleteWithPersitOption_Sync(String clientName) throws KineticException {
 		PersistOption option = PersistOption.SYNC;
 
 		Long start = System.nanoTime();
@@ -950,12 +949,12 @@ public class AdvancedAPITest extends IntegrationTestCase {
 			EntryMetadata entryMetadata = new EntryMetadata();
 			Entry versionedPut = new Entry(key, value, entryMetadata);
 
-			Entry versionedGet = getClient().put(versionedPut, int32(i));
-			assertTrue(getClient().delete(versionedGet, option));
+			Entry versionedGet = getClient(clientName).put(versionedPut, int32(i));
+			assertTrue(getClient(clientName).delete(versionedGet, option));
 		}
 
 		for (int i = 0; i < MAX_KEYS; i++) {
-			assertKeyNotFound(getClient(), toByteArray(KEY_PREFIX + i));
+			assertKeyNotFound(getClient(clientName), toByteArray(KEY_PREFIX + i));
 		}
 
 		logger.info(this.testEndInfo());
@@ -970,8 +969,8 @@ public class AdvancedAPITest extends IntegrationTestCase {
 	 * @throws KineticException
 	 *             if any internal error occurred.
 	 */
-	@Test
-	public void testDeleteWithPersitOption_Flush() throws KineticException {
+	@Test(dataProvider = "transportProtocolOptions")
+	public void testDeleteWithPersitOption_Flush(String clientName) throws KineticException {
 		PersistOption option = PersistOption.FLUSH;
 
 		Long start = System.nanoTime();
@@ -982,12 +981,12 @@ public class AdvancedAPITest extends IntegrationTestCase {
 			EntryMetadata entryMetadata = new EntryMetadata();
 			Entry versionedPut = new Entry(key, value, entryMetadata);
 
-			Entry versionedGet = getClient().put(versionedPut, int32(i));
-			assertTrue(getClient().delete(versionedGet, option));
+			Entry versionedGet = getClient(clientName).put(versionedPut, int32(i));
+			assertTrue(getClient(clientName).delete(versionedGet, option));
 		}
 
 		for (int i = 0; i < MAX_KEYS; i++) {
-			assertKeyNotFound(getClient(), toByteArray(KEY_PREFIX + i));
+			assertKeyNotFound(getClient(clientName), toByteArray(KEY_PREFIX + i));
 		}
 
 		logger.info(this.testEndInfo());
@@ -1006,8 +1005,8 @@ public class AdvancedAPITest extends IntegrationTestCase {
 	 *             if thread is interrupted, or the specified waiting time
 	 *             elapses.
 	 */
-	@Test
-	public void testDeleteAsyncWithPersistOption_Async()
+	@Test(dataProvider = "transportProtocolOptions")
+	public void testDeleteAsyncWithPersistOption_Async(String clientName)
 			throws UnsupportedEncodingException, KineticException,
 			InterruptedException {
 		PersistOption option = PersistOption.ASYNC;
@@ -1041,7 +1040,7 @@ public class AdvancedAPITest extends IntegrationTestCase {
 				}
 			});
 
-			getClient().putAsync(entryPut, newVersion, handler);
+			getClient(clientName).putAsync(entryPut, newVersion, handler);
 		}
 		waitForLatch(putSignal);
 
@@ -1060,7 +1059,7 @@ public class AdvancedAPITest extends IntegrationTestCase {
 			entryMetadataDelete.setVersion(newVersion);
 			Entry deleteEntry = new Entry(key, value, entryMetadataDelete);
 
-			getClient().deleteAsync(deleteEntry, option, handler);
+			getClient(clientName).deleteAsync(deleteEntry, option, handler);
 		}
 		waitForLatch(deleteSignal);
 
@@ -1079,7 +1078,7 @@ public class AdvancedAPITest extends IntegrationTestCase {
 				}
 			});
 
-			getClient().getAsync(toByteArray(keySList.get(i)), handler);
+			getClient(clientName).getAsync(toByteArray(keySList.get(i)), handler);
 		}
 		waitForLatch(getSignal);
 
@@ -1103,8 +1102,8 @@ public class AdvancedAPITest extends IntegrationTestCase {
 	 *             if thread is interrupted, or the specified waiting time
 	 *             elapses.
 	 */
-	@Test
-	public void testDeleteAsyncWithPersistOption_Sync()
+	@Test(dataProvider = "transportProtocolOptions")
+	public void testDeleteAsyncWithPersistOption_Sync(String clientName)
 			throws UnsupportedEncodingException, KineticException,
 			InterruptedException {
 
@@ -1139,7 +1138,7 @@ public class AdvancedAPITest extends IntegrationTestCase {
 				}
 			});
 
-			getClient().putAsync(entryPut, newVersion, handler);
+			getClient(clientName).putAsync(entryPut, newVersion, handler);
 		}
 		waitForLatch(putSignal);
 
@@ -1158,7 +1157,7 @@ public class AdvancedAPITest extends IntegrationTestCase {
 			entryMetadataDelete.setVersion(newVersion);
 			Entry deleteEntry = new Entry(key, value, entryMetadataDelete);
 
-			getClient().deleteAsync(deleteEntry, option, handler);
+			getClient(clientName).deleteAsync(deleteEntry, option, handler);
 		}
 		waitForLatch(deleteSignal);
 
@@ -1177,7 +1176,7 @@ public class AdvancedAPITest extends IntegrationTestCase {
 				}
 			});
 
-			getClient().getAsync(toByteArray(keySList.get(i)), handler);
+			getClient(clientName).getAsync(toByteArray(keySList.get(i)), handler);
 		}
 		waitForLatch(getSignal);
 
@@ -1201,8 +1200,8 @@ public class AdvancedAPITest extends IntegrationTestCase {
 	 *             if thread is interrupted, or the specified waiting time
 	 *             elapses.
 	 */
-	@Test
-	public void testDeleteAsyncWithPersistOption_Flush()
+	@Test(dataProvider = "transportProtocolOptions")
+	public void testDeleteAsyncWithPersistOption_Flush(String clientName)
 			throws UnsupportedEncodingException, KineticException,
 			InterruptedException {
 		PersistOption option = PersistOption.FLUSH;
@@ -1236,7 +1235,7 @@ public class AdvancedAPITest extends IntegrationTestCase {
 				}
 			});
 
-			getClient().putAsync(entryPut, newVersion, handler);
+			getClient(clientName).putAsync(entryPut, newVersion, handler);
 		}
 		waitForLatch(putSignal);
 
@@ -1255,7 +1254,7 @@ public class AdvancedAPITest extends IntegrationTestCase {
 			entryMetadataDelete.setVersion(newVersion);
 			Entry deleteEntry = new Entry(key, value, entryMetadataDelete);
 
-			getClient().deleteAsync(deleteEntry, option, handler);
+			getClient(clientName).deleteAsync(deleteEntry, option, handler);
 		}
 		waitForLatch(deleteSignal);
 
@@ -1274,7 +1273,7 @@ public class AdvancedAPITest extends IntegrationTestCase {
 				}
 			});
 
-			getClient().getAsync(toByteArray(keySList.get(i)), handler);
+			getClient(clientName).getAsync(toByteArray(keySList.get(i)), handler);
 		}
 		waitForLatch(getSignal);
 
@@ -1294,8 +1293,8 @@ public class AdvancedAPITest extends IntegrationTestCase {
 	 * @throws KineticException
 	 *             if any internal error occurred.
 	 */
-	@Test
-	public void testDeleteForcedWithPersitOption_Async()
+	@Test(dataProvider = "transportProtocolOptions")
+	public void testDeleteForcedWithPersitOption_Async(String clientName)
 			throws KineticException {
 		PersistOption option = PersistOption.ASYNC;
 		Long start = System.nanoTime();
@@ -1306,10 +1305,10 @@ public class AdvancedAPITest extends IntegrationTestCase {
 			EntryMetadata entryMetadata = new EntryMetadata();
 			Entry versionedPut = new Entry(key, value, entryMetadata);
 
-			getClient().put(versionedPut, int32(i));
+			getClient(clientName).put(versionedPut, int32(i));
 
-			assertTrue(getClient().deleteForced(key, option));
-			assertKeyNotFound(getClient(), key);
+			assertTrue(getClient(clientName).deleteForced(key, option));
+			assertKeyNotFound(getClient(clientName), key);
 		}
 
 		logger.info(this.testEndInfo());
@@ -1324,8 +1323,8 @@ public class AdvancedAPITest extends IntegrationTestCase {
 	 * @throws KineticException
 	 *             if any internal error occurred.
 	 */
-	@Test
-	public void testDeleteForcedWithPersitOption_Sync() throws KineticException {
+	@Test(dataProvider = "transportProtocolOptions")
+	public void testDeleteForcedWithPersitOption_Sync(String clientName) throws KineticException {
 		PersistOption option = PersistOption.SYNC;
 		Long start = System.nanoTime();
 
@@ -1335,10 +1334,10 @@ public class AdvancedAPITest extends IntegrationTestCase {
 			EntryMetadata entryMetadata = new EntryMetadata();
 			Entry versionedPut = new Entry(key, value, entryMetadata);
 
-			getClient().put(versionedPut, int32(i));
+			getClient(clientName).put(versionedPut, int32(i));
 
-			assertTrue(getClient().deleteForced(key, option));
-			assertKeyNotFound(getClient(), key);
+			assertTrue(getClient(clientName).deleteForced(key, option));
+			assertKeyNotFound(getClient(clientName), key);
 		}
 
 		logger.info(this.testEndInfo());
@@ -1353,8 +1352,8 @@ public class AdvancedAPITest extends IntegrationTestCase {
 	 * @throws KineticException
 	 *             if any internal error occurred.
 	 */
-	@Test
-	public void testDeleteForcedWithPersitOption_Flush()
+	@Test(dataProvider = "transportProtocolOptions")
+	public void testDeleteForcedWithPersitOption_Flush(String clientName)
 			throws KineticException {
 		PersistOption option = PersistOption.FLUSH;
 		Long start = System.nanoTime();
@@ -1365,10 +1364,10 @@ public class AdvancedAPITest extends IntegrationTestCase {
 			EntryMetadata entryMetadata = new EntryMetadata();
 			Entry versionedPut = new Entry(key, value, entryMetadata);
 
-			getClient().put(versionedPut, int32(i));
+			getClient(clientName).put(versionedPut, int32(i));
 
-			assertTrue(getClient().deleteForced(key, option));
-			assertKeyNotFound(getClient(), key);
+			assertTrue(getClient(clientName).deleteForced(key, option));
+			assertKeyNotFound(getClient(clientName), key);
 		}
 
 		logger.info(this.testEndInfo());
@@ -1386,8 +1385,8 @@ public class AdvancedAPITest extends IntegrationTestCase {
 	 *             if thread is interrupted, or the specified waiting time
 	 *             elapses.
 	 */
-	@Test
-	public void testDeleteForcedAsyncWithPersistOption_Async()
+	@Test(dataProvider = "transportProtocolOptions")
+	public void testDeleteForcedAsyncWithPersistOption_Async(String clientName)
 			throws UnsupportedEncodingException, KineticException,
 			InterruptedException {
 		PersistOption option = PersistOption.ASYNC;
@@ -1423,7 +1422,7 @@ public class AdvancedAPITest extends IntegrationTestCase {
 				}
 			});
 
-			getClient().putAsync(entryPut, newVersion, handler);
+			getClient(clientName).putAsync(entryPut, newVersion, handler);
 		}
 
 		waitForLatch(putSignal);
@@ -1442,7 +1441,7 @@ public class AdvancedAPITest extends IntegrationTestCase {
 				}
 			});
 
-			getClient().deleteForcedAsync(key, option, handler);
+			getClient(clientName).deleteForcedAsync(key, option, handler);
 		}
 
 		waitForLatch(deleteForcedSignal);
@@ -1451,7 +1450,7 @@ public class AdvancedAPITest extends IntegrationTestCase {
 		for (int i = 0; i < MAX_KEYS; i++) {
 			assertTrue(deleteReturnList.get(i));
 
-			Entry getReturned = getClient().get(toByteArray(keySList.get(i)));
+			Entry getReturned = getClient(clientName).get(toByteArray(keySList.get(i)));
 
 			assertNull(getReturned);
 		}
@@ -1471,8 +1470,8 @@ public class AdvancedAPITest extends IntegrationTestCase {
 	 *             if thread is interrupted, or the specified waiting time
 	 *             elapses.
 	 */
-	@Test
-	public void testDeleteForcedAsyncWithPersistOption_Sync()
+	@Test(dataProvider = "transportProtocolOptions")
+	public void testDeleteForcedAsyncWithPersistOption_Sync(String clientName)
 			throws UnsupportedEncodingException, KineticException,
 			InterruptedException {
 		PersistOption option = PersistOption.SYNC;
@@ -1508,7 +1507,7 @@ public class AdvancedAPITest extends IntegrationTestCase {
 				}
 			});
 
-			getClient().putAsync(entryPut, newVersion, handler);
+			getClient(clientName).putAsync(entryPut, newVersion, handler);
 		}
 
 		waitForLatch(putSignal);
@@ -1527,7 +1526,7 @@ public class AdvancedAPITest extends IntegrationTestCase {
 				}
 			});
 
-			getClient().deleteForcedAsync(key, option, handler);
+			getClient(clientName).deleteForcedAsync(key, option, handler);
 		}
 
 		waitForLatch(deleteForcedSignal);
@@ -1536,7 +1535,7 @@ public class AdvancedAPITest extends IntegrationTestCase {
 		for (int i = 0; i < MAX_KEYS; i++) {
 			assertTrue(deleteReturnList.get(i));
 
-			Entry getReturned = getClient().get(toByteArray(keySList.get(i)));
+			Entry getReturned = getClient(clientName).get(toByteArray(keySList.get(i)));
 
 			assertNull(getReturned);
 		}
@@ -1556,8 +1555,8 @@ public class AdvancedAPITest extends IntegrationTestCase {
 	 *             if thread is interrupted, or the specified waiting time
 	 *             elapses.
 	 */
-	@Test
-	public void testDeleteForcedAsyncWithPersistOption_Flush()
+	@Test(dataProvider = "transportProtocolOptions")
+	public void testDeleteForcedAsyncWithPersistOption_Flush(String clientName)
 			throws UnsupportedEncodingException, KineticException,
 			InterruptedException {
 		PersistOption option = PersistOption.FLUSH;
@@ -1593,7 +1592,7 @@ public class AdvancedAPITest extends IntegrationTestCase {
 				}
 			});
 
-			getClient().putAsync(entryPut, newVersion, handler);
+			getClient(clientName).putAsync(entryPut, newVersion, handler);
 		}
 
 		waitForLatch(putSignal);
@@ -1612,7 +1611,7 @@ public class AdvancedAPITest extends IntegrationTestCase {
 				}
 			});
 
-			getClient().deleteForcedAsync(key, option, handler);
+			getClient(clientName).deleteForcedAsync(key, option, handler);
 		}
 
 		waitForLatch(deleteForcedSignal);
@@ -1621,7 +1620,7 @@ public class AdvancedAPITest extends IntegrationTestCase {
 		for (int i = 0; i < MAX_KEYS; i++) {
 			assertTrue(deleteReturnList.get(i));
 
-			Entry getReturned = getClient().get(toByteArray(keySList.get(i)));
+			Entry getReturned = getClient(clientName).get(toByteArray(keySList.get(i)));
 
 			assertNull(getReturned);
 		}
@@ -1640,15 +1639,15 @@ public class AdvancedAPITest extends IntegrationTestCase {
 	 * @throws KineticException
 	 *             if any internal error occurred.
 	 */
-	@Test
-	public void testGetKeyRangeReverse_ForStartKeyAndEndKeyInclusive_WithExpectSizeLessThanRealSize()
+	@Test(dataProvider = "transportProtocolOptions")
+	public void testGetKeyRangeReverse_ForStartKeyAndEndKeyInclusive_WithExpectSizeLessThanRealSize(String clientName)
 			throws KineticException {
 		int startIndex = 0;
 		int endIndex = 17;
 		int expectSize = endIndex - startIndex + 1;
-		List<Entry> vPutList = prepareKeysForGetRangeReversed();
+		List<Entry> vPutList = prepareKeysForGetRangeReversed(clientName);
 
-		List<byte[]> keys = getClient().getKeyRangeReversed(
+		List<byte[]> keys = getClient(clientName).getKeyRangeReversed(
 				vPutList.get(startIndex).getKey(), true,
 				vPutList.get(endIndex).getKey(), true, expectSize);
 		int pos = 0;
@@ -1672,15 +1671,15 @@ public class AdvancedAPITest extends IntegrationTestCase {
 	 * @throws KineticException
 	 *             if any internal error occurred.
 	 */
-	@Test
-	public void testGetKeyRangeReverse_ForStartKeyAndEndKeyExclusive_WithExpectSizeLessThanRealSize()
+	@Test(dataProvider = "transportProtocolOptions")
+	public void testGetKeyRangeReverse_ForStartKeyAndEndKeyExclusive_WithExpectSizeLessThanRealSize(String clientName)
 			throws KineticException {
 		int startIndex = 0;
 		int endIndex = 17;
 		int expectSize = endIndex - startIndex + 1;
-		List<Entry> vPutList = prepareKeysForGetRangeReversed();
+		List<Entry> vPutList = prepareKeysForGetRangeReversed(clientName);
 
-		List<byte[]> keys = getClient().getKeyRangeReversed(
+		List<byte[]> keys = getClient(clientName).getKeyRangeReversed(
 				vPutList.get(startIndex).getKey(), false,
 				vPutList.get(endIndex).getKey(), false, expectSize);
 		int pos = 0;
@@ -1704,15 +1703,15 @@ public class AdvancedAPITest extends IntegrationTestCase {
 	 * @throws KineticException
 	 *             if any internal error occurred.
 	 */
-	@Test
-	public void testGetKeyRangeReverse_ForStartKeyInclusiveAndEndKeyExclusive_WithExpectSizeLessThanRealSize()
+	@Test(dataProvider = "transportProtocolOptions")
+	public void testGetKeyRangeReverse_ForStartKeyInclusiveAndEndKeyExclusive_WithExpectSizeLessThanRealSize(String clientName)
 			throws KineticException {
 		int startIndex = 0;
 		int endIndex = 17;
 		int expectSize = endIndex - startIndex + 1;
-		List<Entry> vPutList = prepareKeysForGetRangeReversed();
+		List<Entry> vPutList = prepareKeysForGetRangeReversed(clientName);
 
-		List<byte[]> keys = getClient().getKeyRangeReversed(
+		List<byte[]> keys = getClient(clientName).getKeyRangeReversed(
 				vPutList.get(startIndex).getKey(), true,
 				vPutList.get(endIndex).getKey(), false, expectSize);
 		int pos = 0;
@@ -1736,15 +1735,15 @@ public class AdvancedAPITest extends IntegrationTestCase {
 	 * @throws KineticException
 	 *             if any internal error occurred.
 	 */
-	@Test
-	public void testGetKeyRangeReverse_ForStartKeyExclusiveAndEndKeyInclusive_WithExpectSizeLessThanRealSize()
+	@Test(dataProvider = "transportProtocolOptions")
+	public void testGetKeyRangeReverse_ForStartKeyExclusiveAndEndKeyInclusive_WithExpectSizeLessThanRealSize(String clientName)
 			throws KineticException {
 		int startIndex = 0;
 		int endIndex = 17;
 		int expectSize = endIndex - startIndex + 1;
-		List<Entry> vPutList = prepareKeysForGetRangeReversed();
+		List<Entry> vPutList = prepareKeysForGetRangeReversed(clientName);
 
-		List<byte[]> keys = getClient().getKeyRangeReversed(
+		List<byte[]> keys = getClient(clientName).getKeyRangeReversed(
 				vPutList.get(startIndex).getKey(), false,
 				vPutList.get(endIndex).getKey(), true, expectSize);
 		int pos = 0;
@@ -1767,15 +1766,15 @@ public class AdvancedAPITest extends IntegrationTestCase {
 	 * @throws KineticException
 	 *             if any internal error occurred.
 	 */
-	@Test
-	public void testGetKeyRangeReverse_ForStartKeyAndEndKeyInclusive_WithExpectSizeLessThanStartToEndKeySize()
+	@Test(dataProvider = "transportProtocolOptions")
+	public void testGetKeyRangeReverse_ForStartKeyAndEndKeyInclusive_WithExpectSizeLessThanStartToEndKeySize(String clientName)
 			throws KineticException {
 		int startIndex = 0;
 		int endIndex = 17;
 		int expectSize = endIndex - startIndex - 9;
-		List<Entry> vPutList = prepareKeysForGetRangeReversed();
+		List<Entry> vPutList = prepareKeysForGetRangeReversed(clientName);
 
-		List<byte[]> keys = getClient().getKeyRangeReversed(
+		List<byte[]> keys = getClient(clientName).getKeyRangeReversed(
 				vPutList.get(startIndex).getKey(), true,
 				vPutList.get(endIndex).getKey(), true, expectSize);
 		int pos = 0;
@@ -1798,15 +1797,15 @@ public class AdvancedAPITest extends IntegrationTestCase {
 	 * @throws KineticException
 	 *             if any internal error occurred.
 	 */
-	@Test
-	public void testGetKeyRangeReverse_ForStartKeyInclusiveEndKeyExclusive_WithExpectSizeLessThanStartToEndKeySize()
+	@Test(dataProvider = "transportProtocolOptions")
+	public void testGetKeyRangeReverse_ForStartKeyInclusiveEndKeyExclusive_WithExpectSizeLessThanStartToEndKeySize(String clientName)
 			throws KineticException {
 		int startIndex = 0;
 		int endIndex = 17;
 		int expectSize = endIndex - startIndex - 9;
-		List<Entry> vPutList = prepareKeysForGetRangeReversed();
+		List<Entry> vPutList = prepareKeysForGetRangeReversed(clientName);
 
-		List<byte[]> keys = getClient().getKeyRangeReversed(
+		List<byte[]> keys = getClient(clientName).getKeyRangeReversed(
 				vPutList.get(startIndex).getKey(), true,
 				vPutList.get(endIndex).getKey(), false, expectSize);
 		int pos = 0;
@@ -1829,15 +1828,15 @@ public class AdvancedAPITest extends IntegrationTestCase {
 	 * @throws KineticException
 	 *             if any internal error occurred.
 	 */
-	@Test
-	public void testGetKeyRangeReverse_ForStartKeyExclusiveEndKeyInclusive_WithExpectSizeLessThanStartToEndKeySize()
+	@Test(dataProvider = "transportProtocolOptions")
+	public void testGetKeyRangeReverse_ForStartKeyExclusiveEndKeyInclusive_WithExpectSizeLessThanStartToEndKeySize(String clientName)
 			throws KineticException {
 		int startIndex = 0;
 		int endIndex = 17;
 		int expectSize = endIndex - startIndex - 9;
-		List<Entry> vPutList = prepareKeysForGetRangeReversed();
+		List<Entry> vPutList = prepareKeysForGetRangeReversed(clientName);
 
-		List<byte[]> keys = getClient().getKeyRangeReversed(
+		List<byte[]> keys = getClient(clientName).getKeyRangeReversed(
 				vPutList.get(startIndex).getKey(), false,
 				vPutList.get(endIndex).getKey(), true, expectSize);
 		int pos = 0;
@@ -1860,15 +1859,15 @@ public class AdvancedAPITest extends IntegrationTestCase {
 	 * @throws KineticException
 	 *             if any internal error occurred.
 	 */
-	@Test
-	public void testGetKeyRangeReverse_ForStartKeyInclusiveEndKeyInclusive_WithExpectSizeLessThanStartToEndKeySize()
+	@Test(dataProvider = "transportProtocolOptions")
+	public void testGetKeyRangeReverse_ForStartKeyInclusiveEndKeyInclusive_WithExpectSizeLessThanStartToEndKeySize(String clientName)
 			throws KineticException {
 		int startIndex = 0;
 		int endIndex = 17;
 		int expectSize = endIndex - startIndex - 9;
-		List<Entry> vPutList = prepareKeysForGetRangeReversed();
+		List<Entry> vPutList = prepareKeysForGetRangeReversed(clientName);
 
-		List<byte[]> keys = getClient().getKeyRangeReversed(
+		List<byte[]> keys = getClient(clientName).getKeyRangeReversed(
 				vPutList.get(startIndex).getKey(), false,
 				vPutList.get(endIndex).getKey(), false, expectSize);
 		int pos = 0;
@@ -1891,15 +1890,15 @@ public class AdvancedAPITest extends IntegrationTestCase {
 	 * @throws KineticException
 	 *             if any internal error occurred.
 	 */
-	@Test
-	public void testGetKeyRangeReverse_ForStartKeyAndEndKeyInclusive_WithExpectSizeBiggerThanStartToEndKeySize()
+	@Test(dataProvider = "transportProtocolOptions")
+	public void testGetKeyRangeReverse_ForStartKeyAndEndKeyInclusive_WithExpectSizeBiggerThanStartToEndKeySize(String clientName)
 			throws KineticException {
 		int startIndex = 0;
 		int endIndex = 17;
 		int expectSize = endIndex - startIndex + 5;
-		List<Entry> vPutList = prepareKeysForGetRangeReversed();
+		List<Entry> vPutList = prepareKeysForGetRangeReversed(clientName);
 
-		List<byte[]> keys = getClient().getKeyRangeReversed(
+		List<byte[]> keys = getClient(clientName).getKeyRangeReversed(
 				vPutList.get(startIndex).getKey(), true,
 				vPutList.get(endIndex).getKey(), true, expectSize);
 		int pos = 0;
@@ -1922,15 +1921,15 @@ public class AdvancedAPITest extends IntegrationTestCase {
 	 * @throws KineticException
 	 *             if any internal error occurred.
 	 */
-	@Test
-	public void testGetKeyRangeReverse_ForStartKeyInclusiveEndKeyExclusive_WithExpectSizeBiggerThanStartToEndKeySize()
+	@Test(dataProvider = "transportProtocolOptions")
+	public void testGetKeyRangeReverse_ForStartKeyInclusiveEndKeyExclusive_WithExpectSizeBiggerThanStartToEndKeySize(String clientName)
 			throws KineticException {
 		int startIndex = 0;
 		int endIndex = 17;
 		int expectSize = endIndex - startIndex + 5;
-		List<Entry> vPutList = prepareKeysForGetRangeReversed();
+		List<Entry> vPutList = prepareKeysForGetRangeReversed(clientName);
 
-		List<byte[]> keys = getClient().getKeyRangeReversed(
+		List<byte[]> keys = getClient(clientName).getKeyRangeReversed(
 				vPutList.get(startIndex).getKey(), true,
 				vPutList.get(endIndex).getKey(), false, expectSize);
 		int pos = 0;
@@ -1953,15 +1952,15 @@ public class AdvancedAPITest extends IntegrationTestCase {
 	 * @throws KineticException
 	 *             if any internal error occurred.
 	 */
-	@Test
-	public void testGetKeyRangeReverse_ForStartKeyExclusiveEndKeyInclusive_WithExpectSizeBiggerThanStartToEndKeySize()
+	@Test(dataProvider = "transportProtocolOptions")
+	public void testGetKeyRangeReverse_ForStartKeyExclusiveEndKeyInclusive_WithExpectSizeBiggerThanStartToEndKeySize(String clientName)
 			throws KineticException {
 		int startIndex = 0;
 		int endIndex = 17;
 		int expectSize = endIndex - startIndex + 5;
-		List<Entry> vPutList = prepareKeysForGetRangeReversed();
+		List<Entry> vPutList = prepareKeysForGetRangeReversed(clientName);
 
-		List<byte[]> keys = getClient().getKeyRangeReversed(
+		List<byte[]> keys = getClient(clientName).getKeyRangeReversed(
 				vPutList.get(startIndex).getKey(), false,
 				vPutList.get(endIndex).getKey(), true, expectSize);
 		int pos = 0;
@@ -1984,15 +1983,15 @@ public class AdvancedAPITest extends IntegrationTestCase {
 	 * @throws KineticException
 	 *             if any internal error occurred.
 	 */
-	@Test
-	public void testGetKeyRangeReverse_ForStartKeyExclusiveEndKeyExclusive_WithExpectSizeBiggerThanStartToEndKeySize()
+	@Test(dataProvider = "transportProtocolOptions")
+	public void testGetKeyRangeReverse_ForStartKeyExclusiveEndKeyExclusive_WithExpectSizeBiggerThanStartToEndKeySize(String clientName)
 			throws KineticException {
 		int startIndex = 0;
 		int endIndex = 17;
 		int expectSize = endIndex - startIndex + 5;
-		List<Entry> vPutList = prepareKeysForGetRangeReversed();
+		List<Entry> vPutList = prepareKeysForGetRangeReversed(clientName);
 
-		List<byte[]> keys = getClient().getKeyRangeReversed(
+		List<byte[]> keys = getClient(clientName).getKeyRangeReversed(
 				vPutList.get(startIndex).getKey(), false,
 				vPutList.get(endIndex).getKey(), false, expectSize);
 		int pos = 0;
@@ -2015,15 +2014,15 @@ public class AdvancedAPITest extends IntegrationTestCase {
 	 * @throws KineticException
 	 *             if any internal error occurred.
 	 */
-	@Test
-	public void testGetKeyRangeReverse_ForStartKeyAndEndKeyInclusive_WithExpectSizeEqualsRealSize()
+	@Test(dataProvider = "transportProtocolOptions")
+	public void testGetKeyRangeReverse_ForStartKeyAndEndKeyInclusive_WithExpectSizeEqualsRealSize(String clientName)
 			throws KineticException {
 		int startIndex = 0;
 		int endIndex = 19;
 		int expectSize = endIndex - startIndex + 1;
-		List<Entry> vPutList = prepareKeysForGetRangeReversed();
+		List<Entry> vPutList = prepareKeysForGetRangeReversed(clientName);
 
-		List<byte[]> keys = getClient().getKeyRangeReversed(
+		List<byte[]> keys = getClient(clientName).getKeyRangeReversed(
 				vPutList.get(startIndex).getKey(), true,
 				vPutList.get(endIndex).getKey(), true, expectSize);
 		int pos = 0;
@@ -2046,15 +2045,15 @@ public class AdvancedAPITest extends IntegrationTestCase {
 	 * @throws KineticException
 	 *             if any internal error occurred.
 	 */
-	@Test
-	public void testGetKeyRangeReverse_ForStartKeyAndEndKeyExclusive_WithExpectSizeEqualsRealSize()
+	@Test(dataProvider = "transportProtocolOptions")
+	public void testGetKeyRangeReverse_ForStartKeyAndEndKeyExclusive_WithExpectSizeEqualsRealSize(String clientName)
 			throws KineticException {
 		int startIndex = 0;
 		int endIndex = 19;
 		int expectSize = endIndex - startIndex + 1;
-		List<Entry> vPutList = prepareKeysForGetRangeReversed();
+		List<Entry> vPutList = prepareKeysForGetRangeReversed(clientName);
 
-		List<byte[]> keys = getClient().getKeyRangeReversed(
+		List<byte[]> keys = getClient(clientName).getKeyRangeReversed(
 				vPutList.get(startIndex).getKey(), false,
 				vPutList.get(endIndex).getKey(), false, expectSize);
 		int pos = 0;
@@ -2077,15 +2076,15 @@ public class AdvancedAPITest extends IntegrationTestCase {
 	 * @throws KineticException
 	 *             if any internal error occurred.
 	 */
-	@Test
-	public void testGetKeyRangeReverse_ForStartKeyInclusiveAndEndKeyExclusive_WithExpectSizeEqualsRealSize()
+	@Test(dataProvider = "transportProtocolOptions")
+	public void testGetKeyRangeReverse_ForStartKeyInclusiveAndEndKeyExclusive_WithExpectSizeEqualsRealSize(String clientName)
 			throws KineticException {
 		int startIndex = 0;
 		int endIndex = 19;
 		int expectSize = endIndex - startIndex + 1;
-		List<Entry> vPutList = prepareKeysForGetRangeReversed();
+		List<Entry> vPutList = prepareKeysForGetRangeReversed(clientName);
 
-		List<byte[]> keys = getClient().getKeyRangeReversed(
+		List<byte[]> keys = getClient(clientName).getKeyRangeReversed(
 				vPutList.get(startIndex).getKey(), true,
 				vPutList.get(endIndex).getKey(), false, expectSize);
 		int pos = 0;
@@ -2108,15 +2107,15 @@ public class AdvancedAPITest extends IntegrationTestCase {
 	 * @throws KineticException
 	 *             if any internal error occurred.
 	 */
-	@Test
-	public void testGetKeyRangeReverse_ForStartKeyExclusiveAndEndKeyInclusive_WithExpectSizeEqualsRealSize()
+	@Test(dataProvider = "transportProtocolOptions")
+	public void testGetKeyRangeReverse_ForStartKeyExclusiveAndEndKeyInclusive_WithExpectSizeEqualsRealSize(String clientName)
 			throws KineticException {
 		int startIndex = 0;
 		int endIndex = 19;
 		int expectSize = endIndex - startIndex + 1;
-		List<Entry> vPutList = prepareKeysForGetRangeReversed();
+		List<Entry> vPutList = prepareKeysForGetRangeReversed(clientName);
 
-		List<byte[]> keys = getClient().getKeyRangeReversed(
+		List<byte[]> keys = getClient(clientName).getKeyRangeReversed(
 				vPutList.get(startIndex).getKey(), false,
 				vPutList.get(endIndex).getKey(), true, expectSize);
 		int pos = 0;
@@ -2139,15 +2138,15 @@ public class AdvancedAPITest extends IntegrationTestCase {
 	 * @throws KineticException
 	 *             if any internal error occurred.
 	 */
-	@Test
-	public void testGetKeyRangeReverse_ForStartKeyAndEndKeyInclusive_WithExpectSizeBiggerThanRealSize()
+	@Test(dataProvider = "transportProtocolOptions")
+	public void testGetKeyRangeReverse_ForStartKeyAndEndKeyInclusive_WithExpectSizeBiggerThanRealSize(String clientName)
 			throws KineticException {
 		int startIndex = 0;
 		int endIndex = 19;
 		int expectSize = endIndex - startIndex + 20;
-		List<Entry> vPutList = prepareKeysForGetRangeReversed();
+		List<Entry> vPutList = prepareKeysForGetRangeReversed(clientName);
 
-		List<byte[]> keys = getClient().getKeyRangeReversed(
+		List<byte[]> keys = getClient(clientName).getKeyRangeReversed(
 				vPutList.get(startIndex).getKey(), true,
 				vPutList.get(endIndex).getKey(), true, expectSize);
 		int pos = 0;
@@ -2170,15 +2169,15 @@ public class AdvancedAPITest extends IntegrationTestCase {
 	 * @throws KineticException
 	 *             if any internal error occurred.
 	 */
-	@Test
-	public void testGetKeyRangeReverse_ForStartKeyAndEndKeyExclusive_WithExpectSizeBiggerThanRealSize()
+	@Test(dataProvider = "transportProtocolOptions")
+	public void testGetKeyRangeReverse_ForStartKeyAndEndKeyExclusive_WithExpectSizeBiggerThanRealSize(String clientName)
 			throws KineticException {
 		int startIndex = 0;
 		int endIndex = 19;
 		int expectSize = endIndex - startIndex + 20;
-		List<Entry> vPutList = prepareKeysForGetRangeReversed();
+		List<Entry> vPutList = prepareKeysForGetRangeReversed(clientName);
 
-		List<byte[]> keys = getClient().getKeyRangeReversed(
+		List<byte[]> keys = getClient(clientName).getKeyRangeReversed(
 				vPutList.get(startIndex).getKey(), false,
 				vPutList.get(endIndex).getKey(), false, expectSize);
 		int pos = 0;
@@ -2201,15 +2200,15 @@ public class AdvancedAPITest extends IntegrationTestCase {
 	 * @throws KineticException
 	 *             if any internal error occurred.
 	 */
-	@Test
-	public void testGetKeyRangeReverse_ForStartKeyInclusiveAndEndKeyExclusive_WithExpectSizeBiggerThanRealSize()
+	@Test(dataProvider = "transportProtocolOptions")
+	public void testGetKeyRangeReverse_ForStartKeyInclusiveAndEndKeyExclusive_WithExpectSizeBiggerThanRealSize(String clientName)
 			throws KineticException {
 		int startIndex = 0;
 		int endIndex = 19;
 		int expectSize = endIndex - startIndex + 20;
-		List<Entry> vPutList = prepareKeysForGetRangeReversed();
+		List<Entry> vPutList = prepareKeysForGetRangeReversed(clientName);
 
-		List<byte[]> keys = getClient().getKeyRangeReversed(
+		List<byte[]> keys = getClient(clientName).getKeyRangeReversed(
 				vPutList.get(startIndex).getKey(), true,
 				vPutList.get(endIndex).getKey(), false, expectSize);
 		int pos = 0;
@@ -2232,15 +2231,15 @@ public class AdvancedAPITest extends IntegrationTestCase {
 	 * @throws KineticException
 	 *             if any internal error occurred.
 	 */
-	@Test
-	public void testGetKeyRangeWithReverse_ForStartKeyExclusiveAndEndKeyInclusive_WithExpectSizeBiggerThanRealSize()
+	@Test(dataProvider = "transportProtocolOptions")
+	public void testGetKeyRangeWithReverse_ForStartKeyExclusiveAndEndKeyInclusive_WithExpectSizeBiggerThanRealSize(String clientName)
 			throws KineticException {
 		int startIndex = 0;
 		int endIndex = 19;
 		int expectSize = endIndex - startIndex + 20;
-		List<Entry> vPutList = prepareKeysForGetRangeReversed();
+		List<Entry> vPutList = prepareKeysForGetRangeReversed(clientName);
 
-		List<byte[]> keys = getClient().getKeyRangeReversed(
+		List<byte[]> keys = getClient(clientName).getKeyRangeReversed(
 				vPutList.get(startIndex).getKey(), false,
 				vPutList.get(endIndex).getKey(), true, expectSize);
 		int pos = 0;
@@ -2266,8 +2265,8 @@ public class AdvancedAPITest extends IntegrationTestCase {
 	 *             if thread is interrupted, or the specified waiting time
 	 *             elapses.
 	 */
-	@Test
-	public void testGetKeyRangeReversedAsync_ReturnsCorrectResults_ForStartEndKeyInclusive()
+	@Test(dataProvider = "transportProtocolOptions")
+	public void testGetKeyRangeReversedAsync_ReturnsCorrectResults_ForStartEndKeyInclusive(String clientName)
 			throws KineticException, InterruptedException {
 		List<byte[]> keys = Arrays.asList(toByteArray("00"), toByteArray("01"),
 				toByteArray("02"), toByteArray("03"), toByteArray("04"),
@@ -2291,7 +2290,7 @@ public class AdvancedAPITest extends IntegrationTestCase {
 				}
 			});
 
-			getClient().putAsync(new Entry(key, key), newVersion, handler);
+			getClient(clientName).putAsync(new Entry(key, key), newVersion, handler);
 		}
 
 		waitForLatch(putSignal);
@@ -2307,7 +2306,7 @@ public class AdvancedAPITest extends IntegrationTestCase {
 			}
 		});
 
-		getClient().getKeyRangeReversedAsync(keys.get(0), true,
+		getClient(clientName).getKeyRangeReversedAsync(keys.get(0), true,
 				keys.get(keys.size() - 1), true, keys.size(), handler);
 
 		waitForLatch(getKeyRangeSignal);
@@ -2338,8 +2337,8 @@ public class AdvancedAPITest extends IntegrationTestCase {
 	 *             if thread is interrupted, or the specified waiting time
 	 *             elapses.
 	 */
-	@Test
-	public void testGetKeyRangeReversedAsync_ReturnsCorrectResults_ForStartEndKeyExclusive()
+	@Test(dataProvider = "transportProtocolOptions")
+	public void testGetKeyRangeReversedAsync_ReturnsCorrectResults_ForStartEndKeyExclusive(String clientName)
 			throws KineticException, InterruptedException {
 		List<byte[]> keys = Arrays.asList(toByteArray("00"), toByteArray("01"),
 				toByteArray("02"), toByteArray("03"), toByteArray("04"),
@@ -2363,7 +2362,7 @@ public class AdvancedAPITest extends IntegrationTestCase {
 				}
 			});
 
-			getClient().putAsync(new Entry(key, key), newVersion, handler);
+			getClient(clientName).putAsync(new Entry(key, key), newVersion, handler);
 		}
 
 		waitForLatch(putSignal);
@@ -2379,7 +2378,7 @@ public class AdvancedAPITest extends IntegrationTestCase {
 			}
 		});
 
-		getClient().getKeyRangeReversedAsync(keys.get(0), false,
+		getClient(clientName).getKeyRangeReversedAsync(keys.get(0), false,
 				keys.get(keys.size() - 1), false, keys.size(), handler);
 
 		waitForLatch(getKeyRangeSignal);
@@ -2409,8 +2408,8 @@ public class AdvancedAPITest extends IntegrationTestCase {
 	 *             if thread is interrupted, or the specified waiting time
 	 *             elapses.
 	 */
-	@Test
-	public void testGetKeyRangeReversedAsync_ReturnsCorrectResults_ForStartInclusiveEndExclusive()
+	@Test(dataProvider = "transportProtocolOptions")
+	public void testGetKeyRangeReversedAsync_ReturnsCorrectResults_ForStartInclusiveEndExclusive(String clientName)
 			throws KineticException, InterruptedException {
 		List<byte[]> keys = Arrays.asList(toByteArray("00"), toByteArray("01"),
 				toByteArray("02"), toByteArray("03"), toByteArray("04"),
@@ -2434,7 +2433,7 @@ public class AdvancedAPITest extends IntegrationTestCase {
 				}
 			});
 
-			getClient().putAsync(new Entry(key, key), newVersion, handler);
+			getClient(clientName).putAsync(new Entry(key, key), newVersion, handler);
 		}
 
 		waitForLatch(putSignal);
@@ -2450,7 +2449,7 @@ public class AdvancedAPITest extends IntegrationTestCase {
 			}
 		});
 
-		getClient().getKeyRangeReversedAsync(keys.get(0), true,
+		getClient(clientName).getKeyRangeReversedAsync(keys.get(0), true,
 				keys.get(keys.size() - 1), false, keys.size(), handler);
 
 		waitForLatch(getKeyRangeSignal);
@@ -2480,8 +2479,8 @@ public class AdvancedAPITest extends IntegrationTestCase {
 	 *             if thread is interrupted, or the specified waiting time
 	 *             elapses.
 	 */
-	@Test
-	public void testGetKeyRangeReversedAsync_ReturnsCorrectResults_ForStartExclusiveEndInclusive()
+	@Test(dataProvider = "transportProtocolOptions")
+	public void testGetKeyRangeReversedAsync_ReturnsCorrectResults_ForStartExclusiveEndInclusive(String clientName)
 			throws KineticException, InterruptedException {
 		List<byte[]> keys = Arrays.asList(toByteArray("00"), toByteArray("01"),
 				toByteArray("02"), toByteArray("03"), toByteArray("04"),
@@ -2505,7 +2504,7 @@ public class AdvancedAPITest extends IntegrationTestCase {
 				}
 			});
 
-			getClient().putAsync(new Entry(key, key), newVersion, handler);
+			getClient(clientName).putAsync(new Entry(key, key), newVersion, handler);
 		}
 
 		waitForLatch(putSignal);
@@ -2521,7 +2520,7 @@ public class AdvancedAPITest extends IntegrationTestCase {
 			}
 		});
 
-		getClient().getKeyRangeReversedAsync(keys.get(0), false,
+		getClient(clientName).getKeyRangeReversedAsync(keys.get(0), false,
 				keys.get(keys.size() - 1), true, keys.size(), handler);
 
 		waitForLatch(getKeyRangeSignal);
@@ -2546,7 +2545,7 @@ public class AdvancedAPITest extends IntegrationTestCase {
 	 * @throws KineticException
 	 *             if any internal error occurred.
 	 */
-	private List<Entry> prepareKeysForGetRangeReversed()
+	private List<Entry> prepareKeysForGetRangeReversed(String clientName)
 			throws KineticException {
 		int keyCount = 20;
 
@@ -2562,7 +2561,7 @@ public class AdvancedAPITest extends IntegrationTestCase {
 			Entry v = new Entry(toByteArray(key), toByteArray(value),
 					entryMetadata);
 
-			Entry vIn = getClient().put(v, version);
+			Entry vIn = getClient(clientName).put(v, version);
 			vPutList.add(vIn);
 		}
 

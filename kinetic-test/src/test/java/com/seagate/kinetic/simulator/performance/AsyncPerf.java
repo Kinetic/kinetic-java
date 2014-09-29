@@ -19,10 +19,9 @@
  */
 package com.seagate.kinetic.simulator.performance;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
+import static org.testng.AssertJUnit.assertEquals;
+import static org.testng.AssertJUnit.assertTrue;
+import org.testng.Assert;
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -241,9 +240,9 @@ public class AsyncPerf {
 		try {
 			versionedEntry = kineticClient.get(key);
 		} catch (KineticException e) {
-			fail("get key " + new String(key) + " failed, " + e.getMessage());
+			Assert.fail("get key " + new String(key) + " failed, " + e.getMessage());
 		} catch (Exception e) {
-			fail("get key " + new String(key) + " failed, " + e.getMessage());
+			Assert.fail("get key " + new String(key) + " failed, " + e.getMessage());
 		}
 
 		if (null != versionedEntry && null != versionedEntry.getKey()) {
@@ -251,10 +250,10 @@ public class AsyncPerf {
 				assertTrue(kineticClient.delete(versionedEntry));
 				assertEquals(null, kineticClient.get(key));
 			} catch (KineticException e) {
-				fail("delete key " + new String(key) + " failed, "
+				Assert.fail("delete key " + new String(key) + " failed, "
 						+ e.getMessage());
 			} catch (Exception e) {
-				fail("delete key " + new String(key) + " failed, "
+				Assert.fail("delete key " + new String(key) + " failed, "
 						+ e.getMessage());
 			}
 		} else {

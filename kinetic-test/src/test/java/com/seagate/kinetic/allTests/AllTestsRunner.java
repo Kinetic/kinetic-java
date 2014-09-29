@@ -19,14 +19,14 @@
  */
 package com.seagate.kinetic.allTests;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Logger;
 
-import org.junit.runner.JUnitCore;
-import org.junit.runner.Result;
-import org.junit.runner.notification.Failure;
+import org.testng.TestNG;
+import org.testng.xml.XmlClass;
+import org.testng.xml.XmlSuite;
+import org.testng.xml.XmlTest;
 
-import com.seagate.kinetic.IntegrationTestLoggerFactory;
 import com.seagate.kinetic.advancedAPI.AdvancedAPITest;
 import com.seagate.kinetic.asyncAPI.KineticAsyncAPITest;
 import com.seagate.kinetic.basicAPI.KineticBasicAPITest;
@@ -193,34 +193,31 @@ import com.seagate.kinetic.performance.microPerfTest;
  * @see microPerfTest
  */
 public class AllTestsRunner {
-    private static final Logger logger = IntegrationTestLoggerFactory
-            .getLogger(AllTestsRunner.class.getName());
 
     public static void main(String[] args) {
-
-        Result result = JUnitCore
-                .runClasses(
-                        com.seagate.kinetic.adminAPI.KineticAdminTest.class,
-                        com.seagate.kinetic.advancedAPI.AdvancedAPITest.class,
-                        com.seagate.kinetic.asyncAPI.KineticAsyncAPITest.class,
-                        com.seagate.kinetic.basicAPI.KineticBasicAPITest.class,
-                        com.seagate.kinetic.boundary.AdvancedAPIBoundaryTest.class,
-                        com.seagate.kinetic.boundary.KineticBoundaryTest.class,
-                        com.seagate.kinetic.concurrent.KineticClientConcurrentTest.class,
-                        com.seagate.kinetic.concurrent.KineticPutConcurrentTest.class,
-                        com.seagate.kinetic.performance.microPerfTest.class);
-
-        List<Failure> failures = result.getFailures();
-        for (Failure failure : failures) {
-            logger.warning("status=failed;errormsg=" + failure.toString());
-        }
-
-        System.out.println("Test cases number: " + result.getRunCount());
-        System.out.println("Test cases failed number: "
-                + result.getFailureCount());
-        System.out
-                .println("Test cases run time: " + result.getRunTime() + "ms");
-
+        XmlSuite suite = new XmlSuite();
+        suite.setName("SmokeSuite");
+         
+        XmlTest test = new XmlTest(suite);
+        test.setName("SmokeTest");
+        List<XmlClass> classes = new ArrayList<XmlClass>();
+        classes.add(new XmlClass("com.seagate.kinetic.adminAPI.KineticAdminTest"));
+        classes.add(new XmlClass("com.seagate.kinetic.advancedAPI.AdvancedAPITest"));
+        classes.add(new XmlClass("com.seagate.kinetic.asyncAPI.KineticAsyncAPITest"));
+        classes.add(new XmlClass("com.seagate.kinetic.basicAPI.KineticBasicAPITest"));
+        classes.add(new XmlClass("com.seagate.kinetic.boundary.AdvancedAPIBoundaryTest"));
+        classes.add(new XmlClass("com.seagate.kinetic.boundary.KineticBoundaryTest"));
+        classes.add(new XmlClass("com.seagate.kinetic.concurrent.KineticClientConcurrentTest"));
+        classes.add(new XmlClass("com.seagate.kinetic.concurrent.KineticPutConcurrentTest"));
+        classes.add(new XmlClass("com.seagate.kinetic.performance.microPerfTest"));
+        test.setXmlClasses(classes) ;
+        
+        List<XmlSuite> suites = new ArrayList<XmlSuite>();
+        suites.add(suite);
+        TestNG tng = new TestNG();
+        tng.setXmlSuites(suites);
+        tng.run();
+        
         System.exit(0);
     }
 }

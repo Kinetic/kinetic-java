@@ -22,7 +22,6 @@ package com.seagate.kinetic;
 import kinetic.admin.AdminClientConfiguration;
 import kinetic.admin.KineticAdminClient;
 import kinetic.admin.KineticAdminClientFactory;
-import kinetic.client.ClientConfiguration;
 import kinetic.client.KineticClient;
 import kinetic.client.KineticException;
 import kinetic.client.p2p.KineticP2PClientFactory;
@@ -85,13 +84,13 @@ public abstract class AbstractIntegrationTestTarget {
         return clientConfiguration;
     }
 
-    public ClientConfiguration getClientConfig() {
-        ClientConfiguration clientConfiguration = new ClientConfiguration();
-        clientConfiguration.setHost(host);
-        clientConfiguration.setPort(port);
-        clientConfiguration.setNioServiceThreads(1);
-        return clientConfiguration;
-    }
+//    public ClientConfiguration getClientConfig() {
+//        ClientConfiguration clientConfiguration = new ClientConfiguration();
+//        clientConfiguration.setHost(host);
+//        clientConfiguration.setPort(port);
+//        clientConfiguration.setNioServiceThreads(1);
+//        return clientConfiguration;
+//    }
 
     public Peer getPeer() {
         Peer peer = new Peer();

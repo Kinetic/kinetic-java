@@ -24,11 +24,11 @@ import static com.seagate.kinetic.KineticAssertions.assertKeyNotFound;
 import static com.seagate.kinetic.KineticAssertions.assertListOfArraysEqual;
 import static com.seagate.kinetic.KineticTestHelpers.int32;
 import static com.seagate.kinetic.KineticTestHelpers.toByteArray;
-import static junit.framework.TestCase.assertEquals;
-import static junit.framework.TestCase.assertFalse;
-import static junit.framework.TestCase.assertNull;
-import static junit.framework.TestCase.assertTrue;
-import static org.junit.Assert.assertArrayEquals;
+import static org.testng.AssertJUnit.assertEquals;
+import static org.testng.AssertJUnit.assertFalse;
+import static org.testng.AssertJUnit.assertNull;
+import static org.testng.AssertJUnit.assertTrue;
+import static org.testng.internal.junit.ArrayAsserts.assertArrayEquals;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -41,15 +41,13 @@ import kinetic.client.EntryMetadata;
 import kinetic.client.KineticClient;
 import kinetic.client.KineticException;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
 
 import com.google.common.collect.Lists;
 import com.seagate.kinetic.IntegrationTestCase;
 import com.seagate.kinetic.IntegrationTestLoggerFactory;
 import com.seagate.kinetic.KVGenerator;
-import com.seagate.kinetic.KineticTestRunner;
 
 /**
  * Kinetic Client Basic API Test.
@@ -80,7 +78,7 @@ import com.seagate.kinetic.KineticTestRunner;
  *
  */
 
-@RunWith(KineticTestRunner.class)
+@Test(groups = {"simulator", "drive"})
 public class KineticBasicAPITest extends IntegrationTestCase {
     private static final Logger logger = IntegrationTestLoggerFactory
             .getLogger(KineticBasicAPITest.class.getName());
@@ -93,7 +91,7 @@ public class KineticBasicAPITest extends IntegrationTestCase {
      * <p>
      *
      */
-    @Before
+    @BeforeMethod
     public void setUp() {
         kvGenerator = new KVGenerator();
     }
@@ -107,8 +105,8 @@ public class KineticBasicAPITest extends IntegrationTestCase {
      * @throws KineticException
      *             if any internal error occurred.
      */
-    @Test
-    public void testPut() throws KineticException {
+    @Test(dataProvider = "transportProtocolOptions")
+    public void testPut(String clientName) throws KineticException {
         Entry versionedPut;
         Entry versionedPutReturn;
         byte[] key;
@@ -124,7 +122,7 @@ public class KineticBasicAPITest extends IntegrationTestCase {
             entryMetadata.setAlgorithm(algorithm);
             versionedPut = new Entry(key, value, entryMetadata);
 
-            versionedPutReturn = getClient().put(versionedPut, int32(i));
+            versionedPutReturn = getClient(clientName).put(versionedPut, int32(i));
             assertArrayEquals(key, versionedPutReturn.getKey());
             assertArrayEquals(int32(i), versionedPutReturn.getEntryMetadata()
                     .getVersion());
@@ -147,8 +145,8 @@ public class KineticBasicAPITest extends IntegrationTestCase {
      * @throws KineticException
      *             if any internal error occurred.
      */
-    @Test
-    public void testPut_MetadataWithoutTag() throws KineticException {
+    @Test(dataProvider = "transportProtocolOptions")
+    public void testPut_MetadataWithoutTag(String clientName) throws KineticException {
         Entry versionedPut;
         Entry versionedPutReturn;
         byte[] key;
@@ -163,7 +161,7 @@ public class KineticBasicAPITest extends IntegrationTestCase {
             entryMetadata.setAlgorithm(algorithm);
             versionedPut = new Entry(key, value, entryMetadata);
 
-            versionedPutReturn = getClient().put(versionedPut, int32(i));
+            versionedPutReturn = getClient(clientName).put(versionedPut, int32(i));
             assertArrayEquals(key, versionedPutReturn.getKey());
             assertArrayEquals(int32(i), versionedPutReturn.getEntryMetadata()
                     .getVersion());
@@ -186,8 +184,8 @@ public class KineticBasicAPITest extends IntegrationTestCase {
      * @throws KineticException
      *             if any internal error occurred.
      */
-    @Test
-    public void testGet_ReturnsExistingValues() throws KineticException {
+    @Test(dataProvider = "transportProtocolOptions")
+    public void testGet_ReturnsExistingValues(String clientName) throws KineticException {
         Entry versionedPut;
         Entry versionedPutReturn;
         Entry versionedGet;
@@ -202,7 +200,7 @@ public class KineticBasicAPITest extends IntegrationTestCase {
             EntryMetadata entryMetadata = new EntryMetadata();
             versionedPut = new Entry(key, value, entryMetadata);
 
-            versionedPutReturn = getClient().put(versionedPut, int32(i));
+            versionedPutReturn = getClient(clientName).put(versionedPut, int32(i));
 
             versionedPutReturnEntry.add(versionedPutReturn);
         }
@@ -210,7 +208,7 @@ public class KineticBasicAPITest extends IntegrationTestCase {
         for (int i = 0; i < MAX_KEYS; i++) {
             key = toByteArray(KEY_PREFIX + i);
 
-            versionedGet = getClient().get(key);
+            versionedGet = getClient(clientName).get(key);
 
             assertEntryEquals(versionedGet, versionedPutReturnEntry.get(i));
         }
@@ -227,11 +225,11 @@ public class KineticBasicAPITest extends IntegrationTestCase {
      * @throws KineticException
      *             if any internal error occurred.
      */
-    @Test
-    public void testGet_ReturnsNullForNonExistingKeys() throws KineticException {
+    @Test(dataProvider = "transportProtocolOptions")
+    public void testGet_ReturnsNullForNonExistingKeys(String clientName) throws KineticException {
         for (int i = 0; i < MAX_KEYS; i++) {
             byte[] key = toByteArray(KEY_PREFIX + "qwerasdf" + i);
-            assertKeyNotFound(getClient(), key);
+            assertKeyNotFound(getClient(clientName), key);
         }
 
         logger.info(this.testEndInfo());
@@ -246,8 +244,8 @@ public class KineticBasicAPITest extends IntegrationTestCase {
      * @throws KineticException
      *             if any internal error occurred.
      */
-    @Test
-    public void testDelete_DeletesExistingKeys() throws KineticException {
+    @Test(dataProvider = "transportProtocolOptions")
+    public void testDelete_DeletesExistingKeys(String clientName) throws KineticException {
         Long start = System.nanoTime();
 
         for (int i = 0; i < MAX_KEYS; i++) {
@@ -256,12 +254,12 @@ public class KineticBasicAPITest extends IntegrationTestCase {
             EntryMetadata entryMetadata = new EntryMetadata();
             Entry versionedPut = new Entry(key, value, entryMetadata);
 
-            Entry versionedGet = getClient().put(versionedPut, int32(i));
-            assertTrue(getClient().delete(versionedGet));
+            Entry versionedGet = getClient(clientName).put(versionedPut, int32(i));
+            assertTrue(getClient(clientName).delete(versionedGet));
         }
 
         for (int i = 0; i < MAX_KEYS; i++) {
-            assertKeyNotFound(getClient(), toByteArray(KEY_PREFIX + i));
+            assertKeyNotFound(getClient(clientName), toByteArray(KEY_PREFIX + i));
         }
 
         logger.info(this.testEndInfo());
@@ -275,17 +273,17 @@ public class KineticBasicAPITest extends IntegrationTestCase {
      * @throws KineticException
      *             if any internal error occurred.
      */
-    @Test
-    public void testDelete_ReturnsFalse_ForMissingKey() throws KineticException {
+    @Test(dataProvider = "transportProtocolOptions")
+    public void testDelete_ReturnsFalse_ForMissingKey(String clientName) throws KineticException {
         byte[] key = toByteArray("asdfgh#$@257");
-        assertKeyNotFound(getClient(), key);
+        assertKeyNotFound(getClient(clientName), key);
 
         // delete key which does not exist in Simulator/Drive
         byte[] value = toByteArray("value");
         EntryMetadata entryMetadata = new EntryMetadata();
         entryMetadata.setVersion(int32(0));
         Entry versioned = new Entry(key, value, entryMetadata);
-        assertFalse(getClient().delete(versioned));
+        assertFalse(getClient(clientName).delete(versioned));
 
         logger.info(this.testEndInfo());
     }
@@ -298,8 +296,8 @@ public class KineticBasicAPITest extends IntegrationTestCase {
      * @throws KineticException
      *             if any internal error occurred.
      */
-    @Test
-    public void testGetNext_ReturnsNextValue() throws KineticException {
+    @Test(dataProvider = "transportProtocolOptions")
+    public void testGetNext_ReturnsNextValue(String clientName)throws KineticException {
         long start = System.nanoTime();
 
         Entry vIn;
@@ -313,12 +311,12 @@ public class KineticBasicAPITest extends IntegrationTestCase {
             EntryMetadata entryMetadata = new EntryMetadata();
             vIn = new Entry(key, data, entryMetadata);
 
-            vOut = getClient().put(vIn, data);
+            vOut = getClient(clientName).put(vIn, data);
             versionedOutList.add(vOut);
         }
 
         for (int i = 0; i < MAX_KEYS - 1; i++) {
-            Entry vNext = getClient().getNext(keyList.get(i));
+            Entry vNext = getClient(clientName).getNext(keyList.get(i));
 
             assertEntryEquals(versionedOutList.get(i + 1), vNext);
         }
@@ -334,11 +332,11 @@ public class KineticBasicAPITest extends IntegrationTestCase {
      * @throws KineticException
      *             if any internal error occurred.
      */
-    @Test
-    public void testGetNext_ReturnsNull_IfLastValue() throws KineticException {
+    @Test(dataProvider = "transportProtocolOptions")
+    public void testGetNext_ReturnsNull_IfLastValue(String clientName) throws KineticException {
         byte[] key = toByteArray("key");
-        getClient().putForced(new Entry(key, toByteArray("value")));
-        assertNull(getClient().getNext(key));
+        getClient(clientName).putForced(new Entry(key, toByteArray("value")));
+        assertNull(getClient(clientName).getNext(key));
 
         logger.info(this.testEndInfo());
     }
@@ -351,8 +349,8 @@ public class KineticBasicAPITest extends IntegrationTestCase {
      * @throws KineticException
      *             if any internal error occurred.
      */
-    @Test
-    public void testGetPrevious_ReturnsPreviousValues() throws KineticException {
+    @Test(dataProvider = "transportProtocolOptions")
+    public void testGetPrevious_ReturnsPreviousValues(String clientName) throws KineticException {
         long start = System.nanoTime();
 
         List<Entry> versionedOutList = new ArrayList<Entry>();
@@ -363,12 +361,12 @@ public class KineticBasicAPITest extends IntegrationTestCase {
             keyList.add(key);
             EntryMetadata entryMetadata = new EntryMetadata();
             Entry vIn = new Entry(key, data, entryMetadata);
-            Entry vOut = getClient().put(vIn, data);
+            Entry vOut = getClient(clientName).put(vIn, data);
             versionedOutList.add(vOut);
         }
 
         for (int i = 1; i < MAX_KEYS; i++) {
-            Entry vPre = getClient().getPrevious(keyList.get(i));
+            Entry vPre = getClient(clientName).getPrevious(keyList.get(i));
 
             assertEntryEquals(versionedOutList.get(i - 1), vPre);
         }
@@ -384,12 +382,12 @@ public class KineticBasicAPITest extends IntegrationTestCase {
      * @throws KineticException
      *             if any internal error occurred.
      */
-    @Test
-    public void testGetPrevious_ReturnsNull_IfFirstKey()
+    @Test(dataProvider = "transportProtocolOptions")
+    public void testGetPrevious_ReturnsNull_IfFirstKey(String clientName)
             throws KineticException {
         byte[] key = toByteArray("key");
-        getClient().putForced(new Entry(key, toByteArray("value")));
-        Entry v = getClient().getPrevious(key);
+        getClient(clientName).putForced(new Entry(key, toByteArray("value")));
+        Entry v = getClient(clientName).getPrevious(key);
         assertEquals(null, v);
 
         logger.info(this.testEndInfo());
@@ -403,8 +401,8 @@ public class KineticBasicAPITest extends IntegrationTestCase {
      * @throws KineticException
      *             if any internal error occurred.
      */
-    @Test
-    public void testGetMetadata_ReturnsMetadata_ForExistingKey()
+    @Test(dataProvider = "transportProtocolOptions")
+    public void testGetMetadata_ReturnsMetadata_ForExistingKey(String clientName)
             throws KineticException {
         byte[] newVersion = int32(0);
         // String alg = Message.Algorithm.INVALID_ALGORITHM.toString();
@@ -416,10 +414,10 @@ public class KineticBasicAPITest extends IntegrationTestCase {
             EntryMetadata entryMetadata = new EntryMetadata();
             Entry entry = new Entry(toByteArray(keyS), toByteArray(valueS),
                     entryMetadata);
-            getClient().put(entry, newVersion);
+            getClient(clientName).put(entry, newVersion);
 
             EntryMetadata entryMetadataGet;
-            entryMetadataGet = getClient().getMetadata(toByteArray(keyS));
+            entryMetadataGet = getClient(clientName).getMetadata(toByteArray(keyS));
             assertArrayEquals(newVersion, entryMetadataGet.getVersion());
 
             // XXX chiaming 04/12/2013: default enum is not valid, need to be
@@ -438,12 +436,12 @@ public class KineticBasicAPITest extends IntegrationTestCase {
      * @throws KineticException
      *             if any internal error occurred.
      */
-    @Test
-    public void testGetMetadata_ReturnsNull_ForNonexistingKey()
+    @Test(dataProvider = "transportProtocolOptions")
+    public void testGetMetadata_ReturnsNull_ForNonexistingKey(String clientName)
             throws KineticException {
         byte[] key = toByteArray("@#$%2345");
-        assertNull(getClient().get(key));
-        assertNull(getClient().getMetadata(key));
+        assertNull(getClient(clientName).get(key));
+        assertNull(getClient(clientName).getMetadata(key));
 
         logger.info(this.testEndInfo());
     }
@@ -457,8 +455,8 @@ public class KineticBasicAPITest extends IntegrationTestCase {
      * @throws KineticException
      *             if any internal error occurred.
      */
-    @Test
-    public void testGetKeyRange_ReturnsCorrectResults_ForStartEndInclusive()
+    @Test(dataProvider = "transportProtocolOptions")
+    public void testGetKeyRange_ReturnsCorrectResults_ForStartEndInclusive(String clientName)
             throws KineticException {
         List<byte[]> keys = Arrays.asList(toByteArray("00"), toByteArray("01"),
                 toByteArray("02"), toByteArray("03"), toByteArray("04"),
@@ -468,10 +466,10 @@ public class KineticBasicAPITest extends IntegrationTestCase {
                 toByteArray("14"));
 
         for (byte[] key : keys) {
-            getClient().putForced(new Entry(key, key));
+            getClient(clientName).putForced(new Entry(key, key));
         }
 
-        List<byte[]> returnedKeys = Lists.newLinkedList(getClient()
+        List<byte[]> returnedKeys = Lists.newLinkedList(getClient(clientName)
                 .getKeyRange(keys.get(0), true, keys.get(keys.size() - 1),
                         true, keys.size()));
 
@@ -489,8 +487,8 @@ public class KineticBasicAPITest extends IntegrationTestCase {
      * @throws KineticException
      *             if any internal error occurred.
      */
-    @Test
-    public void testGetKeyRange_ReturnsCorrectResults_ForEndInclusive()
+    @Test(dataProvider = "transportProtocolOptions")
+    public void testGetKeyRange_ReturnsCorrectResults_ForEndInclusive(String clientName)
             throws KineticException {
         List<byte[]> keys = Arrays.asList(toByteArray("00"), toByteArray("01"),
                 toByteArray("02"), toByteArray("03"), toByteArray("04"),
@@ -500,10 +498,10 @@ public class KineticBasicAPITest extends IntegrationTestCase {
                 toByteArray("14"));
 
         for (byte[] key : keys) {
-            getClient().putForced(new Entry(key, key));
+            getClient(clientName).putForced(new Entry(key, key));
         }
 
-        List<byte[]> returnedKeys = Lists.newLinkedList(getClient()
+        List<byte[]> returnedKeys = Lists.newLinkedList(getClient(clientName)
                 .getKeyRange(keys.get(0), false, keys.get(keys.size() - 1),
                         true, keys.size() - 1));
 
@@ -521,8 +519,8 @@ public class KineticBasicAPITest extends IntegrationTestCase {
      * @throws KineticException
      *             if any internal error occurred.
      */
-    @Test
-    public void testGetKeyRange_ReturnsCorrectResults_ForStartInclusive()
+    @Test(dataProvider = "transportProtocolOptions")
+    public void testGetKeyRange_ReturnsCorrectResults_ForStartInclusive(String clientName)
             throws KineticException {
         List<byte[]> keys = Arrays.asList(toByteArray("00"), toByteArray("01"),
                 toByteArray("02"), toByteArray("03"), toByteArray("04"),
@@ -532,10 +530,10 @@ public class KineticBasicAPITest extends IntegrationTestCase {
                 toByteArray("14"));
 
         for (byte[] key : keys) {
-            getClient().putForced(new Entry(key, key));
+            getClient(clientName).putForced(new Entry(key, key));
         }
 
-        List<byte[]> returnedKeys = Lists.newLinkedList(getClient()
+        List<byte[]> returnedKeys = Lists.newLinkedList(getClient(clientName)
                 .getKeyRange(keys.get(0), true, keys.get(keys.size() - 1),
                         false, keys.size() - 1));
 
@@ -553,8 +551,8 @@ public class KineticBasicAPITest extends IntegrationTestCase {
      * @throws KineticException
      *             if any internal error occurred.
      */
-    @Test
-    public void testGetKeyRange_ReturnsCorrectResults_ForNoneInclusive()
+    @Test(dataProvider = "transportProtocolOptions")
+    public void testGetKeyRange_ReturnsCorrectResults_ForNoneInclusive(String clientName)
             throws KineticException {
         List<byte[]> keys = Arrays.asList(toByteArray("00"), toByteArray("01"),
                 toByteArray("02"), toByteArray("03"), toByteArray("04"),
@@ -564,10 +562,10 @@ public class KineticBasicAPITest extends IntegrationTestCase {
                 toByteArray("14"));
 
         for (byte[] key : keys) {
-            getClient().putForced(new Entry(key, key));
+            getClient(clientName).putForced(new Entry(key, key));
         }
 
-        List<byte[]> returnedKeys = Lists.newLinkedList(getClient()
+        List<byte[]> returnedKeys = Lists.newLinkedList(getClient(clientName)
                 .getKeyRange(keys.get(0), false, keys.get(keys.size() - 1),
                         false, keys.size() - 1));
 
@@ -585,8 +583,8 @@ public class KineticBasicAPITest extends IntegrationTestCase {
      * @throws KineticException
      *             if any internal error occurred.
      */
-    @Test
-    public void testGetKeyRange_VerifyOrder_For0To200() throws KineticException {
+    @Test(dataProvider = "transportProtocolOptions")
+    public void testGetKeyRange_VerifyOrder_For0To200(String clientName) throws KineticException {
         List<byte[]> keys = new ArrayList<byte[]>();
 
         String hex = null;
@@ -597,13 +595,13 @@ public class KineticBasicAPITest extends IntegrationTestCase {
                 hex = "0x" + Integer.toHexString(i);
             byte[] key = toByteArray(hex);
 
-            getClient().put(new Entry(key, Integer.toString(i).getBytes()),
+            getClient(clientName).put(new Entry(key, Integer.toString(i).getBytes()),
                     null);
 
             keys.add(key);
         }
 
-        List<byte[]> keysRange = getClient().getKeyRange(new byte[] {}, true,
+        List<byte[]> keysRange = getClient(clientName).getKeyRange(new byte[] {}, true,
                 toByteArray("0xff"), true, 200);
 
         assertEquals(200, keysRange.size());
@@ -622,8 +620,8 @@ public class KineticBasicAPITest extends IntegrationTestCase {
      * @throws KineticException
      *             if any internal error occurred.
      */
-    @Test
-    public void testPutForced() throws KineticException {
+    @Test(dataProvider = "transportProtocolOptions")
+    public void testPutForced(String clientName) throws KineticException {
         Long start = System.nanoTime();
 
         for (int i = 0; i < MAX_KEYS; i++) {
@@ -632,7 +630,7 @@ public class KineticBasicAPITest extends IntegrationTestCase {
             EntryMetadata entryMetadata = new EntryMetadata();
             Entry versionedPut = new Entry(key, value, entryMetadata);
 
-            getClient().put(versionedPut, int32(i));
+            getClient(clientName).put(versionedPut, int32(i));
         }
 
         start = System.nanoTime();
@@ -647,9 +645,9 @@ public class KineticBasicAPITest extends IntegrationTestCase {
 
             Entry versionedPutForced = new Entry(key, value, entryMetadata);
 
-            getClient().putForced(versionedPutForced);
+            getClient(clientName).putForced(versionedPutForced);
 
-            Entry entryGet = getClient().get(key);
+            Entry entryGet = getClient(clientName).get(key);
             assertArrayEquals(key, entryGet.getKey());
             assertArrayEquals(version, entryGet.getEntryMetadata().getVersion());
             assertArrayEquals(value, entryGet.getValue());
@@ -667,8 +665,8 @@ public class KineticBasicAPITest extends IntegrationTestCase {
      * @throws KineticException
      *             if any internal error occurred.
      */
-    @Test
-    public void testDeleteForced_RemovesExistingKeys() throws KineticException {
+    @Test(dataProvider = "transportProtocolOptions")
+    public void testDeleteForced_RemovesExistingKeys(String clientName) throws KineticException {
         Long start = System.nanoTime();
 
         for (int i = 0; i < MAX_KEYS; i++) {
@@ -677,10 +675,10 @@ public class KineticBasicAPITest extends IntegrationTestCase {
             EntryMetadata entryMetadata = new EntryMetadata();
             Entry versionedPut = new Entry(key, value, entryMetadata);
 
-            getClient().put(versionedPut, int32(i));
+            getClient(clientName).put(versionedPut, int32(i));
 
-            assertTrue(getClient().deleteForced(key));
-            assertKeyNotFound(getClient(), key);
+            assertTrue(getClient(clientName).deleteForced(key));
+            assertKeyNotFound(getClient(clientName), key);
         }
 
         logger.info(this.testEndInfo());
@@ -694,10 +692,10 @@ public class KineticBasicAPITest extends IntegrationTestCase {
      * @throws KineticException
      *             if any internal error occurred.
      */
-    @Test
-    public void testDeleteForced_Succeeds_IfKeysDontExist()
+    @Test(dataProvider = "transportProtocolOptions")
+    public void testDeleteForced_Succeeds_IfKeysDontExist(String clientName)
             throws KineticException {
-        assertTrue(getClient().deleteForced(toByteArray("***345@#$")));
+        assertTrue(getClient(clientName).deleteForced(toByteArray("***345@#$")));
 
         logger.info(this.testEndInfo());
     }

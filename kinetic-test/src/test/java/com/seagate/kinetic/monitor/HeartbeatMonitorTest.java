@@ -19,7 +19,7 @@
  */
 package com.seagate.kinetic.monitor;
 
-import org.junit.Test;
+import org.testng.annotations.Test;
 
 /**
  * 
@@ -28,6 +28,7 @@ import org.junit.Test;
  * <p>
  * 
  */
+@Test(groups = {"simulator", "drive"})
 public class HeartbeatMonitorTest {
 
 	/**

@@ -19,9 +19,11 @@
  */
 package com.seagate.kinetic.simulator.console.multi;
 
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
+import static org.testng.AssertJUnit.assertTrue;
+import org.testng.annotations.AfterMethod;
+import org.testng.annotations.Test;
+import org.testng.annotations.BeforeMethod;
+import org.testng.Assert;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
@@ -36,10 +38,6 @@ import kinetic.client.KineticException;
 import kinetic.simulator.KineticSimulator;
 import kinetic.simulator.SimulatorConfiguration;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-
 /**
  * 
  * multi server, start server, close server then restart server, do the
@@ -50,6 +48,7 @@ import org.junit.Test;
  * 
  */
 
+@Test(groups = {"simulator"})
 public class MultiKineticSimulatorOperationTest {
 	private final Logger logger = Logger
 			.getLogger(MultiKineticSimulatorOperationTest.class.getName());
@@ -67,8 +66,8 @@ public class MultiKineticSimulatorOperationTest {
 	private final List<ClientConfiguration> clientConfigs = new ArrayList<ClientConfiguration>();
 	private final List<KineticSimulator> servers = new ArrayList<KineticSimulator>();
 
-	@Before
-	public void setUp() throws Exception {
+	@BeforeMethod
+    public void setUp() throws Exception {
 		init();
 
 		startServers();
@@ -84,8 +83,8 @@ public class MultiKineticSimulatorOperationTest {
 
 	}
 
-	@After
-	public void tearDown() throws Exception {
+	@AfterMethod
+    public void tearDown() throws Exception {
 		startServers();
 		kvGenerator.reset();
 		for (int i = 0; i < SERVER_COUNTS; i++) {
@@ -230,11 +229,11 @@ public class MultiKineticSimulatorOperationTest {
 
 			if (afterDelete) {
 				if (null != vGetReturn) {
-					fail("the value is not null after deleting");
+					Assert.fail("the value is not null after deleting");
 				}
 			} else {
 				if (null == vGetReturn) {
-					fail("get a null vesioned");
+					Assert.fail("get a null vesioned");
 				}
 
 				assertTrue(equals(toByteArray(kvGenerator.getValue(key)),

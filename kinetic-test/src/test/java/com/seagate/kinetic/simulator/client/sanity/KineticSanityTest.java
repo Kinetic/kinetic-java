@@ -19,9 +19,8 @@
  */
 package com.seagate.kinetic.simulator.client.sanity;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.testng.AssertJUnit.assertEquals;
+import static org.testng.AssertJUnit.assertTrue;
 
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
@@ -43,22 +42,19 @@ import kinetic.client.Entry;
 import kinetic.client.EntryMetadata;
 import kinetic.client.KineticException;
 
+import org.testng.Assert;
+import org.testng.annotations.Test;
+
 import com.seagate.kinetic.IntegrationTestCase;
-import com.seagate.kinetic.KineticTestRunner;
-
-import org.junit.Test;
-
 import com.seagate.kinetic.proto.Kinetic.Command.Algorithm;
 
-import org.junit.runner.RunWith;
-
-@RunWith(KineticTestRunner.class)
+@Test(groups = {"simulator"})
 public class KineticSanityTest extends IntegrationTestCase {
 
 	Logger logger = Logger.getLogger(KineticSanityTest.class.getName());
 
-	@Test
-	public void sanityTest() throws Exception {
+	@Test(dataProvider = "transportProtocolOptions")
+	public void sanityTest(String clientName) throws Exception {
 		/**
 		 * start playing with the APIs.
 		 */
@@ -79,16 +75,16 @@ public class KineticSanityTest extends IntegrationTestCase {
 		/**
 		 * put key/value and validate.
 		 */
-		Entry dbVersioned = getClient().put(versioned, initVersion);
+		Entry dbVersioned = getClient(clientName).put(versioned, initVersion);
 
-		Entry vFromDb = getClient().get(key);
+		Entry vFromDb = getClient(clientName).get(key);
 
 		assertTrue(Arrays.equals(vFromDb.getValue(), value));
 
 		/**
 		 * get metadata only
 		 */
-		EntryMetadata metadata = getClient().getMetadata(key);
+		EntryMetadata metadata = getClient(clientName).getMetadata(key);
 
 		assertTrue(Arrays.equals(metadata.getVersion(), initVersion));
 
@@ -106,13 +102,13 @@ public class KineticSanityTest extends IntegrationTestCase {
 		/**
 		 * update entry with new version in the persistent store
 		 */
-		Entry dbVersioned2 = getClient().put(dbVersioned, toByteArray("2"));
+		Entry dbVersioned2 = getClient(clientName).put(dbVersioned, toByteArray("2"));
 
 		assertTrue(Arrays.equals(dbVersioned2.getEntryMetadata().getVersion(),
 				toByteArray("2")));
 
 		// read from db
-		Entry v2FromDb = getClient().get(key);
+		Entry v2FromDb = getClient(clientName).get(key);
 
 		// validate value was put successfully
 		assertTrue(Arrays.equals(v2FromDb.getValue(), newWorld));
@@ -120,29 +116,29 @@ public class KineticSanityTest extends IntegrationTestCase {
 		/**
 		 * get metadata only
 		 */
-		EntryMetadata metadata2 = getClient().getMetadata(key);
+		EntryMetadata metadata2 = getClient(clientName).getMetadata(key);
 
 		assertTrue(Arrays.equals(metadata2.getVersion(), toByteArray("2")));
 
 		logger.info("put/get twice successfully, deleting entry ...");
 
 		// delete entry
-		getClient().delete(dbVersioned2);
+		getClient(clientName).delete(dbVersioned2);
 
 		// read and validate deleted
-		Entry versionedGetFromDb = getClient().get(key);
+		Entry versionedGetFromDb = getClient(clientName).get(key);
 
 		assertTrue(versionedGetFromDb == null);
 
 		logger.info("sanity test for put/get/delete passed");
 	}
 
-	@Test
-	public void noopTest() throws Exception {
+	@Test(dataProvider = "transportProtocolOptions")
+	public void noopTest(String clientName) throws Exception {
 		/**
 		 * noop test
 		 */
-		long time = getClient().noop();
+		long time = getClient(clientName).noop();
 
 		/**
 		 * noop returns successfully with round-trip time in milliseconds.
@@ -151,8 +147,8 @@ public class KineticSanityTest extends IntegrationTestCase {
 		assertTrue(time >= 0);
 	}
 
-	@Test
-	public void maxValueSizeTest() throws Exception {
+	@Test(dataProvider = "transportProtocolOptions")
+	public void maxValueSizeTest(String clientName) throws Exception {
 
 		byte[] value = new byte[(1024 * 1024) + 1];
 
@@ -163,7 +159,7 @@ public class KineticSanityTest extends IntegrationTestCase {
 				entryMetadata);
 
 		try {
-			getClient().putForced(entry);
+			getClient(clientName).putForced(entry);
 			throw new RuntimeException("expect exception is not thrown");
 		} catch (KineticException e) {
 			e.printStackTrace();
@@ -172,8 +168,8 @@ public class KineticSanityTest extends IntegrationTestCase {
 		}
 	}
 
-	@Test
-	public void putForcedTest() throws Exception {
+	@Test(dataProvider = "transportProtocolOptions")
+	public void putForcedTest(String clientName) throws Exception {
 		/**
 		 * start playing with the APIs.
 		 */
@@ -194,9 +190,9 @@ public class KineticSanityTest extends IntegrationTestCase {
 		/**
 		 * put key/value and validate.
 		 */
-		Entry dbVersioned = getClient().put(versioned, initVersion);
+		Entry dbVersioned = getClient(clientName).put(versioned, initVersion);
 
-		Entry vFromDb = getClient().get(key);
+		Entry vFromDb = getClient(clientName).get(key);
 
 		assertTrue(Arrays.equals(vFromDb.getValue(), value));
 
@@ -219,13 +215,13 @@ public class KineticSanityTest extends IntegrationTestCase {
 		/**
 		 * forced put
 		 */
-		Entry dbVersioned2 = getClient().putForced(dbVersioned);
+		Entry dbVersioned2 = getClient(clientName).putForced(dbVersioned);
 
 		assertTrue(Arrays.equals(dbVersioned2.getEntryMetadata().getVersion(),
 				forcedPutVersion));
 
 		// read from db
-		Entry v2FromDb = getClient().get(key);
+		Entry v2FromDb = getClient(clientName).get(key);
 
 		// validate value was put successfully
 		assertTrue(Arrays.equals(v2FromDb.getValue(), forcedPutValue));
@@ -233,23 +229,23 @@ public class KineticSanityTest extends IntegrationTestCase {
 		logger.info("put/get twice successfully, deleting entry ...");
 
 		// delete entry
-		boolean deleted = getClient().deleteForced(key);
+		boolean deleted = getClient(clientName).deleteForced(key);
 
 		assertTrue(deleted == true);
 
-		boolean deleted2 = getClient().deleteForced(key);
+		boolean deleted2 = getClient(clientName).deleteForced(key);
 
 		assertTrue(deleted2 == true);
 
-		Entry entry3 = getClient().get(key);
+		Entry entry3 = getClient(clientName).get(key);
 
 		assertTrue(entry3 == null);
 
 		logger.info("forced put/delete passed");
 	}
 
-	@Test
-	public void getAsyncTest() throws Exception {
+	@Test(dataProvider = "transportProtocolOptions")
+	public void getAsyncTest(String clientName) throws Exception {
 
 		int max = 10;
 
@@ -288,7 +284,7 @@ public class KineticSanityTest extends IntegrationTestCase {
 			Entry masterEntry = new Entry(data, data, masterMetadata);
 			masterList.add(masterEntry);
 
-			getClient().putAsync(versioned, data, new CallbackHandler<Entry>() {
+			getClient(clientName).putAsync(versioned, data, new CallbackHandler<Entry>() {
 
                 @Override
                 public void onSuccess(CallbackResult<Entry> result) {
@@ -328,7 +324,7 @@ public class KineticSanityTest extends IntegrationTestCase {
 
 			final byte[] key = putList.get(i).getKey();
 
-			this.getClient().getAsync(key, new CallbackHandler<Entry>() {
+			this.getClient(clientName).getAsync(key, new CallbackHandler<Entry>() {
 
                 @Override
                 public void onSuccess(CallbackResult<Entry> result) {
@@ -364,21 +360,21 @@ public class KineticSanityTest extends IntegrationTestCase {
 
 		// clean up
 		for (int i = 0; i < max; i++) {
-			boolean deleted = getClient().delete(putList.get(i));
+			boolean deleted = getClient(clientName).delete(putList.get(i));
 			assertTrue(deleted == true);
 		}
 
 		// verify clean up
 		for (int i = 0; i < max; i++) {
-			Entry v = getClient().get(putList.get(i).getKey());
+			Entry v = getClient(clientName).get(putList.get(i).getKey());
 			assertTrue(v == null);
 		}
 
 		logger.info("getAsyncTest passed ...");
 	}
 
-	@Test
-	public void getNextTest() throws Exception {
+	@Test(dataProvider = "transportProtocolOptions")
+	public void getNextTest(String clientName) throws Exception {
 
 		List<byte[]> dataList = new ArrayList<byte[]>(10);
 		List<Entry> versionedList = new ArrayList<Entry>(10);
@@ -400,7 +396,7 @@ public class KineticSanityTest extends IntegrationTestCase {
 			// construct/put data to db
 			EntryMetadata entryMetadata = new EntryMetadata();
 			Entry versioned = new Entry(data, data, entryMetadata);
-			Entry dbVersioned = getClient().put(versioned, data);
+			Entry dbVersioned = getClient(clientName).put(versioned, data);
 
 			logger.info("added data index=" + i);
 
@@ -409,7 +405,7 @@ public class KineticSanityTest extends IntegrationTestCase {
 
 		// verify getNext
 		for (int i = 0; i < (max - 1); i++) {
-			Entry nextVersioned = getClient().getNext(versionedList.get(i)
+			Entry nextVersioned = getClient(clientName).getNext(versionedList.get(i)
                     .getKey());
 			byte[] nextKey = nextVersioned.getKey();
 
@@ -419,23 +415,23 @@ public class KineticSanityTest extends IntegrationTestCase {
 		}
 
 		try {
-			Entry nextVersioned = getClient().getNext(versionedList.get(max - 1)
+			Entry nextVersioned = getClient(clientName).getNext(versionedList.get(max - 1)
                     .getKey());
 
 			assertTrue(nextVersioned == null);
 		} catch (Exception e) {
-			fail("caught exception: " + e.getMessage());
+			Assert.fail("caught exception: " + e.getMessage());
 		}
 
 		// clean up
 		for (int i = 0; i < max; i++) {
-			boolean deleted = getClient().delete(versionedList.get(i));
+			boolean deleted = getClient(clientName).delete(versionedList.get(i));
 			assertTrue(deleted == true);
 		}
 
 		// verify clean up
 		for (int i = 0; i < max; i++) {
-			Entry v = getClient().get(versionedList.get(i).getKey());
+			Entry v = getClient(clientName).get(versionedList.get(i).getKey());
 			assertTrue(v == null);
 		}
 
@@ -443,8 +439,8 @@ public class KineticSanityTest extends IntegrationTestCase {
 
 	}
 
-	@Test
-	public void getPreviousTest() throws Exception {
+	@Test(dataProvider = "transportProtocolOptions")
+	public void getPreviousTest(String clientName) throws Exception {
 
 		List<byte[]> dataList = new ArrayList<byte[]>(10);
 		List<Entry> versionedList = new ArrayList<Entry>(10);
@@ -466,7 +462,7 @@ public class KineticSanityTest extends IntegrationTestCase {
 			// construct/put data to db
 			EntryMetadata entryMetadata = new EntryMetadata();
 			Entry versioned = new Entry(data, data, entryMetadata);
-			Entry dbVersioned = getClient().put(versioned, data);
+			Entry dbVersioned = getClient(clientName).put(versioned, data);
 
 			logger.info("added data index=" + i);
 
@@ -476,7 +472,7 @@ public class KineticSanityTest extends IntegrationTestCase {
 		// verify get previous
 		for (int i = 0; i < max - 1; i++) {
 
-			Entry previousVersioned = getClient().getPrevious(versionedList.get(
+			Entry previousVersioned = getClient(clientName).getPrevious(versionedList.get(
                     max - i - 1).getKey());
 
 			byte[] previousKey = previousVersioned.getKey();
@@ -487,25 +483,25 @@ public class KineticSanityTest extends IntegrationTestCase {
 		}
 
 		try {
-			Entry previousVersioned = getClient().getPrevious(versionedList.get(
+			Entry previousVersioned = getClient(clientName).getPrevious(versionedList.get(
                     0).getKey());
 
 			assertTrue(previousVersioned == null);
 
 		} catch (Exception e) {
 			// must not throw exception
-			fail("caught exception: " + e.getClass().getName());
+			Assert.fail("caught exception: " + e.getClass().getName());
 		}
 
 		// clean up
 		for (int i = 0; i < max; i++) {
-			boolean deleted = getClient().delete(versionedList.get(i));
+			boolean deleted = getClient(clientName).delete(versionedList.get(i));
 			assertTrue(deleted == true);
 		}
 
 		// verify clean up
 		for (int i = 0; i < max; i++) {
-			Entry v = getClient().get(versionedList.get(i).getKey());
+			Entry v = getClient(clientName).get(versionedList.get(i).getKey());
 			assertTrue(v == null);
 		}
 
@@ -537,7 +533,7 @@ public class KineticSanityTest extends IntegrationTestCase {
 		}
 		for (int x : pl) {
 			if (0 != al.set(x - 1, x))
-				fail("over wrote entry " + x);
+				Assert.fail("over wrote entry " + x);
 		}
 		logger.info(toString("Stored   List: ", al));
 
@@ -608,8 +604,8 @@ public class KineticSanityTest extends IntegrationTestCase {
 	// }
 	// }
 
-	@Test
-	public void getKeyRangeTest() throws Exception {
+	@Test(dataProvider = "transportProtocolOptions")
+	public void getKeyRangeTest(String clientName) throws Exception {
 
 		List<byte[]> dataList = new ArrayList<byte[]>(10);
 		List<Entry> versionedList = new ArrayList<Entry>(10);
@@ -631,7 +627,7 @@ public class KineticSanityTest extends IntegrationTestCase {
 			// construct/put data to db
 			EntryMetadata entryMetadata = new EntryMetadata();
 			Entry versioned = new Entry(data, data, entryMetadata);
-			Entry dbVersioned = getClient().put(versioned, data);
+			Entry dbVersioned = getClient(clientName).put(versioned, data);
 
 			logger.info("added data index=" + i + ", key="
 					+ ByteBuffer.wrap(data).getLong());
@@ -646,7 +642,7 @@ public class KineticSanityTest extends IntegrationTestCase {
 		boolean endInclusive = false;
 		int expectReturnSize = endIndex - startIndex;
 
-		List<byte[]> rangeKeys = getClient().getKeyRange(
+		List<byte[]> rangeKeys = getClient(clientName).getKeyRange(
                 versionedList.get(startIndex).getKey(), startInclusive,
                 versionedList.get(endIndex).getKey(), endInclusive,
                 expectReturnSize);
@@ -664,13 +660,13 @@ public class KineticSanityTest extends IntegrationTestCase {
 		assertTrue(pos == expectReturnSize);
 		// clean up
 		for (int i = 0; i < max; i++) {
-			boolean deleted = getClient().delete(versionedList.get(i));
+			boolean deleted = getClient(clientName).delete(versionedList.get(i));
 			assertTrue(deleted == true);
 		}
 
 		// verify clean up
 		for (int i = 0; i < max; i++) {
-			Entry v = getClient().get(versionedList.get(i).getKey());
+			Entry v = getClient(clientName).get(versionedList.get(i).getKey());
 			assertTrue(v == null);
 		}
 

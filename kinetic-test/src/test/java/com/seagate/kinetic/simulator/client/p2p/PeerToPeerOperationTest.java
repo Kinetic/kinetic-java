@@ -19,10 +19,9 @@
  */
 package com.seagate.kinetic.simulator.client.p2p;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.testng.AssertJUnit.assertFalse;
+import static org.testng.AssertJUnit.assertTrue;
+import static org.testng.internal.junit.ArrayAsserts.assertArrayEquals;
 import kinetic.admin.KineticAdminClient;
 import kinetic.admin.KineticAdminClientFactory;
 import kinetic.client.Entry;
@@ -32,17 +31,15 @@ import kinetic.client.p2p.Operation;
 import kinetic.client.p2p.Peer;
 import kinetic.client.p2p.PeerToPeerOperation;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.testng.Assert;
+import org.testng.annotations.AfterMethod;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
 
 import com.google.common.base.Charsets;
 import com.seagate.kinetic.AbstractIntegrationTestTarget;
 import com.seagate.kinetic.IntegrationTestCase;
 import com.seagate.kinetic.IntegrationTestTargetFactory;
-import com.seagate.kinetic.KineticTestRunner;
-import com.seagate.kinetic.SimulatorOnly;
 
 /**
  * P2P operation test.
@@ -51,12 +48,12 @@ import com.seagate.kinetic.SimulatorOnly;
  *
  * @author Chiaming Yang
  */
-@RunWith(KineticTestRunner.class)
+@Test(groups = {"simulator"})
 public class PeerToPeerOperationTest extends IntegrationTestCase {
     private AbstractIntegrationTestTarget secondaryTestTarget;
     private KineticP2pClient secondaryClient;
 
-    @Before
+    @BeforeMethod
     public void setUp() throws Exception {
         secondaryTestTarget = IntegrationTestTargetFactory
                 .createAlternateTestTarget();
@@ -69,19 +66,19 @@ public class PeerToPeerOperationTest extends IntegrationTestCase {
         secondaryClient = secondaryTestTarget.createKineticClient();
     }
 
-    @After
+    @AfterMethod
     public void tearDown() throws Exception {
         secondaryClient.close();
         secondaryTestTarget.shutdown();
     }
 
-    @Test
-    public void testP2PPut_WorksOverPlainConnection() throws Exception {
+    @Test(dataProvider = "transportProtocolOptions")
+    public void testP2PPut_WorksOverPlainConnection(String clientName) throws Exception {
         byte[] key = "an awesome key!".getBytes(Charsets.UTF_8);
         byte[] value = "an awesome value!".getBytes(Charsets.UTF_8);
 
         Entry entry = new Entry(key, value);
-        getClient().putForced(entry);
+        getClient(clientName).putForced(entry);
 
         PeerToPeerOperation p2p = new PeerToPeerOperation();
         p2p.setPeer(secondaryTestTarget.getPeer());
@@ -90,7 +87,7 @@ public class PeerToPeerOperationTest extends IntegrationTestCase {
         op.setForced(true);
         p2p.addOperation(op);
 
-        PeerToPeerOperation p2pResp = getClient().PeerToPeerPush(p2p);
+        PeerToPeerOperation p2pResp = getClient(clientName).PeerToPeerPush(p2p);
 
         assertTrue(p2pResp.getStatus());
 
@@ -99,14 +96,13 @@ public class PeerToPeerOperationTest extends IntegrationTestCase {
         assertArrayEquals(value, peerEntry.getValue());
     }
 
-    @Test
-    @SimulatorOnly
-    public void testP2PPut_WorksOverTlsConnection() throws Exception {
+    @Test(dataProvider = "transportProtocolOptions")
+    public void testP2PPut_WorksOverTlsConnection(String clientName) throws Exception {
         byte[] key = "an awesome key!".getBytes(Charsets.UTF_8);
         byte[] value = "an awesome value!".getBytes(Charsets.UTF_8);
 
         Entry entry = new Entry(key, value);
-        getClient().putForced(entry);
+        getClient(clientName).putForced(entry);
 
         PeerToPeerOperation p2p = new PeerToPeerOperation();
         p2p.setPeer(secondaryTestTarget.getTlsPeer());
@@ -115,7 +111,7 @@ public class PeerToPeerOperationTest extends IntegrationTestCase {
         op.setForced(true);
         p2p.addOperation(op);
 
-        PeerToPeerOperation p2pResp = getClient().PeerToPeerPush(p2p);
+        PeerToPeerOperation p2pResp = getClient(clientName).PeerToPeerPush(p2p);
 
         assertTrue(p2pResp.getStatus());
 
@@ -124,13 +120,13 @@ public class PeerToPeerOperationTest extends IntegrationTestCase {
         assertArrayEquals(value, peerEntry.getValue());
     }
 
-    @Test
-    public void testP2PPut_Fails_ForVersionMismatch() throws Exception {
+    @Test(dataProvider = "transportProtocolOptions")
+    public void testP2PPut_Fails_ForVersionMismatch(String clientName) throws Exception {
         byte[] key = "an awesome key!".getBytes(Charsets.UTF_8);
         byte[] value = "an awesome value!".getBytes(Charsets.UTF_8);
 
         Entry entry = new Entry(key, value);
-        getClient().putForced(entry);
+        getClient(clientName).putForced(entry);
 
         PeerToPeerOperation p2p = new PeerToPeerOperation();
         p2p.setPeer(secondaryTestTarget.getTlsPeer());
@@ -139,14 +135,14 @@ public class PeerToPeerOperationTest extends IntegrationTestCase {
         op.setVersion(key);
         p2p.addOperation(op);
 
-        PeerToPeerOperation p2pResp = getClient().PeerToPeerPush(p2p);
+        PeerToPeerOperation p2pResp = getClient(clientName).PeerToPeerPush(p2p);
 
         assertFalse(p2pResp.getOperationList().get(0).getStatus());
         assertTrue(p2pResp.getStatus());
     }
 
-    @Test
-    public void testP2PPut_Fails_ForInvalidPeer() throws Exception {
+    @Test(dataProvider = "transportProtocolOptions")
+    public void testP2PPut_Fails_ForInvalidPeer(String clientName) throws Exception {
         PeerToPeerOperation p2pop = new PeerToPeerOperation();
         Peer peer = new Peer();
         peer.setHost("localhost");
@@ -158,8 +154,8 @@ public class PeerToPeerOperationTest extends IntegrationTestCase {
 
         // the client should surface connection errors in a machine-readable way
         try {
-            getClient().PeerToPeerPush(p2pop);
-            fail("Should have thrown KineticException");
+            getClient(clientName).PeerToPeerPush(p2pop);
+            Assert.fail("Should have thrown KineticException");
         } catch (KineticException e) {
             // expected exception should be caught here.
             ;

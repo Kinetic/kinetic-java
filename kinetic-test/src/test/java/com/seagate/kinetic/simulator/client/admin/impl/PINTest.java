@@ -19,12 +19,11 @@
  */
 package com.seagate.kinetic.simulator.client.admin.impl;
 
+import static org.testng.AssertJUnit.assertTrue;
+import org.testng.annotations.Test;
+import org.testng.Assert;
 import static com.seagate.kinetic.KineticTestHelpers.toByteArray;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 import kinetic.client.KineticException;
-
-import org.junit.Test;
 
 import com.seagate.kinetic.IntegrationTestCase;
 import com.seagate.kinetic.proto.Kinetic.Command.Status.StatusCode;
@@ -37,6 +36,7 @@ import com.seagate.kinetic.proto.Kinetic.Command.Status.StatusCode;
  * @author Chenchong Li
  *
  */
+@Test (groups = {"simulator"})
 public class PINTest extends IntegrationTestCase {
 
     @Test
@@ -46,13 +46,13 @@ public class PINTest extends IntegrationTestCase {
         try {
             getAdminClient().setErasePin(null, newErasePin);
         } catch (KineticException e) {
-            fail("set pin throw exception: " + e.getMessage());
+            Assert.fail("set pin throw exception: " + e.getMessage());
         }
 
         try {
             getAdminClient().instantErase(newErasePin);
         } catch (KineticException e1) {
-            fail("instant erase throw exception: " + e1.getMessage());
+            Assert.fail("instant erase throw exception: " + e1.getMessage());
         }
     }
 
@@ -64,19 +64,19 @@ public class PINTest extends IntegrationTestCase {
         try {
             getAdminClient().setErasePin(null, oldErasePin);
         } catch (KineticException e) {
-            fail("set pin throw exception: " + e.getMessage());
+            Assert.fail("set pin throw exception: " + e.getMessage());
         }
 
         try {
             getAdminClient().setErasePin(oldErasePin, newErasePin);
         } catch (KineticException e) {
-            fail("modify pin throw exception: " + e.getMessage());
+            Assert.fail("modify pin throw exception: " + e.getMessage());
         }
 
         try {
             getAdminClient().instantErase(newErasePin);
         } catch (KineticException e1) {
-            fail("instant erase throw exception: " + e1.getMessage());
+            Assert.fail("instant erase throw exception: " + e1.getMessage());
         }
     }
 
@@ -89,12 +89,12 @@ public class PINTest extends IntegrationTestCase {
         try {
             getAdminClient().setErasePin(null, oldErasePin);
         } catch (KineticException e) {
-            fail("set pin throw exception: " + e.getMessage());
+            Assert.fail("set pin throw exception: " + e.getMessage());
         }
 
         try {
             getAdminClient().setErasePin(oldIncorrectErasePin, newErasePin);
-            fail("should throw exception");
+            Assert.fail("should throw exception");
         } catch (KineticException e) {
             assertTrue(e.getResponseMessage().getCommand().getStatus()
                     .getCode().equals(StatusCode.NOT_AUTHORIZED));
@@ -103,7 +103,7 @@ public class PINTest extends IntegrationTestCase {
         try {
             getAdminClient().instantErase(oldErasePin);
         } catch (KineticException e1) {
-            fail("instant erase throw exception: " + e1.getMessage());
+            Assert.fail("instant erase throw exception: " + e1.getMessage());
         }
     }
 
@@ -115,26 +115,26 @@ public class PINTest extends IntegrationTestCase {
         try {
             getAdminClient().setErasePin(null, oldErasePin);
         } catch (KineticException e) {
-            fail("set pin throw exception: " + e.getMessage());
+            Assert.fail("set pin throw exception: " + e.getMessage());
         }
 
         // restart server
         try {
             restartServer();
         } catch (Exception e1) {
-            fail("restart server throw exception: " + e1.getMessage());
+            Assert.fail("restart server throw exception: " + e1.getMessage());
         }
 
         try {
             getAdminClient().setErasePin(oldErasePin, newErasePin);
         } catch (KineticException e) {
-            fail("modify pin throw exception: " + e.getMessage());
+            Assert.fail("modify pin throw exception: " + e.getMessage());
         }
 
         try {
             getAdminClient().instantErase(newErasePin);
         } catch (KineticException e1) {
-            fail("instant erase throw exception: " + e1.getMessage());
+            Assert.fail("instant erase throw exception: " + e1.getMessage());
         }
     }
 
@@ -147,19 +147,19 @@ public class PINTest extends IntegrationTestCase {
         try {
             getAdminClient().setErasePin(null, oldErasePin);
         } catch (KineticException e) {
-            fail("set pin throw exception: " + e.getMessage());
+            Assert.fail("set pin throw exception: " + e.getMessage());
         }
 
         // restart server
         try {
             restartServer();
         } catch (Exception e1) {
-            fail("restart server throw exception: " + e1.getMessage());
+            Assert.fail("restart server throw exception: " + e1.getMessage());
         }
 
         try {
             getAdminClient().setErasePin(oldIncorrectErasePin, newErasePin);
-            fail("should throw exception");
+            Assert.fail("should throw exception");
         } catch (KineticException e) {
             assertTrue(e.getResponseMessage().getCommand().getStatus()
                     .getCode().equals(StatusCode.NOT_AUTHORIZED));
@@ -168,7 +168,7 @@ public class PINTest extends IntegrationTestCase {
         try {
             getAdminClient().instantErase(oldErasePin);
         } catch (KineticException e1) {
-            fail("instant erase throw exception: " + e1.getMessage());
+            Assert.fail("instant erase throw exception: " + e1.getMessage());
         }
     }
 

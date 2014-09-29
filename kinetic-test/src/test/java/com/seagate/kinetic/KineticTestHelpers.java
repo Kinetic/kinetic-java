@@ -19,9 +19,6 @@
  */
 package com.seagate.kinetic;
 
-import static junit.framework.TestCase.fail;
-import static org.junit.Assert.assertTrue;
-
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.charset.Charset;
@@ -38,6 +35,8 @@ import kinetic.client.AsyncKineticException;
 import kinetic.client.CallbackHandler;
 import kinetic.client.CallbackResult;
 import kinetic.client.KineticException;
+
+import org.testng.AssertJUnit;
 
 import com.google.protobuf.ByteString;
 
@@ -93,7 +92,7 @@ public class KineticTestHelpers {
 
             @Override
             public void onError(AsyncKineticException exception) {
-                fail("Async exception" + exception);
+                AssertJUnit.fail("Async exception" + exception);
             }
         };
     }
@@ -151,7 +150,7 @@ public class KineticTestHelpers {
      */
     public static void waitForLatch(CountDownLatch latch, int secondsTimeout)
             throws InterruptedException {
-        assertTrue(latch.await(secondsTimeout, TimeUnit.SECONDS));
+        AssertJUnit.assertTrue(latch.await(secondsTimeout, TimeUnit.SECONDS));
     }
 
     /**

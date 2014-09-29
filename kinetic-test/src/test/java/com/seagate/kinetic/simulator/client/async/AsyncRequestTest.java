@@ -19,8 +19,8 @@
  */
 package com.seagate.kinetic.simulator.client.async;
 
-import static org.junit.Assert.assertTrue;
-
+import static org.testng.AssertJUnit.assertTrue;
+import org.testng.annotations.Test;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -32,8 +32,6 @@ import kinetic.client.CallbackHandler;
 import kinetic.client.Entry;
 import kinetic.client.EntryMetadata;
 
-import org.junit.Test;
-
 import com.google.protobuf.ByteString;
 import com.seagate.kinetic.IntegrationTestCase;
 import com.seagate.kinetic.client.internal.MessageFactory;
@@ -44,13 +42,14 @@ import com.seagate.kinetic.proto.Kinetic.Command.KeyValue;
 import com.seagate.kinetic.proto.Kinetic.Command.MessageType;
 import com.seagate.kinetic.proto.Kinetic.Command.Synchronization;
 
+@Test (groups = {"simulator"})
 public class AsyncRequestTest extends IntegrationTestCase {
 
 	Logger logger = Logger.getLogger(AsyncRequestTest.class.getName());
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	@Test
-	public void asyncPutTest() throws Exception {
+	@Test(dataProvider = "transportProtocolOptions")
+	public void asyncPutTest(String clientName) throws Exception {
 
 		List<byte[]> dataList = new ArrayList<byte[]>(10);
 		List<Entry> versionedList = new ArrayList<Entry>(10);
@@ -80,7 +79,7 @@ public class AsyncRequestTest extends IntegrationTestCase {
 
 			CallbackHandler callback = new MyCallBack(lbq, km);
 
-			this.getClient().requestAsync(km, callback);
+			this.getClient(clientName).requestAsync(km, callback);
 
 			// logger.info("added data index=" + i);
 
@@ -91,7 +90,7 @@ public class AsyncRequestTest extends IntegrationTestCase {
 
 		// verify entry
 		for (int i = 0; i < (max); i++) {
-			Entry versioned = getClient().get(versionedList.get(i).getKey());
+			Entry versioned = getClient(clientName).get(versionedList.get(i).getKey());
 
 			assertTrue(Arrays.equals(versionedList.get(i).getKey(),
 					versioned.getKey()));
@@ -100,13 +99,13 @@ public class AsyncRequestTest extends IntegrationTestCase {
 
 		// clean up
 		for (int i = 0; i < max; i++) {
-			boolean deleted = getClient().delete(versionedList.get(i));
+			boolean deleted = getClient(clientName).delete(versionedList.get(i));
 			assertTrue(deleted == true);
 		}
 
 		// verify clean up
 		for (int i = 0; i < max; i++) {
-			Entry v = getClient().get(versionedList.get(i).getKey());
+			Entry v = getClient(clientName).get(versionedList.get(i).getKey());
 			assertTrue(v == null);
 		}
 

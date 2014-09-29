@@ -19,7 +19,7 @@
  */
 package com.seagate.kinetic.duriablity;
 
-import org.junit.Test;
+import org.testng.annotations.Test;
 
 /**
  * 
@@ -27,6 +27,7 @@ import org.junit.Test;
  * <p>
  * 
  */
+@Test(groups = {"simulator", "drive"})
 public class DuriablityTest {
 
 	/**
@@ -35,7 +36,7 @@ public class DuriablityTest {
 	 * <p>
 	 * 
 	 */
-	@Test
+    @Test
 	public void testDuriablity() {
 //		fail("Not yet implemented");
 	}

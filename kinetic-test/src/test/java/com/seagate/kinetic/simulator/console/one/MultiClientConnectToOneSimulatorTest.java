@@ -19,8 +19,8 @@
  */
 package com.seagate.kinetic.simulator.console.one;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
+import static org.testng.AssertJUnit.assertEquals;
+import static org.testng.internal.junit.ArrayAsserts.assertArrayEquals;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,13 +30,13 @@ import kinetic.client.KineticClient;
 import kinetic.client.KineticClientFactory;
 import kinetic.client.KineticException;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.testng.annotations.AfterMethod;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
 
 import com.seagate.kinetic.IntegrationTestCase;
-import com.seagate.kinetic.SimulatorOnly;
 
+@Test(groups = {"simulator"})
 public class MultiClientConnectToOneSimulatorTest extends IntegrationTestCase {
     // This number should be changed when real test, now the maximum number is
     // 10,000 if simulator and client run in two jvm.
@@ -48,7 +48,7 @@ public class MultiClientConnectToOneSimulatorTest extends IntegrationTestCase {
 
     private List<KineticClient> clients;
 
-    @Before
+    @BeforeMethod
     public void setUp() throws Exception {
         clients = new ArrayList<KineticClient>();
         for (int i = 0; i < CLIENT_COUNT; i++) {
@@ -58,7 +58,7 @@ public class MultiClientConnectToOneSimulatorTest extends IntegrationTestCase {
         }
     }
 
-    @After
+    @AfterMethod
     public void tearDown() throws Exception {
         for (KineticClient client : clients) {
             client.close();
@@ -66,7 +66,6 @@ public class MultiClientConnectToOneSimulatorTest extends IntegrationTestCase {
     }
 
     @Test
-    @SimulatorOnly
     public void multiClientConnectToOneSimulatorTest() throws KineticException {
         for (KineticClient client : clients) {
             operation(client);

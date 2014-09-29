@@ -15,6 +15,7 @@
 src/main/python/kinetic/kinetic_pb2.py
 /*/doc
 /*/target
+/*/test-output
 
 /tmp
 database.db

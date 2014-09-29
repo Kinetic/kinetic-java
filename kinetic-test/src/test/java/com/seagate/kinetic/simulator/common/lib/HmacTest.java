@@ -19,10 +19,12 @@
  */
 package com.seagate.kinetic.simulator.common.lib;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
+import static org.testng.AssertJUnit.assertFalse;
+import static org.testng.AssertJUnit.assertTrue;
+import org.testng.annotations.AfterMethod;
+import org.testng.annotations.Test;
+import org.testng.annotations.BeforeMethod;
+import org.testng.Assert;
 import java.security.Key;
 import java.util.Arrays;
 import java.util.concurrent.CountDownLatch;
@@ -30,10 +32,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import javax.crypto.spec.SecretKeySpec;
-
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
 
 import com.google.protobuf.ByteString;
 import com.seagate.kinetic.client.internal.MessageFactory;
@@ -55,6 +53,7 @@ import com.seagate.kinetic.proto.Kinetic.Message;
  * @author Chenchong(Emma) Li
  *
  */
+@Test(groups = {"simulator"})
 public class HmacTest {
     private static final String DEMO_KEY = "asdfasdf";
     private static final String TEST_KEY = "qwerqwer";
@@ -64,11 +63,11 @@ public class HmacTest {
     Key key1 = new SecretKeySpec(ByteString.copyFromUtf8(TEST_KEY)
             .toByteArray(), "HmacSHA1");
 
-    @Before
+    @BeforeMethod
     public void setUp() throws Exception {
     }
 
-    @After
+    @AfterMethod
     public void tearDown() throws Exception {
     }
 
@@ -307,7 +306,7 @@ public class HmacTest {
                     Hmac.calc(bytes1, key);
 
                 } catch (HmacException e) {
-                    fail("calc hmac failed: " + e.getMessage());
+                    Assert.fail("calc hmac failed: " + e.getMessage());
                 }
             }
 
@@ -360,7 +359,7 @@ public class HmacTest {
             try {
                 Hmac.calc(bytes1, key);
             } catch (HmacException e) {
-                fail("Hamc calc throw exception: " + e.getMessage());
+                Assert.fail("Hamc calc throw exception: " + e.getMessage());
             }
         }
     }
@@ -420,13 +419,13 @@ public class HmacTest {
         try {
             hmacWithTag = Hmac.calc(bytes1, key);
         } catch (HmacException e) {
-            fail("Hmac calc throw exception: " + e.getMessage());
+            Assert.fail("Hmac calc throw exception: " + e.getMessage());
         }
 
         try {
             hmacWithTag1 = Hmac.calc(bytes2, key);
         } catch (HmacException e) {
-            fail("Hmac calc throw exception: " + e.getMessage());
+            Assert.fail("Hmac calc throw exception: " + e.getMessage());
         }
 
         assertTrue(Arrays.equals(hmacWithTag.toByteArray(),

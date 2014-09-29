@@ -19,9 +19,9 @@
  */
 package com.seagate.kinetic.simulator.client.admin;
 
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
+import static org.testng.AssertJUnit.assertTrue;
+import org.testng.annotations.Test;
+import org.testng.Assert;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -35,8 +35,6 @@ import kinetic.client.KineticClient;
 import kinetic.client.KineticClientFactory;
 import kinetic.client.KineticException;
 
-import org.junit.Test;
-
 import com.seagate.kinetic.IntegrationTestCase;
 
 /**
@@ -45,6 +43,7 @@ import com.seagate.kinetic.IntegrationTestCase;
  * <p>
  *
  */
+@Test (groups = {"simulator"})
 public class SecurityPersistTest extends IntegrationTestCase {
     private final byte[] INIT_KEY = "0".getBytes();
     private final byte[] INIT_VALUE = "0".getBytes();
@@ -97,7 +96,7 @@ public class SecurityPersistTest extends IntegrationTestCase {
         try {
             getAdminClient().setAcl(acls);
         } catch (KineticException e1) {
-            fail("set security throw exception: " + e1.getMessage());
+            Assert.fail("set security throw exception: " + e1.getMessage());
         }
 
         // // case 2: restart server, then load the .acl and rewrite the aclmap
@@ -113,7 +112,7 @@ public class SecurityPersistTest extends IntegrationTestCase {
             v = client1.get(INIT_KEY);
             client1.delete(v);
         } catch (KineticException e) {
-            fail("put failed, the exception is: " + e.getMessage());
+            Assert.fail("put failed, the exception is: " + e.getMessage());
         }
         client1.close();
 
@@ -123,7 +122,7 @@ public class SecurityPersistTest extends IntegrationTestCase {
         try {
             v = client2.get(INIT_KEY);
         } catch (KineticException e) {
-            fail("put failed, the exception is: " + e.getMessage());
+            Assert.fail("put failed, the exception is: " + e.getMessage());
 
         }
 
@@ -131,7 +130,7 @@ public class SecurityPersistTest extends IntegrationTestCase {
             EntryMetadata entryMetadata = new EntryMetadata();
             client2.put(new Entry(INIT_KEY, INIT_VALUE, entryMetadata),
                     INIT_VERSION);
-            fail("user 2 does not have write role");
+            Assert.fail("user 2 does not have write role");
         } catch (KineticException e) {
             assertTrue(true);
 
@@ -188,7 +187,7 @@ public class SecurityPersistTest extends IntegrationTestCase {
         try {
             getAdminClient().setAcl(acls);
         } catch (KineticException e1) {
-            fail("set security throw exception: " + e1.getMessage());
+            Assert.fail("set security throw exception: " + e1.getMessage());
         }
     }
 
@@ -209,7 +208,7 @@ public class SecurityPersistTest extends IntegrationTestCase {
 
         try {
             getAdminClient().setAcl(acls);
-            fail("should throw exception.");
+            Assert.fail("should throw exception.");
         } catch (KineticException e1) {
             assertTrue(e1.getMessage().contains("Paramter Exception"));
         }

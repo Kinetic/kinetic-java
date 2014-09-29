@@ -21,11 +21,7 @@ package com.seagate.kinetic.simulator.client.internal;
 
 import static com.seagate.kinetic.KineticAssertions.assertListOfEntriesEqual;
 import static com.seagate.kinetic.KineticTestHelpers.toByteArray;
-import static junit.framework.TestCase.assertEquals;
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.testng.AssertJUnit.assertEquals;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -36,42 +32,39 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Logger;
 
-import com.jcraft.jsch.JSchException;
-import com.seagate.kinetic.AbstractIntegrationTestTarget;
-import com.seagate.kinetic.IntegrationTestTargetFactory;
 import kinetic.client.Entry;
 import kinetic.client.EntryMetadata;
 import kinetic.client.KineticException;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.testng.AssertJUnit;
+import org.testng.annotations.AfterMethod;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
 
+import com.jcraft.jsch.JSchException;
+import com.seagate.kinetic.AbstractIntegrationTestTarget;
+import com.seagate.kinetic.IntegrationTestTargetFactory;
 import com.seagate.kinetic.KVGenerator;
-import com.seagate.kinetic.KineticTestRunner;
 import com.seagate.kinetic.client.internal.DefaultKineticClient;
 
-@RunWith(KineticTestRunner.class)
+@Test(groups = {"simulator"})
 public class KineticImplTest {
 	private final static Logger logger = Logger.getLogger(KineticImplTest.class
 			.getName());
 
-	public KineticTestRunner.TestClientConfigConfigurator testClientConfigurator;
-
 	private DefaultKineticClient kineticClient;
 	private AbstractIntegrationTestTarget testTarget;
 
-	@Before
-	public void startTestServer() throws InterruptedException,
+	@BeforeMethod
+    public void startTestServer() throws InterruptedException,
             KineticException, IOException, JSchException, ExecutionException {
         testTarget = IntegrationTestTargetFactory.createTestTarget(true);
 		kineticClient = new DefaultKineticClient(
-				testTarget.getClientConfig());
+		        IntegrationTestTargetFactory.createDefaultClientConfig());
 	}
 
-	@After
-	public void stopTestServer() throws Exception {
+	@AfterMethod
+    public void stopTestServer() throws Exception {
 		kineticClient.close();
 		testTarget.shutdown();
 	}
@@ -109,7 +102,7 @@ public class KineticImplTest {
 						.getKey(), true, expectSize);
 		int pos = 0;
 		for (byte[] key : keys1) {
-			assertArrayEquals(vPutList.get(startIndex + pos).getKey(), key);
+			AssertJUnit.assertArrayEquals(vPutList.get(startIndex + pos).getKey(), key);
 			pos++;
 		}
 		assertEquals(expectSize, pos);
@@ -128,7 +121,7 @@ public class KineticImplTest {
 						.get(endIndex).getKey(), true, expectSize);
 		int pos = 0;
 		for (byte[] key : keys2) {
-			assertArrayEquals(vPutList.get(startIndex + 1 + pos).getKey(), key);
+			AssertJUnit.assertArrayEquals(vPutList.get(startIndex + 1 + pos).getKey(), key);
 			pos++;
 		}
 		assertEquals(expectSize - 1, pos);
@@ -148,7 +141,7 @@ public class KineticImplTest {
 						.getKey(), false, expectSize);
 		int pos = 0;
 		for (byte[] key : keys3) {
-			assertArrayEquals(vPutList.get(startIndex + pos).getKey(), key);
+			AssertJUnit.assertArrayEquals(vPutList.get(startIndex + pos).getKey(), key);
 			pos++;
 		}
 		assertEquals(expectSize - 1, pos);
@@ -167,7 +160,7 @@ public class KineticImplTest {
 						.get(endIndex).getKey(), false, expectSize);
 		int pos = 0;
 		for (byte[] key : keys4) {
-			assertArrayEquals(vPutList.get(startIndex + 1 + pos).getKey(), key);
+			AssertJUnit.assertArrayEquals(vPutList.get(startIndex + 1 + pos).getKey(), key);
 			pos++;
 		}
 		assertEquals(expectSize - 2, pos);
@@ -209,9 +202,9 @@ public class KineticImplTest {
 						.getKey(), true);
 		int pos = 0;
 		for (Entry versioned : versioneds1) {
-			assertArrayEquals(vPutList.get(startIndex + pos).getKey(),
+			AssertJUnit.assertArrayEquals(vPutList.get(startIndex + pos).getKey(),
 					versioned.getKey());
-			assertArrayEquals(vPutList.get(startIndex + pos).getValue(),
+			AssertJUnit.assertArrayEquals(vPutList.get(startIndex + pos).getValue(),
 					versioned.getValue());
 			pos++;
 		}
@@ -232,9 +225,9 @@ public class KineticImplTest {
 						.get(endIndex).getKey(), true);
 		int pos = 0;
 		for (Entry versioned : versioneds2) {
-			assertArrayEquals(vPutList.get(startIndex + 1 + pos).getKey(),
+			AssertJUnit.assertArrayEquals(vPutList.get(startIndex + 1 + pos).getKey(),
 					versioned.getKey());
-			assertArrayEquals(vPutList.get(startIndex + 1 + pos).getValue(),
+			AssertJUnit.assertArrayEquals(vPutList.get(startIndex + 1 + pos).getValue(),
 					versioned.getValue());
 			pos++;
 		}
@@ -255,9 +248,9 @@ public class KineticImplTest {
 						.getKey(), false);
 		int pos = 0;
 		for (Entry versioned : versioneds3) {
-			assertArrayEquals(vPutList.get(startIndex + pos).getKey(),
+			AssertJUnit.assertArrayEquals(vPutList.get(startIndex + pos).getKey(),
 					versioned.getKey());
-			assertArrayEquals(vPutList.get(startIndex + pos).getValue(),
+			AssertJUnit.assertArrayEquals(vPutList.get(startIndex + pos).getValue(),
 					versioned.getValue());
 			pos++;
 		}
@@ -279,9 +272,9 @@ public class KineticImplTest {
 						.get(endIndex).getKey(), false);
 		int pos = 0;
 		for (Entry versioned : versioneds4) {
-			assertArrayEquals(vPutList.get(startIndex + 1 + pos).getKey(),
+			AssertJUnit.assertArrayEquals(vPutList.get(startIndex + 1 + pos).getKey(),
 					versioned.getKey());
-			assertArrayEquals(vPutList.get(startIndex + 1 + pos).getValue(),
+			AssertJUnit.assertArrayEquals(vPutList.get(startIndex + 1 + pos).getValue(),
 					versioned.getValue());
 			pos++;
 		}
@@ -410,22 +403,22 @@ public class KineticImplTest {
 			Entry v = it.next();
 
 			// verify key
-			assertArrayEquals(versionedList.get(startIndex + pos).getKey(),
+			AssertJUnit.assertArrayEquals(versionedList.get(startIndex + pos).getKey(),
 					v.getKey());
 
 			// verify value
-			assertArrayEquals(versionedList.get(startIndex + pos).getValue(),
+			AssertJUnit.assertArrayEquals(versionedList.get(startIndex + pos).getValue(),
 					v.getValue());
 
 			pos++;
 		}
 
 		boolean hasNext = it.hasNext();
-		assertFalse(hasNext);
+		AssertJUnit.assertFalse(hasNext);
 
 		try {
 			it.next();
-			fail("API did not throw NoSuchElementException");
+			AssertJUnit.fail("API did not throw NoSuchElementException");
 		} catch (Exception e) {
 		}
 	}
@@ -476,7 +469,7 @@ public class KineticImplTest {
 				boolean deleted = kineticClient.delete(versionedList
 						.get(startIndex + pos));
 
-				assertTrue(deleted);
+				AssertJUnit.assertTrue(deleted);
 			}
 
 			Entry v = it.next();
@@ -490,12 +483,12 @@ public class KineticImplTest {
 				}
 
 				// verify key
-				assertArrayEquals(String.format(
+				AssertJUnit.assertArrayEquals(String.format(
 						"Unexpected key at startIndex=%d pos=%d", startIndex,
 						pos), versionedList.get(index).getKey(), v.getKey());
 
 				// verify value
-				assertArrayEquals(versionedList.get(index).getValue(),
+				AssertJUnit.assertArrayEquals(versionedList.get(index).getValue(),
 						v.getValue());
 			}
 
@@ -518,7 +511,7 @@ public class KineticImplTest {
 						.getKey(), true, expectSize);
 		int pos = 0;
 		for (byte[] key : keys) {
-			assertArrayEquals(vPutList.get(endIndex - pos).getKey(), key);
+			AssertJUnit.assertArrayEquals(vPutList.get(endIndex - pos).getKey(), key);
 			pos++;
 		}
 		assertEquals(expectSize, pos);
@@ -537,7 +530,7 @@ public class KineticImplTest {
 						.get(endIndex).getKey(), false, expectSize);
 		int pos = 0;
 		for (byte[] key : keys) {
-			assertArrayEquals(vPutList.get(endIndex - pos - 1).getKey(), key);
+			AssertJUnit.assertArrayEquals(vPutList.get(endIndex - pos - 1).getKey(), key);
 			pos++;
 		}
 		assertEquals(expectSize - 2, pos);
@@ -556,7 +549,7 @@ public class KineticImplTest {
 						.getKey(), false, expectSize);
 		int pos = 0;
 		for (byte[] key : keys) {
-			assertArrayEquals(vPutList.get(endIndex - pos - 1).getKey(), key);
+			AssertJUnit.assertArrayEquals(vPutList.get(endIndex - pos - 1).getKey(), key);
 			pos++;
 		}
 		assertEquals(expectSize - 1, pos);
@@ -575,7 +568,7 @@ public class KineticImplTest {
 						.get(endIndex).getKey(), true, expectSize);
 		int pos = 0;
 		for (byte[] key : keys) {
-			assertArrayEquals(vPutList.get(endIndex - pos).getKey(), key);
+			AssertJUnit.assertArrayEquals(vPutList.get(endIndex - pos).getKey(), key);
 			pos++;
 		}
 		assertEquals(expectSize - 1, pos);
@@ -594,7 +587,7 @@ public class KineticImplTest {
 						.getKey(), true, expectSize);
 		int pos = 0;
 		for (byte[] key : keys) {
-			assertArrayEquals(vPutList.get(endIndex - pos).getKey(), key);
+			AssertJUnit.assertArrayEquals(vPutList.get(endIndex - pos).getKey(), key);
 			pos++;
 		}
 		assertEquals(expectSize, pos);
@@ -613,7 +606,7 @@ public class KineticImplTest {
 						.getKey(), false, expectSize);
 		int pos = 0;
 		for (byte[] key : keys) {
-			assertArrayEquals(vPutList.get(endIndex - pos - 1).getKey(), key);
+			AssertJUnit.assertArrayEquals(vPutList.get(endIndex - pos - 1).getKey(), key);
 			pos++;
 		}
 		assertEquals(expectSize, pos);
@@ -632,7 +625,7 @@ public class KineticImplTest {
 						.get(endIndex).getKey(), true, expectSize);
 		int pos = 0;
 		for (byte[] key : keys) {
-			assertArrayEquals(vPutList.get(endIndex - pos).getKey(), key);
+			AssertJUnit.assertArrayEquals(vPutList.get(endIndex - pos).getKey(), key);
 			pos++;
 		}
 		assertEquals(expectSize, pos);
@@ -651,7 +644,7 @@ public class KineticImplTest {
 						.get(endIndex).getKey(), false, expectSize);
 		int pos = 0;
 		for (byte[] key : keys) {
-			assertArrayEquals(vPutList.get(endIndex - pos - 1).getKey(), key);
+			AssertJUnit.assertArrayEquals(vPutList.get(endIndex - pos - 1).getKey(), key);
 			pos++;
 		}
 		assertEquals(expectSize, pos);
@@ -670,7 +663,7 @@ public class KineticImplTest {
 						.getKey(), true, expectSize);
 		int pos = 0;
 		for (byte[] key : keys) {
-			assertArrayEquals(vPutList.get(endIndex - pos).getKey(), key);
+			AssertJUnit.assertArrayEquals(vPutList.get(endIndex - pos).getKey(), key);
 			pos++;
 		}
 		assertEquals(endIndex - startIndex + 1, pos);
@@ -689,7 +682,7 @@ public class KineticImplTest {
 						.getKey(), false, expectSize);
 		int pos = 0;
 		for (byte[] key : keys) {
-			assertArrayEquals(vPutList.get(endIndex - pos - 1).getKey(), key);
+			AssertJUnit.assertArrayEquals(vPutList.get(endIndex - pos - 1).getKey(), key);
 			pos++;
 		}
 		assertEquals(endIndex - startIndex, pos);
@@ -708,7 +701,7 @@ public class KineticImplTest {
 						.get(endIndex).getKey(), true, expectSize);
 		int pos = 0;
 		for (byte[] key : keys) {
-			assertArrayEquals(vPutList.get(endIndex - pos).getKey(), key);
+			AssertJUnit.assertArrayEquals(vPutList.get(endIndex - pos).getKey(), key);
 			pos++;
 		}
 		assertEquals(endIndex - startIndex, pos);
@@ -727,7 +720,7 @@ public class KineticImplTest {
 						.get(endIndex).getKey(), false, expectSize);
 		int pos = 0;
 		for (byte[] key : keys) {
-			assertArrayEquals(vPutList.get(endIndex - pos - 1).getKey(), key);
+			AssertJUnit.assertArrayEquals(vPutList.get(endIndex - pos - 1).getKey(), key);
 			pos++;
 		}
 		assertEquals(endIndex - startIndex - 1, pos);
@@ -746,7 +739,7 @@ public class KineticImplTest {
 						.getKey(), true, expectSize);
 		int pos = 0;
 		for (byte[] key : keys) {
-			assertArrayEquals(vPutList.get(endIndex - pos).getKey(), key);
+			AssertJUnit.assertArrayEquals(vPutList.get(endIndex - pos).getKey(), key);
 			pos++;
 		}
 		assertEquals(expectSize, pos);
@@ -765,7 +758,7 @@ public class KineticImplTest {
 						.get(endIndex).getKey(), false, expectSize);
 		int pos = 0;
 		for (byte[] key : keys) {
-			assertArrayEquals(vPutList.get(endIndex - pos - 1).getKey(), key);
+			AssertJUnit.assertArrayEquals(vPutList.get(endIndex - pos - 1).getKey(), key);
 			pos++;
 		}
 		assertEquals(expectSize - 2, pos);
@@ -784,7 +777,7 @@ public class KineticImplTest {
 						.getKey(), false, expectSize);
 		int pos = 0;
 		for (byte[] key : keys) {
-			assertArrayEquals(vPutList.get(endIndex - pos - 1).getKey(), key);
+			AssertJUnit.assertArrayEquals(vPutList.get(endIndex - pos - 1).getKey(), key);
 			pos++;
 		}
 		assertEquals(expectSize - 1, pos);
@@ -803,7 +796,7 @@ public class KineticImplTest {
 						.get(endIndex).getKey(), true, expectSize);
 		int pos = 0;
 		for (byte[] key : keys) {
-			assertArrayEquals(vPutList.get(endIndex - pos).getKey(), key);
+			AssertJUnit.assertArrayEquals(vPutList.get(endIndex - pos).getKey(), key);
 			pos++;
 		}
 		assertEquals(expectSize - 1, pos);
@@ -822,7 +815,7 @@ public class KineticImplTest {
 						.getKey(), true, expectSize);
 		int pos = 0;
 		for (byte[] key : keys) {
-			assertArrayEquals(vPutList.get(endIndex - pos).getKey(), key);
+			AssertJUnit.assertArrayEquals(vPutList.get(endIndex - pos).getKey(), key);
 			pos++;
 		}
 		assertEquals(endIndex - startIndex + 1, pos);
@@ -841,7 +834,7 @@ public class KineticImplTest {
 						.get(endIndex).getKey(), false, expectSize);
 		int pos = 0;
 		for (byte[] key : keys) {
-			assertArrayEquals(vPutList.get(endIndex - pos - 1).getKey(), key);
+			AssertJUnit.assertArrayEquals(vPutList.get(endIndex - pos - 1).getKey(), key);
 			pos++;
 		}
 		assertEquals(endIndex - startIndex - 1, pos);
@@ -860,7 +853,7 @@ public class KineticImplTest {
 						.getKey(), false, expectSize);
 		int pos = 0;
 		for (byte[] key : keys) {
-			assertArrayEquals(vPutList.get(endIndex - pos - 1).getKey(), key);
+			AssertJUnit.assertArrayEquals(vPutList.get(endIndex - pos - 1).getKey(), key);
 			pos++;
 		}
 		assertEquals(endIndex - startIndex, pos);
@@ -879,7 +872,7 @@ public class KineticImplTest {
 						.get(endIndex).getKey(), true, expectSize);
 		int pos = 0;
 		for (byte[] key : keys) {
-			assertArrayEquals(vPutList.get(endIndex - pos).getKey(), key);
+			AssertJUnit.assertArrayEquals(vPutList.get(endIndex - pos).getKey(), key);
 			pos++;
 		}
 		assertEquals(endIndex - startIndex, pos);

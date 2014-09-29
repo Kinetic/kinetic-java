@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.util.concurrent.ExecutionException;
 
+import kinetic.client.ClientConfiguration;
 import kinetic.client.KineticException;
 import kinetic.simulator.SimulatorConfiguration;
 
@@ -89,6 +90,15 @@ public class IntegrationTestTargetFactory {
         testTarget.waitForServerReady();
 
         return testTarget;
+    }
+    
+    public static ClientConfiguration createDefaultClientConfig() {
+        ClientConfiguration clientConfiguration = new ClientConfiguration();
+        clientConfiguration.setHost(System.getProperty("KINETIC_HOST", "localhost"));
+        clientConfiguration.setPort(Integer.parseInt(System.getProperty("KINETIC_PORT",
+                "8123")));
+        clientConfiguration.setNioServiceThreads(1);
+        return clientConfiguration;
     }
 
     public static boolean isRunningAgainstSimulator() {

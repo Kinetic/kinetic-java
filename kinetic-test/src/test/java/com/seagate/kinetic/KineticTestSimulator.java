@@ -19,8 +19,7 @@
  */
 package com.seagate.kinetic;
 
-import static org.junit.Assert.fail;
-
+import org.testng.Assert;
 import java.io.File;
 import java.io.IOException;
 import java.util.logging.Logger;
@@ -321,7 +320,7 @@ public class KineticTestSimulator {
 			FileUtils.deleteQuietly(new File(kineticHome + File.separator
 					+ ".acl"));
 		} catch (IOException e) {
-			fail("delete directory failed" + e.getMessage());
+			Assert.fail("delete directory failed" + e.getMessage());
 		}
 	}
 }

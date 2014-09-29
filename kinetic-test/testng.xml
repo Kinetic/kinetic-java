@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
+<suite name="kinetic-test by groups">
+	<test verbose="2" name="GRP-simulator">
+		<groups>
+			<run>
+				<include name="simulator" />
+				<include name="drive" />
+			</run>
+		</groups>
+		<classes>
+			<class name="com.seagate.kinetic.adminAPI.KineticAdminTest" />
+			<class name="com.seagate.kinetic.advancedAPI.AdvancedAPITest" />
+			<class name="com.seagate.kinetic.asyncAPI.KineticAsyncAPITest" />
+			<class name="com.seagate.kinetic.basicAPI.KineticBasicAPITest" />
+			<class name="com.seagate.kinetic.boundary.AdvancedAPIBoundaryTest" />
+			<class name="com.seagate.kinetic.boundary.KineticBoundaryTest" />
+			<class name="com.seagate.kinetic.concurrent.KineticClientConcurrentTest" />
+			<class name="com.seagate.kinetic.concurrent.KineticPutConcurrentTest" />
+			<class name="com.seagate.kinetic.duriablity.DuriablityTest" />
+			<class name="com.seagate.kinetic.monitor.HeartbeatMonitorTest" />
+			<class name="com.seagate.kinetic.stress.StressTest" />
+			<class name="com.seagate.kinetic.performance.microPerfTest" />
+			<class
+				name="com.seagate.kinetic.simulator.client.admin.impl.FirmwareDownloadTest" />
+			<class name="com.seagate.kinetic.simulator.client.admin.impl.PinOpTest" />
+			<class name="com.seagate.kinetic.simulator.client.admin.impl.PINTest" />
+			<class
+				name="com.seagate.kinetic.simulator.client.admin.impl.SecurityEraseTest" />
+			<class
+				name="com.seagate.kinetic.simulator.client.admin.GenerateJsonUtilForAdminScript" />
+			<class
+				name="com.seagate.kinetic.simulator.client.admin.SecurityOperationTest" />
+			<class
+				name="com.seagate.kinetic.simulator.client.admin.SecurityPersistTest" />
+			<class name="com.seagate.kinetic.simulator.client.async.AsyncRequestTest" />
+			<class
+				name="com.seagate.kinetic.simulator.client.internal.KineticImplTest" />
+			<class
+				name="com.seagate.kinetic.simulator.client.internal.PeerToPeerPushTest" />
+			<class
+				name="com.seagate.kinetic.simulator.client.p2p.PeerToPeerOperationTest" />
+			<class
+				name="com.seagate.kinetic.simulator.client.sanity.KineticSanityTest" />
+			<class name="com.seagate.kinetic.simulator.common.lib.HmacTest" />
+			<class
+				name="com.seagate.kinetic.simulator.console.multi.MultiKineticSimulatorOperationTest" />
+			<class
+				name="com.seagate.kinetic.simulator.console.multi.MultiKineticSimulatorsTest" />
+			<class
+				name="com.seagate.kinetic.simulator.console.one.MultiClientConnectToOneSimulatorTest" />
+		</classes>
+	</test> <!-- GRP-simulator -->
+</suite> <!-- kinetic-test by groups -->

@@ -19,8 +19,10 @@
  */
 package com.seagate.kinetic.simulator.client.internal;
 
-import static org.junit.Assert.assertTrue;
-
+import static org.testng.AssertJUnit.assertTrue;
+import org.testng.annotations.AfterMethod;
+import org.testng.annotations.Test;
+import org.testng.annotations.BeforeMethod;
 import java.util.Arrays;
 import java.util.logging.Logger;
 
@@ -28,10 +30,6 @@ import kinetic.client.ClientConfiguration;
 import kinetic.client.Entry;
 import kinetic.simulator.KineticSimulator;
 import kinetic.simulator.SimulatorConfiguration;
-
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
 
 import com.google.protobuf.ByteString;
 import com.seagate.kinetic.client.internal.MessageFactory;
@@ -50,6 +48,7 @@ import com.seagate.kinetic.proto.Kinetic.Command.P2POperation.Peer;
  * @author Chiaming Yang
  *
  */
+@Test(groups = {"simulator"})
 public class PeerToPeerPushTest {
 
 	Logger logger = Logger
@@ -64,8 +63,8 @@ public class PeerToPeerPushTest {
 
 	private final KineticSimulator[] servers = new KineticSimulator[max];
 
-	@Before
-	public void setUp() throws Exception {
+	@BeforeMethod
+    public void setUp() throws Exception {
 		// server configs
 
 		for (int i = 0; i < max; i++) {
@@ -163,8 +162,8 @@ public class PeerToPeerPushTest {
 		logger.info("peer to peer test passed");
 	}
 
-	@After
-	public void tearDown() throws Exception {
+	@AfterMethod
+    public void tearDown() throws Exception {
 
 		for (int i = 0; i < max; i++) {
 

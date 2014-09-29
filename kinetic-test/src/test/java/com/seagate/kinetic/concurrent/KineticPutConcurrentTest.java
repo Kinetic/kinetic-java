@@ -19,11 +19,11 @@
  */
 package com.seagate.kinetic.concurrent;
 
+import static org.testng.AssertJUnit.assertEquals;
+import static org.testng.AssertJUnit.assertTrue;
+import org.testng.annotations.Test;
+import org.testng.Assert;
 import static com.seagate.kinetic.KineticTestHelpers.toByteArray;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -35,8 +35,6 @@ import kinetic.client.KineticClient;
 import kinetic.client.KineticClientFactory;
 import kinetic.client.KineticException;
 
-import org.junit.Test;
-
 import com.seagate.kinetic.IntegrationTestCase;
 import com.seagate.kinetic.IntegrationTestLoggerFactory;
 
@@ -47,6 +45,7 @@ import com.seagate.kinetic.IntegrationTestLoggerFactory;
  * <p>
  * 
  */
+@Test(groups = {"simulator", "drive"})
 public class KineticPutConcurrentTest extends IntegrationTestCase {
 	private static final Logger logger = IntegrationTestLoggerFactory
 			.getLogger(KineticPutConcurrentTest.class.getName());
@@ -63,8 +62,8 @@ public class KineticPutConcurrentTest extends IntegrationTestCase {
 	 * @throws InterruptedException
 	 *             if any interrupt error occurred.
 	 */
-	@Test
-	public void sameKeyConcurrentPutTest() throws KineticException,
+	@Test(dataProvider = "transportProtocolOptions")
+	public void sameKeyConcurrentPutTest(String clientName) throws KineticException,
 			InterruptedException {
 		String key = "samekey";
 		CountDownLatch latch = new CountDownLatch(writeThreads);
@@ -74,7 +73,7 @@ public class KineticPutConcurrentTest extends IntegrationTestCase {
 		KineticClient kineticClient;
 		for (int i = 0; i < writeThreads; i++) {
 			kineticClient = KineticClientFactory
-					.createInstance(getClientConfig());
+					.createInstance(kineticClientConfigutations.get(clientName));
 
 			// every threads write using the same key
 			pool.execute(new SameKeyWriteThread(kineticClient, key,
@@ -154,7 +153,7 @@ public class KineticPutConcurrentTest extends IntegrationTestCase {
 						count++;
 
 					} catch (KineticException e) {
-						fail("fail to get the version" + e.getMessage());
+						Assert.fail("fail to get the version" + e.getMessage());
 					}
 				} finally {
 					if (count == writeCount) {
@@ -166,7 +165,7 @@ public class KineticPutConcurrentTest extends IntegrationTestCase {
 			try {
 				kineticClient.close();
 			} catch (KineticException e) {
-				fail("close kineticClient failed, " + e.getMessage());
+				Assert.fail("close kineticClient failed, " + e.getMessage());
 			}
 
 			latch.countDown();

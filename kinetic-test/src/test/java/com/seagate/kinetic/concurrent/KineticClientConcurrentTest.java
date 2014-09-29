@@ -19,11 +19,12 @@
  */
 package com.seagate.kinetic.concurrent;
 
+import static org.testng.AssertJUnit.assertEquals;
+import static org.testng.AssertJUnit.assertTrue;
+import org.testng.annotations.Test;
+import org.testng.annotations.BeforeMethod;
+import org.testng.Assert;
 import static com.seagate.kinetic.KineticTestHelpers.toByteArray;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.Iterator;
@@ -38,9 +39,6 @@ import kinetic.client.KineticClient;
 import kinetic.client.KineticClientFactory;
 import kinetic.client.KineticException;
 
-import org.junit.Before;
-import org.junit.Test;
-
 import com.seagate.kinetic.IntegrationTestCase;
 import com.seagate.kinetic.IntegrationTestLoggerFactory;
 import com.seagate.kinetic.KVGenerator;
@@ -53,6 +51,7 @@ import com.seagate.kinetic.client.internal.DefaultKineticClient;
  * <p>
  * 
  */
+@Test(groups = {"simulator", "drive"})
 public class KineticClientConcurrentTest extends IntegrationTestCase {
 	private static final Logger logger = IntegrationTestLoggerFactory
 			.getLogger(KineticClientConcurrentTest.class.getName());
@@ -67,8 +66,8 @@ public class KineticClientConcurrentTest extends IntegrationTestCase {
 	 * Initialize a key/value generator.
 	 * 
 	 */
-	@Before
-	public void setUp() throws KineticException, IOException,
+	@BeforeMethod
+    public void setUp() throws KineticException, IOException,
 			InterruptedException {
 		kvGenerator = new KVGenerator();
 	}
@@ -82,8 +81,8 @@ public class KineticClientConcurrentTest extends IntegrationTestCase {
 	 * @throws InterruptedException
 	 *             if any interrupt error occurred.
 	 */
-	@Test
-	public void concurrentTest() throws InterruptedException, KineticException,
+	@Test(dataProvider = "transportProtocolOptions")
+	public void concurrentTest(String clientName) throws InterruptedException, KineticException,
 			UnsupportedEncodingException {
 		int totalWrites = writeThreads * writesEachThread;
 		CountDownLatch latch = new CountDownLatch(writeThreads);
@@ -96,7 +95,7 @@ public class KineticClientConcurrentTest extends IntegrationTestCase {
 		KineticClient kineticClient;
 		for (int i = 0; i < writeThreads; i++) {
 			kineticClient = KineticClientFactory
-					.createInstance(getClientConfig());
+					.createInstance(kineticClientConfigutations.get(clientName));
 			pool.execute(new WriteThread(kineticClient, kvGenerator,
 					writesEachThread, latch));
 		}
@@ -123,10 +122,10 @@ public class KineticClientConcurrentTest extends IntegrationTestCase {
 			rightValue = kvGenerator.getValue(key);
 			returnVersioned = kineticClient.get(toByteArray(key));
 			if (returnVersioned == null) {
-				fail("return null when get key " + key);
+				Assert.fail("return null when get key " + key);
 			} else {
 				if (returnVersioned.getValue() == null) {
-					fail("the value is null when get key " + key);
+					Assert.fail("the value is null when get key " + key);
 				} else {
 					returnValue = new String(returnVersioned.getValue());
 					assertEquals(rightValue, returnValue);
@@ -155,10 +154,10 @@ public class KineticClientConcurrentTest extends IntegrationTestCase {
 		if (iterator.hasNext()) {
 			currentVersioned = iterator.next();
 			if (currentVersioned == null) {
-				fail("iterator has null element");
+				Assert.fail("iterator has null element");
 			} else {
 				if (currentVersioned.getKey() == null) {
-					fail("the key is null");
+					Assert.fail("the key is null");
 				} else {
 					currentKey = new String(currentVersioned.getKey());
 					++count;
@@ -217,10 +216,10 @@ public class KineticClientConcurrentTest extends IntegrationTestCase {
 					kineticClient.put(new Entry(toByteArray(key),
 							toByteArray(value), entryMetadata), version);
 				} catch (KineticException e) {
-					fail("put key=" + key + ", value=" + value + " failed, "
+					Assert.fail("put key=" + key + ", value=" + value + " failed, "
 							+ e.getMessage());
 				} catch (Exception e) {
-					fail("put key=" + key + ", value=" + value + " failed, "
+					Assert.fail("put key=" + key + ", value=" + value + " failed, "
 							+ e.getMessage());
 				}
 			}
@@ -228,9 +227,9 @@ public class KineticClientConcurrentTest extends IntegrationTestCase {
 			try {
 				kineticClient.close();
 			} catch (KineticException e) {
-				fail("close kineticClient failed, " + e.getMessage());
+				Assert.fail("close kineticClient failed, " + e.getMessage());
 			} catch (Exception e) {
-				fail("close kineticClient failed, " + e.getMessage());
+				Assert.fail("close kineticClient failed, " + e.getMessage());
 			}
 
 			// latch count down

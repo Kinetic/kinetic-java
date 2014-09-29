@@ -19,7 +19,7 @@
  */
 package com.seagate.kinetic.stress;
 
-import org.junit.Test;
+import org.testng.annotations.Test;
 
 /**
  * 
@@ -27,6 +27,7 @@ import org.junit.Test;
  * <p>
  * 
  */
+@Test(groups = {"simulator", "drive"})
 public class StressTest {
 
 	/**
@@ -37,7 +38,7 @@ public class StressTest {
 	 */
 	@Test
 	public void test() {
-//		Ffail("Not yet implemented");
+//		fail("Not yet implemented");
 	}
 
 }

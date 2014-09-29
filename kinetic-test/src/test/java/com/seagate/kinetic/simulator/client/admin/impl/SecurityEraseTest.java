@@ -19,18 +19,18 @@
  */
 package com.seagate.kinetic.simulator.client.admin.impl;
 
+import static org.testng.AssertJUnit.assertTrue;
+import org.testng.annotations.Test;
+import org.testng.Assert;
 import static com.seagate.kinetic.KineticTestHelpers.toByteArray;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 import kinetic.admin.KineticAdminClient;
 import kinetic.admin.KineticAdminClientFactory;
 import kinetic.client.KineticException;
 
-import org.junit.Test;
-
 import com.seagate.kinetic.IntegrationTestCase;
 import com.seagate.kinetic.proto.Kinetic.Command.Status.StatusCode;
 
+@Test (groups = {"simulator"})
 public class SecurityEraseTest extends IntegrationTestCase {
 
     String pin = "pin001";
@@ -41,7 +41,7 @@ public class SecurityEraseTest extends IntegrationTestCase {
         try {
             getAdminClient().instantErase(pin);
         } catch (KineticException e) {
-            fail("secure erase throw exception: " + e.getMessage());
+            Assert.fail("secure erase throw exception: " + e.getMessage());
         }
     }
 
@@ -53,12 +53,12 @@ public class SecurityEraseTest extends IntegrationTestCase {
         try {
             getAdminClient().setErasePin(null, newErasePin);
         } catch (KineticException e) {
-            fail("set pin throw exception: " + e.getMessage());
+            Assert.fail("set pin throw exception: " + e.getMessage());
         }
 
         try {
             getAdminClient().instantErase(wrongPin);
-            fail("should throw exception");
+            Assert.fail("should throw exception");
         } catch (KineticException e) {
             assertTrue(e.getResponseMessage().getCommand().getStatus()
                     .getCode().equals(StatusCode.NOT_AUTHORIZED));
@@ -67,7 +67,7 @@ public class SecurityEraseTest extends IntegrationTestCase {
         try {
             getAdminClient().instantErase(newErasePin);
         } catch (KineticException e1) {
-            fail("instant erase throw exception: " + e1.getMessage());
+            Assert.fail("instant erase throw exception: " + e1.getMessage());
         }
     }
 
@@ -78,19 +78,19 @@ public class SecurityEraseTest extends IntegrationTestCase {
         try {
             getAdminClient().setErasePin(null, newErasePin);
         } catch (KineticException e) {
-            fail("set pin throw exception: " + e.getMessage());
+            Assert.fail("set pin throw exception: " + e.getMessage());
         }
 
         try {
             getAdminClient().instantErase(newErasePin);
         } catch (KineticException e) {
-            fail("instant erase throw exception: " + e.getMessage());
+            Assert.fail("instant erase throw exception: " + e.getMessage());
         }
 
         try {
             getAdminClient().instantErase(newErasePin);
         } catch (KineticException e1) {
-            fail("instant erase throw exception: " + e1.getMessage());
+            Assert.fail("instant erase throw exception: " + e1.getMessage());
         }
     }
 
@@ -100,7 +100,7 @@ public class SecurityEraseTest extends IntegrationTestCase {
         try {
             getAdminClient().instantErase(null);
         } catch (KineticException e) {
-            fail("instant erase with right ACL throw exception: "
+            Assert.fail("instant erase with right ACL throw exception: "
                     + e.getMessage());
         }
     }
@@ -112,19 +112,19 @@ public class SecurityEraseTest extends IntegrationTestCase {
             adminClient = KineticAdminClientFactory
                     .createInstance(getAdminClientConfig(2, "asdfasdf"));
         } catch (KineticException e) {
-            fail("create kinetic admin client throw exception: "
+            Assert.fail("create kinetic admin client throw exception: "
                     + e.getMessage());
         }
 
         try {
             adminClient.instantErase(null);
         } catch (KineticException e) {
-            fail("instant erase throw exception: " + e.getMessage());
+            Assert.fail("instant erase throw exception: " + e.getMessage());
         } finally {
             try {
                 adminClient.close();
             } catch (KineticException e) {
-                fail("close admin client throw exception: " + e.getMessage());
+                Assert.fail("close admin client throw exception: " + e.getMessage());
             }
         }
     }
@@ -136,19 +136,19 @@ public class SecurityEraseTest extends IntegrationTestCase {
             adminClient = KineticAdminClientFactory
                     .createInstance(getAdminClientConfig(1, "asdfasdf1"));
         } catch (KineticException e) {
-            fail("create kinetic admin client throw exception: "
+            Assert.fail("create kinetic admin client throw exception: "
                     + e.getMessage());
         }
 
         try {
             adminClient.instantErase(null);
         } catch (KineticException e) {
-            fail("instant erase throw exception: " + e.getMessage());
+            Assert.fail("instant erase throw exception: " + e.getMessage());
         } finally {
             try {
                 adminClient.close();
             } catch (KineticException e) {
-                fail("close admin client throw exception: " + e.getMessage());
+                Assert.fail("close admin client throw exception: " + e.getMessage());
             }
         }
     }

@@ -25,11 +25,11 @@ import static com.seagate.kinetic.KineticTestHelpers.buildSuccessOnlyCallbackHan
 import static com.seagate.kinetic.KineticTestHelpers.int32;
 import static com.seagate.kinetic.KineticTestHelpers.toByteArray;
 import static com.seagate.kinetic.KineticTestHelpers.waitForLatch;
-import static junit.framework.TestCase.assertEquals;
-import static junit.framework.TestCase.assertFalse;
-import static junit.framework.TestCase.assertNull;
-import static junit.framework.TestCase.assertTrue;
-import static org.junit.Assert.assertArrayEquals;
+import static org.testng.AssertJUnit.assertEquals;
+import static org.testng.AssertJUnit.assertFalse;
+import static org.testng.AssertJUnit.assertNull;
+import static org.testng.AssertJUnit.assertTrue;
+import static org.testng.internal.junit.ArrayAsserts.assertArrayEquals;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -46,16 +46,14 @@ import kinetic.client.EntryMetadata;
 import kinetic.client.KineticClient;
 import kinetic.client.KineticException;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
 
 import com.seagate.kinetic.IntegrationTestCase;
 import com.seagate.kinetic.IntegrationTestLoggerFactory;
 import com.seagate.kinetic.KVGenerator;
 import com.seagate.kinetic.KineticTestHelpers;
 import com.seagate.kinetic.KineticTestHelpers.SuccessAsyncHandler;
-import com.seagate.kinetic.KineticTestRunner;
 
 /**
  * Kinetic Client Asynchronous API.
@@ -86,7 +84,7 @@ import com.seagate.kinetic.KineticTestRunner;
  * 
  */
 
-@RunWith(KineticTestRunner.class)
+@Test(groups = {"simulator", "drive"})
 public class KineticAsyncAPITest extends IntegrationTestCase {
 	private static final Logger logger = IntegrationTestLoggerFactory
 			.getLogger(KineticAsyncAPITest.class.getName());
@@ -98,8 +96,8 @@ public class KineticAsyncAPITest extends IntegrationTestCase {
 	 * Initialize a key/value pair generator
 	 * <p>
 	 */
-	@Before
-	public void setUp() throws IOException, InterruptedException {
+	@BeforeMethod
+    public void setUp() throws IOException, InterruptedException {
 		kvGenerator = new KVGenerator();
 	}
 
@@ -114,8 +112,8 @@ public class KineticAsyncAPITest extends IntegrationTestCase {
 	 *             if thread is interrupted, or the specified waiting time
 	 *             elapses.
 	 */
-	@Test
-	public void testPutAsync() throws UnsupportedEncodingException,
+	@Test(dataProvider = "transportProtocolOptions")
+	public void testPutAsync(String clientName) throws UnsupportedEncodingException,
 			KineticException, InterruptedException {
 		byte[] newVersion = int32(0);
 		final List<Entry> putReturnList = new ArrayList<Entry>(MAX_KEYS);
@@ -151,7 +149,7 @@ public class KineticAsyncAPITest extends IntegrationTestCase {
 				}
 			});
 
-			getClient().putAsync(entryPut, newVersion, handler);
+			getClient(clientName).putAsync(entryPut, newVersion, handler);
 		}
 
 		waitForLatch(putSignal);
@@ -182,8 +180,8 @@ public class KineticAsyncAPITest extends IntegrationTestCase {
 	 *             if thread is interrupted, or the specified waiting time
 	 *             elapses.
 	 */
-	@Test
-	public void testPutAsync_WithoutTag() throws UnsupportedEncodingException,
+	@Test(dataProvider = "transportProtocolOptions")
+	public void testPutAsync_WithoutTag(String clientName) throws UnsupportedEncodingException,
 			KineticException, InterruptedException {
 		byte[] newVersion = int32(0);
 		final List<Entry> putReturnList = new ArrayList<Entry>(MAX_KEYS);
@@ -217,7 +215,7 @@ public class KineticAsyncAPITest extends IntegrationTestCase {
 				}
 			});
 
-			getClient().putAsync(entryPut, newVersion, handler);
+			getClient(clientName).putAsync(entryPut, newVersion, handler);
 		}
 
 		waitForLatch(putSignal);
@@ -247,8 +245,8 @@ public class KineticAsyncAPITest extends IntegrationTestCase {
 	 *             if thread is interrupted, or the specified waiting time
 	 *             elapses.
 	 */
-	@Test
-	public void testGetAsync_ReturnsExistingKeys()
+	@Test(dataProvider = "transportProtocolOptions")
+	public void testGetAsync_ReturnsExistingKeys(String clientName)
 			throws UnsupportedEncodingException, KineticException,
 			InterruptedException {
 		byte[] newVersion = int32(0);
@@ -278,7 +276,7 @@ public class KineticAsyncAPITest extends IntegrationTestCase {
 				}
 			});
 
-			getClient().putAsync(entryPut, newVersion, handler);
+			getClient(clientName).putAsync(entryPut, newVersion, handler);
 		}
 
 		waitForLatch(putSignal);
@@ -292,7 +290,7 @@ public class KineticAsyncAPITest extends IntegrationTestCase {
 				}
 			});
 
-			getClient().getAsync(toByteArray(keySList.get(i)), handler);
+			getClient(clientName).getAsync(toByteArray(keySList.get(i)), handler);
 		}
 		waitForLatch(getSignal);
 
@@ -320,8 +318,8 @@ public class KineticAsyncAPITest extends IntegrationTestCase {
 	 *             if thread is interrupted, or the specified waiting time
 	 *             elapses.
 	 */
-	@Test
-	public void testGetAsync_ReturnsNull_ForNonExistingKey()
+	@Test(dataProvider = "transportProtocolOptions")
+	public void testGetAsync_ReturnsNull_ForNonExistingKey(String clientName)
 			throws KineticException, InterruptedException {
 		final List<Entry> getReturnList = new ArrayList<Entry>(1);
 		final CountDownLatch latch = new CountDownLatch(1);
@@ -333,7 +331,7 @@ public class KineticAsyncAPITest extends IntegrationTestCase {
 				latch.countDown();
 			}
 		});
-		getClient().getAsync(toByteArray("qwertyuio"), handler);
+		getClient(clientName).getAsync(toByteArray("qwertyuio"), handler);
 
 		waitForLatch(latch);
 
@@ -354,8 +352,8 @@ public class KineticAsyncAPITest extends IntegrationTestCase {
 	 *             if thread is interrupted, or the specified waiting time
 	 *             elapses.
 	 */
-	@Test
-	public void testDeleteAsync_DeletesExistingKeys()
+	@Test(dataProvider = "transportProtocolOptions")
+	public void testDeleteAsync_DeletesExistingKeys(String clientName)
 			throws UnsupportedEncodingException, KineticException,
 			InterruptedException {
 		byte[] newVersion = int32(0);
@@ -387,7 +385,7 @@ public class KineticAsyncAPITest extends IntegrationTestCase {
 				}
 			});
 
-			getClient().putAsync(entryPut, newVersion, handler);
+			getClient(clientName).putAsync(entryPut, newVersion, handler);
 		}
 		waitForLatch(putSignal);
 
@@ -406,7 +404,7 @@ public class KineticAsyncAPITest extends IntegrationTestCase {
 			entryMetadataDelete.setVersion(newVersion);
 			Entry deleteEntry = new Entry(key, value, entryMetadataDelete);
 
-			getClient().deleteAsync(deleteEntry, handler);
+			getClient(clientName).deleteAsync(deleteEntry, handler);
 		}
 		waitForLatch(deleteSignal);
 
@@ -425,7 +423,7 @@ public class KineticAsyncAPITest extends IntegrationTestCase {
 				}
 			});
 
-			getClient().getAsync(toByteArray(keySList.get(i)), handler);
+			getClient(clientName).getAsync(toByteArray(keySList.get(i)), handler);
 		}
 		waitForLatch(getSignal);
 
@@ -447,8 +445,8 @@ public class KineticAsyncAPITest extends IntegrationTestCase {
 	 *             if thread is interrupted, or the specified waiting time
 	 *             elapses.
 	 */
-	@Test
-	public void testDeleteAsync_ReturnsNull_ForNonExistingKey()
+	@Test(dataProvider = "transportProtocolOptions")
+	public void testDeleteAsync_ReturnsNull_ForNonExistingKey(String clientName)
 			throws KineticException, InterruptedException {
 		byte[] newVersion = int32(0);
 		final List<Boolean> deleteReturnList = new ArrayList<Boolean>();
@@ -469,9 +467,9 @@ public class KineticAsyncAPITest extends IntegrationTestCase {
 		Entry deleteEntry = new Entry(key, value, entryMetadataDelete);
 
 		// make sure the entry does not exist in db
-		assertKeyNotFound(getClient(), key);
+		assertKeyNotFound(getClient(clientName), key);
 
-		getClient().deleteAsync(deleteEntry, handler);
+		getClient(clientName).deleteAsync(deleteEntry, handler);
 
 		waitForLatch(deleteSignal);
 
@@ -491,8 +489,8 @@ public class KineticAsyncAPITest extends IntegrationTestCase {
 	 *             if thread is interrupted, or the specified waiting time
 	 *             elapses.
 	 */
-	@Test
-	public void testGetNextAsync() throws UnsupportedEncodingException,
+	@Test(dataProvider = "transportProtocolOptions")
+	public void testGetNextAsync(String clientName) throws UnsupportedEncodingException,
 			KineticException, InterruptedException {
 		byte[] newVersion = int32(0);
 		final List<Entry> putList = new ArrayList<Entry>(MAX_KEYS);
@@ -529,7 +527,7 @@ public class KineticAsyncAPITest extends IntegrationTestCase {
 				}
 			});
 
-			getClient().putAsync(entryPut, newVersion, handler);
+			getClient(clientName).putAsync(entryPut, newVersion, handler);
 		}
 		waitForLatch(putSignal);
 		assertEquals(MAX_KEYS, putList.size());
@@ -544,7 +542,7 @@ public class KineticAsyncAPITest extends IntegrationTestCase {
 					getNextSignal.countDown();
 				}
 			});
-			getClient().getNextAsync(toByteArray(keySList.get(i)), handler);
+			getClient(clientName).getNextAsync(toByteArray(keySList.get(i)), handler);
 		}
 
 		waitForLatch(getNextSignal);
@@ -566,7 +564,7 @@ public class KineticAsyncAPITest extends IntegrationTestCase {
 				getNextSignal1.countDown();
 			}
 		});
-		getClient().getNextAsync(toByteArray(keySList.get(MAX_KEYS - 1)),
+		getClient(clientName).getNextAsync(toByteArray(keySList.get(MAX_KEYS - 1)),
 				handler);
 		waitForLatch(getNextSignal1);
 		assertNull(eGetNextList1.get(0));
@@ -585,13 +583,13 @@ public class KineticAsyncAPITest extends IntegrationTestCase {
 	 *             if thread is interrupted, or the specified waiting time
 	 *             elapses.
 	 */
-	@Test
-	public void testGetNextAysnc_ReturnsNull_ForLastKey()
+	@Test(dataProvider = "transportProtocolOptions")
+	public void testGetNextAysnc_ReturnsNull_ForLastKey(String clientName)
 			throws InterruptedException, KineticException {
 		final List<Entry> eGetNextList = new ArrayList<Entry>();
 		final CountDownLatch getNextSignal = new CountDownLatch(1);
 
-		getClient().putForced(
+		getClient(clientName).putForced(
 				new Entry(toByteArray("lastkey"), toByteArray("lastvalue")));
 
 		CallbackHandler<Entry> handler = buildSuccessOnlyCallbackHandler(new SuccessAsyncHandler<Entry>() {
@@ -601,7 +599,7 @@ public class KineticAsyncAPITest extends IntegrationTestCase {
 				getNextSignal.countDown();
 			}
 		});
-		getClient().getNextAsync(toByteArray("lastkey"), handler);
+		getClient(clientName).getNextAsync(toByteArray("lastkey"), handler);
 		waitForLatch(getNextSignal);
 		assertNull(eGetNextList.get(0));
 
@@ -619,8 +617,8 @@ public class KineticAsyncAPITest extends IntegrationTestCase {
 	 *             if thread is interrupted, or the specified waiting time
 	 *             elapses.
 	 */
-	@Test
-	public void testGetPreviousAsync_ReturnsPreviousValue()
+	@Test(dataProvider = "transportProtocolOptions")
+	public void testGetPreviousAsync_ReturnsPreviousValue(String clientName)
 			throws UnsupportedEncodingException, KineticException,
 			InterruptedException {
 		byte[] newVersion = int32(0);
@@ -657,7 +655,7 @@ public class KineticAsyncAPITest extends IntegrationTestCase {
 				}
 			});
 
-			getClient().putAsync(entryPut, newVersion, handler);
+			getClient(clientName).putAsync(entryPut, newVersion, handler);
 		}
 
 		waitForLatch(putSignal);
@@ -673,7 +671,7 @@ public class KineticAsyncAPITest extends IntegrationTestCase {
 					getPreviousSignal.countDown();
 				}
 			});
-			getClient().getPreviousAsync(toByteArray(keySList.get(i)), handler);
+			getClient(clientName).getPreviousAsync(toByteArray(keySList.get(i)), handler);
 		}
 
 		waitForLatch(getPreviousSignal);
@@ -702,13 +700,13 @@ public class KineticAsyncAPITest extends IntegrationTestCase {
 	 *             if thread is interrupted, or the specified waiting time
 	 *             elapses.
 	 */
-	@Test
-	public void testGetPreviousAysnc_ReturnsNull_ForFirstKey()
+	@Test(dataProvider = "transportProtocolOptions")
+	public void testGetPreviousAysnc_ReturnsNull_ForFirstKey(String clientName)
 			throws InterruptedException, KineticException {
 		final List<Entry> eGetPreviousList = new ArrayList<Entry>();
 		final CountDownLatch getPreviousSignal = new CountDownLatch(1);
 
-		getClient().putForced(
+		getClient(clientName).putForced(
 				new Entry(toByteArray("firstkey"), toByteArray("firstvalue")));
 
 		CallbackHandler<Entry> handler = buildSuccessOnlyCallbackHandler(new SuccessAsyncHandler<Entry>() {
@@ -718,7 +716,7 @@ public class KineticAsyncAPITest extends IntegrationTestCase {
 				getPreviousSignal.countDown();
 			}
 		});
-		getClient().getPreviousAsync(toByteArray("firstkey"), handler);
+		getClient(clientName).getPreviousAsync(toByteArray("firstkey"), handler);
 		waitForLatch(getPreviousSignal);
 		assertNull(eGetPreviousList.get(0));
 
@@ -736,8 +734,8 @@ public class KineticAsyncAPITest extends IntegrationTestCase {
 	 *             if thread is interrupted, or the specified waiting time
 	 *             elapses.
 	 */
-	@Test
-	public void testGetMetadataAsync_ReturnsExistingKeys()
+	@Test(dataProvider = "transportProtocolOptions")
+	public void testGetMetadataAsync_ReturnsExistingKeys(String clientName)
 			throws UnsupportedEncodingException, KineticException,
 			InterruptedException {
 		byte[] newVersion = int32(0);
@@ -779,7 +777,7 @@ public class KineticAsyncAPITest extends IntegrationTestCase {
 				}
 			});
 
-			getClient().putAsync(entryPut, newVersion, handler);
+			getClient(clientName).putAsync(entryPut, newVersion, handler);
 		}
 
 		waitForLatch(putSignal);
@@ -793,7 +791,7 @@ public class KineticAsyncAPITest extends IntegrationTestCase {
 				}
 			});
 
-			getClient().getMetadataAsync(toByteArray(keySList.get(i)), handler);
+			getClient(clientName).getMetadataAsync(toByteArray(keySList.get(i)), handler);
 		}
 		waitForLatch(getSignal);
 
@@ -821,8 +819,8 @@ public class KineticAsyncAPITest extends IntegrationTestCase {
 	 *             if thread is interrupted, or the specified waiting time
 	 *             elapses.
 	 */
-	@Test
-	public void testGetMetadataAsync_ReturnsNull_ForNonExistingKey()
+	@Test(dataProvider = "transportProtocolOptions")
+	public void testGetMetadataAsync_ReturnsNull_ForNonExistingKey(String clientName)
 			throws KineticException, InterruptedException {
 		final List<EntryMetadata> eGetMetadataList = new ArrayList<EntryMetadata>();
 		final CountDownLatch latch = new CountDownLatch(1);
@@ -834,7 +832,7 @@ public class KineticAsyncAPITest extends IntegrationTestCase {
 				latch.countDown();
 			}
 		});
-		getClient().getMetadataAsync(toByteArray("qwertyuio"), handler);
+		getClient(clientName).getMetadataAsync(toByteArray("qwertyuio"), handler);
 		waitForLatch(latch);
 		assertNull(eGetMetadataList.get(0));
 
@@ -854,8 +852,8 @@ public class KineticAsyncAPITest extends IntegrationTestCase {
 	 *             if thread is interrupted, or the specified waiting time
 	 *             elapses.
 	 */
-	@Test
-	public void testGetKeyRangeAsync_ReturnsCorrectResults_ForStartEndInclusive()
+	@Test(dataProvider = "transportProtocolOptions")
+	public void testGetKeyRangeAsync_ReturnsCorrectResults_ForStartEndInclusive(String clientName)
 			throws KineticException, UnsupportedEncodingException,
 			InterruptedException {
 		List<byte[]> keys = Arrays.asList(toByteArray("00"), toByteArray("01"),
@@ -880,7 +878,7 @@ public class KineticAsyncAPITest extends IntegrationTestCase {
 				}
 			});
 
-			getClient().putAsync(new Entry(key, key), newVersion, handler);
+			getClient(clientName).putAsync(new Entry(key, key), newVersion, handler);
 		}
 
 		waitForLatch(putSignal);
@@ -896,7 +894,7 @@ public class KineticAsyncAPITest extends IntegrationTestCase {
 			}
 		});
 
-		getClient().getKeyRangeAsync(keys.get(0), true,
+		getClient(clientName).getKeyRangeAsync(keys.get(0), true,
 				keys.get(keys.size() - 1), true, keys.size(), handler);
 
 		waitForLatch(getKeyRangeSignal);
@@ -918,8 +916,8 @@ public class KineticAsyncAPITest extends IntegrationTestCase {
 	 *             if thread is interrupted, or the specified waiting time
 	 *             elapses.
 	 */
-	@Test
-	public void testGetKeyRangeAsync_ReturnsCorrectResults_ForStartEndExclusive()
+	@Test(dataProvider = "transportProtocolOptions")
+	public void testGetKeyRangeAsync_ReturnsCorrectResults_ForStartEndExclusive(String clientName)
 			throws KineticException, UnsupportedEncodingException,
 			InterruptedException {
 		List<byte[]> keys = Arrays.asList(toByteArray("00"), toByteArray("01"),
@@ -944,7 +942,7 @@ public class KineticAsyncAPITest extends IntegrationTestCase {
 				}
 			});
 
-			getClient().putAsync(new Entry(key, key), newVersion, handler);
+			getClient(clientName).putAsync(new Entry(key, key), newVersion, handler);
 		}
 
 		waitForLatch(putSignal);
@@ -960,7 +958,7 @@ public class KineticAsyncAPITest extends IntegrationTestCase {
 			}
 		});
 
-		getClient().getKeyRangeAsync(keys.get(0), false,
+		getClient(clientName).getKeyRangeAsync(keys.get(0), false,
 				keys.get(keys.size() - 1), false, keys.size(), handler);
 
 		waitForLatch(getKeyRangeSignal);
@@ -983,8 +981,8 @@ public class KineticAsyncAPITest extends IntegrationTestCase {
 	 *             if thread is interrupted, or the specified waiting time
 	 *             elapses.
 	 */
-	@Test
-	public void testGetKeyRangeAsync_ReturnsCorrectResults_ForStartInclusiveEndExclusive()
+	@Test(dataProvider = "transportProtocolOptions")
+	public void testGetKeyRangeAsync_ReturnsCorrectResults_ForStartInclusiveEndExclusive(String clientName)
 			throws KineticException, UnsupportedEncodingException,
 			InterruptedException {
 		List<byte[]> keys = Arrays.asList(toByteArray("00"), toByteArray("01"),
@@ -1009,7 +1007,7 @@ public class KineticAsyncAPITest extends IntegrationTestCase {
 				}
 			});
 
-			getClient().putAsync(new Entry(key, key), newVersion, handler);
+			getClient(clientName).putAsync(new Entry(key, key), newVersion, handler);
 		}
 
 		waitForLatch(putSignal);
@@ -1025,7 +1023,7 @@ public class KineticAsyncAPITest extends IntegrationTestCase {
 			}
 		});
 
-		getClient().getKeyRangeAsync(keys.get(0), true,
+		getClient(clientName).getKeyRangeAsync(keys.get(0), true,
 				keys.get(keys.size() - 1), false, keys.size(), handler);
 
 		waitForLatch(getKeyRangeSignal);
@@ -1048,8 +1046,8 @@ public class KineticAsyncAPITest extends IntegrationTestCase {
 	 *             if thread is interrupted, or the specified waiting time
 	 *             elapses.
 	 */
-	@Test
-	public void testGetKeyRangeAsync_ReturnsCorrectResults_ForStartExclusiveEndInclusive()
+	@Test(dataProvider = "transportProtocolOptions")
+	public void testGetKeyRangeAsync_ReturnsCorrectResults_ForStartExclusiveEndInclusive(String clientName)
 			throws KineticException, UnsupportedEncodingException,
 			InterruptedException {
 		List<byte[]> keys = Arrays.asList(toByteArray("00"), toByteArray("01"),
@@ -1074,7 +1072,7 @@ public class KineticAsyncAPITest extends IntegrationTestCase {
 				}
 			});
 
-			getClient().putAsync(new Entry(key, key), newVersion, handler);
+			getClient(clientName).putAsync(new Entry(key, key), newVersion, handler);
 		}
 
 		waitForLatch(putSignal);
@@ -1090,7 +1088,7 @@ public class KineticAsyncAPITest extends IntegrationTestCase {
 			}
 		});
 
-		getClient().getKeyRangeAsync(keys.get(0), false,
+		getClient(clientName).getKeyRangeAsync(keys.get(0), false,
 				keys.get(keys.size() - 1), true, keys.size(), handler);
 
 		waitForLatch(getKeyRangeSignal);
@@ -1112,8 +1110,8 @@ public class KineticAsyncAPITest extends IntegrationTestCase {
 	 *             if thread is interrupted, or the specified waiting time
 	 *             elapses.
 	 */
-	@Test
-	public void testPutForcedAsync() throws UnsupportedEncodingException,
+	@Test(dataProvider = "transportProtocolOptions")
+	public void testPutForcedAsync(String clientName) throws UnsupportedEncodingException,
 			KineticException, InterruptedException {
 		byte[] newVersion = int32(0);
 
@@ -1147,7 +1145,7 @@ public class KineticAsyncAPITest extends IntegrationTestCase {
 				}
 			});
 
-			getClient().putAsync(entryPut, newVersion, handler);
+			getClient(clientName).putAsync(entryPut, newVersion, handler);
 		}
 
 		waitForLatch(putSignal);
@@ -1179,14 +1177,14 @@ public class KineticAsyncAPITest extends IntegrationTestCase {
 				}
 			});
 
-			getClient().putForcedAsync(entryPut, handler);
+			getClient(clientName).putForcedAsync(entryPut, handler);
 		}
 
 		waitForLatch(putForcedSignal);
 		assertEquals(MAX_KEYS, putReturnList.size());
 
 		for (int i = 0; i < MAX_KEYS; i++) {
-			Entry getReturned = getClient().get(toByteArray(keySList.get(i)));
+			Entry getReturned = getClient(clientName).get(toByteArray(keySList.get(i)));
 
 			assertTrue(keySList.contains(new String(getReturned.getKey())));
 			assertTrue(valueSList.contains(new String(getReturned.getValue())));
@@ -1211,8 +1209,8 @@ public class KineticAsyncAPITest extends IntegrationTestCase {
 	 *             if thread is interrupted, or the specified waiting time
 	 *             elapses.
 	 */
-	@Test
-	public void testDeleteForcedAsync_RemovesExistingKeys()
+	@Test(dataProvider = "transportProtocolOptions")
+	public void testDeleteForcedAsync_RemovesExistingKeys(String clientName)
 			throws UnsupportedEncodingException, KineticException,
 			InterruptedException {
 		byte[] newVersion = int32(0);
@@ -1247,7 +1245,7 @@ public class KineticAsyncAPITest extends IntegrationTestCase {
 				}
 			});
 
-			getClient().putAsync(entryPut, newVersion, handler);
+			getClient(clientName).putAsync(entryPut, newVersion, handler);
 		}
 
 		waitForLatch(putSignal);
@@ -1266,7 +1264,7 @@ public class KineticAsyncAPITest extends IntegrationTestCase {
 				}
 			});
 
-			getClient().deleteForcedAsync(key, handler);
+			getClient(clientName).deleteForcedAsync(key, handler);
 		}
 
 		waitForLatch(deleteForcedSignal);
@@ -1275,7 +1273,7 @@ public class KineticAsyncAPITest extends IntegrationTestCase {
 		for (int i = 0; i < MAX_KEYS; i++) {
 			assertTrue(deleteReturnList.get(i));
 
-			Entry getReturned = getClient().get(toByteArray(keySList.get(i)));
+			Entry getReturned = getClient(clientName).get(toByteArray(keySList.get(i)));
 
 			assertNull(getReturned);
 		}
@@ -1295,8 +1293,8 @@ public class KineticAsyncAPITest extends IntegrationTestCase {
 	 *             if thread is interrupted, or the specified waiting time
 	 *             elapses.
 	 */
-	@Test
-	public void testDeleteForcedAsync_Succeeds_IfKeysDontExist()
+	@Test(dataProvider = "transportProtocolOptions")
+	public void testDeleteForcedAsync_Succeeds_IfKeysDontExist(String clientName)
 			throws UnsupportedEncodingException, KineticException,
 			InterruptedException {
 		List<String> keySList = new ArrayList<String>();
@@ -1321,7 +1319,7 @@ public class KineticAsyncAPITest extends IntegrationTestCase {
 				}
 			});
 
-			getClient().deleteForcedAsync(key, handler);
+			getClient(clientName).deleteForcedAsync(key, handler);
 		}
 
 		waitForLatch(deleteForcedSignal);
@@ -1330,7 +1328,7 @@ public class KineticAsyncAPITest extends IntegrationTestCase {
 		for (int i = 0; i < MAX_KEYS; i++) {
 			assertTrue(deleteReturnList.get(i));
 
-			Entry getReturned = getClient().get(toByteArray(keySList.get(i)));
+			Entry getReturned = getClient(clientName).get(toByteArray(keySList.get(i)));
 
 			assertNull(getReturned);
 		}

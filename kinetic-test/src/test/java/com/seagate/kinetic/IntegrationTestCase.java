@@ -19,13 +19,20 @@
  */
 package com.seagate.kinetic;
 
+import static org.testng.AssertJUnit.assertEquals;
+
+import org.testng.annotations.AfterMethod;
+import org.testng.annotations.DataProvider;
+import org.testng.annotations.BeforeMethod;
+
 import static com.seagate.kinetic.KineticTestHelpers.toByteArray;
-import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
 import kinetic.admin.AdminClientConfiguration;
@@ -37,9 +44,6 @@ import kinetic.client.KineticClient;
 import kinetic.client.KineticException;
 import kinetic.client.p2p.KineticP2PClientFactory;
 import kinetic.client.p2p.KineticP2pClient;
-
-import org.junit.After;
-import org.junit.Before;
 
 import com.google.protobuf.ByteString;
 import com.jcraft.jsch.JSchException;
@@ -59,11 +63,12 @@ import com.seagate.kinetic.proto.Kinetic.Command.Security.ACL.Permission;
  *
  */
 public class IntegrationTestCase {
-
-    // This will be assigned by the KineticTestRunner
-    public KineticTestRunner.TestClientConfigConfigurator testClientConfigurator;
-
-    private KineticP2pClient kineticClient;
+    protected static final String NONNIO_NONSSL_CLIENT = "nonNio_nonSsl";
+    protected static final String NIO_NONSSL_CLIENT = "nio_nonSsl";
+    protected static final String NONNIO_SSL_CLIENT = "nonNio_ssl";
+    
+    protected Map<String, KineticP2pClient> kineticClients = new HashMap<String,KineticP2pClient>();
+    protected Map<String, ClientConfiguration> kineticClientConfigutations = new HashMap<String,ClientConfiguration>(); 
     private KineticAdminClient adminClient;
     private AbstractIntegrationTestTarget testTarget;
 
@@ -78,12 +83,16 @@ public class IntegrationTestCase {
      * @throws InterruptedException
      *             if any Interrupt error occurred
      */
-    @Before
+    @BeforeMethod(alwaysRun = true)
     public void startTestServer() throws InterruptedException,
             KineticException, IOException, JSchException, ExecutionException {
         testTarget = IntegrationTestTargetFactory.createTestTarget(true);
-        kineticClient = KineticP2PClientFactory
-                .createP2pClient(getClientConfig());
+        kineticClients.clear();
+        for (String clientName : kineticClientConfigutations.keySet())
+        {
+            kineticClients.put(clientName, KineticP2PClientFactory
+                    .createP2pClient(kineticClientConfigutations.get(clientName)));
+        }
         adminClient = KineticAdminClientFactory.createInstance(getAdminClientConfig());
     }
 
@@ -96,9 +105,9 @@ public class IntegrationTestCase {
      * @throws IOException
      *             if any IO error occurred.
      */
-    @After
+    @AfterMethod(alwaysRun = true)
     public void stopTestServer() throws Exception {
-        kineticClient.close();
+        closeKineticClients();
         adminClient.close();
         testTarget.shutdown();
     }
@@ -107,8 +116,8 @@ public class IntegrationTestCase {
      * Get a Kinetic client.
      * <p>
      */
-    protected KineticP2pClient getClient() {
-        return kineticClient;
+    protected KineticP2pClient getClient(String clientName) {
+        return kineticClients.get(clientName);
     }
 
     protected KineticAdminClient getAdminClient() {
@@ -120,15 +129,7 @@ public class IntegrationTestCase {
      * <p>
      */
     protected ClientConfiguration getClientConfig() {
-        ClientConfiguration clientConfiguration = testTarget.getClientConfig();
-        // Once all subclasses of IntegrationTestCase use the KineticTestRunner
-        // we can
-        // assume that testClientFactory will exist. Until then we have to
-        // handle the case
-        // where it's null
-        if (testClientConfigurator != null) {
-            testClientConfigurator.modifyClientConfig(clientConfiguration);
-        }
+        ClientConfiguration clientConfiguration = IntegrationTestTargetFactory.createDefaultClientConfig();
         return clientConfiguration;
     }
 
@@ -190,13 +191,17 @@ public class IntegrationTestCase {
      * <p>
      */
     protected void restartServer() throws Exception {
-        kineticClient.close();
+        closeKineticClients() ;
         adminClient.close();
         testTarget.shutdown();
 
         testTarget = IntegrationTestTargetFactory.createTestTarget(false);
-        kineticClient = KineticP2PClientFactory
-                .createP2pClient(getClientConfig());
+        kineticClients.clear();
+        for (String clientName : kineticClientConfigutations.keySet())
+        {
+            kineticClients.put(clientName, KineticP2PClientFactory
+                    .createP2pClient(kineticClientConfigutations.get(clientName)));
+        }
         adminClient = KineticAdminClientFactory.createInstance(getAdminClientConfig());
     }
 
@@ -229,7 +234,7 @@ public class IntegrationTestCase {
      * @param roles
      * @throws KineticException
      */
-    public void createClientAclWithRoles(int clientId, String clientKeyString,
+    public void createClientAclWithRoles(String clientName, int clientId, String clientKeyString,
             List<Kinetic.Command.Security.ACL.Permission> roles)
             throws KineticException {
 
@@ -239,7 +244,7 @@ public class IntegrationTestCase {
             domain.addPermission(role);
         }
 
-        createClientAclWithDomains(clientId, clientKeyString,
+        createClientAclWithDomains(clientName, clientId, clientKeyString,
                 Collections.singletonList(domain.build()));
 
         // create a admin clientId with all permission to avoid user nor found.
@@ -260,7 +265,7 @@ public class IntegrationTestCase {
         for (Kinetic.Command.Security.ACL.Permission role : rolesAll) {
             domainAll.addPermission(role);
         }
-        createClientAclWithDomains(clientIdAdmin, clientIdAdminKey,
+        createClientAclWithDomains(clientName, clientIdAdmin, clientIdAdminKey,
                 Collections.singletonList(domainAll.build()));
 
     }
@@ -274,7 +279,7 @@ public class IntegrationTestCase {
      * @param domains
      * @throws KineticException
      */
-    public void createClientAclWithDomains(int clientId,
+    public void createClientAclWithDomains(String clientName, int clientId,
             String clientKeyString,
             List<Kinetic.Command.Security.ACL.Scope> domains)
             throws KineticException {
@@ -302,11 +307,12 @@ public class IntegrationTestCase {
         }
         security.addAcl(acl);
 
-        KineticMessage response = getClient().request(km);
-
+        KineticMessage response = getClient(clientName).request(km);
         // Ensure setup succeeded, or else fail the calling test.
         assertEquals(Kinetic.Command.Status.StatusCode.SUCCESS, response
                 .getCommand().getStatus().getCode());
+
+        
     }
 
     /**
@@ -327,5 +333,65 @@ public class IntegrationTestCase {
         Entry entry = new Entry(toByteArray(key), toByteArray(value));
         client.put(entry, null);
         return entry;
+    }
+    
+    @DataProvider(name = "transportProtocolOptions")
+    public Object[][] createObjectsBasedOnProtocolOptions() throws KineticException {
+        
+        createKineticClientConfugurations();
+        Object[][] objects = new Object[kineticClientConfigutations.size()][];
+        int i=0;
+        for(String clientName : kineticClientConfigutations.keySet())
+        {
+            objects[i++] = new Object[] {clientName};
+        }
+        
+        return objects;
+    }
+
+    private void createKineticClientConfugurations() throws KineticException {
+        kineticClientConfigutations.clear();
+        ClientConfiguration clientConfiguration;
+        
+        if (Boolean.parseBoolean(System.getProperty("RUN_TCP_TEST")))
+        {
+            clientConfiguration = getClientConfig() ;
+            clientConfiguration.setUseSsl(false);
+            clientConfiguration.setUseNio(false);
+            kineticClientConfigutations.put(NONNIO_NONSSL_CLIENT, clientConfiguration);
+        }
+        
+        if (Boolean.parseBoolean(System.getProperty("RUN_NIO_TEST")))
+        {
+            clientConfiguration = getClientConfig() ;
+            clientConfiguration.setUseSsl(false);
+            clientConfiguration.setUseNio(true);
+            kineticClientConfigutations.put(NIO_NONSSL_CLIENT, clientConfiguration);
+        }
+        
+        if (Boolean.parseBoolean(System.getProperty("RUN_SSL_TEST"))) 
+        {
+            clientConfiguration = getClientConfig();
+            clientConfiguration.setUseSsl(true);
+            clientConfiguration.setUseNio(false);
+            clientConfiguration.setPort(clientConfiguration.getSSLDefaultPort());
+            kineticClientConfigutations.put(NONNIO_SSL_CLIENT, clientConfiguration);
+        }
+        
+        if (kineticClientConfigutations.size() == 0)
+        {
+            clientConfiguration = getClientConfig() ;
+            clientConfiguration.setUseSsl(false);
+            clientConfiguration.setUseNio(true);
+            kineticClientConfigutations.put(NIO_NONSSL_CLIENT, clientConfiguration);
+        }
+    }
+    
+    private void closeKineticClients() throws KineticException {
+        
+        for(KineticP2pClient client: kineticClients.values())
+        {
+            client.close();
+        }
     }
 }

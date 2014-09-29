@@ -19,6 +19,8 @@
  */
 package com.seagate.kinetic.performance;
 
+import org.testng.annotations.Test;
+import org.testng.annotations.BeforeMethod;
 import java.nio.ByteBuffer;
 import java.util.concurrent.CountDownLatch;
 import java.util.logging.Logger;
@@ -31,9 +33,6 @@ import kinetic.client.EntryMetadata;
 import kinetic.client.KineticException;
 import kinetic.client.advanced.AdvancedKineticClient;
 import kinetic.client.advanced.PersistOption;
-
-import org.junit.Before;
-import org.junit.Test;
 
 import com.seagate.kinetic.IntegrationTestCase;
 import com.seagate.kinetic.IntegrationTestLoggerFactory;
@@ -60,11 +59,11 @@ public class microPerfTest extends IntegrationTestCase {
 	 * Initialize a key/value pair generator
 	 * <p>
 	 */
-	@Before
-	public void setUp() throws Exception {
+	@BeforeMethod
+    public void setUp() throws Exception {
 		kvGenerator = new KVGenerator();
 		newVersion = "0".getBytes();
-		client = getClient();
+		
 	}
 
 	/**
@@ -85,8 +84,9 @@ public class microPerfTest extends IntegrationTestCase {
 	 *             if thread is interrupted, or the specified waiting time
 	 *             elapses.
 	 */
-	@Test
-	public void microTest() throws KineticException, InterruptedException {
+	@Test(dataProvider = "transportProtocolOptions")
+	public void microTest(String clientName) throws KineticException, InterruptedException {
+	    client = getClient(clientName);
 		int op_count = 1000;
 		microAsync("Async Run1", op_count, 1024);
 		microAsync("Async Run2", op_count, 16 * 1024);
