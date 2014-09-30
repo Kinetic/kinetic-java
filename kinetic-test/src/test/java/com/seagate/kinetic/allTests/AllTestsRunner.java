@@ -197,6 +197,7 @@ public class AllTestsRunner {
     public static void main(String[] args) {
         XmlSuite suite = new XmlSuite();
         suite.setName("SmokeSuite");
+        suite.setParallel(XmlSuite.PARALLEL_NONE);
          
         XmlTest test = new XmlTest(suite);
         test.setName("SmokeTest");
