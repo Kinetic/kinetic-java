@@ -17,6 +17,8 @@
  */
 package kinetic.client.p2p;
 
+import com.seagate.kinetic.proto.Kinetic.Command.Status.StatusCode;
+
 /**
  * 
  * Kinetic peer to peer push operation specification.
@@ -29,137 +31,159 @@ package kinetic.client.p2p;
  */
 public class Operation {
 
-	// forced flag
-	private boolean forced = false;
+    // forced flag
+    private boolean forced = false;
 
-	// key for the entry
-	private byte[] key = null;
+    // key for the entry
+    private byte[] key = null;
 
-	// new key for the pushed entry
-	private byte[] newKey = null;
+    // new key for the pushed entry
+    private byte[] newKey = null;
 
-	// db version for the pushed entry
-	private byte[] dbVersion = null;
+    // db version for the pushed entry
+    private byte[] dbVersion = null;
 
-	// operation status
-	private boolean opStatus = false;
+    // operation status
+    private boolean opStatus = false;
 
-	// error message
-	private String errorMessage = null;
+    private StatusCode statusCode = StatusCode.SUCCESS;
 
-	/**
-	 * Set forced flag for the entry to be pushed.
-	 * 
-	 * @param forced
-	 *            forced flag for the entry to be pushed.
-	 */
-	public void setForced(boolean forced) {
-		this.forced = forced;
-	}
+    // error message
+    private String errorMessage = null;
 
-	/**
-	 * Get forced flag for PUT operation.
-	 * 
-	 * @return forced flag for the entry.
-	 */
-	public boolean getForced() {
-		return this.forced;
-	}
+    /**
+     * Set forced flag for the entry to be pushed.
+     * 
+     * @param forced
+     *            forced flag for the entry to be pushed.
+     */
+    public void setForced(boolean forced) {
+        this.forced = forced;
+    }
 
-	/**
-	 * set the key for the entry to be pushed.
-	 * 
-	 * @param key
-	 *            the key for the entry to be pushed.
-	 */
-	public void setKey(byte[] key) {
-		this.key = key;
-	}
+    /**
+     * Get forced flag for PUT operation.
+     * 
+     * @return forced flag for the entry.
+     */
+    public boolean getForced() {
+        return this.forced;
+    }
 
-	/**
-	 * 
-	 * Get the key for the entry to be pushed.
-	 * 
-	 * @return the key for the entry to be pushed.
-	 */
-	public byte[] getKey() {
-		return this.key;
-	}
+    /**
+     * set the key for the entry to be pushed.
+     * 
+     * @param key
+     *            the key for the entry to be pushed.
+     */
+    public void setKey(byte[] key) {
+        this.key = key;
+    }
 
-	/**
-	 * Set db version for the entry to be pushed.
-	 * 
-	 * @param dbVersion
-	 *            db version for the entry to be pushed.
-	 */
-	public void setVersion(byte[] dbVersion) {
-		this.dbVersion = dbVersion;
-	}
+    /**
+     * 
+     * Get the key for the entry to be pushed.
+     * 
+     * @return the key for the entry to be pushed.
+     */
+    public byte[] getKey() {
+        return this.key;
+    }
 
-	/**
-	 * 
-	 * Get db version for the entry to be pushed.
-	 * 
-	 * @return db version for the entry to be pushed.
-	 */
-	public byte[] getVersion() {
-		return this.dbVersion;
-	}
+    /**
+     * Set db version for the entry to be pushed.
+     * 
+     * @param dbVersion
+     *            db version for the entry to be pushed.
+     */
+    public void setVersion(byte[] dbVersion) {
+        this.dbVersion = dbVersion;
+    }
 
-	/**
-	 * Set new key for the entry to be pushed.
-	 * 
-	 * @param newKey
-	 *            new key for the entry to be pushed.
-	 */
-	public void setNewKey(byte[] newKey) {
-		this.newKey = newKey;
-	}
+    /**
+     * 
+     * Get db version for the entry to be pushed.
+     * 
+     * @return db version for the entry to be pushed.
+     */
+    public byte[] getVersion() {
+        return this.dbVersion;
+    }
 
-	/**
-	 * Get new key for the entry to be pushed.
-	 * 
-	 * @return new key for the entry to be pushed.
-	 */
-	public byte[] getNewKey() {
-		return this.newKey;
-	}
+    /**
+     * Set new key for the entry to be pushed.
+     * 
+     * @param newKey
+     *            new key for the entry to be pushed.
+     */
+    public void setNewKey(byte[] newKey) {
+        this.newKey = newKey;
+    }
 
-	/**
-	 * Get status for this operation.
-	 * 
-	 * @return status for this operation.
-	 */
-	public boolean getStatus() {
-		return this.opStatus;
-	}
+    /**
+     * Get new key for the entry to be pushed.
+     * 
+     * @return new key for the entry to be pushed.
+     */
+    public byte[] getNewKey() {
+        return this.newKey;
+    }
 
-	/**
-	 * Set status for this operation. Set by the simulator/drive.
-	 * 
-	 * @param status
-	 *            status for this operation.
-	 */
-	public void setStatus(boolean status) {
-		this.opStatus = status;
-	}
+    /**
+     * Get status for this operation.
+     * 
+     * @return status for this operation.
+     */
+    public boolean getStatus() {
+        return this.opStatus;
+    }
 
-	/**
-	 * Get error message for the operation. Set by simulator/drive.
-	 * 
-	 * @return error message for the operation.
-	 */
-	public String getErrorMessage() {
-		return this.errorMessage;
-	}
+    /**
+     * Set status for this operation. Set by the simulator/drive.
+     * 
+     * @param status
+     *            status for this operation.
+     */
+    public void setStatus(boolean status) {
+        this.opStatus = status;
+    }
 
-	/**
-	 * Set error message for this operation. Set by simulator/drive.
-	 * 
-	 * @param errorMessage
-	 *            error message for this operation.
-	 */
-	public void setErrorMessage(String errorMessage) {
-		this.errorMessage = errorMessage;
-	}
+    /**
+     * Get error message for the operation. Set by simulator/drive.
+     * 
+     * @return error message for the operation.
+     */
+    public String getErrorMessage() {
+        return this.errorMessage;
+    }
+
+    /**
+     * Set error message for this operation. Set by simulator/drive.
+     * 
+     * @param errorMessage
+     *            error message for this operation.
+     */
+    public void setErrorMessage(String errorMessage) {
+        this.errorMessage = errorMessage;
+    }
+
+    /**
+     * Get status code for this operation.
+     * 
+     * @return status code for this operation
+     */
+    public StatusCode getStatusCode() {
+        return this.statusCode;
+    }
+
+    /**
+     * Set status code for this operation.
+     * 
+     * @param statusCode
+     *            status code for this operation
+     */
+    public void setStatusCode(StatusCode statusCode) {
+        this.statusCode = statusCode;
+    }
+
 }

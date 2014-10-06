@@ -31,7 +31,7 @@ import kinetic.client.p2p.Operation;
 import kinetic.client.p2p.Peer;
 import kinetic.client.p2p.PeerToPeerOperation;
 
-import org.testng.Assert;
+import org.testng.AssertJUnit;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -40,6 +40,7 @@ import com.google.common.base.Charsets;
 import com.seagate.kinetic.AbstractIntegrationTestTarget;
 import com.seagate.kinetic.IntegrationTestCase;
 import com.seagate.kinetic.IntegrationTestTargetFactory;
+import com.seagate.kinetic.proto.Kinetic.Command.Status.StatusCode;
 
 /**
  * P2P operation test.
@@ -48,7 +49,7 @@ import com.seagate.kinetic.IntegrationTestTargetFactory;
  *
  * @author Chiaming Yang
  */
-@Test(groups = {"simulator"})
+@Test(groups = { "simulator" })
 public class PeerToPeerOperationTest extends IntegrationTestCase {
     private AbstractIntegrationTestTarget secondaryTestTarget;
     private KineticP2pClient secondaryClient;
@@ -73,7 +74,8 @@ public class PeerToPeerOperationTest extends IntegrationTestCase {
     }
 
     @Test(dataProvider = "transportProtocolOptions")
-    public void testP2PPut_WorksOverPlainConnection(String clientName) throws Exception {
+    public void testP2PPut_WorksOverPlainConnection(String clientName)
+            throws Exception {
         byte[] key = "an awesome key!".getBytes(Charsets.UTF_8);
         byte[] value = "an awesome value!".getBytes(Charsets.UTF_8);
 
@@ -97,7 +99,8 @@ public class PeerToPeerOperationTest extends IntegrationTestCase {
     }
 
     @Test(dataProvider = "transportProtocolOptions")
-    public void testP2PPut_WorksOverTlsConnection(String clientName) throws Exception {
+    public void testP2PPut_WorksOverTlsConnection(String clientName)
+            throws Exception {
         byte[] key = "an awesome key!".getBytes(Charsets.UTF_8);
         byte[] value = "an awesome value!".getBytes(Charsets.UTF_8);
 
@@ -121,7 +124,8 @@ public class PeerToPeerOperationTest extends IntegrationTestCase {
     }
 
     @Test(dataProvider = "transportProtocolOptions")
-    public void testP2PPut_Fails_ForVersionMismatch(String clientName) throws Exception {
+    public void testP2PPut_Fails_ForVersionMismatch(String clientName)
+            throws Exception {
         byte[] key = "an awesome key!".getBytes(Charsets.UTF_8);
         byte[] value = "an awesome value!".getBytes(Charsets.UTF_8);
 
@@ -137,12 +141,21 @@ public class PeerToPeerOperationTest extends IntegrationTestCase {
 
         PeerToPeerOperation p2pResp = getClient(clientName).PeerToPeerPush(p2p);
 
+        // expect overall status to be false due to version mismatch
+        assertFalse(p2pResp.getStatus());
+
+        // expect response op status to set to false
         assertFalse(p2pResp.getOperationList().get(0).getStatus());
-        assertTrue(p2pResp.getStatus());
+
+        // expect version mis-match due to the version specified does not exist
+        assertTrue("expect version mis-match status code",
+                StatusCode.VERSION_MISMATCH == p2pResp.getOperationList()
+                        .get(0).getStatusCode());
     }
 
     @Test(dataProvider = "transportProtocolOptions")
-    public void testP2PPut_Fails_ForInvalidPeer(String clientName) throws Exception {
+    public void testP2PPut_Fails_ForInvalidPeer(String clientName)
+            throws Exception {
         PeerToPeerOperation p2pop = new PeerToPeerOperation();
         Peer peer = new Peer();
         peer.setHost("localhost");
@@ -155,7 +168,7 @@ public class PeerToPeerOperationTest extends IntegrationTestCase {
         // the client should surface connection errors in a machine-readable way
         try {
             getClient(clientName).PeerToPeerPush(p2pop);
-            Assert.fail("Should have thrown KineticException");
+            AssertJUnit.fail("Should have thrown KineticException");
         } catch (KineticException e) {
             // expected exception should be caught here.
             ;

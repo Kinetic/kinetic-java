@@ -29,20 +29,29 @@ import kinetic.client.advanced.AdvancedKineticClient;
  */
 public interface KineticP2pClient extends AdvancedKineticClient {
 
-	/**
-	 * Perform Peer to Peer push operation.
-	 * <p>
-	 * 
-	 * @param p2pOperation
-	 *            specification to perform peer to peer operation.
-	 * 
-	 * @return <code>PeerToPeerOperation</code> that contains status for each
-	 *         P2P operation.
-	 * 
-	 * @throws KineticException
-	 *             if any internal error occurred.
-	 */
-	public PeerToPeerOperation PeerToPeerPush(PeerToPeerOperation p2pOperation)
-			throws KineticException;
+    /**
+     * Perform Peer to Peer push operation.
+     * <p>
+     * Unless the p2p operation cannot be completed for all the operations, the
+     * method does not throw an KineticException. Instead, the overall status is
+     * set and can be obtained with {@link PeerToPeerOperation#getStatus()} API.
+     * <p>
+     * Applications check the overall status and if it is set to false, the
+     * individual status can be obtained from
+     * {@link PeerToPeerOperation#getOperationList()}.
+     * 
+     * @param p2pOperation
+     *            specification to perform peer to peer operation.
+     * 
+     * @return <code>PeerToPeerOperation</code> that contains status for each
+     *         P2P operation.
+     * 
+     * @throws KineticException
+     *             if any internal error occurred.
+     * 
+     * @see PeerToPeerOperation
+     */
+    public PeerToPeerOperation PeerToPeerPush(PeerToPeerOperation p2pOperation)
+            throws KineticException;
 
 }

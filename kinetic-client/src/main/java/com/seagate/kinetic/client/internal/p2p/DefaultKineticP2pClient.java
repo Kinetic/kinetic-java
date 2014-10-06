@@ -32,7 +32,6 @@ import com.seagate.kinetic.client.internal.MessageFactory;
 import com.seagate.kinetic.client.lib.ClientLogger;
 import com.seagate.kinetic.common.lib.KineticMessage;
 import com.seagate.kinetic.proto.Kinetic.Command;
-
 import com.seagate.kinetic.proto.Kinetic.Command.MessageType;
 import com.seagate.kinetic.proto.Kinetic.Command.P2POperation;
 import com.seagate.kinetic.proto.Kinetic.Command.Status.StatusCode;
@@ -45,150 +44,167 @@ import com.seagate.kinetic.proto.Kinetic.Command.Status.StatusCode;
  *
  */
 public class DefaultKineticP2pClient extends DefaultKineticClient implements
-KineticP2pClient {
+        KineticP2pClient {
 
-	private final static Logger LOG = ClientLogger.get();
+    private final static Logger LOG = ClientLogger.get();
 
-	public DefaultKineticP2pClient(ClientConfiguration config) throws KineticException {
-		super(config);
-	}
+    public DefaultKineticP2pClient(ClientConfiguration config)
+            throws KineticException {
+        super(config);
+    }
 
-	/**
-	 * P2P push operation raw API.
-	 *
-	 * @param request
-	 *            peer to peer push request message.
-	 *
-	 * @return peer to peer push response message.
-	 *
-	 * @throws KineticException
-	 *             if any internal error occurred.
-	 */
-	public KineticMessage PeerToPeerPush(KineticMessage request)
-			throws KineticException {
-		KineticMessage response = null;
+    /**
+     * P2P push operation raw API.
+     *
+     * @param request
+     *            peer to peer push request message.
+     *
+     * @return peer to peer push response message.
+     *
+     * @throws KineticException
+     *             if any internal error occurred.
+     */
+    public KineticMessage PeerToPeerPush(KineticMessage request)
+            throws KineticException {
+        KineticMessage response = null;
 
-		response = request(request);
+        response = request(request);
 
-		return response;
-	}
+        return response;
+    }
 
-	/**
-	 * Peer to peer push application API (prototype).
-	 *
-	 * @param p2pOperation
-	 *            object that hold p2p operation information.
-	 * @return the same instance of p2pOperation as the specified parameter with
-	 *         status set by the simulator/drive.
-	 *
-	 * @throws KineticException
-	 *             any internal error occurred.
-	 */
-	@Override
-	public PeerToPeerOperation PeerToPeerPush(PeerToPeerOperation p2pOperation)
-			throws KineticException {
+    /**
+     * Peer to peer push application API (prototype).
+     *
+     * @param p2pOperation
+     *            object that hold p2p operation information.
+     * @return the same instance of p2pOperation as the specified parameter with
+     *         status set by the simulator/drive.
+     *
+     * @throws KineticException
+     *             any internal error occurred.
+     */
+    @Override
+    public PeerToPeerOperation PeerToPeerPush(PeerToPeerOperation p2pOperation)
+            throws KineticException {
 
-		KineticMessage km = MessageFactory.createKineticMessageWithBuilder();
+        KineticMessage km = MessageFactory.createKineticMessageWithBuilder();
 
-		// create request message.
-		Command.Builder commandBuilder = (Command.Builder) km.getCommand();
+        // create request message.
+        Command.Builder commandBuilder = (Command.Builder) km.getCommand();
 
-		// set request type
-		commandBuilder.getHeaderBuilder()
-		.setMessageType(MessageType.PEER2PEERPUSH);
+        // set request type
+        commandBuilder.getHeaderBuilder().setMessageType(
+                MessageType.PEER2PEERPUSH);
 
-		// p2p builder
-		P2POperation.Builder p2pBuilder = commandBuilder.getBodyBuilder().getP2POperationBuilder();
+        // p2p builder
+        P2POperation.Builder p2pBuilder = commandBuilder.getBodyBuilder()
+                .getP2POperationBuilder();
 
-		// set peer hots/port/tls
-		p2pBuilder.getPeerBuilder().setHostname(
-				p2pOperation.getPeer().getHost());
-		p2pBuilder.getPeerBuilder().setPort(p2pOperation.getPeer().getPort());
-		p2pBuilder.getPeerBuilder().setTls(p2pOperation.getPeer().getUseTls());
+        // set peer hots/port/tls
+        p2pBuilder.getPeerBuilder().setHostname(
+                p2pOperation.getPeer().getHost());
+        p2pBuilder.getPeerBuilder().setPort(p2pOperation.getPeer().getPort());
+        p2pBuilder.getPeerBuilder().setTls(p2pOperation.getPeer().getUseTls());
 
-		// set operation list
-		List<Operation> operationList = p2pOperation.getOperationList();
+        // set operation list
+        List<Operation> operationList = p2pOperation.getOperationList();
 
-		for (Operation op : operationList) {
+        for (Operation op : operationList) {
 
-			// operation builder
-			Command.P2POperation.Operation.Builder operationBuilder = Command.P2POperation.Operation.newBuilder();
+            // operation builder
+            Command.P2POperation.Operation.Builder operationBuilder = Command.P2POperation.Operation
+                    .newBuilder();
 
-			// set force flag
-			operationBuilder.setForce(op.getForced());
+            // set force flag
+            operationBuilder.setForce(op.getForced());
 
-			// set key
-			operationBuilder.setKey(ByteString.copyFrom(op.getKey()));
+            // set key
+            operationBuilder.setKey(ByteString.copyFrom(op.getKey()));
 
-			// set new key
-			if (op.getNewKey() != null) {
-				operationBuilder.setNewKey(ByteString.copyFrom(op.getNewKey()));
-			}
+            // set new key
+            if (op.getNewKey() != null) {
+                operationBuilder.setNewKey(ByteString.copyFrom(op.getNewKey()));
+            }
 
-			// set version
-			if (op.getVersion() != null) {
-				operationBuilder
-				.setVersion(ByteString.copyFrom(op.getVersion()));
-			}
+            // set version
+            if (op.getVersion() != null) {
+                operationBuilder
+                        .setVersion(ByteString.copyFrom(op.getVersion()));
+            }
 
-			// add operation to list
-			p2pBuilder.addOperation(operationBuilder.build());
-		}
+            // add operation to list
+            p2pBuilder.addOperation(operationBuilder.build());
+        }
 
-		// do request
-		KineticMessage response = PeerToPeerPush(km);
+        // do request
+        KineticMessage response = PeerToPeerPush(km);
 
-		// get p2p op response
-		P2POperation peerToPeerOperationResponse = response.getCommand()
-				.getBody().getP2POperation();
+        // get p2p op response
+        P2POperation peerToPeerOperationResponse = response.getCommand()
+                .getBody().getP2POperation();
 
-		StatusCode respScode = response.getCommand().getStatus()
-				.getCode();
+        StatusCode respScode = response.getCommand().getStatus().getCode();
 
-		/**
-		 * throws KineticException if overall status failed.
-		 */
-		if (respScode != StatusCode.SUCCESS) {
+        /**
+         * throws KineticException if overall status failed.
+         */
+        if (respScode != StatusCode.SUCCESS) {
 
-			// get status message
-			String msg = response.getCommand().getStatus()
-					.getStatusMessage();
+            // get status message
+            String msg = response.getCommand().getStatus().getStatusMessage();
 
-			// get exception message from response
-			String emsg = (msg == null) ? "Internal error for P2P ops" : msg;
+            // get exception message from response
+            String emsg = (msg == null) ? "Internal error for P2P ops" : msg;
 
-			// construct and throw exception
-			KineticException ke = new KineticException(emsg);
+            // construct and throw exception
+            KineticException ke = new KineticException(emsg);
 
-			// log warning message
-			LOG.warning("p2p op failed, status code: " + respScode + ", msg: "
-					+ emsg);
+            // set request message
+            ke.setRequestMessage(km);
 
-			throw ke;
-		}
+            // set response message
+            ke.setResponseMessage(response);
 
-		// set overall status and message
-		p2pOperation.setStatus(response.getCommand().getStatus()
-				.getCode() == StatusCode.SUCCESS);
-		p2pOperation.setErrorMessage(response.getCommand()
-				.getStatus()
-				.getStatusMessage());
+            // log warning message
+            LOG.warning("p2p op failed, status code: " + respScode + ", msg: "
+                    + emsg);
 
-		// set individual operation status and message
-		for (int i = 0; i < operationList.size(); i++) {
+            throw ke;
+        }
 
-			// set status
-			operationList.get(i).setStatus(
-					peerToPeerOperationResponse.getOperation(i).getStatus()
-					.getCode() == StatusCode.SUCCESS);
+        // set overall status and message
+        // p2pOperation
+        // .setStatus(response.getCommand().getStatus().getCode() ==
+        // StatusCode.SUCCESS);
 
-			// set message
-			operationList.get(i).setErrorMessage(
-					peerToPeerOperationResponse.getOperation(i).getStatus()
-					.getStatusMessage());
-		}
+        // set overall status
+        p2pOperation.setStatus(peerToPeerOperationResponse
+                .getAllChildOperationsSucceeded());
 
-		// return p2p operation response
-		return p2pOperation;
-	}
+        p2pOperation.setErrorMessage(response.getCommand().getStatus()
+                .getStatusMessage());
+
+        // set individual operation status and message
+        for (int i = 0; i < operationList.size(); i++) {
+
+            // status code
+            StatusCode sc = peerToPeerOperationResponse.getOperation(i)
+                    .getStatus().getCode();
+
+            // set status
+            operationList.get(i).setStatus(sc == StatusCode.SUCCESS);
+
+            // set status code
+            operationList.get(i).setStatusCode(sc);
+
+            // set status message
+            operationList.get(i).setErrorMessage(
+                    peerToPeerOperationResponse.getOperation(i).getStatus()
+                            .getStatusMessage());
+        }
+
+        // return p2p operation response
+        return p2pOperation;
+    }
 }
