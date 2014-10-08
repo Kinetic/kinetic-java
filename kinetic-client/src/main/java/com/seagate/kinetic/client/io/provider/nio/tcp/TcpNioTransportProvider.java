@@ -23,6 +23,7 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
 
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -41,123 +42,135 @@ import com.seagate.kinetic.common.lib.KineticMessage;
  */
 public class TcpNioTransportProvider implements ClientTransportProvider {
 
-	// logger
-	public final Logger logger = Logger.getLogger(TcpNioTransportProvider.class
-			.getName());
+    // logger
+    public final Logger logger = Logger.getLogger(TcpNioTransportProvider.class
+            .getName());
 
-	// default port
-	private int port = 8123;
+    // default port
+    private int port = 8123;
 
-	private Bootstrap bootstrap = null;
+    private Bootstrap bootstrap = null;
 
-	// private EventLoopGroup bossGroup = null;
-	private EventLoopGroup workerGroup = null;
+    // private EventLoopGroup bossGroup = null;
+    private EventLoopGroup workerGroup = null;
 
-	private NioChannelInitializer nioChannelInitializer = null;
+    private NioChannelInitializer nioChannelInitializer = null;
 
-	private ClientConfiguration config = null;
+    private ClientConfiguration config = null;
 
-	private ClientMessageService mservice = null;
+    private ClientMessageService mservice = null;
 
-	private Channel channel = null;
+    private Channel channel = null;
 
-	private String host = null;
+    private String host = null;
 
-	private static ShutdownHook shook = new ShutdownHook();
+    private static ShutdownHook shook = new ShutdownHook();
 
-	static {
-		Runtime.getRuntime().addShutdownHook(shook);
-	}
+    static {
+        Runtime.getRuntime().addShutdownHook(shook);
+    }
 
-	/**
-	 * Default constructor.
-	 */
-	public TcpNioTransportProvider() {
-		;
-	}
+    /**
+     * Default constructor.
+     */
+    public TcpNioTransportProvider() {
+        ;
+    }
 
-	private void initTransport() throws KineticException {
+    private void initTransport() throws KineticException {
 
-		this.port = this.config.getPort();
-		this.host = this.config.getHost();
+        this.port = this.config.getPort();
+        this.host = this.config.getHost();
 
-		try {
+        try {
 
-			workerGroup = NioWorkerGroup.getWorkerGroup();
+            workerGroup = NioWorkerGroup.getWorkerGroup();
 
-			nioChannelInitializer = new NioChannelInitializer(this.mservice);
+            nioChannelInitializer = new NioChannelInitializer(this.mservice);
 
-			bootstrap = new Bootstrap();
+            bootstrap = new Bootstrap();
 
-			bootstrap.group(workerGroup).channel(NioSocketChannel.class)
-			.handler(nioChannelInitializer);
+            bootstrap.group(workerGroup).channel(NioSocketChannel.class)
+                    .handler(nioChannelInitializer);
 
-			channel = bootstrap.connect(host, port).sync().channel();
+            if (config.getLocalAddress() == null) {
+                channel = bootstrap.connect(host, port).sync().channel();
+            } else {
 
-		} catch (Exception e) {
-			// release allocated resources
-			this.close();
-			throw new KineticException(e);
-		}
+                // remote address
+                InetSocketAddress remote = new InetSocketAddress(host, port);
 
-		logger.info("TcpNio client transport provider connecting to host:port ="
-				+ host
-				+ ":"
-				+ port);
-	}
+                // remote port
+                InetSocketAddress local = new InetSocketAddress(
+                        config.getLocalAddress(), config.getLocalPort());
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public void close() {
+                channel = bootstrap.connect(remote, local).sync().channel();
 
-		logger.info("closing tcp nio transport provider., host=" + this.host
-				+ ", port=" + this.port);
+                logger.info("connected to remote with local address: "
+                        + config.getLocalAddress() + ", local port="
+                        + config.getLocalPort());
+            }
 
-		try {
+        } catch (Exception e) {
+            // release allocated resources
+            this.close();
+            throw new KineticException(e);
+        }
 
-			// close message handler
-			this.mservice.close();
+        logger.info("TcpNio client transport provider connecting to host:port ="
+                + host + ":" + port);
+    }
 
-			// close channel
-			if (this.channel != null) {
-				this.channel.close();
-			}
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void close() {
 
-			// release resources
-			NioWorkerGroup.close();
+        logger.info("closing tcp nio transport provider., host=" + this.host
+                + ", port=" + this.port);
 
-		} catch (Exception e) {
+        try {
 
-			logger.log(Level.WARNING, e.getMessage(), e);
-		}
+            // close message handler
+            this.mservice.close();
 
-		logger.info("Kinetic nio client transport provider closed, url ="
-				+ host
-				+ ":" + port);
-	}
+            // close channel
+            if (this.channel != null) {
+                this.channel.close();
+            }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public void init(ClientMessageService mservice)
-			throws KineticException {
+            // release resources
+            NioWorkerGroup.close();
 
-		this.mservice = mservice;
+        } catch (Exception e) {
 
-		this.config = mservice.getConfiguration();
+            logger.log(Level.WARNING, e.getMessage(), e);
+        }
 
-		this.initTransport();
-	}
+        logger.info("Kinetic nio client transport provider closed, url ="
+                + host + ":" + port);
+    }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public void write(KineticMessage message) throws IOException {
-		this.channel.writeAndFlush(message);
-	}
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void init(ClientMessageService mservice) throws KineticException {
+
+        this.mservice = mservice;
+
+        this.config = mservice.getConfiguration();
+
+        this.initTransport();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void write(KineticMessage message) throws IOException {
+        this.channel.writeAndFlush(message);
+    }
 
 }
