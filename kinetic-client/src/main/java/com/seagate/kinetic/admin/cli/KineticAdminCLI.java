@@ -21,6 +21,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -28,24 +29,27 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import kinetic.admin.ACL;
 import kinetic.admin.AdminClientConfiguration;
-import kinetic.client.ClientConfiguration;
-import kinetic.client.KineticClient;
-import kinetic.client.KineticClientFactory;
+import kinetic.admin.Capacity;
+import kinetic.admin.Configuration;
+import kinetic.admin.Device;
+import kinetic.admin.Domain;
+import kinetic.admin.Interface;
+import kinetic.admin.KineticAdminClient;
+import kinetic.admin.KineticAdminClientFactory;
+import kinetic.admin.KineticLog;
+import kinetic.admin.KineticLogType;
+import kinetic.admin.Limits;
+import kinetic.admin.Statistics;
+import kinetic.admin.Temperature;
+import kinetic.admin.Utilization;
 import kinetic.client.KineticException;
 
 import com.google.protobuf.ByteString;
 import com.seagate.kinetic.admin.impl.JsonUtil;
-import com.seagate.kinetic.client.internal.MessageFactory;
-import com.seagate.kinetic.common.lib.KineticMessage;
-import com.seagate.kinetic.proto.Kinetic.Command;
-
-import com.seagate.kinetic.proto.Kinetic.Command.GetLog;
-import com.seagate.kinetic.proto.Kinetic.Command.GetLog.Type;
-import com.seagate.kinetic.proto.Kinetic.Command.Header;
-import com.seagate.kinetic.proto.Kinetic.Command.MessageType;
 import com.seagate.kinetic.proto.Kinetic.Command.Security;
-import com.seagate.kinetic.proto.Kinetic.Command.Status.StatusCode;
+import com.seagate.kinetic.proto.Kinetic.Command.Security.ACL.Permission;
 
 /**
  *
@@ -55,8 +59,6 @@ import com.seagate.kinetic.proto.Kinetic.Command.Status.StatusCode;
  *
  */
 public class KineticAdminCLI {
-    private static final String FALSE = "false";
-    private static final String TRUE = "true";
     private static final String ALL = "all";
     private static final String TEMPERATURE = "temperature";
     private static final String CAPACITY = "capacity";
@@ -70,7 +72,7 @@ public class KineticAdminCLI {
     private static final long CLUSTERVERSION = 0;
     private static final int OK = 0;
     private static final int ERROR = 1;
-    private static KineticClient kineticClient = null;
+    private static KineticAdminClient kineticAdminClient = null;
     private final Map<String, List<String>> legalArguments = new HashMap<String, List<String>>();
 
     public KineticAdminCLI() throws KineticException {
@@ -82,29 +84,65 @@ public class KineticAdminCLI {
         subArgs = new ArrayList<String>();
         legalArguments.put(rootArg, subArgs);
 
-        rootArg = "-setup";
+        rootArg = "-setclusterversion";
         subArgs = initSubArgs();
-
-        subArgs.add("-pin");
-        subArgs.add("-setPin");
         subArgs.add("-newclversion");
-        subArgs.add("-erase");
+        legalArguments.put(rootArg, subArgs);
+
+        rootArg = "-seterasepin";
+        subArgs = initSubArgs();
+        subArgs.add("-olderasepin");
+        subArgs.add("-newerasepin");
+        legalArguments.put(rootArg, subArgs);
+
+        rootArg = "-setlockpin";
+        subArgs = initSubArgs();
+        subArgs.add("-oldlockpin");
+        subArgs.add("-newlockpin");
+        legalArguments.put(rootArg, subArgs);
+
+        rootArg = "-setlockpin";
+        subArgs = initSubArgs();
+        subArgs.add("-oldlockpin");
+        subArgs.add("-newlockpin");
+        legalArguments.put(rootArg, subArgs);
+
+        rootArg = "-instanterase";
+        subArgs = initSubArgs();
+        subArgs.add("-pin");
+        legalArguments.put(rootArg, subArgs);
+
+        rootArg = "-secureerase";
+        subArgs = initSubArgs();
+        subArgs.add("-pin");
         legalArguments.put(rootArg, subArgs);
 
         rootArg = "-security";
         subArgs = initSubArgs();
-
         legalArguments.put(rootArg, subArgs);
 
         rootArg = "-getlog";
         subArgs = initSubArgs();
-
         subArgs.add("-type");
+        legalArguments.put(rootArg, subArgs);
+
+        rootArg = "-getvendorspecificdevicelog";
+        subArgs = initSubArgs();
+        subArgs.add("-name");
         legalArguments.put(rootArg, subArgs);
 
         rootArg = "-firmware";
         subArgs = initSubArgs();
+        subArgs.add("-pin");
+        legalArguments.put(rootArg, subArgs);
 
+        rootArg = "-lockdevice";
+        subArgs = initSubArgs();
+        subArgs.add("-pin");
+        legalArguments.put(rootArg, subArgs);
+
+        rootArg = "-unlockdevice";
+        subArgs = initSubArgs();
         subArgs.add("-pin");
         legalArguments.put(rootArg, subArgs);
     }
@@ -114,52 +152,76 @@ public class KineticAdminCLI {
      */
     public void init(String host, String tlsPort, String clusterVersion)
             throws KineticException {
-        ClientConfiguration clientConfig = new AdminClientConfiguration();
+        AdminClientConfiguration adminClientConfig = new AdminClientConfiguration();
         if (host != null && !host.isEmpty()) {
             validateHost(host);
-            clientConfig.setHost(host);
+            adminClientConfig.setHost(host);
         } else {
-            clientConfig.setHost(DEFAULT_HOST);
+            adminClientConfig.setHost(DEFAULT_HOST);
         }
 
         if (tlsPort != null && !tlsPort.isEmpty()) {
             validatePort(tlsPort);
-            clientConfig.setPort(Integer.parseInt(tlsPort));
+            adminClientConfig.setPort(Integer.parseInt(tlsPort));
         } else {
-            clientConfig.setPort(DEFAULT_SSL_PORT);
+            adminClientConfig.setPort(DEFAULT_SSL_PORT);
         }
 
         if (clusterVersion != null && !clusterVersion.isEmpty()) {
-            clientConfig.setClusterVersion(Integer.parseInt(clusterVersion));
+            adminClientConfig.setClusterVersion(Integer
+                    .parseInt(clusterVersion));
         } else {
-            clientConfig.setClusterVersion(CLUSTERVERSION);
+            adminClientConfig.setClusterVersion(CLUSTERVERSION);
         }
 
-        kineticClient = KineticClientFactory.createInstance(clientConfig);
+        kineticAdminClient = KineticAdminClientFactory
+                .createInstance(adminClientConfig);
     }
 
     public void close() throws KineticException {
-        if (kineticClient != null) {
-            kineticClient.close();
+        if (kineticAdminClient != null) {
+            kineticAdminClient.close();
         }
     }
 
-    public KineticMessage security(String securityFile) throws IOException,
+    public void security(String securityFile) throws IOException,
             KineticException {
         byte[] content = readFile(securityFile);
 
-        KineticMessage km = MessageFactory.createKineticMessageWithBuilder();
-
-        Command.Builder commandBuilder = (Command.Builder) km.getCommand();
-
-        Header.Builder header = commandBuilder.getHeaderBuilder();
-        header.setMessageType(MessageType.SECURITY);
         Security security = JsonUtil.parseSecurity(ByteString.copyFrom(content)
                 .toStringUtf8());
-        
-        commandBuilder.getBodyBuilder().setSecurity(security);
 
-        return kineticClient.request(km);
+        ACL myAcl = null;
+        Domain myDomain = null;
+        List<ACL> myAclList = new ArrayList<ACL>();
+        List<Domain> myDomainList = null;
+        for (com.seagate.kinetic.proto.Kinetic.Command.Security.ACL acl : security
+                .getAclList()) {
+            myAcl = new ACL();
+
+            myAcl.setUserId(acl.getIdentity());
+            myAcl.setKey(acl.getKey().toStringUtf8());
+
+            myDomainList = new ArrayList<Domain>();
+            List<kinetic.admin.Role> roleList = null;
+            for (com.seagate.kinetic.proto.Kinetic.Command.Security.ACL.Scope domain : acl
+                    .getScopeList()) {
+                myDomain = new Domain();
+                roleList = new ArrayList<kinetic.admin.Role>();
+                myDomain.setOffset(domain.getOffset());
+                myDomain.setValue(domain.getValue().toStringUtf8());
+                for (Permission role : domain.getPermissionList()) {
+                    roleList.add(kinetic.admin.Role.valueOf(role.toString()));
+                }
+                myDomain.setRoles(roleList);
+                myDomainList.add(myDomain);
+            }
+            myAcl.setDomains(myDomainList);
+
+            myAclList.add(myAcl);
+        }
+
+        kineticAdminClient.setAcl(myAclList);
     }
 
     private byte[] readFile(String securityFile) throws FileNotFoundException,
@@ -176,128 +238,149 @@ public class KineticAdminCLI {
         return content;
     }
 
-    /*
-     * Parse the getlog type
-     */
-    public KineticMessage getLog(String type) throws KineticException {
-        KineticMessage km = MessageFactory.createKineticMessageWithBuilder();
-        
-        Command.Builder commandBuilder = (Command.Builder) km.getCommand();
-        
-        Header.Builder header = commandBuilder.getHeaderBuilder();
-        header.setMessageType(MessageType.GETLOG);
-        GetLog.Builder getLog = commandBuilder.getBodyBuilder()
-                .getGetLogBuilder();
-
+    public KineticLog getLog(String type) throws KineticException {
         validateLogType(type);
+
+        List<KineticLogType> listOfLogType = new ArrayList<KineticLogType>();
+
         if (type.equalsIgnoreCase(ALL)) {
-            getLog.addTypes(Type.UTILIZATIONS);
-            getLog.addTypes(Type.CAPACITIES);
-            getLog.addTypes(Type.TEMPERATURES);
-            getLog.addTypes(Type.CONFIGURATION);
-            getLog.addTypes(Type.MESSAGES);
-            getLog.addTypes(Type.STATISTICS);
-            getLog.addTypes(Type.LIMITS);
+            return kineticAdminClient.getLog();
 
         } else if (type.equalsIgnoreCase(UTILIZATION)) {
-            getLog.addTypes(Type.UTILIZATIONS);
+            listOfLogType.add(KineticLogType.UTILIZATIONS);
         } else if (type.equalsIgnoreCase(CAPACITY)) {
-            getLog.addTypes(Type.CAPACITIES);
+            listOfLogType.add(KineticLogType.CAPACITIES);
         } else if (type.equalsIgnoreCase(TEMPERATURE)) {
-            getLog.addTypes(Type.TEMPERATURES);
+            listOfLogType.add(KineticLogType.TEMPERATURES);
         } else if (type.equalsIgnoreCase(CONFIGURATION)) {
-            getLog.addTypes(Type.CONFIGURATION);
+            listOfLogType.add(KineticLogType.CONFIGURATION);
         } else if (type.equalsIgnoreCase(MESSAGES)) {
-            getLog.addTypes(Type.MESSAGES);
+            listOfLogType.add(KineticLogType.MESSAGES);
         } else if (type.equalsIgnoreCase(STATISTICS)) {
-            getLog.addTypes(Type.STATISTICS);
+            listOfLogType.add(KineticLogType.STATISTICS);
         } else if (type.equalsIgnoreCase(LIMITS)) {
-            getLog.addTypes(Type.LIMITS);
-        }else {
+            listOfLogType.add(KineticLogType.LIMITS);
+        } else {
             throw new IllegalArgumentException(
                     "Type should be utilization, capacity, temperature, configuration, message, statistic, limits or all");
         }
-        return kineticClient.request(km);
+
+        return kineticAdminClient.getLog(listOfLogType);
     }
 
-    /*
-     * Parse the setup argument
-     */
-    public KineticMessage setup(String pin, String setPin,
-            String newClusterVersion, String erase) throws KineticException {
-
-        KineticMessage km = MessageFactory.createKineticMessageWithBuilder();
-        Command.Builder commandBuilder = (Command.Builder) km.getCommand();
-
-        Header.Builder header = commandBuilder.getHeaderBuilder();
-        header.setMessageType(MessageType.SETUP);
-        com.seagate.kinetic.proto.Kinetic.Command.Setup.Builder setup = com.seagate.kinetic.proto.Kinetic.Command.Setup
-                .newBuilder();
-        
-//        if (pin != null) {
-//            setup.setPin(ByteString.copyFromUtf8(pin));
-//        }
-
-//        if (setPin != null) {
-//            setup.setSetPin(ByteString.copyFromUtf8(setPin));
-//        }
-
+    public void setClusterVersion(String newClusterVersion)
+            throws KineticException {
         if (newClusterVersion != null) {
             validateClusterVersion(newClusterVersion);
-            setup.setNewClusterVersion(Long.parseLong(newClusterVersion));
+            kineticAdminClient.setClusterVersion(Long
+                    .parseLong(newClusterVersion));
         }
-
-//        if (erase != null) {
-//            validateErase(erase);
-//            setup.setInstantSecureErase(Boolean.parseBoolean(erase));
-//        }
-
-        commandBuilder.getBodyBuilder().setSetup(setup);
-
-        return kineticClient.request(km);
     }
 
-    public KineticMessage firmwareDownload(String pin, String firmwareFile)
+    public void setErasePin(String oldErasePin, String newErasePin)
+            throws KineticException {
+        byte[] oldErasePinB = null;
+        byte[] newErasePinB = null;
+
+        if (oldErasePin != null) {
+            oldErasePinB = oldErasePin.getBytes(Charset.forName("UTF-8"));
+            newErasePinB = newErasePin.getBytes(Charset.forName("UTF-8"));
+        }
+
+        kineticAdminClient.setErasePin(oldErasePinB, newErasePinB);
+    }
+
+    public void setLockPin(String oldLockPin, String newLockPin)
+            throws KineticException {
+        byte[] oldLockPinB = null;
+        byte[] newLockPinB = null;
+
+        if (oldLockPin != null) {
+            oldLockPinB = oldLockPin.getBytes(Charset.forName("UTF-8"));
+            newLockPinB = newLockPin.getBytes(Charset.forName("UTF-8"));
+        }
+
+        kineticAdminClient.setLockPin(oldLockPinB, newLockPinB);
+    }
+
+    public void instantErase(String erasePin) throws KineticException {
+        byte[] erasePinB = null;
+
+        if (erasePin != null) {
+            erasePinB = erasePin.getBytes(Charset.forName("UTF-8"));
+        }
+
+        kineticAdminClient.instantErase(erasePinB);
+    }
+
+    public void secureErase(String erasePin) throws KineticException {
+        byte[] erasePinB = null;
+
+        if (erasePin != null) {
+            erasePinB = erasePin.getBytes(Charset.forName("UTF-8"));
+        }
+
+        kineticAdminClient.secureErase(erasePinB);
+    }
+
+    public Device getvendorspecificdevicelog(String name)
+            throws KineticException {
+        byte[] nameB = null;
+
+        if (name != null) {
+            nameB = name.getBytes(Charset.forName("UTF-8"));
+        }
+
+        return kineticAdminClient.getVendorSpecificDeviceLog(nameB);
+    }
+
+    public void firmwareDownload(String pin, String firmwareFile)
             throws IOException, KineticException {
         byte[] content = readFile(firmwareFile);
 
-        KineticMessage km = MessageFactory.createKineticMessageWithBuilder();
-
-        Command.Builder commandBuilder = (Command.Builder) km.getCommand();
-
-        Header.Builder header = commandBuilder.getHeaderBuilder();
-        header.setMessageType(MessageType.SETUP);
-        
-        com.seagate.kinetic.proto.Kinetic.Command.Setup.Builder setup = com.seagate.kinetic.proto.Kinetic.Command.Setup
-                .newBuilder();
-      
-        /**
-         * XXX: protocol-3.0.0
-         */
-        
-//        if (pin != null) {
-//            setup.setPin(ByteString.copyFromUtf8(pin));
-//        }
-
-        setup.setFirmwareDownload(true);
-
-        commandBuilder.getBodyBuilder().setSetup(setup);
-
-        if (null != content && content.length > 0) {
-            km.setValue(content);
+        byte[] pinB = null;
+        if (pin != null) {
+            pinB = pin.getBytes(Charset.forName("UTF-8"));
         }
 
-        return kineticClient.request(km);
+        kineticAdminClient.firmwareDownload(pinB, content);
+    }
+
+    public void lockDevice(String lockPin) throws KineticException {
+        byte[] lockPinB = null;
+
+        if (lockPin != null) {
+            lockPinB = lockPin.getBytes(Charset.forName("UTF-8"));
+        }
+
+        kineticAdminClient.lockDevice(lockPinB);
+    }
+
+    public void unLockDevice(String lockPin) throws KineticException {
+        byte[] lockPinB = null;
+
+        if (lockPin != null) {
+            lockPinB = lockPin.getBytes(Charset.forName("UTF-8"));
+        }
+
+        kineticAdminClient.unLockDevice(lockPinB);
     }
 
     public static void printHelp() {
         StringBuffer sb = new StringBuffer();
-        sb.append("Usage: kineticAdmin <-setup|-security|-getlog|-firmware>\n");
+        sb.append("Usage: kineticAdmin <-setclusterversion|-seterasepin|-setlockpin|-instanterase|-secureerase|-security|-getlog|-getvendorspecificdevicelog|-firmware|-lockdevice|-unlockdevice>\n");
         sb.append("kineticAdmin -h|-help\n");
-        sb.append("kineticAdmin -setup [-host <ip|hostname>] [-tlsport <tlsport>] [-clversion <clusterversion>] [-pin <pin>] [-newclversion <newclusterversion>] [-setpin <setpin>] [-erase <true|false>]\n");
+        sb.append("kineticAdmin -setclusterversion <-newclversion <newclusterversion>> [-host <ip|hostname>] [-tlsport <tlsport>] [-clversion <clusterversion>]\n");
+        sb.append("kineticAdmin -seterasepin <-olderasepin <olderasepin>> <-newerasepin <newerasepin>> [-host <ip|hostname>] [-tlsport <tlsport>] [-clversion <clusterversion>]\n");
+        sb.append("kineticAdmin -setlockpin <-oldlockpin <oldlockpin>> <-newlockpin <newlockpin>> [-host <ip|hostname>] [-tlsport <tlsport>] [-clversion <clusterversion>]\n");
+        sb.append("kineticAdmin -instanterase <-pin <erasepin>> [-host <ip|hostname>] [-tlsport <tlsport>] [-clversion <clusterversion>]\n");
+        sb.append("kineticAdmin -secureerase <-pin <erasepin>> [-host <ip|hostname>] [-tlsport <tlsport>] [-clversion <clusterversion>]\n");
         sb.append("kineticAdmin -security <file> [-host <ip|hostname>] [-tlsport <tlsport>] [-clversion <clusterversion>]\n");
         sb.append("kineticAdmin -getlog [-host <ip|hostname>] [-tlsport <tlsport>] [-clversion <clusterversion>] [-type <utilization|temperature|capacity|configuration|message|statistic|limits|all>]\n");
-        sb.append("kineticAdmin -firmware <file> [-host <ip|hostname>] [-tlsport <tlsport>] [-clversion <clusterversion>] [-pin <pin>]");
+        sb.append("kineticAdmin -getvendorspecificdevicelog <-name <vendorspecificname>> [-host <ip|hostname>] [-tlsport <tlsport>] [-clversion <clusterversion>]\n");
+        sb.append("kineticAdmin -firmware <file> [-host <ip|hostname>] [-tlsport <tlsport>] [-clversion <clusterversion>] [-pin <pin>]\n");
+        sb.append("kineticAdmin -lockdevice <-pin <lockpin>> [-host <ip|hostname>] [-tlsport <tlsport>] [-clversion <clusterversion>]\n");
+        sb.append("kineticAdmin -unlockdevice <-pin <lockpin>> [-host <ip|hostname>] [-tlsport <tlsport>] [-clversion <clusterversion>]");
         System.out.println(sb.toString());
     }
 
@@ -328,46 +411,45 @@ public class KineticAdminCLI {
         return null;
     }
 
-    /*
-     * handle the response to print
-     */
-    public void printResponse(KineticMessage km) {
-        
-        if (null == km) {
+    public void printGetLogResult(KineticLog kineticLog)
+            throws KineticException {
+        if (null == kineticLog) {
             return;
         }
 
-        MessageType messageType = km.getCommand().getHeader()
-                .getMessageType();
-        
-        StatusCode statusCode = km.getCommand().getStatus().getCode();
-        
-        if (messageType.equals(MessageType.SETUP_RESPONSE)
-                || messageType.equals(MessageType.SECURITY_RESPONSE)) {
-            if (statusCode.equals(StatusCode.SUCCESS)) {
-                System.out.println(StatusCode.SUCCESS);
-            } else {
-                System.err.println(km.getCommand().getStatus().getCode());
-                System.err.println(km.getCommand().getStatus()
-                        .getStatusMessage());
+        KineticLogType[] types = kineticLog.getContainedLogTypes();
+        if (types != null && types.length > 0) {
+            for (KineticLogType type : types) {
+                System.out.println("KineticLogType: " + type);
+                if (type.equals(KineticLogType.CAPACITIES)) {
+                    printCapacity(kineticLog);
+                } else if (type.equals(KineticLogType.TEMPERATURES)) {
+                    printTemperatures(kineticLog);
+                } else if (type.equals(KineticLogType.UTILIZATIONS)) {
+                    printUtilizations(kineticLog);
+                } else if (type.equals(KineticLogType.STATISTICS)) {
+                    printStatistics(kineticLog);
+                } else if (type.equals(KineticLogType.MESSAGES)) {
+                    printMessages(kineticLog);
+                } else if (type.equals(KineticLogType.CONFIGURATION)) {
+                    printConfiguration(kineticLog);
+                } else if (type.equals(KineticLogType.LIMITS)) {
+                    printLimits(kineticLog);
+                }
             }
-
-        } else if (messageType.equals(MessageType.GETLOG_RESPONSE)) {
-            if (statusCode.equals(StatusCode.SUCCESS)) {
-                System.out.println(StatusCode.SUCCESS);
-                System.out.print(km.getCommand().getBody().getGetLog()
-                        .toString());
-            } else {
-                System.err.println(km.getCommand().getStatus().getCode());
-                System.err.println(km.getCommand().getStatus()
-                        .getDetailedMessage().toStringUtf8());
-            }
-
         }
-
     }
 
-    public void validateArgNames(String args[]) throws KineticException {
+    public void printGetVendorSpecificDeviceLog(Device device) {
+        System.out.println("device name: " + new String(device.getName()));
+        System.out.println("device value: " + new String(device.getValue()));
+    }
+
+    public void printSuccessResult() {
+        System.out.println("SUCCESS");
+    }
+
+    public void validateArgNames(String args[]) throws Exception {
         if (args == null || args.length <= 0) {
             return;
         }
@@ -383,7 +465,7 @@ public class KineticAdminCLI {
         }
 
         if (rootArg == null || !validateArgNames(rootArg, args)) {
-            throw new KineticException("wrong commands");
+            throw new Exception("wrong commands");
         }
     }
 
@@ -394,8 +476,6 @@ public class KineticAdminCLI {
             System.exit(OK);
         }
 
-        KineticMessage response = null;
-
         KineticAdminCLI kineticAdminCLI = null;
         try {
             kineticAdminCLI = new KineticAdminCLI();
@@ -404,44 +484,103 @@ public class KineticAdminCLI {
                     || args[0].equalsIgnoreCase("-h")) {
                 kineticAdminCLI.printHelp();
                 System.exit(OK);
-            } else if (args[0].equalsIgnoreCase("-setup")) {
+            } else if (args[0].equalsIgnoreCase("-setclusterversion")) {
                 initAdminClient(args, kineticAdminCLI);
 
-                String pin = kineticAdminCLI.getArgValue("-pin", args);
-                String setPin = kineticAdminCLI.getArgValue("-setpin", args);
                 String newClusterVersion = kineticAdminCLI.getArgValue(
                         "-newclversion", args);
-                String erase = kineticAdminCLI.getArgValue("-erase", args);
-                response = kineticAdminCLI.setup(pin, setPin,
-                        newClusterVersion, erase);
-                kineticAdminCLI.printResponse(response);
+                kineticAdminCLI.setClusterVersion(newClusterVersion);
+                kineticAdminCLI.printSuccessResult();
+            } else if (args[0].equalsIgnoreCase("-seterasepin")) {
+                initAdminClient(args, kineticAdminCLI);
 
+                String oldErasePin = kineticAdminCLI.getArgValue(
+                        "-olderasepin", args);
+                String newErasePin = kineticAdminCLI.getArgValue(
+                        "-newerasepin", args);
+
+                kineticAdminCLI.setErasePin(oldErasePin, newErasePin);
+                kineticAdminCLI.printSuccessResult();
+            } else if (args[0].equalsIgnoreCase("-setlockpin")) {
+                initAdminClient(args, kineticAdminCLI);
+
+                String oldLockPin = kineticAdminCLI.getArgValue("-oldlockpin",
+                        args);
+                String newLockPin = kineticAdminCLI.getArgValue("-newlockpin",
+                        args);
+
+                kineticAdminCLI.setLockPin(oldLockPin, newLockPin);
+                kineticAdminCLI.printSuccessResult();
+            } else if (args[0].equalsIgnoreCase("-instanterase")) {
+                initAdminClient(args, kineticAdminCLI);
+
+                String erasePin = kineticAdminCLI.getArgValue("-pin", args);
+
+                kineticAdminCLI.instantErase(erasePin);
+                kineticAdminCLI.printSuccessResult();
+            } else if (args[0].equalsIgnoreCase("-secureerase")) {
+                initAdminClient(args, kineticAdminCLI);
+
+                String erasePin = kineticAdminCLI.getArgValue("-pin", args);
+
+                kineticAdminCLI.secureErase(erasePin);
+                kineticAdminCLI.printSuccessResult();
             } else if (args[0].equalsIgnoreCase("-security")) {
                 initAdminClient(args, kineticAdminCLI);
 
                 String file = kineticAdminCLI.getArgValue("-security", args);
-                response = kineticAdminCLI.security(file);
-                kineticAdminCLI.printResponse(response);
-
+                kineticAdminCLI.security(file);
+                kineticAdminCLI.printSuccessResult();
             } else if (args[0].equalsIgnoreCase("-getlog")) {
                 initAdminClient(args, kineticAdminCLI);
 
                 String type = kineticAdminCLI.getArgValue("-type", args);
                 type = type == null ? ALL : type;
-                response = kineticAdminCLI.getLog(type);
-                kineticAdminCLI.printResponse(response);
+                KineticLog kineticLog = kineticAdminCLI.getLog(type);
+                kineticAdminCLI.printGetLogResult(kineticLog);
 
+            } else if (args[0].equalsIgnoreCase("-getvendorspecificdevicelog")) {
+                initAdminClient(args, kineticAdminCLI);
+
+                String name = kineticAdminCLI.getArgValue("-name", args);
+                Device device = kineticAdminCLI
+                        .getvendorspecificdevicelog(name);
+                if (device != null) {
+                    kineticAdminCLI.printGetVendorSpecificDeviceLog(device);
+                }
             } else if (args[0].equalsIgnoreCase("-firmware")) {
                 initAdminClient(args, kineticAdminCLI);
 
                 String pin = kineticAdminCLI.getArgValue("-pin", args);
                 String firmwareFile = kineticAdminCLI.getArgValue("-firmware",
                         args);
-                response = kineticAdminCLI.firmwareDownload(pin, firmwareFile);
-                kineticAdminCLI.printResponse(response);
+                kineticAdminCLI.firmwareDownload(pin, firmwareFile);
+                kineticAdminCLI.printSuccessResult();
+            } else if (args[0].equalsIgnoreCase("-lockdevice")) {
+                initAdminClient(args, kineticAdminCLI);
 
+                String lockPin = kineticAdminCLI.getArgValue("-pin", args);
+                kineticAdminCLI.lockDevice(lockPin);
+                kineticAdminCLI.printSuccessResult();
+            } else if (args[0].equalsIgnoreCase("-unlockdevice")) {
+                initAdminClient(args, kineticAdminCLI);
+
+                String unLockPin = kineticAdminCLI.getArgValue("-pin", args);
+                kineticAdminCLI.unLockDevice(unLockPin);
+                kineticAdminCLI.printSuccessResult();
             } else {
                 printHelp();
+            }
+        } catch (KineticException ke) {
+            if (ke.getResponseMessage() != null
+                    && ke.getResponseMessage().getCommand() != null
+                    && ke.getResponseMessage().getCommand().getStatus() != null
+                    && ke.getResponseMessage().getCommand().getStatus()
+                            .getCode() != null) {
+                System.out.println(ke.getResponseMessage().getCommand()
+                        .getStatus().getCode());
+            } else {
+                System.out.println(ke);
             }
         } catch (Exception e) {
             System.out.println(e);
@@ -553,6 +692,116 @@ public class KineticAdminCLI {
         if (!pattern.matcher(clusterVersion).matches()) {
             throw new IllegalArgumentException(
                     "clusterVersion should be a long number");
+        }
+    }
+
+    private void printCapacity(KineticLog kineticLog) throws KineticException {
+        Capacity capacity = kineticLog.getCapacity();
+        if (capacity != null) {
+            System.out.println("NominalCapacityInBytes: "
+                    + capacity.getNominalCapacityInBytes());
+            System.out.println("PortionFull: " + capacity.getPortionFull()
+                    + "\n");
+        }
+    }
+
+    private void printTemperatures(KineticLog kineticLog)
+            throws KineticException {
+        List<Temperature> temps = new ArrayList<Temperature>();
+        temps = kineticLog.getTemperature();
+        if (temps != null && !temps.isEmpty()) {
+            for (Temperature temp : temps) {
+                System.out.println("Name: " + temp.getName());
+                System.out.println("Max: " + temp.getMax());
+                System.out.println("Min: " + temp.getMin());
+                System.out.println("Target: " + temp.getTarget());
+                System.out.println("Current: " + temp.getCurrent() + "\n");
+            }
+        }
+    }
+
+    private void printUtilizations(KineticLog kineticLog)
+            throws KineticException {
+        List<Utilization> utils = new ArrayList<Utilization>();
+        utils = kineticLog.getUtilization();
+        if (utils != null && !utils.isEmpty()) {
+            for (Utilization util : utils) {
+                System.out.println("Name: " + util.getName());
+                System.out.println("Utility: " + util.getUtility() + "\n");
+            }
+        }
+    }
+
+    private void printStatistics(KineticLog kineticLog) throws KineticException {
+        List<Statistics> statis = new ArrayList<Statistics>();
+        statis = kineticLog.getStatistics();
+        if (statis != null && !statis.isEmpty()) {
+            for (Statistics stati : statis) {
+                System.out.println("MessageType: " + stati.getMessageType());
+                System.out.println("Count: " + stati.getCount());
+                System.out.println("Bytes: " + stati.getBytes() + "\n");
+            }
+        }
+    }
+
+    private void printMessages(KineticLog kineticLog) throws KineticException {
+        byte[] message = kineticLog.getMessages();
+        if (message != null) {
+            System.out.println("Message: " + new String(message) + "\n");
+        }
+    }
+
+    private void printConfiguration(KineticLog kineticLog)
+            throws KineticException {
+        Configuration config = kineticLog.getConfiguration();
+        if (config != null) {
+            System.out.println("CompilationDate: "
+                    + config.getCompilationDate());
+            System.out.println("Model: " + config.getModel());
+            System.out.println("Port: " + config.getPort());
+            System.out.println("TlsPort: " + config.getTlsPort());
+            System.out.println("ProtocolCompilationDate: "
+                    + config.getProtocolCompilationDate());
+            System.out.println("ProtocolSourceHash: "
+                    + config.getProtocolSourceHash());
+            System.out.println("ProtocolVersion: "
+                    + config.getProtocolVersion());
+            System.out.println("SerialNumber: " + config.getSerialNumber());
+            System.out.println("SourceHash: " + config.getSourceHash());
+            System.out.println("Vendor: " + config.getVendor());
+            System.out.println("Version: " + config.getVersion());
+
+            List<Interface> inets = new ArrayList<Interface>();
+            inets = config.getInterfaces();
+            if (inets != null && !inets.isEmpty()) {
+                for (Interface inet : inets) {
+                    System.out.println("Name: " + inet.getName());
+                    System.out.println("Mac: " + inet.getMAC());
+                    System.out.println("Ipv4Address: " + inet.getIpv4Address());
+                    System.out.println("Ipv6Address: " + inet.getIpv6Address()
+                            + "\n");
+                }
+            }
+        }
+    }
+
+    private void printLimits(KineticLog kineticLog) throws KineticException {
+        Limits limits = kineticLog.getLimits();
+        if (limits != null) {
+            System.out.println("MaxConnections: " + limits.getMaxConnections());
+            System.out.println("MaxIdentityCount: "
+                    + limits.getMaxIdentityCount());
+            System.out.println("MaxKeyRangeCount: "
+                    + limits.getMaxKeyRangeCount());
+            System.out.println("MaxKeySize: " + limits.getMaxKeySize());
+            System.out.println("MaxMessageSize: " + limits.getMaxMessageSize());
+            System.out.println("MaxOutstandingReadRequests: "
+                    + limits.getMaxOutstandingReadRequests());
+            System.out.println("MaxOutstandingWriteRequests: "
+                    + limits.getMaxOutstandingWriteRequests());
+            System.out.println("MaxTagSize: " + limits.getMaxTagSize());
+            System.out.println("MaxValueSize: " + limits.getMaxValueSize());
+            System.out.println("MaxVersionSize: " + limits.getMaxVersionSize());
         }
     }
 
