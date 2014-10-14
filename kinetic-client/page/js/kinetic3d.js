@@ -526,17 +526,17 @@ function showNodeInfo(node) {
 }
 
 function renderCapacity(nodeInfo) {
-	var remaining = nodeInfo.capacity.remaining * nodeInfo.capacity.total;
-    var used = nodeInfo.capacity.total - remaining;
-    var freePercentage = nodeInfo.capacity.remaining;
-
+	var remaining = nodeInfo.capacity.portionFull * nodeInfo.capacity.nominalCapacityInBytes;
+    var used = nodeInfo.capacity.nominalCapacityInBytes - remaining;
+    var freePercentage = nodeInfo.capacity.portionFull;
+	
     if ($('#capacity').length > 0) {
         $.getScript('https://www.google.com/jsapi', function (data, textStatus) {
             google.load('visualization', '1.0', { 'packages': ['corechart'], 'callback': function () {
                 var data = google.visualization.arrayToDataTable([
                     ['Capacity', 'Current'],
-                    ['Remaining',      remaining],
-                    ['Used',     used]
+                    ['Remaining', remaining],
+                    ['Used', used]
                 ]);
 
                 var options = {
