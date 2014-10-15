@@ -25,7 +25,6 @@ import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.net.UnknownHostException;
-
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Enumeration;
@@ -44,14 +43,11 @@ public abstract class ConfigurationUtil {
 
     private final static Logger logger = Logger
             .getLogger(ConfigurationUtil.class.getName());
-    public final static String VENDER = "Seagate";
-    public final static String MODEL = "Simulator";
-    
-    public static final String SERIAL_PREFIX = "SIMULATOR-SN-";
-     
-    //public final static byte[] SERIAL_NUMBER = "93C3DAFD-C894-3C88-A4B0-632A90D2A04B"
-    //        .getBytes(Charset.forName("UTF-8"));
-    
+    public final static String VENDER = SimulatorConfiguration.VENDER;
+    public final static String MODEL = SimulatorConfiguration.MODEL;
+
+    // public static final String SERIAL_PREFIX = "SIMULATOR-SN-";
+
     public final static String COMPILATION_DATE = new Date().toString();
     public final static String PROTOCOL_COMPILATION_DATE = new Date()
             .toString();
@@ -59,21 +55,22 @@ public abstract class ConfigurationUtil {
     @SuppressWarnings("static-access")
     public static Configuration getConfiguration(SimulatorEngine engine)
             throws UnknownHostException, UnsupportedEncodingException {
-        
+
         SimulatorConfiguration config = engine.getServiceConfiguration();
-        
+
         Configuration.Builder configuration = Configuration.newBuilder();
         configuration.setVendor(VENDER);
         configuration.setModel(MODEL);
-        
-        // get serial no for this instance
-        String sn = getSerialNumber(engine);
-        
-        configuration.setSerialNumber(ByteString.copyFrom(sn, "UTF8"));
-        
+
+        configuration.setSerialNumber(ByteString.copyFrom(
+                config.getSerialNumber(), "UTF8"));
+
+        configuration.setWorldWideName(ByteString.copyFrom(
+                config.getWorldWideName(), "UTF8"));
+
         configuration.setCompilationDate(COMPILATION_DATE);
         configuration.setProtocolCompilationDate(PROTOCOL_COMPILATION_DATE);
-        
+
         configuration.setVersion(SimulatorConfiguration.getSimulatorVersion());
 
         List<Interface> interfaces = new ArrayList<Interface>();
@@ -158,53 +155,5 @@ public abstract class ConfigurationUtil {
         }
 
         return sb.toString();
-    }
-    
-    /**
-     * calculate serial no.
-     * <p>
-     * A simulator instance serial number is calculated as follows.
-     * <p> 
-     * SN = SERIAL_PREFIX + ip + "-" + khomeHash + "-" + persistHome;
-     * 
-     * @param engine simulator engine
-     * 
-     * @return serial number for the specified instance of simulator
-     */
-    private static String getSerialNumber (SimulatorEngine engine) {
-        
-        SimulatorConfiguration config = engine.getServiceConfiguration();
-        
-        int khomeHash = Math.abs(engine.getKineticHome().hashCode());
-        
-        // get persist home name, use port# if not set
-        String persistHome = config.getProperty(SimulatorConfiguration.PERSIST_HOME, String.valueOf(config.getPort()));
-        
-        //int phomeHash = Math.abs(persistHome.hashCode());
-        
-        // default ip of this instance
-        String ip = "127.0.0.1";
-        
-        try {
-            // get from Java API
-            ip = InetAddress.getLocalHost().getHostAddress();
-        } catch (Exception e) {
-            ;
-        }
-        
-        // construct sn
-        String sn = SERIAL_PREFIX + ip + "-" + khomeHash + "-" + persistHome;
-        
-        // replace '_' with '-'
-        sn = sn.replace('_', '-');
-        
-        // replace '.' with '-'
-        sn = sn.replace('.', '-');
-        
-        // convert to upper case
-        sn = sn.toUpperCase();
-        
-        // return sn for this instance
-        return sn;
     }
 }

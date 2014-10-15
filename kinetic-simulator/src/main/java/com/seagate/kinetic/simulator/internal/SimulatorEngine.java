@@ -40,14 +40,13 @@ import com.seagate.kinetic.heartbeat.message.OperationCounter;
 import com.seagate.kinetic.proto.Kinetic.Command;
 import com.seagate.kinetic.proto.Kinetic.Command.GetLog.Configuration;
 import com.seagate.kinetic.proto.Kinetic.Command.GetLog.Limits;
+import com.seagate.kinetic.proto.Kinetic.Command.MessageType;
 import com.seagate.kinetic.proto.Kinetic.Command.PinOperation.PinOpType;
-
+import com.seagate.kinetic.proto.Kinetic.Command.Security.ACL;
 import com.seagate.kinetic.proto.Kinetic.Command.Status.StatusCode;
 import com.seagate.kinetic.proto.Kinetic.Local;
 import com.seagate.kinetic.proto.Kinetic.Message;
 import com.seagate.kinetic.proto.Kinetic.Message.AuthType;
-import com.seagate.kinetic.proto.Kinetic.Command.MessageType;
-import com.seagate.kinetic.proto.Kinetic.Command.Security.ACL;
 import com.seagate.kinetic.simulator.heartbeat.Heartbeat;
 import com.seagate.kinetic.simulator.internal.p2p.P2POperationHandler;
 import com.seagate.kinetic.simulator.io.provider.nio.NioEventLoopGroupManager;
@@ -93,10 +92,10 @@ public class SimulatorEngine implements MessageService {
 
     private final static Logger logger = Logger.getLogger(SimulatorEngine.class
             .getName());
-    
+
     // protocol version
-    public static final String PROTOCOL_VERSION = 
-            Local.getDefaultInstance().getProtocolVersion();
+    public static final String PROTOCOL_VERSION = Local.getDefaultInstance()
+            .getProtocolVersion();
 
     private SimulatorConfiguration config = null;
 
@@ -109,7 +108,7 @@ public class SimulatorEngine implements MessageService {
 
     // ack map
     private Map<Long, ACL> aclmap = null;
-    
+
     private SecurityPin securityPin = new SecurityPin();
 
     private Map<Long, Key> hmacKeyMap = null;
@@ -154,7 +153,7 @@ public class SimulatorEngine implements MessageService {
 
     // flag to indicate if the simulator is closing
     private volatile boolean isClosing = false;
-    
+
     private String kineticHome = null;
 
     // resource for all the simulator instances
@@ -163,15 +162,15 @@ public class SimulatorEngine implements MessageService {
     // shutdown hook
     private static SimulatorShutdownHook shutdownHook = new SimulatorShutdownHook(
             tpService);
-    
-    //connection map
+
+    // connection map
     private static ConcurrentHashMap<Object, ConnectionInfo> connectionMap = new ConcurrentHashMap<Object, ConnectionInfo>();
-    
-    // last connection Id. 
+
+    // last connection Id.
     private static long lastConnectionId = System.currentTimeMillis();
-    
+
     private volatile boolean deviceLocked = false;
-    
+
     static {
         // add shutdown hook to clean up resources
         Runtime.getRuntime().addShutdownHook(shutdownHook);
@@ -201,14 +200,14 @@ public class SimulatorEngine implements MessageService {
         p2pHandler = new P2POperationHandler();
 
         try {
-            
+
             // calculate my home
             kineticHome = kineticHome(config);
-            
+
             // load acl and pins
             SecurityHandler.loadACL(this);
-            
-            // load set up 
+
+            // load set up
             SetupHandler.loadSetup(this);
 
             // initialize db store
@@ -216,8 +215,9 @@ public class SimulatorEngine implements MessageService {
 
             // init network io service
             this.initIoService();
-            
-            logger.info("simulator protocol version = " + SimulatorConfiguration.getProtocolVersion());
+
+            logger.info("simulator protocol version = "
+                    + SimulatorConfiguration.getProtocolVersion());
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -314,15 +314,15 @@ public class SimulatorEngine implements MessageService {
     public Map<Long, ACL> getAclMap() {
         return this.aclmap;
     }
-    
-    public void setAclMap ( Map<Long, ACL> aclmap) {
+
+    public void setAclMap(Map<Long, ACL> aclmap) {
         this.aclmap = aclmap;
     }
-    
+
     public void setHmacKeyMap(Map<Long, Key> hmacKeyMap) {
         this.hmacKeyMap = hmacKeyMap;
     }
-        
+
     public Map<Long, Key> getHmacKeyMap() {
         return this.hmacKeyMap;
     }
@@ -331,15 +331,15 @@ public class SimulatorEngine implements MessageService {
     public Store getStore() {
         return this.store;
     }
-    
-    public void setClusterVersion (long cversion) {
+
+    public void setClusterVersion(long cversion) {
         this.clusterVersion = cversion;
     }
-    
+
     public SecurityPin getSecurityPin() {
         return this.securityPin;
     }
-    
+
     public String getKineticHome() {
         return this.kineticHome;
     }
@@ -418,12 +418,9 @@ public class SimulatorEngine implements MessageService {
         logger.fine(sb.toString());
     }
 
-    private static String kineticHome(SimulatorConfiguration config) {
-        
-        String defaultHome = System.getProperty("user.home") + File.separator
-                + "kinetic";
-        String kineticHome = config.getProperty(
-                SimulatorConfiguration.KINETIC_HOME, defaultHome);
+    public static String kineticHome(SimulatorConfiguration config) {
+
+        String kineticHome = config.getSimulatorHome();
 
         File lchome = new File(kineticHome);
         if (!lchome.exists()) {
@@ -435,53 +432,50 @@ public class SimulatorEngine implements MessageService {
     @Override
     @SuppressWarnings("unchecked")
     public KineticMessage processRequest(KineticMessage kmreq) {
-        
+
         // create response message
         KineticMessage kmresp = createKineticMessageWithBuilder();
-        
+
         // get command builder
         Command.Builder commandBuilder = (Command.Builder) kmresp.getCommand();
-        
+
         // get message builder
         Message.Builder messageBuilder = (Message.Builder) kmresp.getMessage();
-        
+
         // get user identity for this message
         long userId = kmreq.getMessage().getHmacAuth().getIdentity();
-        
+
         // get user key
         Key key = this.hmacKeyMap.get(Long.valueOf(userId));
-        
+
         MessageType mtype = kmreq.getCommand().getHeader().getMessageType();
-        
+
         try {
-            
+
             HeaderOp.checkHeader(kmreq, kmresp, key, clusterVersion);
-            
-            checkDeviceLocked (kmreq, kmresp);
-            
+
+            checkDeviceLocked(kmreq, kmresp);
+
             if (kmreq.getMessage().getAuthType() == AuthType.PINAUTH) {
-                //perform pin op
-                PinOperationHandler.handleOperation(kmreq, kmresp, this); 
+                // perform pin op
+                PinOperationHandler.handleOperation(kmreq, kmresp, this);
             } else if (mtype == MessageType.FLUSHALLDATA) {
-                commandBuilder.getHeaderBuilder()
-                .setMessageType(MessageType.FLUSHALLDATA_RESPONSE);
+                commandBuilder.getHeaderBuilder().setMessageType(
+                        MessageType.FLUSHALLDATA_RESPONSE);
                 logger.warning("received flush data command, this is a no op on simulator at this time ...");
             } else if (mtype == MessageType.NOOP) {
-                commandBuilder.getHeaderBuilder()
-                .setMessageType(MessageType.NOOP_RESPONSE);
-            } else if (kmreq.getCommand().getBody()
-                    .hasKeyValue()) {
+                commandBuilder.getHeaderBuilder().setMessageType(
+                        MessageType.NOOP_RESPONSE);
+            } else if (kmreq.getCommand().getBody().hasKeyValue()) {
                 KVOp.Op(aclmap, store, kmreq, kmresp);
             } else if (mtype == MessageType.GETKEYRANGE) {
                 RangeOp.operation(store, kmreq, kmresp, aclmap);
-            } else if (kmreq.getCommand().getBody()
-                    .hasSecurity()) {
-                boolean hasPermission = SecurityHandler.checkPermission(
-                        kmreq, kmresp, aclmap);
+            } else if (kmreq.getCommand().getBody().hasSecurity()) {
+                boolean hasPermission = SecurityHandler.checkPermission(kmreq,
+                        kmresp, aclmap);
                 if (hasPermission) {
                     synchronized (this.hmacKeyMap) {
-                        SecurityHandler.handleSecurity(kmreq,
-                                kmresp, this);
+                        SecurityHandler.handleSecurity(kmreq, kmresp, this);
                         this.hmacKeyMap = HmacStore.getHmacKeyMap(aclmap);
                     }
                 }
@@ -494,7 +488,7 @@ public class SimulatorEngine implements MessageService {
                             kmresp, store, kineticHome);
                     if (setupInfo != null) {
                         this.clusterVersion = setupInfo.getClusterVersion();
-                        //this.pin = setupInfo.getPin();
+                        // this.pin = setupInfo.getPin();
                     }
                 }
             } else if (kmreq.getCommand().getBody().hasGetLog()) {
@@ -503,8 +497,7 @@ public class SimulatorEngine implements MessageService {
                 if (hasPermission) {
                     GetLogHandler.handleGetLog(this, kmreq, kmresp);
                 }
-            } else if (kmreq.getCommand().getBody()
-                    .hasP2POperation()) {
+            } else if (kmreq.getCommand().getBody().hasP2POperation()) {
 
                 // check permission
                 boolean hasPermission = P2POperationHandler.checkPermission(
@@ -514,34 +507,32 @@ public class SimulatorEngine implements MessageService {
                     this.p2pHandler.push(aclmap, store, kmreq, kmresp);
                 }
             } else if (mtype == MessageType.MEDIASCAN) {
-                BackGroundOpHandler.mediaScan (kmreq, kmresp, this);
+                BackGroundOpHandler.mediaScan(kmreq, kmresp, this);
             } else if (mtype == MessageType.MEDIAOPTIMIZE) {
-                BackGroundOpHandler.mediaOptimize (kmreq, kmresp, this);
+                BackGroundOpHandler.mediaOptimize(kmreq, kmresp, this);
             }
         } catch (DeviceLockedException ire) {
-            
-            int number = kmreq.getCommand().getHeader()
-                    .getMessageType()
+
+            int number = kmreq.getCommand().getHeader().getMessageType()
                     .getNumber() - 1;
 
-            commandBuilder.getHeaderBuilder()
-            .setMessageType(MessageType.valueOf(number));
-           
-            commandBuilder.getStatusBuilder().setCode(
-                    StatusCode.DEVICE_LOCKED);
-            
-            commandBuilder.getStatusBuilder().setStatusMessage("Device is locked");
-            
+            commandBuilder.getHeaderBuilder().setMessageType(
+                    MessageType.valueOf(number));
+
+            commandBuilder.getStatusBuilder().setCode(StatusCode.DEVICE_LOCKED);
+
+            commandBuilder.getStatusBuilder().setStatusMessage(
+                    "Device is locked");
+
         } catch (Exception e) {
-            
+
             logger.log(Level.WARNING, e.getMessage(), e);
 
-            int number = kmreq.getCommand().getHeader()
-                    .getMessageType()
+            int number = kmreq.getCommand().getHeader().getMessageType()
                     .getNumber() - 1;
 
-            commandBuilder.getHeaderBuilder()
-            .setMessageType(MessageType.valueOf(number));
+            commandBuilder.getHeaderBuilder().setMessageType(
+                    MessageType.valueOf(number));
 
             logger.log(Level.WARNING, e.getMessage(), e);
         } finally {
@@ -556,7 +547,7 @@ public class SimulatorEngine implements MessageService {
 
                 // require Hmac calculation ?
                 if (kmreq.getMessage().getAuthType() == AuthType.HMACAUTH) {
-                    
+
                     // calculate hmac
                     ByteString hmac = Hmac.calc(commandByte, key);
 
@@ -578,7 +569,7 @@ public class SimulatorEngine implements MessageService {
 
         return kmresp;
     }
-    
+
     private void checkDeviceLocked(KineticMessage kmreq, KineticMessage kmresp)
             throws DeviceLockedException {
 
@@ -591,7 +582,7 @@ public class SimulatorEngine implements MessageService {
 
         if (pinOpType != PinOpType.UNLOCK_PINOP
                 && pinOpType != PinOpType.LOCK_PINOP) {
-            throw new DeviceLockedException ();
+            throw new DeviceLockedException();
         }
 
     }
@@ -599,13 +590,12 @@ public class SimulatorEngine implements MessageService {
     private void addStatisticCounter(KineticMessage kmreq, KineticMessage kmresp) {
 
         try {
-            
+
             Message request = (Message) kmreq.getMessage();
-            
+
             Message response = ((Message.Builder) kmresp.getMessage()).build();
-            
-            MessageType mtype = kmreq.getCommand().getHeader()
-                    .getMessageType();
+
+            MessageType mtype = kmreq.getCommand().getHeader().getMessageType();
 
             int inCount = 0;
 
@@ -613,20 +603,20 @@ public class SimulatorEngine implements MessageService {
 
             if (request != null) {
                 inCount = request.getSerializedSize();
-                //add in-bound value byte count
+                // add in-bound value byte count
                 if (kmreq.getValue() != null) {
                     inCount = inCount + kmreq.getValue().length;
                 }
             }
-            
+
             if (response != null) {
                 outCount = response.getSerializedSize();
-              //add out-bound value byte count
+                // add out-bound value byte count
                 if (kmresp.getValue() != null) {
                     outCount = outCount + kmresp.getValue().length;
                 }
             }
-            
+
             switch (mtype) {
             case GET:
                 this.operationCounter.addGetCounter();
@@ -815,45 +805,57 @@ public class SimulatorEngine implements MessageService {
         }
 
     }
-    
+
     /**
      * put connection/connection info into the connection map.
-     *  
-     * @param connection the key for the entry
-     * @param cinfo value of the entry
-     * @return the previous value associated with key, or null if there was no mapping for key
+     * 
+     * @param connection
+     *            the key for the entry
+     * @param cinfo
+     *            value of the entry
+     * @return the previous value associated with key, or null if there was no
+     *         mapping for key
      */
-    public static ConnectionInfo putConnectionInfo (Object connection, ConnectionInfo cinfo) {
+    public static ConnectionInfo putConnectionInfo(Object connection,
+            ConnectionInfo cinfo) {
         return connectionMap.put(connection, cinfo);
     }
-    
+
     /**
      * Get connection info based on the specified key.
      * 
-     * @param connection key to get the connection info.
+     * @param connection
+     *            key to get the connection info.
      * 
-     * @return the value to which the specified key is mapped, or null if this map contains no mapping for the key
+     * @return the value to which the specified key is mapped, or null if this
+     *         map contains no mapping for the key
      */
-    public static ConnectionInfo getConnectionInfo (Object connection) {
+    public static ConnectionInfo getConnectionInfo(Object connection) {
         return connectionMap.get(connection);
     }
-    
+
     /**
      * remove the value of the specified key.
-     * @param connection the key od the entry that needs to be removed
-     * @return the previous value associated with key, or null if there was no mapping for key
-     */
-    public static ConnectionInfo removeConnectionInfo (Object connection) {
-        return connectionMap.remove (connection);
-    }
-    
-    /**
-     * register a new connection. A new connection info instance is created and associated with the connection.
      * 
-     * @param connection the new connection to be added to the connection map.
+     * @param connection
+     *            the key od the entry that needs to be removed
+     * @return the previous value associated with key, or null if there was no
+     *         mapping for key
+     */
+    public static ConnectionInfo removeConnectionInfo(Object connection) {
+        return connectionMap.remove(connection);
+    }
+
+    /**
+     * register a new connection. A new connection info instance is created and
+     * associated with the connection.
+     * 
+     * @param connection
+     *            the new connection to be added to the connection map.
      * 
      * @return the connection info instance associated with the connection.
      */
+    @Override
     public ConnectionInfo registerNewConnection(ChannelHandlerContext ctx) {
         ConnectionInfo info = newConnectionInfo();
         putConnectionInfo(ctx, info);
@@ -912,44 +914,45 @@ public class SimulatorEngine implements MessageService {
 
         return info;
     }
-    
+
     /**
      * instantiate a new connection info object with connection id set.
      * 
      * @return a new connection info object with connection id set
      */
     public static ConnectionInfo newConnectionInfo() {
-        
+
         ConnectionInfo info = new ConnectionInfo();
-        
+
         info.setConnectionId(getNextConnectionId());
-        
+
         return info;
     }
-    
+
     /**
-     * Get next available unique connection id based on timestamp. The Id is guarantees to be unique for simulators 
-     * running within the same JVM.
+     * Get next available unique connection id based on timestamp. The Id is
+     * guarantees to be unique for simulators running within the same JVM.
      * 
      * @return next available unique connection ID based on timestamp.
      */
     private static synchronized long getNextConnectionId() {
-        
+
         // current time
         long id = System.currentTimeMillis();
-        
-        // check if duplicate.  enforce so that it is later than the time that this JVM is started.
+
+        // check if duplicate. enforce so that it is later than the time that
+        // this JVM is started.
         if (id <= lastConnectionId) {
             // increase one so its unique.
             id = lastConnectionId + 1;
         }
-        
+
         // set last connection id
         lastConnectionId = id;
-        
+
         return id;
     }
-    
+
     /**
      * create an internal message with empty builder message.
      *
@@ -965,27 +968,28 @@ public class SimulatorEngine implements MessageService {
 
         // set to im
         kineticMessage.setMessage(message);
-        
-        //set hmac auth type
+
+        // set hmac auth type
         message.setAuthType(AuthType.HMACAUTH);
-        
+
         // create command builder
         Command.Builder commandBuilder = Command.newBuilder();
-        
+
         // set command
         kineticMessage.setCommand(commandBuilder);
-        
+
         return kineticMessage;
     }
-    
+
     /**
      * Lock/unlock the device/simulator
+     * 
      * @param flag
      */
-    public void setDeviceLocked (boolean flag) {
+    public void setDeviceLocked(boolean flag) {
         this.deviceLocked = flag;
     }
-    
+
     /**
      * Get device lock flag.
      * 
@@ -994,5 +998,5 @@ public class SimulatorEngine implements MessageService {
     public boolean getDeviceLocked() {
         return this.deviceLocked;
     }
-    
+
 }
