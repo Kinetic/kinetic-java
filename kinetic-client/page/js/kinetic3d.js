@@ -526,9 +526,9 @@ function showNodeInfo(node) {
 }
 
 function renderCapacity(nodeInfo) {
-	var remaining = nodeInfo.capacity.portionFull * nodeInfo.capacity.nominalCapacityInBytes;
-    var used = nodeInfo.capacity.nominalCapacityInBytes - remaining;
-    var freePercentage = nodeInfo.capacity.portionFull;
+    var used = nodeInfo.capacity.portionFull * nodeInfo.capacity.nominalCapacityInBytes;
+    var remaining = nodeInfo.capacity.nominalCapacityInBytes - used;
+    var freePercentage = 1 - nodeInfo.capacity.portionFull;
 	
     if ($('#capacity').length > 0) {
         $.getScript('https://www.google.com/jsapi', function (data, textStatus) {

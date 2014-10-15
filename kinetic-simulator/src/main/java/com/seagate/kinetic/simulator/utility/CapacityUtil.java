@@ -53,7 +53,7 @@ public abstract class CapacityUtil {
 
             float remaining = (float) file.getFreeSpace();
             
-            float portionFull = (remaining/total);
+            float portionFull = (total - remaining)/total;
 
             capacity = Capacity.newBuilder().setNominalCapacityInBytes(total)
                     .setPortionFull(portionFull).build();
