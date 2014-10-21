@@ -59,9 +59,9 @@ public class Device {
     }
     
     /**
-     * Set the vendor specifc device name.
+     * Set the vendor specific device name.
      *  
-     * @param name the vendor specifc device name.
+     * @param name the vendor specific device name.
      */
     
     public void setName (byte[] name) {

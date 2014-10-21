@@ -56,7 +56,7 @@ public interface KineticClient extends GenericKineticClient {
 	 * successful noop operation returns the round-trip time of the command
 	 * invocation in milliseconds.
 	 * <p>
-	 * Please note that multiple invocations may likely to reflect the average
+	 * Please note that multiple invocations may likely reflect the average
 	 * response time of the service.
 	 * 
 	 * @return the round-trip time for the no op command in millisecond.
@@ -415,9 +415,6 @@ public interface KineticClient extends GenericKineticClient {
 	 *         the number of keys in the range is larger than
 	 *         <code>maxKeys</code>, then only <code>maxKeys</code> keys will be
 	 *         returned.
-	 * 
-	 * @return an <code>List</code> of keys in the sequence based on the
-	 *         specified key range
 	 * 
 	 * @throws KineticException
 	 *             if any internal error occurred.
