@@ -89,7 +89,6 @@ import com.seagate.kinetic.proto.Kinetic.Command.Status.StatusCode;
 public class AdminAPISanityTest {
 	private static final Logger logger = IntegrationTestLoggerFactory
 			.getLogger(AdminAPISanityTest.class.getName());
-	private static final long DEFAULT_CLUSTER_VERSION = 0;
 	private SimulatorConfiguration sc;
 	private KineticSimulator simulator;
 	private AdminClientConfiguration acc;
@@ -122,6 +121,11 @@ public class AdminAPISanityTest {
 		}
 	}
 
+	// @BeforeMethod
+	// public void beforeMethod() throws KineticException {
+	// adminClient.secureErase("123".getBytes(Charset.forName("UTF-8")));;
+	// }
+
 	/**
 	 * Test setClusterVersion API, set cluster version for simulator/drive. The
 	 * result should be true.
@@ -129,14 +133,11 @@ public class AdminAPISanityTest {
 	 */
 	@Test
 	public void test_setClusterVersion() {
-		long newClusterVersion = 1;
+		long newClusterVersion = 0;
 
 		// modify cluster version.
 		try {
 			adminClient.setClusterVersion(newClusterVersion);
-
-			// set to default cluster version
-			resetClusterVersionToDefault(newClusterVersion);
 
 		} catch (KineticException e) {
 			Assert.fail(e.getMessage());
@@ -154,7 +155,7 @@ public class AdminAPISanityTest {
 	@Test
 	public void test_instanErase() {
 		try {
-			adminClient.instantErase(null);
+			adminClient.instantErase("123".getBytes(Charset.forName("UTF-8")));
 		} catch (KineticException e) {
 			Assert.fail("instant erase throw exception: " + e.getMessage());
 		}
@@ -171,7 +172,7 @@ public class AdminAPISanityTest {
 	@Test
 	public void test_secureErase() {
 		try {
-			adminClient.secureErase(null);
+			adminClient.secureErase("123".getBytes(Charset.forName("UTF-8")));
 		} catch (KineticException e) {
 			Assert.fail("secure erase throw exception: " + e.getMessage());
 		}
@@ -293,7 +294,8 @@ public class AdminAPISanityTest {
 		byte[] erasePinB = toByteArray(erasePin);
 
 		try {
-			adminClient.setErasePin(null, erasePinB);
+			adminClient.setErasePin("123".getBytes(Charset.forName("UTF-8")),
+					erasePinB);
 		} catch (KineticException e) {
 			Assert.fail("Set erase pin throw exception" + e.getMessage());
 		}
@@ -316,14 +318,15 @@ public class AdminAPISanityTest {
 		byte[] lockPinB = toByteArray(lockPin);
 
 		try {
-			adminClient.setLockPin(null, lockPinB);
+			adminClient.setLockPin("123".getBytes(Charset.forName("UTF-8")),
+					lockPinB);
 		} catch (KineticException e) {
 			Assert.fail("Set erase pin throw exception" + e.getMessage());
 		}
 
 		// clean pin
 		try {
-			adminClient.secureErase(null);
+			adminClient.secureErase("123".getBytes(Charset.forName("UTF-8")));
 		} catch (KineticException e) {
 			Assert.fail("secure erase throw exception" + e.getMessage());
 		}
@@ -338,7 +341,8 @@ public class AdminAPISanityTest {
 		// set a lock pin
 		byte[] lockPinB = toByteArray("lockpin");
 		try {
-			adminClient.setLockPin(null, lockPinB);
+			adminClient.setLockPin("123".getBytes(Charset.forName("UTF-8")),
+					lockPinB);
 		} catch (KineticException e1) {
 			Assert.fail("set lock pin throw exception: " + e1.getMessage());
 		}
@@ -360,7 +364,7 @@ public class AdminAPISanityTest {
 
 		// clean pin
 		try {
-			adminClient.secureErase(null);
+			adminClient.secureErase("123".getBytes(Charset.forName("UTF-8")));
 		} catch (KineticException e) {
 			Assert.fail("secure erase throw exception" + e.getMessage());
 		}
@@ -375,7 +379,8 @@ public class AdminAPISanityTest {
 		// set a lock pin
 		byte[] lockPinB = toByteArray("lockpin");
 		try {
-			adminClient.setLockPin(null, lockPinB);
+			adminClient.setLockPin("123".getBytes(Charset.forName("UTF-8")),
+					lockPinB);
 		} catch (KineticException e1) {
 			Assert.fail("set lock pin throw exception: " + e1.getMessage());
 		}
@@ -396,7 +401,7 @@ public class AdminAPISanityTest {
 
 		// clean pin
 		try {
-			adminClient.secureErase(null);
+			adminClient.secureErase("123".getBytes(Charset.forName("UTF-8")));
 		} catch (KineticException e) {
 			Assert.fail("secure erase throw exception" + e.getMessage());
 		}
@@ -407,7 +412,7 @@ public class AdminAPISanityTest {
 	 * <p>
 	 */
 	@Test
-	public void test_getLogAPI() {
+	public void test_getLog_withLogType() {
 		List<KineticLogType> listOfLogType = new ArrayList<KineticLogType>();
 		listOfLogType.add(KineticLogType.CAPACITIES);
 		listOfLogType.add(KineticLogType.CONFIGURATION);
@@ -523,11 +528,12 @@ public class AdminAPISanityTest {
 	 * Test get log API. Check every log field value whether valid.
 	 * <p>
 	 */
-	@Test
+	@Test(enabled = false)
 	public void test_firmwareDownload() {
 		byte[] firmware = "frimware".getBytes(Charset.forName("UTF-8"));
 		try {
-			adminClient.firmwareDownload(null, firmware);
+			adminClient.firmwareDownload(
+					"123".getBytes(Charset.forName("UTF-8")), firmware);
 		} catch (KineticException e) {
 			Assert.fail("getLog throw exception: " + e.getMessage());
 		}
@@ -609,24 +615,4 @@ public class AdminAPISanityTest {
 					+ e.getMessage());
 		}
 	}
-
-	/**
-	 * Reset cluster version method.
-	 * <p>
-	 * 
-	 * @throws KineticException
-	 * 
-	 *             if any internal error occurred.
-	 * 
-	 */
-	private void resetClusterVersionToDefault(long currentClusterVersion)
-			throws KineticException {
-		AdminClientConfiguration acc = new AdminClientConfiguration();
-		acc.setClusterVersion(currentClusterVersion);
-		final KineticAdminClient client = KineticAdminClientFactory
-				.createInstance(acc);
-		client.setClusterVersion(DEFAULT_CLUSTER_VERSION);
-		client.close();
-	}
-
 }

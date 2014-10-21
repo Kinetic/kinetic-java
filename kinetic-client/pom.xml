@@ -19,6 +19,12 @@
 					<include>**/*.jks</include>
 				</includes>
 			</resource>
+			<resource>
+				<directory>${basedir}</directory>
+				<includes>
+					<include>page/**</include>
+				</includes>
+			</resource>
 		</resources>
 		<plugins>
 			<plugin>
@@ -131,7 +137,7 @@
 		<profile>
 			<id>doclint-java8-disable</id>
 			<activation>
-				<jdk>[1.8,</jdk>
+				<jdk>[1.8,)</jdk>
 			</activation>
 			<properties>
 				<additionalparam>-Xdoclint:none</additionalparam>

@@ -194,31 +194,30 @@ import com.seagate.kinetic.performance.microPerfTest;
  */
 public class AllTestsRunner {
 
-    public static void main(String[] args) {
-        XmlSuite suite = new XmlSuite();
-        suite.setName("SmokeSuite");
-        suite.setParallel(XmlSuite.PARALLEL_NONE);
-         
-        XmlTest test = new XmlTest(suite);
-        test.setName("SmokeTest");
-        List<XmlClass> classes = new ArrayList<XmlClass>();
-        classes.add(new XmlClass("com.seagate.kinetic.adminAPI.KineticAdminTest"));
-        classes.add(new XmlClass("com.seagate.kinetic.advancedAPI.AdvancedAPITest"));
-        classes.add(new XmlClass("com.seagate.kinetic.asyncAPI.KineticAsyncAPITest"));
-        classes.add(new XmlClass("com.seagate.kinetic.basicAPI.KineticBasicAPITest"));
-        classes.add(new XmlClass("com.seagate.kinetic.boundary.AdvancedAPIBoundaryTest"));
-        classes.add(new XmlClass("com.seagate.kinetic.boundary.KineticBoundaryTest"));
-        classes.add(new XmlClass("com.seagate.kinetic.concurrent.KineticClientConcurrentTest"));
-        classes.add(new XmlClass("com.seagate.kinetic.concurrent.KineticPutConcurrentTest"));
-        classes.add(new XmlClass("com.seagate.kinetic.performance.microPerfTest"));
-        test.setXmlClasses(classes) ;
-        
-        List<XmlSuite> suites = new ArrayList<XmlSuite>();
-        suites.add(suite);
-        TestNG tng = new TestNG();
-        tng.setXmlSuites(suites);
-        tng.run();
-        
-        System.exit(0);
-    }
+	public static void main(String[] args) {
+		XmlSuite suite = new XmlSuite();
+		suite.setName("SmokeSuite");
+		suite.setParallel(XmlSuite.PARALLEL_NONE);
+
+		XmlTest test = new XmlTest(suite);
+		test.setName("SmokeTest");
+		List<XmlClass> classes = new ArrayList<XmlClass>();
+		classes.add(new XmlClass(
+				"com.seagate.kinetic.adminAPI.KineticAdminTest"));
+		classes.add(new XmlClass(
+				"com.seagate.kinetic.advancedAPI.AdvancedAPITest"));
+		classes.add(new XmlClass(
+				"com.seagate.kinetic.asyncAPI.KineticAsyncAPITest"));
+		classes.add(new XmlClass(
+				"com.seagate.kinetic.basicAPI.KineticBasicAPITest"));
+		test.setXmlClasses(classes);
+
+		List<XmlSuite> suites = new ArrayList<XmlSuite>();
+		suites.add(suite);
+		TestNG tng = new TestNG();
+		tng.setXmlSuites(suites);
+		tng.run();
+
+		System.exit(0);
+	}
 }
