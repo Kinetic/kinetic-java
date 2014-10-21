@@ -54,7 +54,7 @@ public class SimulatorConfiguration extends Properties {
      * <p>
      * For example, /user/yourName/kinetic.
      */
-    public static final String KINETIC_HOME = "kenitic.home";
+    public static final String KINETIC_HOME = "kinetic.home";
 
     /**
      * Property name to set persist home folder directory under the
