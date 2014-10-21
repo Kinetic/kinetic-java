@@ -84,7 +84,7 @@ public class KineticBasicAPITest extends IntegrationTestCase {
             .getLogger(KineticBasicAPITest.class.getName());
     private KVGenerator kvGenerator;
     private final String KEY_PREFIX = "key";
-    private final int MAX_KEYS = 10;
+    private final int MAX_KEYS = 3;
 
     /**
      * Initialize a KVGenerator to generate key/value for the test
@@ -583,7 +583,7 @@ public class KineticBasicAPITest extends IntegrationTestCase {
      * @throws KineticException
      *             if any internal error occurred.
      */
-    @Test(dataProvider = "transportProtocolOptions")
+    @Test(dataProvider = "transportProtocolOptions", enabled = false)
     public void testGetKeyRange_VerifyOrder_For0To200(String clientName) throws KineticException {
         List<byte[]> keys = new ArrayList<byte[]>();
 

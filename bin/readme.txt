@@ -46,12 +46,13 @@ Kinetic Simulator/Admin Command Line Interface (CLI).
 	    cd <Kinetic-Folder>/bin
 	    sh ping.sh [host] [host port]
 
+
 Run smoke test against simulator or kinetic drive
 ==================================
 Make sure one instance of simulator or kinetic drive is running.
 
 1. Run "mvn clean package" in <Kinetic-Folder> or <Kinetic-Folder>/kinetic-test, verify 
-   <Kinetic-Folder>/kinetic-test/target/kinetic-test-0.8.0.1-SNAPSHOT-jar-with-dependencies.jar 
+   <Kinetic-Folder>/kinetic-test/target/kinetic-test-0.8.0.2-SNAPSHOT-jar-with-dependencies.jar 
    <Kinetic-Folder>/kinetic-test/target/smoke-tests.jar
    exist.
 
@@ -61,19 +62,74 @@ Make sure one instance of simulator or kinetic drive is running.
    or
    python runSmokeTests.py [-host host_ip] [-port port] [-tlsport tlsport] [-home kinetic_home]
    
+
+Run chassis test against simulator or kinetic drive
+==================================
+Make sure one instance of simulator or kinetic drive is running.  
+  
+1. Run "mvn clean package" in <Kinetic-Folder> or <Kinetic-Folder>/kinetic-test, verify 
+   <Kinetic-Folder>/kinetic-test/target/kinetic-test-0.8.0.2-SNAPSHOT-jar-with-dependencies.jar 
+   <Kinetic-Folder>/kinetic-test/target/smoke-tests.jar
+   exist.
+
+2. cd <Kinetic-Folder>/bin
+
+3. sh chassisTest.sh -iplist ip1,ip2,..ipn
+
+   If the chassis ip has the same subnet, no need to write all the ip, follow below:
+   sh chassisTest.sh -iplist ip1~ipn
+   
+   for example, 192.168.2.10~192.168.2.25
+   sh chassisTest.sh -iplist 192.168.2.10~192.168.2.25
+   
+   The test result will be in <Kinetic-Folder>/bin/kinetic_log/"drive's ip".log
+   
+
+Run sanity test against simulator or kinetic drive
+==================================
+Make sure one instance of simulator or kinetic drive is running.  
+  
+1. Run "mvn clean package" in <Kinetic-Folder> or <Kinetic-Folder>/kinetic-test, verify 
+   <Kinetic-Folder>/kinetic-test/target/kinetic-test-0.8.0.2-SNAPSHOT-jar-with-dependencies.jar 
+   <Kinetic-Folder>/kinetic-test/target/smoke-tests.jar
+   exist.
+
+2. cd <Kinetic-Folder>/bin
+
+3. sh runSanityTests.sh [-host host_ip] [-port port] [-debug true|false] [-type admin|basic|all]
+   
+   host      simulator or drive's ip address, default is 127.0.0.1
+   port      connection port, default is 8123
+   debug     turn kinetic message dump info or not, default is false
+   type      run admin sanity tests or basic sanity tests or all, default is basic
+   
+   for example, 
+   sh runSanityTests.sh -host 10.24.70.123 -port 8123 -debug true -type all
+   
+   The admin sanity test result will be in <Kinetic-Folder>/bin/admin.result
+   The basic sanity test result will be in <Kinetic-Folder>/bin/basic.result
+   
+   
 Usage of Kinetic Admin API script
 ==================================
 1. kineticAdmin.sh, you can use "-help" to see usage.
    
-   Usage: kineticAdmin <-setup|-security|-getlog|-firmware>
+   Usage: kineticAdmin <-setclusterversion|-seterasepin|-setlockpin|-instanterase|-secureerase|-security|-getlog|-getvendorspecificdevicelog|-firmware|-lockdevice|-unlockdevice>
+          
           kineticAdmin -h|-help
-          kineticAdmin -setup [-host <ip|hostname>] [-tlsport <tlsport>] [-clversion <clusterversion>] [-pin <pin>] [-newclversion <newclusterversion>] [-setpin <setpin>] [-erase <true|false>]
+          kineticAdmin -setclusterversion <-newclversion <newclusterversion>> [-host <ip|hostname>] [-tlsport <tlsport>] [-clversion <clusterversion>]
+          kineticAdmin -seterasepin <-olderasepin <olderasepin>> <-newerasepin <newerasepin>> [-host <ip|hostname>] [-tlsport <tlsport>] [-clversion <clusterversion>]
+          kineticAdmin -setlockpin <-oldlockpin <oldlockpin>> <-newlockpin <newlockpin>> [-host <ip|hostname>] [-tlsport <tlsport>] [-clversion <clusterversion>]
+          kineticAdmin -instanterase <-pin <erasepin>> [-host <ip|hostname>] [-tlsport <tlsport>] [-clversion <clusterversion>]
+          kineticAdmin -secureerase <-pin <erasepin>> [-host <ip|hostname>] [-tlsport <tlsport>] [-clversion <clusterversion>]
           kineticAdmin -security <file> [-host <ip|hostname>] [-tlsport <tlsport>] [-clversion <clusterversion>]
-          kineticAdmin -getlog [-host <ip|hostname>] [-tlsport <tlsport>] [-clversion <clusterversion>] [-type <utilization|temperature|capacity|configuration|message|statistic|all>]
+          kineticAdmin -getlog [-host <ip|hostname>] [-tlsport <tlsport>] [-clversion <clusterversion>] [-type <utilization|temperature|capacity|configuration|message|statistic|limits|all>]
+          kineticAdmin -getvendorspecificdevicelog <-name <vendorspecificname>> [-host <ip|hostname>] [-tlsport <tlsport>] [-clversion <clusterversion>]
           kineticAdmin -firmware <file> [-host <ip|hostname>] [-tlsport <tlsport>] [-clversion <clusterversion>] [-pin <pin>]
-
-2. setup:
-   sh kineticAdmin.sh -setup [-host <ip|hostname>] [-tlsport <tlsport>] [-clversion <clusterversion>] [-pin <pin>] [-newclversion <newclusterversion>] [-setpin <setpin>] [-erase <true|false>]
+          kineticAdmin -lockdevice <-pin <lockpin>> [-host <ip|hostname>] [-tlsport <tlsport>] [-clversion <clusterversion>]
+          kineticAdmin -unlockdevice <-pin <lockpin>> [-host <ip|hostname>] [-tlsport <tlsport>] [-clversion <clusterversion>]
+2. setclusterversion:
+   sh kineticAdmin.sh -setclusterversion [-host <ip|hostname>] [-tlsport <tlsport>] [-clversion <clusterversion>] [-newclversion <newclusterversion>]
    
    Parameters are optional, the default values are set as below: 
    host=127.0.0.1    simulator/drive's ipaddress
@@ -81,57 +137,66 @@ Usage of Kinetic Admin API script
    clversion=0       admin client connect to simulator/drive within this cluster version
    
    For example,
-   2.1 set new cluster version.
+   set new cluster version.
        Simulator/drive locally:
-       First time: sh kineticAdmin.sh -setup -newclversion 1
-       Second time: sh kineticAdmin.sh -setup -clversion 1 -newclversion 2
-       Third time: after set pin (sh kineticAdmin.sh -setup -setpin 123):
-                    sh kineticAdmin.sh -setup -pin 123 -clversion 2 -newclversion 3
+       First time: sh kineticAdmin.sh -setclusterversion -newclversion 1
+       Second time: sh kineticAdmin.sh -setclusterversion -clversion 1 -newclversion 2
+       
+       Simulator/drive remotely(IP:10.24.70.123):
+       First time: sh kineticAdmin.sh -setclusterversion -host 10.24.70.123 -newclversion 1
+       Second time: sh kineticAdmin.sh -setclusterversion -host 10.24.70.123 -clversion 1 -newclversion 2
+
+3. seterasepin
+   sh kineticAdmin.sh -seterasepin <-olderasepin <olderasepin>> <-newerasepin <newerasepin>> [-host <ip|hostname>] [-tlsport <tlsport>] [-clversion <clusterversion>]
+
+   Parameters are optional, the default values are set as below: 
+   host=127.0.0.1    simulator/drive's ipaddress
+   tlsport=8443      admin client connect to simulator/drive via this port
+   clversion=0       admin client connect to simulator/drive within this cluster version
+
+   For example,
+   set erase pin.
+       Simulator/drive locally:
+       First time: sh kineticAdmin.sh -seterasepin -olderasepin anything -newerasepin 123
+       Second time: sh kineticAdmin.sh -seterasepin -olderasepin 123 -newerasepin 456
+       Third time: after set new cluster version (sh kineticAdmin.sh -setclusterversion -newclversion 1)
+                    sh kineticAdmin.sh -seterasepin -clversion 1 -olderasepin 456 -newerasepin 789
        
        
        Simulator/drive remotely(IP:10.24.70.123):
-       First time: sh kineticAdmin.sh -setup -host 10.24.70.123 -newclversion 1
-       Second time: sh kineticAdmin.sh -setup -host 10.24.70.123 -clversion 1 -newclversion 2
-       Third time: after set pin (sh kineticAdmin.sh -setup -setpin 123):
-                    sh kineticAdmin.sh -setup -pin 123 -clversion 2 -newclversion 3
-       
-   2.2 set pin.
+       First time: sh kineticAdmin.sh -seterasepin -host 10.24.70.123 -olderasepin anything -newerasepin 123
+       Second time: sh kineticAdmin.sh -seterasepin -host 10.24.70.123 -olderasepin 123 -newerasepin 456
+       Third time: after set new cluster version (sh kineticAdmin.sh -setclusterversion -host 10.24.70.123 -newclversion 1)
+                    sh kineticAdmin.sh -seterasepin -host 10.24.70.123 -clversion 1 -olderasepin 456 -newerasepin 789
+                    
+4. setlockpin
+   Similar as seterasepin. Please see #3.
+   
+5. instanterase
+   sh kineticAdmin.sh -instanterase <-pin <erasepin>> [-host <ip|hostname>] [-tlsport <tlsport>] [-clversion <clusterversion>]
+    
+   Parameters are optional, the default values are set as below: 
+   host=127.0.0.1    simulator/drive's ipaddress
+   tlsport=8443      admin client connect to simulator/drive via this port
+   clversion=0       admin client connect to simulator/drive within this cluster version
+      
        Simulator/drive locally:
-       First time: sh kineticAdmin.sh -setup -setpin 123
-       Second time: sh kineticAdmin.sh -setup -pin 123 -setpin 456
-       Third time: after set new cluster version (sh kineticAdmin.sh -setup -newclversion 1)
-                    sh kineticAdmin.sh -setup -clversion 1 -pin 456 -setpin 789
-       
-       
-       Simulator/drive remotely(IP:10.24.70.123):
-       First time: sh kineticAdmin.sh -setup -host 10.24.70.123 -setpin 123
-       Second time: sh kineticAdmin.sh -setup -host 10.24.70.123 -pin 123 -setpin 456
-       Third time: after set new cluster version (sh kineticAdmin.sh -setup -newclversion 1)
-                    sh kineticAdmin.sh -setup -host 10.24.70.123 -clversion 1 -pin 456 -setpin 789
-       
-   2.3 erase data
-       Simulator/drive locally:
-       First time: sh kineticAdmin.sh -setup -erase true
+       First time: sh kineticAdmin.sh -instanterase -pin anything
        Second time, 
-         after set new cluster version (sh kineticAdmin.sh -setup -newclversion 1) for the simulator/drive
-                   sh kineticAdmin.sh -setup -clversion 1 -erase true
-         after set pin (sh kineticAdmin.sh -setup -setpin 123) for the simulator/drive, 
-                   sh kineticAdmin.sh -setup -pin 123 -erase true
-         after set new cluster version and pin (sh kineticAdmin.sh -setup -newclversion 1 -setpin 123) for the simulator/drive
-                   sh kineticAdmin.sh -setup -clversion 1 -pin 123 -erase true
+         after set new cluster version (sh kineticAdmin.sh -setclusterversion -newclversion 1) for the simulator/drive
+                   sh kineticAdmin.sh -instanterase -clversion 1 -pin anything 
 
 
        Simulator/drive remotely(IP:10.24.70.123):
-       First time: sh kineticAdmin.sh -setup -host 10.24.70.123 -erase true
+       First time: sh kineticAdmin.sh -instanterase -host 10.24.70.123 -pin anything
        Second time, 
-         after set new cluster version (sh kineticAdmin.sh -setup -host 10.24.70.123 -newclversion 1) for the simulator/drive
-                   sh kineticAdmin.sh -setup -host 10.24.70.123 -clversion 1 -erase true
-         after set pin (sh kineticAdmin.sh -setup -host 10.24.70.123 -setpin 123) for the simulator/drive, 
-                   sh kineticAdmin.sh -setup -host 10.24.70.123 -pin 123 -erase true
-         after set new cluster version and pin (sh kineticAdmin.sh -setup -host 10.24.70.123 -newclversion 1 -setpin 123) for the simulator/drive
-                   sh kineticAdmin.sh -setup -host 10.24.70.123 -clversion 1 -pin 123 -erase true
+         after set new cluster version (sh kineticAdmin.sh -setclusterversion -host 10.24.70.123 -newclversion 1) for the simulator/drive
+                   sh kineticAdmin.sh -instanterase -host 10.24.70.123 -clversion 1 -pin anything
                    
-3. set security                   
+6. secureerase
+   Similar as instanterase. Please see #5.             
+                   
+7. set security                   
    sh kineticAdmin.sh -security <file> [-host <ip|hostname>] [-tlsport <tlsport>] [-clversion <clusterversion>]               
    
    Parameters are optional, the default values are set as below: 
@@ -151,8 +216,8 @@ Usage of Kinetic Admin API script
    After setup new cluster version (sh kineticAdmin.sh -setup -host 10.24.70.123 -newclversion 1) for the simulator/drive
          sh kineticAdmin.sh -security security.template -host 10.24.70.123 -clversion 1
          
-4. get log
-   kineticAdmin -getlog [-host <ip|hostname>] [-tlsport <tlsport>] [-clversion <clusterversion>] [-type <utilization|temperature|capacity|configuration|message|statistic|all>]
+8. get log
+   sh kineticAdmin.sh -getlog [-host <ip|hostname>] [-tlsport <tlsport>] [-clversion <clusterversion>] [-type <utilization|temperature|capacity|configuration|message|statistic|limits|all>]
    
    Parameters are optional, the default values are set as below: 
    host=127.0.0.1
@@ -171,8 +236,9 @@ Usage of Kinetic Admin API script
    Get configuration log info: sh kineticAdmin.sh -getlog -type configuration
    Get message       log info: sh kineticAdmin.sh -getlog -type message
    Get statistic     log info: sh kineticAdmin.sh -getlog -type statistic 
+   Get limits        log info: sh kineticAdmin.sh -getlog -type limits
    
-   After setup new cluster version (sh kineticAdmin.sh -setup -newclversion 1) for the simulator/drive
+   After setup new cluster version (sh kineticAdmin.sh -setclusterversion -newclversion 1) for the simulator/drive
    Get all type log information: sh kineticAdmin.sh -getlog -clversion 1
                                  or
                                  sh kineticAdmin.sh -getlog -clversion 1 -type all
@@ -182,7 +248,7 @@ Usage of Kinetic Admin API script
    Get configuration log info: sh kineticAdmin.sh -getlog -clversion 1 -type configuration
    Get message       log info: sh kineticAdmin.sh -getlog -clversion 1 -type message
    Get statistic     log info: sh kineticAdmin.sh -getlog -clversion 1 -type statistic
-   
+   Get limits        log info: sh kineticAdmin.sh -getlog -clversion 1 -type limits
    
    Simulator/drive remotely(IP:10.24.70.123):
    Before setup new cluster version：
@@ -195,8 +261,9 @@ Usage of Kinetic Admin API script
    Get configuration log info: sh kineticAdmin.sh -getlog -host 10.24.70.123 -type configuration
    Get message       log info: sh kineticAdmin.sh -getlog -host 10.24.70.123 -type message
    Get statistic     log info: sh kineticAdmin.sh -getlog -host 10.24.70.123 -type statistic 
+   Get limits        log info: sh kineticAdmin.sh -getlog -host 10.24.70.123 -type limits
    
-   After setup new cluster version (sh kineticAdmin.sh -setup -newclversion 1) for the simulator/drive
+   After setup new cluster version (sh kineticAdmin.sh -setclusterversion -newclversion 1) for the simulator/drive
    Get all type log information: sh kineticAdmin.sh -getlog -clversion 1
                                  or
                                  sh kineticAdmin.sh -getlog -clversion 1 -type all
@@ -206,9 +273,26 @@ Usage of Kinetic Admin API script
    Get configuration log info: sh kineticAdmin.sh -getlog -host 10.24.70.123 -clversion 1 -type configuration
    Get message       log info: sh kineticAdmin.sh -getlog -host 10.24.70.123 -clversion 1 -type message
    Get statistic     log info: sh kineticAdmin.sh -getlog -host 10.24.70.123 -clversion 1 -type statistic
+   Get limits        log info: sh kineticAdmin.sh -getlog -host 10.24.70.123 -clversion 1 -type limits
+
+9. getvendorspecificdevicelog
+   sh kineticAdmin.sh -getvendorspecificdevicelog <-name <vendorspecificname>> [-host <ip|hostname>] [-tlsport <tlsport>] [-clversion <clusterversion>]
+
+   Parameters are optional, the default values are set as below: 
+   host=127.0.0.1
+   tlsport=8443
+   clversion=0
    
-5. firmware download
-   kineticAdmin -firmware <file> [-host <ip|hostname>] [-tlsport <tlsport>] [-clversion <clusterversion>] [-pin <pin>]
+   For example,
+   Simulator/drive locally:
+   Before setup new cluster version：
+   Get vendor specific device log information: sh kineticAdmin.sh -getvendorspecificdevicelog -name devicename
+   
+   Simulator/drive remotely(IP:10.24.70.123):
+   Get vendor specific device log information: sh kineticAdmin.sh -getvendorspecificdevicelog -host 10.24.70.123 -name devicename
+
+10. firmware download
+   sh kineticAdmin.sh -firmware <file> [-host <ip|hostname>] [-tlsport <tlsport>] [-clversion <clusterversion>] [-pin <pin>]
    
    Parameters are optional, the default values are set as below: 
    host=127.0.0.1
@@ -218,14 +302,36 @@ Usage of Kinetic Admin API script
    For example,
    Simulator/drive locally:
    Before setup new cluster version：sh kineticAdmin.sh -firmware /Users/Emma/123.run
-   After setup new cluster version (sh kineticAdmin.sh -setup -newclversion 1) for the simulator/drive
+   After setup new cluster version (sh kineticAdmin.sh -setclusterversion -newclversion 1) for the simulator/drive
          sh kineticAdmin.sh -firmware /Users/Emma/123.run -clversion 1
          
          
    Simulator/drive remotely(IP:10.24.70.123):
    Before setup new cluster version：sh kineticAdmin.sh -firmware /Users/Emma/123.run -host 10.24.70.123
-   After setup new cluster version (sh kineticAdmin.sh -setup -newclversion 1) for the simulator/drive
+   After setup new cluster version (sh kineticAdmin.sh -setclusterversion -newclversion 1) for the simulator/drive
          sh kineticAdmin.sh -firmware /Users/Emma/123.run -host 10.24.70.123 -clversion 1  
+         
+11. lockdevice
+    sh kineticAdmin.sh -lockdevice <-pin <lockpin>> [-host <ip|hostname>] [-tlsport <tlsport>] [-clversion <clusterversion>]
+       
+    Parameters are optional, the default values are set as below: 
+    host=127.0.0.1
+    tlsport=8443
+    clversion=0 
+    
+    For example,
+    Simulator/drive locally:
+    Before setup new cluster version：sh kineticAdmin.sh -lockdevice -pin lockpin
+    After setup new cluster version (sh kineticAdmin.sh -setclusterversion -newclversion 1) for the simulator/drive
+    sh kineticAdmin.sh -lockdevice -clversion 1 -pin lockpin
+    
+    Simulator/drive remotely(IP:10.24.70.123):
+    Before setup new cluster version：sh kineticAdmin.sh -lockdevice -pin lockpin -host 10.24.70.123
+    After setup new cluster version (sh kineticAdmin.sh -setclusterversion -newclversion 1) for the simulator/drive
+    sh kineticAdmin.sh -lockdevice -pin lockpin -host 10.24.70.123 -clversion 1
+    
+12. unlock device
+    Similar as lockdevice. Please see #11.
          
 Usage of proto scripts
 ===========================

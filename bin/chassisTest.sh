@@ -80,14 +80,14 @@ do
         do
            node_ip=${node_ip_from_as_array[0]}.${node_ip_from_as_array[1]}.${node_ip_from_as_array[2]}.$curr
            echo "start test ${node_ip}..."
-           exec "$JAVA" -classpath "$CLASSPATH" -DRUN_NIO_TEST=true -DRUN_SSL_TEST=true -DRUN_AGAINST_EXTERNAL=true -DKINETIC_HOST=$node_ip -DKINETIC_PORT=$PORT -DKINETIC_SSL_PORT=$SSL_PORT com.seagate.kinetic.allTests.AllTestsRunner 1>${LOG_DIR}/${node_ip}.log 2>&1 &
+           exec "$JAVA" -classpath "$CLASSPATH" -DRUN_NIO_TEST=true -DRUN_SSL_TEST=true -DRUN_AGAINST_EXTERNAL=true -DKINETIC_HOST=$node_ip -DKINETIC_PORT=$PORT -DKINETIC_SSL_PORT=$SSL_PORT com.seagate.kinetic.allTests.DriveSmokeTestsRunner 1>${LOG_DIR}/${node_ip}.log 2>&1 &
            total_nodes=$(( total_nodes + 1 )) 
            curr=$(( curr + 1 )) 
         done
     else
         node_ip=${node}
         echo "start test ${node_ip}..."
-        exec "$JAVA" -classpath "$CLASSPATH" -DRUN_NIO_TEST=true -DRUN_SSL_TEST=true -DRUN_AGAINST_EXTERNAL=true -DKINETIC_HOST=$node_ip com.seagate.kinetic.allTests.AllTestsRunner 1>${LOG_DIR}/${node_ip}.log 2>&1 & 
+        exec "$JAVA" -classpath "$CLASSPATH" -DRUN_NIO_TEST=true -DRUN_SSL_TEST=true -DRUN_AGAINST_EXTERNAL=true -DKINETIC_HOST=$node_ip com.seagate.kinetic.allTests.DriveSmokeTestsRunner 1>${LOG_DIR}/${node_ip}.log 2>&1 & 
         total_nodes=$(( total_nodes + 1 )) 
     fi
 done

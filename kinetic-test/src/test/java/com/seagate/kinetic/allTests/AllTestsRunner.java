@@ -55,9 +55,9 @@ import com.seagate.kinetic.performance.microPerfTest;
  * Make sure you have access for /Seagate/LC2 in Github. <br>
  * Make sure one instance of simulator or kinetic drive is running.
  * <p>
- * 1, $git clone https://github.com/Seagate/LC2.git
+ * 1, $git clone https://github.com/Seagate/kinetic-java.git
  * <p>
- * 2, $cd ~/git/LC2
+ * 2, $cd ~/git/kinetic-java
  * <p>
  * 3, $mvn clean package<br>
  * Default nonSSL port is 8123, default SSL port is 8443. <br>
@@ -68,7 +68,7 @@ import com.seagate.kinetic.performance.microPerfTest;
  * For example,<br>
  * mvn clean package -DKINETIC_PORT=8127 -DKIENTIC_SSL_PORT=8446<br>
  * <p>
- * 4, $cd ~/git/LC2/bin
+ * 4, $cd ~/git/kinetic-java/bin
  * <p>
  * 5, $sh runSmokeTests.sh [-host host_ip] [-port port] [-home kinetic_home]
  * [-usesocketlog usesocketlog] [-logserverip ip] [-logserverport port]
@@ -94,7 +94,7 @@ import com.seagate.kinetic.performance.microPerfTest;
  * To run a single smoke test class, perform the following steps. <br>
  * ===========================================================
  * <p>
- * 1, $cd ~/git/LC2
+ * 1, $cd ~/git/kinetic-java
  * <p>
  * 2, $mvn -Dtest="your test class name" test
  * <p>
@@ -112,13 +112,13 @@ import com.seagate.kinetic.performance.microPerfTest;
  * Run log socket server locally. <br>
  * ============================================================
  * <p>
- * 1, $git clone https://github.com/Seagate/LC2.git
+ * 1, $git clone https://github.com/Seagate/kinetic-java.git
  * <p>
- * 2, $cd ~/git/LC2
+ * 2, $cd ~/git/kinetic-java
  * <p>
  * 3, $mvn clean package
  * <p>
- * 4, $cd ~/git/LC2/bin
+ * 4, $cd ~/git/kinetic-java/bin
  * <p>
  * 5, $sh startLogServer.sh [-port port]<br>
  * <p>
@@ -134,13 +134,13 @@ import com.seagate.kinetic.performance.microPerfTest;
  * Run all smoke test and send test log result to log socket server. <br>
  * =============================================================
  * <p>
- * 1, $git clone https://github.com/Seagate/LC2.git
+ * 1, $git clone https://github.com/Seagate/Kinetic-java.git
  * <p>
- * 2, $cd ~/git/LC2
+ * 2, $cd ~/git/kinetic-java
  * <p>
  * 3, $mvn clean package
  * <p>
- * 4, $cd ~/git/LC2/bin
+ * 4, $cd ~/git/kinetic-java/bin
  * <p>
  * 5, $sh runSmokeTests.sh [-host host_ip] [-port port] [-home kinetic_home]
  * [-usesocketlog usesocketlog] [-logserverip ip] [-logserverport port]
@@ -182,7 +182,7 @@ import com.seagate.kinetic.performance.microPerfTest;
  * <p>
  * 
  * 
- * @see com.seagate.kinetic.adminAPI.KineticAdminTest
+ * @see KineticAdminTest
  * @see AdvancedAPITest
  * @see KineticAsyncAPITest
  * @see KineticBasicAPITest
@@ -210,6 +210,16 @@ public class AllTestsRunner {
 				"com.seagate.kinetic.asyncAPI.KineticAsyncAPITest"));
 		classes.add(new XmlClass(
 				"com.seagate.kinetic.basicAPI.KineticBasicAPITest"));
+		classes.add(new XmlClass(
+				"com.seagate.kinetic.boundary.AdvancedAPIBoundaryTest"));
+		classes.add(new XmlClass(
+				"com.seagate.kinetic.boundary.KineticBoundaryTest"));
+		classes.add(new XmlClass(
+				"com.seagate.kinetic.concurrent.KineticClientConcurrentTest"));
+		classes.add(new XmlClass(
+				"com.seagate.kinetic.concurrent.KineticPutConcurrentTest"));
+		classes.add(new XmlClass(
+				"com.seagate.kinetic.performance.microPerfTest"));
 		test.setXmlClasses(classes);
 
 		List<XmlSuite> suites = new ArrayList<XmlSuite>();
