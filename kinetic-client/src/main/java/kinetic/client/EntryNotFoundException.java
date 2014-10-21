@@ -28,6 +28,9 @@ package kinetic.client;
 public class EntryNotFoundException extends KineticException {
 
     private static final long serialVersionUID = -2377497794808030692L;
+    
+    // the entry that wasn't found
+    private Entry entry;
 
     public EntryNotFoundException() {
         ;
@@ -43,6 +46,25 @@ public class EntryNotFoundException extends KineticException {
 
     public EntryNotFoundException(String message, Throwable cause) {
         super(message, cause);
+    }
+
+    public EntryNotFoundException(Entry entry) {
+        this.entry = entry;
+    }
+
+    public EntryNotFoundException(String message, Entry entry) {
+        super(message);
+        this.entry = entry;
+    }
+
+    public EntryNotFoundException(Throwable cause, Entry entry) {
+        super(cause);
+        this.entry = entry;
+    }
+
+    public EntryNotFoundException(String message, Throwable cause, Entry entry) {
+        super(message, cause);
+        this.entry = entry;
     }
 
 }

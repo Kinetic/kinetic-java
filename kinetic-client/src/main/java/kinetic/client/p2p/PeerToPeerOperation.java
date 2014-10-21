@@ -110,7 +110,7 @@ public class PeerToPeerOperation {
 	/**
 	 * Get overall status for the P2P operation.
 	 * <p>
-	 * Each opeartion's status can be obtained with
+	 * Each operation's status can be obtained with
 	 * {@link Operation#getStatus()} API.
 	 * <p>
 	 * 
