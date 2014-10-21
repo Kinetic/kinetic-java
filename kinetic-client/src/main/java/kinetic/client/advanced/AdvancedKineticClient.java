@@ -300,9 +300,6 @@ public interface AdvancedKineticClient extends KineticClient {
 	 *         <code>maxKeys</code>, then only <code>maxKeys</code> keys will be
 	 *         returned.
 	 * 
-	 * @return an <code>List</code> of keys in the sequence based on the
-	 *         specified key range. The keys are sorted in reversed order.
-	 * 
 	 * @throws KineticException
 	 *             if any internal error occurred.
 	 * 
