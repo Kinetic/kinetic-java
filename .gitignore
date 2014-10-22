@@ -6,7 +6,8 @@
 *.iml
 
 # eclipse
-.settings/*
+/*/.settings
+
 
 # python
 *.egg-info
