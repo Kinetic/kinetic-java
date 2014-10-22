@@ -29,7 +29,9 @@
 				</executions>
 			</plugin>
 			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-dependency-plugin</artifactId>
+				<version>2.9</version>
 				<executions>
 					<!-- Populate the properties whose key is groupId:artifactId:type and 
 						whose value is the path to the artifact -->
@@ -228,7 +230,7 @@
 			<artifactId>kinetic-simulator</artifactId>
 			<version>${project.version}</version>
 		</dependency>
-				<dependency>
+		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>kinetic-test</artifactId>
 			<version>${project.version}</version>
