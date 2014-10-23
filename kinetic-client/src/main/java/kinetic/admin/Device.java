@@ -25,7 +25,7 @@ package kinetic.admin;
  * <p>
  * Proprietary names should be prefaced by the vendor name so that name
  * collisions do not happen in the future. An example could be names that
- * start with “com.wd” would be for Western Digital devices.
+ * start with "com.wd" would be for Western Digital devices.
  * <p>
  * If the name is not found, the get log returns NOT_FOUND.
  * <p>
