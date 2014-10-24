@@ -1,0 +1,4 @@
+eclipse.preferences.version=1
+paths.directoryPaths=${workspace_loc\:/${project}/kinetic-common/src/main/java/com/seagate/kinetic/proto}
+paths.filesInMultipleDirectories=true
+paths.filesInOneDirectoryOnly=false

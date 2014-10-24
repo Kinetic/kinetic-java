@@ -1,0 +1,7 @@
+compiler.enableProjectSettings=true
+compiler.javaOutputDirectory=src/main/java
+compiler.protocFilePath=/usr/local/bin/protoc
+eclipse.preferences.version=1
+paths.directoryPaths=${workspace_loc\:/${project}/src/main/java/com/seagate/kinetic/proto}
+paths.filesInMultipleDirectories=true
+paths.filesInOneDirectoryOnly=false
