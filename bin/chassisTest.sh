@@ -8,6 +8,7 @@ SSL_PORT=8443
 PORT=8123
 HOME=`cd ~; pwd`
 NODES=127.0.0.1
+IFS_DEFAULT=##
 
 JAVA=""
 if [ "$JAVA_HOME" != "" ]; then
@@ -71,29 +72,30 @@ do
         node_ip_from=${node_ip_from_and_to[0]}
         node_ip_to=${node_ip_from_and_to[1]}
         IFS="."
-        node_ip_from_as_array=($node_ip_from)
-        node_ip_to_as_array=($node_ip_to)
+        node_ip_from_as_array=(${node_ip_from})
+        node_ip_to_as_array=(${node_ip_to})
         node_ip_from_last_byte=${node_ip_from_as_array[3]}
         node_ip_to_last_byte=${node_ip_to_as_array[3]}
-        curr=$node_ip_from_last_byte
-        while [ $curr -le $node_ip_to_last_byte ]
+        curr=${node_ip_from_last_byte}
+        IFS=${IFS_DEFAULT}
+        while [ $curr -le ${node_ip_to_last_byte} ]
         do
            node_ip=${node_ip_from_as_array[0]}.${node_ip_from_as_array[1]}.${node_ip_from_as_array[2]}.$curr
            echo "start test ${node_ip}..."
-           exec "$JAVA" -classpath "$CLASSPATH" -DRUN_NIO_TEST=true -DRUN_SSL_TEST=true -DRUN_AGAINST_EXTERNAL=true -DKINETIC_HOST=$node_ip -DKINETIC_PORT=$PORT -DKINETIC_SSL_PORT=$SSL_PORT com.seagate.kinetic.allTests.DriveSmokeTestsRunner 1>${LOG_DIR}/${node_ip}.log 2>&1 &
+           exec "$JAVA" -classpath "$CLASSPATH" -DRUN_NIO_TEST=true -DRUN_SSL_TEST=true -DRUN_AGAINST_EXTERNAL=true -DKINETIC_HOST=${node_ip} com.seagate.kinetic.allTests.DriveSmokeTestsRunner 1>${LOG_DIR}/${node_ip}.log 2>&1 & 
            total_nodes=$(( total_nodes + 1 )) 
            curr=$(( curr + 1 )) 
         done
     else
         node_ip=${node}
         echo "start test ${node_ip}..."
-        exec "$JAVA" -classpath "$CLASSPATH" -DRUN_NIO_TEST=true -DRUN_SSL_TEST=true -DRUN_AGAINST_EXTERNAL=true -DKINETIC_HOST=$node_ip com.seagate.kinetic.allTests.DriveSmokeTestsRunner 1>${LOG_DIR}/${node_ip}.log 2>&1 & 
+        exec "$JAVA" -classpath "$CLASSPATH" -DRUN_NIO_TEST=true -DRUN_SSL_TEST=true -DRUN_AGAINST_EXTERNAL=true -DKINETIC_HOST=${node_ip} com.seagate.kinetic.allTests.DriveSmokeTestsRunner 1>${LOG_DIR}/${node_ip}.log 2>&1 & 
         total_nodes=$(( total_nodes + 1 )) 
     fi
 done
 
 
-for((i=0;i<$total_nodes;i++)); 
+for((i=0;i<${total_nodes};i++)); 
 do
 	j=$(echo "$i+1" | bc -l) 
     wait %$j 
