@@ -35,10 +35,9 @@ import kinetic.client.KineticException;
 
 import com.seagate.kinetic.common.lib.KineticMessage;
 
-
 public class DefaultKineticLog implements KineticLog {
-    //private Message response = null;
-    
+    // private Message response = null;
+
     private KineticMessage response = null;
 
     public DefaultKineticLog(KineticMessage km) {
@@ -47,7 +46,7 @@ public class DefaultKineticLog implements KineticLog {
 
     @Override
     public List<Utilization> getUtilization() throws KineticException {
-        
+
         validate(this.response);
 
         List<Utilization> utils = new ArrayList<Utilization>();
@@ -126,7 +125,8 @@ public class DefaultKineticLog implements KineticLog {
         Capacity capacInfo = new Capacity();
 
         if (capacity.hasNominalCapacityInBytes()) {
-            capacInfo.setNominalCapacityInBytes(capacity.getNominalCapacityInBytes());
+            capacInfo.setNominalCapacityInBytes(capacity
+                    .getNominalCapacityInBytes());
         }
 
         if (capacity.hasPortionFull()) {
@@ -370,35 +370,104 @@ public class DefaultKineticLog implements KineticLog {
             case GET:
                 statisticsInfo.setMessageType(MessageType.GET);
                 break;
+            case GET_RESPONSE:
+                statisticsInfo.setMessageType(MessageType.GET_RESPONSE);
+                break;
             case PUT:
                 statisticsInfo.setMessageType(MessageType.PUT);
+                break;
+            case PUT_RESPONSE:
+                statisticsInfo.setMessageType(MessageType.PUT_RESPONSE);
                 break;
             case DELETE:
                 statisticsInfo.setMessageType(MessageType.DELETE);
                 break;
+            case DELETE_RESPONSE:
+                statisticsInfo.setMessageType(MessageType.DELETE_RESPONSE);
+                break;
             case GETNEXT:
                 statisticsInfo.setMessageType(MessageType.GETNEXT);
+                break;
+            case GETNEXT_RESPONSE:
+                statisticsInfo.setMessageType(MessageType.GETNEXT_RESPONSE);
                 break;
             case GETPREVIOUS:
                 statisticsInfo.setMessageType(MessageType.GETPREVIOUS);
                 break;
+            case GETPREVIOUS_RESPONSE:
+                statisticsInfo.setMessageType(MessageType.GETPREVIOUS_RESPONSE);
+                break;
             case GETKEYRANGE:
                 statisticsInfo.setMessageType(MessageType.GETKEYRANGE);
+                break;
+            case GETKEYRANGE_RESPONSE:
+                statisticsInfo.setMessageType(MessageType.GETKEYRANGE_RESPONSE);
                 break;
             case GETVERSION:
                 statisticsInfo.setMessageType(MessageType.GETVERSION);
                 break;
+            case GETVERSION_RESPONSE:
+                statisticsInfo.setMessageType(MessageType.GETVERSION_RESPONSE);
+                break;
             case SETUP:
                 statisticsInfo.setMessageType(MessageType.SETUP);
+                break;
+            case SETUP_RESPONSE:
+                statisticsInfo.setMessageType(MessageType.SETUP_RESPONSE);
                 break;
             case GETLOG:
                 statisticsInfo.setMessageType(MessageType.GETLOG);
                 break;
+            case GETLOG_RESPONSE:
+                statisticsInfo.setMessageType(MessageType.GETLOG_RESPONSE);
+                break;
             case SECURITY:
                 statisticsInfo.setMessageType(MessageType.SECURITY);
                 break;
+            case SECURITY_RESPONSE:
+                statisticsInfo.setMessageType(MessageType.SECURITY_RESPONSE);
+                break;
             case PEER2PEERPUSH:
                 statisticsInfo.setMessageType(MessageType.PEER2PEERPUSH);
+                break;
+            case PEER2PEERPUSH_RESPONSE:
+                statisticsInfo
+                        .setMessageType(MessageType.PEER2PEERPUSH_RESPONSE);
+                break;
+            case INVALID_MESSAGE_TYPE:
+                statisticsInfo.setMessageType(MessageType.INVALID_MESSAGE_TYPE);
+                break;
+            case NOOP:
+                statisticsInfo.setMessageType(MessageType.NOOP);
+                break;
+            case NOOP_RESPONSE:
+                statisticsInfo.setMessageType(MessageType.NOOP_RESPONSE);
+                break;
+            case FLUSHALLDATA:
+                statisticsInfo.setMessageType(MessageType.FLUSHALLDATA);
+                break;
+            case FLUSHALLDATA_RESPONSE:
+                statisticsInfo
+                        .setMessageType(MessageType.FLUSHALLDATA_RESPONSE);
+                break;
+            case PINOP:
+                statisticsInfo.setMessageType(MessageType.PINOP);
+                break;
+            case PINOP_RESPONSE:
+                statisticsInfo.setMessageType(MessageType.PINOP_RESPONSE);
+                break;
+            case MEDIASCAN:
+                statisticsInfo.setMessageType(MessageType.MEDIASCAN);
+                break;
+            case MEDIASCAN_RESPONSE:
+                statisticsInfo.setMessageType(MessageType.MEDIASCAN_RESPONSE);
+                break;
+            case MEDIAOPTIMIZE:
+                statisticsInfo.setMessageType(MessageType.MEDIAOPTIMIZE);
+                break;
+            case MEDIAOPTIMIZE_RESPONSE:
+                statisticsInfo
+                        .setMessageType(MessageType.MEDIAOPTIMIZE_RESPONSE);
                 break;
             default:
                 ;
@@ -461,7 +530,7 @@ public class DefaultKineticLog implements KineticLog {
         if (limits.hasMaxKeyRangeCount()) {
             LimitsInfo.setMaxKeyRangeCount(limits.getMaxKeyRangeCount());
         }
-        
+
         if (limits.hasMaxIdentityCount()) {
             LimitsInfo.setMaxIdentityCount(limits.getMaxIdentityCount());
         }
