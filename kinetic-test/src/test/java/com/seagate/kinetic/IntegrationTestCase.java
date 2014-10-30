@@ -118,7 +118,7 @@ public class IntegrationTestCase {
 	@BeforeMethod(alwaysRun = true)
 	protected void securityEraseTarget() throws KineticException {
 		getAdminClient().secureErase(
-				"anything".getBytes(Charset.forName("UTF-8")));
+				"NULL".getBytes(Charset.forName("UTF-8")));
 	}
 
 	/**

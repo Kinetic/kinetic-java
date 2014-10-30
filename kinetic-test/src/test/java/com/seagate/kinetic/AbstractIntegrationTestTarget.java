@@ -112,7 +112,7 @@ public abstract class AbstractIntegrationTestTarget {
 	protected void performISE() throws KineticException {
 		KineticAdminClient kineticAdminClient = KineticAdminClientFactory
 				.createInstance(getAdminClientConfig());
-		kineticAdminClient.instantErase("anything".getBytes(Charset
+		kineticAdminClient.instantErase("NULL".getBytes(Charset
 				.forName("UTF-8")));
 		kineticAdminClient.close();
 	}
