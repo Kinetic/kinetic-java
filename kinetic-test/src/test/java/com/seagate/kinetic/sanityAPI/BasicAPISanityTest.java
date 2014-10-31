@@ -42,8 +42,11 @@ public class BasicAPISanityTest {
 	public void beforeClass() throws KineticException {
 		String host = System.getProperty("KINETIC_HOST", "localhost");
 		int port = Integer.parseInt(System.getProperty("KINETIC_PORT", "8123"));
+		int sslPort = Integer.parseInt(System.getProperty("KINETIC_SSL_PORT", "8443"));
 		runAgainstExternal = Boolean.parseBoolean(System
 				.getProperty("RUN_AGAINST_EXTERNAL"));
+		boolean runNioSSL = Boolean.parseBoolean(System
+				.getProperty("RUN_NIO_SSL"));
 		if (!runAgainstExternal) {
 			sc = new SimulatorConfiguration();
 			simulator = new KineticSimulator(sc);
@@ -52,6 +55,11 @@ public class BasicAPISanityTest {
 		cc = new ClientConfiguration();
 		cc.setHost(host);
 		cc.setPort(port);
+		
+		if (runNioSSL){
+			cc.setUseSsl(true);
+			cc.setPort(sslPort);
+		}
 		client = KineticClientFactory.createInstance(cc);
 	}
 

@@ -40,7 +40,7 @@ public class DriveSmokeTestsRunner {
 		classes.add(new XmlClass(
 				"com.seagate.kinetic.sanityAPI.AdminAPISanityTest"));
 		classes.add(new XmlClass(
-				"com.seagate.kinetic.basicAPI.KineticBasicAPITest"));
+				"com.seagate.kinetic.sanityAPI.BasicAPISanityTest"));
 		test.setXmlClasses(classes);
 
 		List<XmlSuite> suites = new ArrayList<XmlSuite>();

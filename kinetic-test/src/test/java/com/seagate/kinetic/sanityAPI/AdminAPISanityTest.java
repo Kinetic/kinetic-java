@@ -31,12 +31,14 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import kinetic.admin.ACL;
+import kinetic.admin.AdminClientConfiguration;
 import kinetic.admin.Capacity;
 import kinetic.admin.Configuration;
 import kinetic.admin.Device;
 import kinetic.admin.Domain;
 import kinetic.admin.Interface;
 import kinetic.admin.KineticAdminClient;
+import kinetic.admin.KineticAdminClientFactory;
 import kinetic.admin.KineticLog;
 import kinetic.admin.KineticLogType;
 import kinetic.admin.Limits;
@@ -46,12 +48,15 @@ import kinetic.admin.Temperature;
 import kinetic.admin.Utilization;
 import kinetic.client.EntryNotFoundException;
 import kinetic.client.KineticException;
+import kinetic.simulator.KineticSimulator;
+import kinetic.simulator.SimulatorConfiguration;
 
 import org.testng.Assert;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 import com.google.protobuf.ByteString;
-import com.seagate.kinetic.IntegrationTestCase;
 import com.seagate.kinetic.IntegrationTestLoggerFactory;
 import com.seagate.kinetic.client.internal.MessageFactory;
 import com.seagate.kinetic.common.lib.KineticMessage;
@@ -81,9 +86,41 @@ import com.seagate.kinetic.proto.Kinetic.Command.Status.StatusCode;
  * 
  */
 @Test(groups = { "simulator", "drive" })
-public class AdminAPISanityTest extends IntegrationTestCase {
+public class AdminAPISanityTest {
 	private static final Logger logger = IntegrationTestLoggerFactory
-			.getLogger(AdminAPISanityTest.class.getName());
+			.getLogger(AdminAPIForDriveTest.class.getName());
+	private SimulatorConfiguration sc;
+	private KineticSimulator simulator;
+	private AdminClientConfiguration acc;
+	private KineticAdminClient adminClient;
+	private Boolean runAgainstExternal = false;
+
+	@BeforeClass
+	public void beforeClass() throws KineticException {
+		String host = System.getProperty("KINETIC_HOST", "localhost");
+		int port = Integer.parseInt(System.getProperty("KINETIC_SSL_PORT",
+				"8443"));
+		runAgainstExternal = Boolean.parseBoolean(System
+				.getProperty("RUN_AGAINST_EXTERNAL"));
+		if (!runAgainstExternal) {
+			sc = new SimulatorConfiguration();
+			simulator = new KineticSimulator(sc);
+		}
+
+		acc = new AdminClientConfiguration();
+		acc.setHost(host);
+		acc.setPort(port);
+		adminClient = KineticAdminClientFactory.createInstance(acc);
+	}
+
+	@AfterClass
+	public void afterClass() throws KineticException {
+		adminClient.close();
+		if (!runAgainstExternal) {
+			simulator.close();
+		}
+	}
+
 
 	/**
 	 * Test setClusterVersion API, set cluster version for simulator/drive. The
@@ -96,7 +133,7 @@ public class AdminAPISanityTest extends IntegrationTestCase {
 
 		// modify cluster version.
 		try {
-			getAdminClient().setClusterVersion(newClusterVersion);
+			adminClient.setClusterVersion(newClusterVersion);
 
 		} catch (KineticException e) {
 			Assert.fail(e.getMessage());
@@ -114,8 +151,7 @@ public class AdminAPISanityTest extends IntegrationTestCase {
 	@Test(enabled = false)
 	public void test_instanErase() {
 		try {
-			getAdminClient().instantErase(
-					"NULL".getBytes(Charset.forName("UTF-8")));
+			adminClient.instantErase("NULL".getBytes(Charset.forName("UTF-8")));
 		} catch (KineticException e) {
 			Assert.fail("instant erase throw exception: " + e.getMessage());
 		}
@@ -132,8 +168,7 @@ public class AdminAPISanityTest extends IntegrationTestCase {
 	@Test(enabled = false)
 	public void test_secureErase() {
 		try {
-			getAdminClient().secureErase(
-					"NULL".getBytes(Charset.forName("UTF-8")));
+			adminClient.secureErase("NULL".getBytes(Charset.forName("UTF-8")));
 		} catch (KineticException e) {
 			Assert.fail("secure erase throw exception: " + e.getMessage());
 		}
@@ -147,7 +182,7 @@ public class AdminAPISanityTest extends IntegrationTestCase {
 	public void test_getLog() {
 		KineticLog log;
 		try {
-			log = getAdminClient().getLog();
+			log = adminClient.getLog();
 
 			assertTrue(log.getTemperature().size() > 0);
 			assertTrue(log.getUtilization().size() > 0);
@@ -180,7 +215,7 @@ public class AdminAPISanityTest extends IntegrationTestCase {
 		name2 = toByteArray(sname2);
 
 		try {
-			Device device = getAdminClient().getVendorSpecificDeviceLog(name);
+			Device device = adminClient.getVendorSpecificDeviceLog(name);
 
 			logger.info("got vendor specific log., name = " + sname
 					+ ", log size=" + device.getValue().length);
@@ -192,7 +227,7 @@ public class AdminAPISanityTest extends IntegrationTestCase {
 		}
 
 		try {
-			getAdminClient().getVendorSpecificDeviceLog(name2);
+			adminClient.getVendorSpecificDeviceLog(name2);
 
 			Assert.fail("should have caught EntryNotFoundException");
 		} catch (EntryNotFoundException enfe) {
@@ -239,7 +274,7 @@ public class AdminAPISanityTest extends IntegrationTestCase {
 
 		// all pins set the same
 		try {
-			getAdminClient().setAcl(acls);
+			adminClient.setAcl(acls);
 		} catch (KineticException e) {
 			Assert.fail("Set Security throw exception" + e.getMessage());
 		}
@@ -255,7 +290,7 @@ public class AdminAPISanityTest extends IntegrationTestCase {
 		byte[] erasePinB = toByteArray(erasePin);
 
 		try {
-			getAdminClient().setErasePin("".getBytes(Charset.forName("UTF-8")),
+			adminClient.setErasePin("".getBytes(Charset.forName("UTF-8")),
 					erasePinB);
 		} catch (KineticException e) {
 			Assert.fail("Set erase pin throw exception" + e.getMessage());
@@ -263,7 +298,7 @@ public class AdminAPISanityTest extends IntegrationTestCase {
 
 		// clean pin
 		try {
-			getAdminClient().secureErase(erasePinB);
+			adminClient.secureErase(erasePinB);
 		} catch (KineticException e) {
 			Assert.fail("secure erase throw exception" + e.getMessage());
 		}
@@ -279,7 +314,7 @@ public class AdminAPISanityTest extends IntegrationTestCase {
 		byte[] lockPinB = toByteArray(lockPin);
 
 		try {
-			getAdminClient().setLockPin("".getBytes(Charset.forName("UTF-8")),
+			adminClient.setLockPin("".getBytes(Charset.forName("UTF-8")),
 					lockPinB);
 		} catch (KineticException e) {
 			Assert.fail("Set erase pin throw exception" + e.getMessage());
@@ -287,8 +322,7 @@ public class AdminAPISanityTest extends IntegrationTestCase {
 
 		// clean pin
 		try {
-			getAdminClient().secureErase(
-					"NULL".getBytes(Charset.forName("UTF-8")));
+			adminClient.secureErase("123".getBytes(Charset.forName("UTF-8")));
 		} catch (KineticException e) {
 			Assert.fail("secure erase throw exception" + e.getMessage());
 		}
@@ -303,14 +337,14 @@ public class AdminAPISanityTest extends IntegrationTestCase {
 		// set a lock pin
 		byte[] lockPinB = toByteArray("lockpin");
 		try {
-			getAdminClient().setLockPin("".getBytes(Charset.forName("UTF-8")),
+			adminClient.setLockPin("".getBytes(Charset.forName("UTF-8")),
 					lockPinB);
 		} catch (KineticException e1) {
 			Assert.fail("set lock pin throw exception: " + e1.getMessage());
 		}
 
 		try {
-			getAdminClient().lockDevice(lockPinB);
+			adminClient.lockDevice(lockPinB);
 		} catch (KineticException e) {
 			Assert.fail("Lock device with correct pin failed: "
 					+ e.getMessage());
@@ -318,7 +352,7 @@ public class AdminAPISanityTest extends IntegrationTestCase {
 
 		// unlock device
 		try {
-			getAdminClient().unLockDevice(lockPinB);
+			adminClient.unLockDevice(lockPinB);
 		} catch (KineticException e) {
 			Assert.fail("unLock device with correct pin failed: "
 					+ e.getMessage());
@@ -326,8 +360,7 @@ public class AdminAPISanityTest extends IntegrationTestCase {
 
 		// clean pin
 		try {
-			getAdminClient().secureErase(
-					"NULL".getBytes(Charset.forName("UTF-8")));
+			adminClient.secureErase("NULL".getBytes(Charset.forName("UTF-8")));
 		} catch (KineticException e) {
 			Assert.fail("secure erase throw exception" + e.getMessage());
 		}
@@ -342,21 +375,21 @@ public class AdminAPISanityTest extends IntegrationTestCase {
 		// set a lock pin
 		byte[] lockPinB = toByteArray("lockpin");
 		try {
-			getAdminClient().setLockPin("".getBytes(Charset.forName("UTF-8")),
+			adminClient.setLockPin("".getBytes(Charset.forName("UTF-8")),
 					lockPinB);
 		} catch (KineticException e1) {
 			Assert.fail("set lock pin throw exception: " + e1.getMessage());
 		}
 
 		try {
-			getAdminClient().lockDevice(lockPinB);
+			adminClient.lockDevice(lockPinB);
 		} catch (KineticException e) {
 			Assert.fail("Lock device with correct pin failed: "
 					+ e.getMessage());
 		}
 
 		try {
-			getAdminClient().unLockDevice(lockPinB);
+			adminClient.unLockDevice(lockPinB);
 		} catch (KineticException e) {
 			Assert.fail("unLock device with correct pin failed: "
 					+ e.getMessage());
@@ -364,8 +397,7 @@ public class AdminAPISanityTest extends IntegrationTestCase {
 
 		// clean pin
 		try {
-			getAdminClient().secureErase(
-					"NULL".getBytes(Charset.forName("UTF-8")));
+			adminClient.secureErase("NULL".getBytes(Charset.forName("UTF-8")));
 		} catch (KineticException e) {
 			Assert.fail("secure erase throw exception" + e.getMessage());
 		}
@@ -388,7 +420,7 @@ public class AdminAPISanityTest extends IntegrationTestCase {
 
 		KineticLog log = null;
 		try {
-			log = getAdminClient().getLog(listOfLogType);
+			log = adminClient.getLog(listOfLogType);
 		} catch (KineticException e) {
 			Assert.fail("getLog throw exception: " + e.getMessage());
 		}
@@ -496,7 +528,7 @@ public class AdminAPISanityTest extends IntegrationTestCase {
 	public void test_firmwareDownload() {
 		byte[] firmware = "frimware".getBytes(Charset.forName("UTF-8"));
 		try {
-			getAdminClient().firmwareDownload(
+			adminClient.firmwareDownload(
 					"123".getBytes(Charset.forName("UTF-8")), firmware);
 		} catch (KineticException e) {
 			Assert.fail("getLog throw exception: " + e.getMessage());
@@ -529,7 +561,7 @@ public class AdminAPISanityTest extends IntegrationTestCase {
 		Range range = rangeBuilder.build();
 
 		try {
-			KineticMessage kmrsp = getAdminClient().mediaScan(range,
+			KineticMessage kmrsp = adminClient.mediaScan(range,
 					Priority.HIGHEST);
 			assertEquals(MessageType.MEDIASCAN_RESPONSE, kmrsp.getCommand()
 					.getHeader().getMessageType());
@@ -568,7 +600,7 @@ public class AdminAPISanityTest extends IntegrationTestCase {
 		Range range = rangeBuilder.build();
 
 		try {
-			KineticMessage kmrsp = getAdminClient().mediaOptimize(range,
+			KineticMessage kmrsp = adminClient.mediaOptimize(range,
 					Priority.HIGHEST);
 			assertEquals(MessageType.MEDIAOPTIMIZE_RESPONSE, kmrsp.getCommand()
 					.getHeader().getMessageType());
