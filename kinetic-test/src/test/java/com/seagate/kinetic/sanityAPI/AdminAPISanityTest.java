@@ -441,6 +441,7 @@ public class AdminAPISanityTest {
             assertTrue(configuration.getPort() >= 0);
             assertTrue(configuration.getTlsPort() >= 0);
             assertTrue(configuration.getSerialNumber().length() > 0);
+            assertTrue(configuration.getWorldWideName().length() > 0);
             assertTrue(configuration.getSourceHash().length() > 0);
             assertTrue(configuration.getVendor().length() > 0);
             assertTrue(configuration.getVersion().length() > 0);

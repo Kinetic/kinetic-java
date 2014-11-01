@@ -305,6 +305,11 @@ public class DefaultKineticLog implements KineticLog {
                     .toStringUtf8());
         }
 
+        if (configuration.hasWorldWideName()) {
+            configurationInfo.setWorldWideName(configuration.getWorldWideName()
+                    .toStringUtf8());
+        }
+
         if (configuration.hasSourceHash()) {
             configurationInfo.setSourceHash(configuration.getSourceHash());
         }

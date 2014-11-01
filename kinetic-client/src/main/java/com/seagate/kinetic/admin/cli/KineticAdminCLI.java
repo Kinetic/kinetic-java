@@ -767,6 +767,7 @@ public class KineticAdminCLI {
             System.out.println("ProtocolVersion: "
                     + config.getProtocolVersion());
             System.out.println("SerialNumber: " + config.getSerialNumber());
+            System.out.println("WorldWideName: " + config.getWorldWideName());
             System.out.println("SourceHash: " + config.getSourceHash());
             System.out.println("Vendor: " + config.getVendor());
             System.out.println("Version: " + config.getVersion());

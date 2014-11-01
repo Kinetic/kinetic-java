@@ -19,17 +19,12 @@
  */
 package com.seagate.kinetic.adminAPI;
 
-import static org.testng.AssertJUnit.assertArrayEquals;
-import static org.testng.AssertJUnit.assertEquals;
-import static org.testng.AssertJUnit.assertTrue;
-import static org.testng.AssertJUnit.assertNull;
-
-import org.testng.annotations.Test;
-import org.testng.annotations.BeforeMethod;
-import org.testng.Assert;
-
 import static com.seagate.kinetic.KineticTestHelpers.setDefaultAcls;
 import static com.seagate.kinetic.KineticTestHelpers.toByteArray;
+import static org.testng.AssertJUnit.assertEquals;
+import static org.testng.AssertJUnit.assertNull;
+import static org.testng.AssertJUnit.assertTrue;
+import static org.testng.internal.junit.ArrayAsserts.assertArrayEquals;
 
 import java.nio.charset.Charset;
 import java.util.ArrayList;
@@ -58,6 +53,10 @@ import kinetic.client.EntryNotFoundException;
 import kinetic.client.KineticClient;
 import kinetic.client.KineticClientFactory;
 import kinetic.client.KineticException;
+
+import org.testng.Assert;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
 
 import com.google.protobuf.ByteString;
 import com.seagate.kinetic.IntegrationTestCase;
@@ -2432,6 +2431,7 @@ public class KineticAdminTest extends IntegrationTestCase {
 			assertTrue(configuration.getPort() >= 0);
 			assertTrue(configuration.getTlsPort() >= 0);
 			assertTrue(configuration.getSerialNumber().length() > 0);
+            assertTrue(configuration.getWorldWideName().length() > 0);
 			assertTrue(configuration.getSourceHash().length() > 0);
 			assertTrue(configuration.getVendor().length() > 0);
 			assertTrue(configuration.getVersion().length() > 0);
