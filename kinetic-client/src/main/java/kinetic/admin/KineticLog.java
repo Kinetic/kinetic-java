@@ -77,7 +77,7 @@ public interface KineticLog {
 	 * 
 	 * @throws KineticException
 	 *             if any internal error occurred.
-	 * @see Configuration
+	 * @see DefaultConfiguration
 	 */
 	public Configuration getConfiguration() throws KineticException;
 

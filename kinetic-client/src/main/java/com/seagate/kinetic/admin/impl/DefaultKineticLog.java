@@ -249,7 +249,7 @@ public class DefaultKineticLog implements KineticLog {
                     "Response message error: configuration is null.");
         }
 
-        Configuration configurationInfo = new Configuration();
+        DefaultConfiguration configurationInfo = new DefaultConfiguration();
 
         if (configuration.hasCompilationDate()) {
             configurationInfo.setCompilationDate(configuration

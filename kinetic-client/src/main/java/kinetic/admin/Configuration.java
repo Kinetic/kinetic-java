@@ -19,151 +19,103 @@ package kinetic.admin;
 
 import java.util.List;
 
-public class Configuration {
+/**
+ * Kinetic device configuration information.
+ * 
+ * @author Emma Li
+ * @author chiaming
+ *
+ */
+public interface Configuration {
 
-    // name of the vendor. Should be "Seagate"
-    private String vendor;
+    /**
+     * Get vendor name.
+     * 
+     * @return vendor name
+     */
+    public String getVendor();
 
-    // name of the device. Have no clue what this should be...
-    private String model;
+    /**
+     * Get device model.
+     * 
+     * @return get device model.
+     */
+    public String getModel();
 
-    // Device Serial number from the underlying drive
-    private String serialNumber;
+    /**
+     * Get serial number.
+     * 
+     * @return serila number.
+     */
+    public String getSerialNumber();
 
-    // device WWN
-    private String wwn = null;
+    /**
+     * Get device version.
+     * 
+     * @return device version.
+     */
+    public String getVersion();
 
-    // This is the version of the software on the drive in dot notation
-    // if this is not set or ends with "x" this is test code.
-    private String version;
+    /**
+     * Get device service code compilation date.
+     * 
+     * @return device service code compilation date.
+     */
+    public String getCompilationDate();
 
-    // This is the date/time string of when the source was compiled
-    private String compilationDate;
+    /**
+     * Get device service source code repository hash value.
+     * 
+     * @return device service source code repository hash value.
+     */
+    public String getSourceHash();
 
-    // This is the git hash of the source tree so that the exact code can be
-    // determined.
-    private String sourceHash;
+    /**
+     * Get device interfaces as list.
+     * 
+     * @return device interfaces as list.
+     */
+    public List<Interface> getInterfaces();
 
-    // This is the protocol version of the software on the drive in dot notation
-    private String protocolVersion;
+    /**
+     * Get device supported protocol version.
+     * 
+     * @return device supported protocol version.
+     */
+    public String getProtocolVersion();
 
-    // This is the date/time string of when the protocol source was compiled
-    private String protocolCompilationDate;
+    /**
+     * Get supported protocol compilation date.
+     * 
+     * @return supported protocol compilation date.
+     */
+    public String getProtocolCompilationDate();
 
-    // This is the git hash of the protocol source tree so that the exact code
-    // can be determined.
-    private String protocolSourceHash;
+    /**
+     * Get supported protocol source code repository hash value.
+     * 
+     * @return supported protocol source code repository hash value.
+     */
+    public String getProtocolSourceHash();
 
-    // the interfaces for this device. one per interface.
-    private List<Interface> interfaces;
+    /**
+     * Get service port.
+     * 
+     * @return service port.
+     */
+    public int getPort();
 
-    // these are the port numbers for the software
-    private int port;
+    /**
+     * Get TLS service port.
+     * 
+     * @return TLS service port.
+     */
+    public int getTlsPort();
 
-    private int tlsPort;
-
-    public String getVendor() {
-        return vendor;
-    }
-
-    public void setVendor(String vendor) {
-        this.vendor = vendor;
-    }
-
-    public String getModel() {
-        return model;
-    }
-
-    public void setModel(String model) {
-        this.model = model;
-    }
-
-    public String getSerialNumber() {
-        return serialNumber;
-    }
-
-    public void setSerialNumber(String serialNumber) {
-        this.serialNumber = serialNumber;
-    }
-
-    public String getVersion() {
-        return version;
-    }
-
-    public void setVersion(String version) {
-        this.version = version;
-    }
-
-    public String getCompilationDate() {
-        return compilationDate;
-    }
-
-    public void setCompilationDate(String compilationDate) {
-        this.compilationDate = compilationDate;
-    }
-
-    public String getSourceHash() {
-        return sourceHash;
-    }
-
-    public void setSourceHash(String sourceHash) {
-        this.sourceHash = sourceHash;
-    }
-
-    public List<Interface> getInterfaces() {
-        return interfaces;
-    }
-
-    public String getProtocolVersion() {
-        return protocolVersion;
-    }
-
-    public void setProtocolVersion(String protocolVersion) {
-        this.protocolVersion = protocolVersion;
-    }
-
-    public String getProtocolCompilationDate() {
-        return protocolCompilationDate;
-    }
-
-    public void setProtocolCompilationDate(String protocolCompilationDate) {
-        this.protocolCompilationDate = protocolCompilationDate;
-    }
-
-    public String getProtocolSourceHash() {
-        return protocolSourceHash;
-    }
-
-    public void setProtocolSourceHash(String protocolSourceHash) {
-        this.protocolSourceHash = protocolSourceHash;
-    }
-
-    public void setInterfaces(List<Interface> interfaces) {
-        this.interfaces = interfaces;
-    }
-
-    public int getPort() {
-        return port;
-    }
-
-    public void setPort(int port) {
-        this.port = port;
-    }
-
-    public int getTlsPort() {
-        return tlsPort;
-    }
-
-    public void setTlsPort(int tlsPort) {
-        this.tlsPort = tlsPort;
-    }
-
-    public String getWorldWideName() {
-        return this.wwn;
-    }
-
-    public void setWorldWideName(String wwn) {
-        this.wwn = wwn;
-    }
-
+    /**
+     * Get device world wide name.
+     * 
+     * @return device world wide name.
+     */
+    public String getWorldWideName();
 }
