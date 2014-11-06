@@ -13,297 +13,268 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import kinetic.client.ClientConfiguration;
 import kinetic.client.Entry;
 import kinetic.client.EntryMetadata;
-import kinetic.client.KineticClient;
-import kinetic.client.KineticClientFactory;
 import kinetic.client.KineticException;
-import kinetic.simulator.KineticSimulator;
-import kinetic.simulator.SimulatorConfiguration;
 
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import com.google.common.collect.Lists;
+import com.seagate.kinetic.IntegrationTestCase;
 
 @Test(groups = { "simulator", "drive" })
-public class BasicAPISanityTest {
-	private SimulatorConfiguration sc;
-	private KineticSimulator simulator;
-	private ClientConfiguration cc;
-	private KineticClient client;
-	private Boolean runAgainstExternal = false;
-	private final String KEY_PREFIX = "key";
-	private final int MAX_KEYS = 1;
+public class BasicAPISanityTest extends IntegrationTestCase {
+    private final String KEY_PREFIX = "key";
+    private final int MAX_KEYS = 1;
 
-	@BeforeClass
-	public void beforeClass() throws KineticException {
-		String host = System.getProperty("KINETIC_HOST", "localhost");
-		int port = Integer.parseInt(System.getProperty("KINETIC_PORT", "8123"));
-		int sslPort = Integer.parseInt(System.getProperty("KINETIC_SSL_PORT", "8443"));
-		runAgainstExternal = Boolean.parseBoolean(System
-				.getProperty("RUN_AGAINST_EXTERNAL"));
-		boolean runNioSSL = Boolean.parseBoolean(System
-				.getProperty("RUN_NIO_SSL"));
-		if (!runAgainstExternal) {
-			sc = new SimulatorConfiguration();
-			simulator = new KineticSimulator(sc);
-		}
+    @Override
+    @BeforeMethod(alwaysRun = true)
+    public void securityEraseTarget() {
+        // do nothing, so the parent won't erase the data
+    }
 
-		cc = new ClientConfiguration();
-		cc.setHost(host);
-		cc.setPort(port);
-		
-		if (runNioSSL){
-			cc.setUseSsl(true);
-			cc.setPort(sslPort);
-		}
-		client = KineticClientFactory.createInstance(cc);
-	}
+    private void clean(String clientName, int maxkeys) throws KineticException {
+        byte[] key;
 
-	@AfterClass
-	public void afterClass() throws KineticException {
-		client.close();
-		if (!runAgainstExternal) {
-			simulator.close();
-		}
-	}
+        for (int i = 0; i < maxkeys; i++) {
+            key = toByteArray(KEY_PREFIX + i);
+            getClient(clientName).deleteForced(key);
+        }
 
-	private void clean(int maxkeys) throws KineticException {
-		byte[] key;
+    }
 
-		for (int i = 0; i < maxkeys; i++) {
-			key = toByteArray(KEY_PREFIX + i);
-			client.deleteForced(key);
-		}
+    /**
+     * Test put API with a serial of entries. Metadata with the value of tag and
+     * algorithm The test result should be successful and verify the result
+     * returned is the same as put before
+     * <p>
+     *
+     * @throws KineticException
+     *             if any internal error occurred.
+     */
+    @Test(dataProvider = "transportProtocolOptions")
+    public void testPut(String clientName) throws KineticException {
+        Entry versionedPut;
+        Entry versionedPutReturn;
+        byte[] key;
+        byte[] value;
+        String algorithm = "SHA1";
+        Long start = System.nanoTime();
 
-	}
+        clean(clientName, MAX_KEYS);
 
-	/**
-	 * Test put API with a serial of entries. Metadata with the value of tag and
-	 * algorithm The test result should be successful and verify the result
-	 * returned is the same as put before
-	 * <p>
-	 *
-	 * @throws KineticException
-	 *             if any internal error occurred.
-	 */
-	public void testPut() throws KineticException {
-		Entry versionedPut;
-		Entry versionedPutReturn;
-		byte[] key;
-		byte[] value;
-		String algorithm = "SHA1";
-		Long start = System.nanoTime();
+        for (int i = 0; i < MAX_KEYS; i++) {
+            key = toByteArray(KEY_PREFIX + i);
+            value = ByteBuffer.allocate(8).putLong(start + i).array();
+            EntryMetadata entryMetadata = new EntryMetadata();
+            entryMetadata.setTag(key);
+            entryMetadata.setAlgorithm(algorithm);
+            versionedPut = new Entry(key, value, entryMetadata);
 
-		clean(MAX_KEYS);
+            versionedPutReturn = getClient(clientName).put(versionedPut,
+                    int32(i));
+            assertArrayEquals(key, versionedPutReturn.getKey());
+            assertArrayEquals(int32(i), versionedPutReturn.getEntryMetadata()
+                    .getVersion());
+            assertArrayEquals(value, versionedPutReturn.getValue());
+            assertArrayEquals(key, versionedPutReturn.getEntryMetadata()
+                    .getTag());
+            assertEquals("SHA1", versionedPutReturn.getEntryMetadata()
+                    .getAlgorithm());
+        }
 
-		for (int i = 0; i < MAX_KEYS; i++) {
-			key = toByteArray(KEY_PREFIX + i);
-			value = ByteBuffer.allocate(8).putLong(start + i).array();
-			EntryMetadata entryMetadata = new EntryMetadata();
-			entryMetadata.setTag(key);
-			entryMetadata.setAlgorithm(algorithm);
-			versionedPut = new Entry(key, value, entryMetadata);
+        clean(clientName, MAX_KEYS);
+    }
 
-			versionedPutReturn = client.put(versionedPut, int32(i));
-			assertArrayEquals(key, versionedPutReturn.getKey());
-			assertArrayEquals(int32(i), versionedPutReturn.getEntryMetadata()
-					.getVersion());
-			assertArrayEquals(value, versionedPutReturn.getValue());
-			assertArrayEquals(key, versionedPutReturn.getEntryMetadata()
-					.getTag());
-			assertEquals("SHA1", versionedPutReturn.getEntryMetadata()
-					.getAlgorithm());
-		}
+    /**
+     * Test get API with a serial of entries. The entries have already existed
+     * in simulator/drive. The test result should be successful and verify the
+     * result returned is the same as put before
+     * <p>
+     *
+     * @throws KineticException
+     *             if any internal error occurred.
+     */
+    @Test(dataProvider = "transportProtocolOptions")
+    public void testGet(String clientName) throws KineticException {
+        Entry versionedPut;
+        Entry versionedPutReturn;
+        Entry versionedGet;
+        List<Entry> versionedPutReturnEntry = new ArrayList<Entry>();
+        byte[] key;
+        byte[] value;
+        Long start = System.nanoTime();
 
-		clean(MAX_KEYS);
-	}
+        for (int i = 0; i < MAX_KEYS; i++) {
+            key = toByteArray(KEY_PREFIX + i);
+            value = ByteBuffer.allocate(8).putLong(start + i).array();
+            EntryMetadata entryMetadata = new EntryMetadata();
+            versionedPut = new Entry(key, value, entryMetadata);
 
-	/**
-	 * Test get API with a serial of entries. The entries have already existed
-	 * in simulator/drive. The test result should be successful and verify the
-	 * result returned is the same as put before
-	 * <p>
-	 *
-	 * @throws KineticException
-	 *             if any internal error occurred.
-	 */
-	public void testGet() throws KineticException {
-		Entry versionedPut;
-		Entry versionedPutReturn;
-		Entry versionedGet;
-		List<Entry> versionedPutReturnEntry = new ArrayList<Entry>();
-		byte[] key;
-		byte[] value;
-		Long start = System.nanoTime();
+            versionedPutReturn = getClient(clientName).putForced(versionedPut);
 
-		for (int i = 0; i < MAX_KEYS; i++) {
-			key = toByteArray(KEY_PREFIX + i);
-			value = ByteBuffer.allocate(8).putLong(start + i).array();
-			EntryMetadata entryMetadata = new EntryMetadata();
-			versionedPut = new Entry(key, value, entryMetadata);
+            versionedPutReturnEntry.add(versionedPutReturn);
+        }
 
-			versionedPutReturn = client.putForced(versionedPut);
+        for (int i = 0; i < MAX_KEYS; i++) {
+            key = toByteArray(KEY_PREFIX + i);
 
-			versionedPutReturnEntry.add(versionedPutReturn);
-		}
+            versionedGet = getClient(clientName).get(key);
 
-		for (int i = 0; i < MAX_KEYS; i++) {
-			key = toByteArray(KEY_PREFIX + i);
+            assertEntryEquals(versionedGet, versionedPutReturnEntry.get(i));
 
-			versionedGet = client.get(key);
+            getClient(clientName).deleteForced(key);
+        }
+    }
 
-			assertEntryEquals(versionedGet, versionedPutReturnEntry.get(i));
+    /**
+     * Test delete API with a serial of entries. The entries have already
+     * existed in simulator/drive. The test result should be true. Try to get
+     * key to verify the results is null after delete.
+     * <p>
+     *
+     * @throws KineticException
+     *             if any internal error occurred.
+     */
+    @Test(dataProvider = "transportProtocolOptions")
+    public void testDelete(String clientName) throws KineticException {
+        Long start = System.nanoTime();
 
-			client.deleteForced(key);
-		}
-	}
+        for (int i = 0; i < MAX_KEYS; i++) {
+            byte[] key = toByteArray(KEY_PREFIX + i);
+            byte[] value = ByteBuffer.allocate(8).putLong(start + i).array();
+            EntryMetadata entryMetadata = new EntryMetadata();
+            Entry versionedPut = new Entry(key, value, entryMetadata);
 
-	/**
-	 * Test delete API with a serial of entries. The entries have already
-	 * existed in simulator/drive. The test result should be true. Try to get
-	 * key to verify the results is null after delete.
-	 * <p>
-	 *
-	 * @throws KineticException
-	 *             if any internal error occurred.
-	 */
-	public void testDelete() throws KineticException {
-		Long start = System.nanoTime();
+            Entry versionedGet = getClient(clientName).putForced(versionedPut);
+            assertTrue(getClient(clientName).delete(versionedGet));
+        }
+    }
 
-		for (int i = 0; i < MAX_KEYS; i++) {
-			byte[] key = toByteArray(KEY_PREFIX + i);
-			byte[] value = ByteBuffer.allocate(8).putLong(start + i).array();
-			EntryMetadata entryMetadata = new EntryMetadata();
-			Entry versionedPut = new Entry(key, value, entryMetadata);
+    /**
+     * Test getNext API with a serial of entries. The entries have already
+     * existed in simulator/drive. The test result should be successful.
+     * <p>
+     *
+     * @throws KineticException
+     *             if any internal error occurred.
+     */
+    @Test(dataProvider = "transportProtocolOptions")
+    public void testGetNext(String clientName) throws KineticException {
+        long start = System.nanoTime();
 
-			Entry versionedGet = client.putForced(versionedPut);
-			assertTrue(client.delete(versionedGet));
-		}
-	}
+        Entry vIn;
+        Entry vOut;
+        List<Entry> versionedOutList = new ArrayList<Entry>();
+        List<byte[]> keyList = new ArrayList<byte[]>();
+        for (int i = 0; i < MAX_KEYS + 1; i++) {
+            byte[] key = toByteArray(KEY_PREFIX + i);
+            byte[] data = ByteBuffer.allocate(8).putLong(start + i).array();
+            keyList.add(key);
+            EntryMetadata entryMetadata = new EntryMetadata();
+            vIn = new Entry(key, data, entryMetadata);
 
-	/**
-	 * Test getNext API with a serial of entries. The entries have already
-	 * existed in simulator/drive. The test result should be successful.
-	 * <p>
-	 *
-	 * @throws KineticException
-	 *             if any internal error occurred.
-	 */
-	public void testGetNext() throws KineticException {
-		long start = System.nanoTime();
+            vOut = getClient(clientName).putForced(vIn);
+            versionedOutList.add(vOut);
+        }
 
-		Entry vIn;
-		Entry vOut;
-		List<Entry> versionedOutList = new ArrayList<Entry>();
-		List<byte[]> keyList = new ArrayList<byte[]>();
-		for (int i = 0; i < MAX_KEYS + 1; i++) {
-			byte[] key = toByteArray(KEY_PREFIX + i);
-			byte[] data = ByteBuffer.allocate(8).putLong(start + i).array();
-			keyList.add(key);
-			EntryMetadata entryMetadata = new EntryMetadata();
-			vIn = new Entry(key, data, entryMetadata);
+        for (int i = 0; i < MAX_KEYS; i++) {
+            Entry vNext = getClient(clientName).getNext(keyList.get(i));
 
-			vOut = client.putForced(vIn);
-			versionedOutList.add(vOut);
-		}
+            assertEntryEquals(versionedOutList.get(i + 1), vNext);
+        }
 
-		for (int i = 0; i < MAX_KEYS; i++) {
-			Entry vNext = client.getNext(keyList.get(i));
+        clean(clientName, MAX_KEYS + 1);
+    }
 
-			assertEntryEquals(versionedOutList.get(i + 1), vNext);
-		}
+    /**
+     * Test getPrevious API with a serial of entries. The entries have already
+     * existed in simulator/drive. The test result should be successful.
+     * <p>
+     *
+     * @throws KineticException
+     *             if any internal error occurred.
+     */
+    @Test(dataProvider = "transportProtocolOptions")
+    public void testGetPrevious(String clientName) throws KineticException {
+        long start = System.nanoTime();
 
-		clean(MAX_KEYS + 1);
-	}
+        List<Entry> versionedOutList = new ArrayList<Entry>();
+        List<byte[]> keyList = new ArrayList<byte[]>();
+        for (int i = 0; i < MAX_KEYS + 1; i++) {
+            byte[] key = toByteArray(KEY_PREFIX + i);
+            byte[] data = ByteBuffer.allocate(8).putLong(start + i).array();
+            keyList.add(key);
+            EntryMetadata entryMetadata = new EntryMetadata();
+            Entry vIn = new Entry(key, data, entryMetadata);
+            Entry vOut = getClient(clientName).putForced(vIn);
+            versionedOutList.add(vOut);
+        }
 
-	/**
-	 * Test getPrevious API with a serial of entries. The entries have already
-	 * existed in simulator/drive. The test result should be successful.
-	 * <p>
-	 *
-	 * @throws KineticException
-	 *             if any internal error occurred.
-	 */
-	public void testGetPrevious() throws KineticException {
-		long start = System.nanoTime();
+        for (int i = 1; i < MAX_KEYS + 1; i++) {
+            Entry vPre = getClient(clientName).getPrevious(keyList.get(i));
 
-		List<Entry> versionedOutList = new ArrayList<Entry>();
-		List<byte[]> keyList = new ArrayList<byte[]>();
-		for (int i = 0; i < MAX_KEYS + 1; i++) {
-			byte[] key = toByteArray(KEY_PREFIX + i);
-			byte[] data = ByteBuffer.allocate(8).putLong(start + i).array();
-			keyList.add(key);
-			EntryMetadata entryMetadata = new EntryMetadata();
-			Entry vIn = new Entry(key, data, entryMetadata);
-			Entry vOut = client.putForced(vIn);
-			versionedOutList.add(vOut);
-		}
+            assertEntryEquals(versionedOutList.get(i - 1), vPre);
+        }
 
-		for (int i = 1; i < MAX_KEYS + 1; i++) {
-			Entry vPre = client.getPrevious(keyList.get(i));
+        clean(clientName, MAX_KEYS + 1);
+    }
 
-			assertEntryEquals(versionedOutList.get(i - 1), vPre);
-		}
+    /**
+     * Test getMetadata API with a serial of entries. The entries have already
+     * existed in simulator/drive. The test result should be successful.
+     * <p>
+     *
+     * @throws KineticException
+     *             if any internal error occurred.
+     */
+    @Test(dataProvider = "transportProtocolOptions")
+    public void testGetMetadata(String clientName) throws KineticException {
+        byte[] newVersion = int32(0);
+        long start = System.nanoTime();
+        for (int i = 0; i < MAX_KEYS; i++) {
+            byte[] key = toByteArray(KEY_PREFIX + i);
+            byte[] data = ByteBuffer.allocate(8).putLong(start + i).array();
 
-		clean(MAX_KEYS + 1);
-	}
+            EntryMetadata entryMetadata = new EntryMetadata();
+            entryMetadata.setVersion(newVersion);
+            Entry entry = new Entry(key, data, entryMetadata);
+            getClient(clientName).putForced(entry);
 
-	/**
-	 * Test getMetadata API with a serial of entries. The entries have already
-	 * existed in simulator/drive. The test result should be successful.
-	 * <p>
-	 *
-	 * @throws KineticException
-	 *             if any internal error occurred.
-	 */
-	public void testGetMetadata() throws KineticException {
-		byte[] newVersion = int32(0);
-		long start = System.nanoTime();
-		for (int i = 0; i < MAX_KEYS; i++) {
-			byte[] key = toByteArray(KEY_PREFIX + i);
-			byte[] data = ByteBuffer.allocate(8).putLong(start + i).array();
+            EntryMetadata entryMetadataGet;
+            entryMetadataGet = getClient(clientName).getMetadata(key);
+            assertArrayEquals(newVersion, entryMetadataGet.getVersion());
+            getClient(clientName).deleteForced(key);
+        }
+    }
 
-			EntryMetadata entryMetadata = new EntryMetadata();
-			entryMetadata.setVersion(newVersion);
-			Entry entry = new Entry(key, data, entryMetadata);
-			client.putForced(entry);
+    /**
+     * Test getKeyRange API with a serial of entries. The entries have already
+     * existed in simulator/drive. Both startKey and endKey are inclusive. The
+     * test result should be successful.
+     * <p>
+     *
+     * @throws KineticException
+     *             if any internal error occurred.
+     */
+    @Test(dataProvider = "transportProtocolOptions")
+    public void testGetKeyRange(String clientName) throws KineticException {
+        List<byte[]> keys = Arrays.asList(toByteArray("00"), toByteArray("01"),
+                toByteArray("02"), toByteArray("03"));
 
-			EntryMetadata entryMetadataGet;
-			entryMetadataGet = client.getMetadata(key);
-			assertArrayEquals(newVersion, entryMetadataGet.getVersion());
-			client.deleteForced(key);
-		}
-	}
+        for (byte[] key : keys) {
+            getClient(clientName).putForced(new Entry(key, key));
+        }
 
-	/**
-	 * Test getKeyRange API with a serial of entries. The entries have already
-	 * existed in simulator/drive. Both startKey and endKey are inclusive. The
-	 * test result should be successful.
-	 * <p>
-	 *
-	 * @throws KineticException
-	 *             if any internal error occurred.
-	 */
-	public void testGetKeyRange() throws KineticException {
-		List<byte[]> keys = Arrays.asList(toByteArray("00"), toByteArray("01"),
-				toByteArray("02"), toByteArray("03"));
+        List<byte[]> returnedKeys = Lists.newLinkedList(getClient(clientName)
+                .getKeyRange(keys.get(0), true, keys.get(keys.size() - 1),
+                        true, keys.size()));
 
-		for (byte[] key : keys) {
-			client.putForced(new Entry(key, key));
-		}
+        assertListOfArraysEqual(keys, returnedKeys);
 
-		List<byte[]> returnedKeys = Lists
-				.newLinkedList(client.getKeyRange(keys.get(0), true,
-						keys.get(keys.size() - 1), true, keys.size()));
-
-		assertListOfArraysEqual(keys, returnedKeys);
-
-		for (byte[] key : keys) {
-			client.deleteForced(key);
-		}
-	}
+        for (byte[] key : keys) {
+            getClient(clientName).deleteForced(key);
+        }
+    }
 }
