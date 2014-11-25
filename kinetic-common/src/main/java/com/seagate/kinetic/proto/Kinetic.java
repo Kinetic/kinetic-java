@@ -3474,6 +3474,26 @@ public final class Kinetic {
        * <code>MEDIAOPTIMIZE_RESPONSE = 39;</code>
        */
       MEDIAOPTIMIZE_RESPONSE(32, 39),
+      /**
+       * <code>START_BATCH = 42;</code>
+       *
+       * <pre>
+       * batch operations
+       * </pre>
+       */
+      START_BATCH(33, 42),
+      /**
+       * <code>START_BATCH_RESPONSE = 41;</code>
+       */
+      START_BATCH_RESPONSE(34, 41),
+      /**
+       * <code>END_BATCH = 44;</code>
+       */
+      END_BATCH(35, 44),
+      /**
+       * <code>END_BATCH_RESPONSE = 43;</code>
+       */
+      END_BATCH_RESPONSE(36, 43),
       ;
 
       /**
@@ -3648,6 +3668,26 @@ public final class Kinetic {
        * <code>MEDIAOPTIMIZE_RESPONSE = 39;</code>
        */
       public static final int MEDIAOPTIMIZE_RESPONSE_VALUE = 39;
+      /**
+       * <code>START_BATCH = 42;</code>
+       *
+       * <pre>
+       * batch operations
+       * </pre>
+       */
+      public static final int START_BATCH_VALUE = 42;
+      /**
+       * <code>START_BATCH_RESPONSE = 41;</code>
+       */
+      public static final int START_BATCH_RESPONSE_VALUE = 41;
+      /**
+       * <code>END_BATCH = 44;</code>
+       */
+      public static final int END_BATCH_VALUE = 44;
+      /**
+       * <code>END_BATCH_RESPONSE = 43;</code>
+       */
+      public static final int END_BATCH_RESPONSE_VALUE = 43;
 
 
       public final int getNumber() { return value; }
@@ -3687,6 +3727,10 @@ public final class Kinetic {
           case 37: return MEDIASCAN_RESPONSE;
           case 40: return MEDIAOPTIMIZE;
           case 39: return MEDIAOPTIMIZE_RESPONSE;
+          case 42: return START_BATCH;
+          case 41: return START_BATCH_RESPONSE;
+          case 44: return END_BATCH;
+          case 43: return END_BATCH_RESPONSE;
           default: return null;
         }
       }
@@ -7717,6 +7761,16 @@ public final class Kinetic {
          * </pre>
          */
         CONNECTION_TERMINATED(21, 20),
+        /**
+         * <code>INVALID_BATCH = 21;</code>
+         *
+         * <pre>
+         * During a batch operation, the only operations allowed are put "
+         * and delete. This error is put against the offending command and "
+         * the rest of the commands and the END_BATCH return NOT_ATTEMPTED."
+         * </pre>
+         */
+        INVALID_BATCH(22, 21),
         ;
 
         /**
@@ -7879,6 +7933,16 @@ public final class Kinetic {
          * </pre>
          */
         public static final int CONNECTION_TERMINATED_VALUE = 20;
+        /**
+         * <code>INVALID_BATCH = 21;</code>
+         *
+         * <pre>
+         * During a batch operation, the only operations allowed are put "
+         * and delete. This error is put against the offending command and "
+         * the rest of the commands and the END_BATCH return NOT_ATTEMPTED."
+         * </pre>
+         */
+        public static final int INVALID_BATCH_VALUE = 21;
 
 
         public final int getNumber() { return value; }
@@ -7907,6 +7971,7 @@ public final class Kinetic {
             case 18: return DEVICE_LOCKED;
             case 19: return DEVICE_ALREADY_UNLOCKED;
             case 20: return CONNECTION_TERMINATED;
+            case 21: return INVALID_BATCH;
             default: return null;
           }
         }
@@ -30281,7 +30346,7 @@ public final class Kinetic {
       "identity\030\001 \001(\003\022\014\n\004hmac\030\002 \001(\014\032\026\n\007PINauth\022" +
       "\013\n\003pin\030\001 \001(\014\"\\\n\010AuthType\022\036\n\021INVALID_AUTH",
       "_TYPE\020\377\377\377\377\377\377\377\377\377\001\022\014\n\010HMACAUTH\020\001\022\013\n\007PINAUT" +
-      "H\020\002\022\025\n\021UNSOLICITEDSTATUS\020\003\"\2200\n\007Command\0229" +
+      "H\020\002\022\025\n\021UNSOLICITEDSTATUS\020\003\"\3650\n\007Command\0229" +
       "\n\006header\030\001 \001(\0132).com.seagate.kinetic.pro" +
       "to.Command.Header\0225\n\004body\030\002 \001(\0132\'.com.se" +
       "agate.kinetic.proto.Command.Body\0229\n\006stat" +
@@ -30304,10 +30369,10 @@ public final class Kinetic {
       "mand.GetLog\022=\n\010security\030\007 \001(\0132+.com.seag" +
       "ate.kinetic.proto.Command.Security\022>\n\005pi" +
       "nOp\030\010 \001(\0132/.com.seagate.kinetic.proto.Co" +
-      "mmand.PinOperation\032\336\004\n\006Status\022B\n\004code\030\001 " +
+      "mmand.PinOperation\032\361\004\n\006Status\022B\n\004code\030\001 " +
       "\001(\01624.com.seagate.kinetic.proto.Command." +
       "Status.StatusCode\022\025\n\rstatusMessage\030\002 \001(\t" +
-      "\022\027\n\017detailedMessage\030\003 \001(\014\"\337\003\n\nStatusCode" +
+      "\022\027\n\017detailedMessage\030\003 \001(\014\"\362\003\n\nStatusCode" +
       "\022 \n\023INVALID_STATUS_CODE\020\377\377\377\377\377\377\377\377\377\001\022\021\n\rNO" +
       "T_ATTEMPTED\020\000\022\013\n\007SUCCESS\020\001\022\020\n\014HMAC_FAILU",
       "RE\020\002\022\022\n\016NOT_AUTHORIZED\020\003\022\023\n\017VERSION_FAIL" +
@@ -30319,123 +30384,126 @@ public final class Kinetic {
       "_SUCH_HMAC_ALGORITHM\020\017\022\023\n\017INVALID_REQUES" +
       "T\020\020\022\033\n\027NESTED_OPERATION_ERRORS\020\021\022\021\n\rDEVI" +
       "CE_LOCKED\020\022\022\033\n\027DEVICE_ALREADY_UNLOCKED\020\023" +
-      "\022\031\n\025CONNECTION_TERMINATED\020\024\032\376\001\n\010KeyValue",
-      "\022\022\n\nnewVersion\030\002 \001(\014\022\r\n\005force\030\010 \001(\010\022\013\n\003k" +
-      "ey\030\003 \001(\014\022\021\n\tdbVersion\030\004 \001(\014\022\013\n\003tag\030\005 \001(\014" +
-      "\022?\n\talgorithm\030\006 \001(\0162,.com.seagate.kineti" +
-      "c.proto.Command.Algorithm\022\024\n\014metadataOnl" +
-      "y\030\007 \001(\010\022K\n\017synchronization\030\t \001(\01622.com.s" +
-      "eagate.kinetic.proto.Command.Synchroniza" +
-      "tion\032\221\001\n\005Range\022\020\n\010startKey\030\001 \001(\014\022\016\n\006endK" +
-      "ey\030\002 \001(\014\022\031\n\021startKeyInclusive\030\003 \001(\010\022\027\n\017e" +
-      "ndKeyInclusive\030\004 \001(\010\022\023\n\013maxReturned\030\005 \001(" +
-      "\005\022\017\n\007reverse\030\006 \001(\010\022\014\n\004keys\030\010 \003(\014\032<\n\005Setu",
-      "p\022\031\n\021newClusterVersion\030\001 \001(\003\022\030\n\020firmware" +
-      "Download\030\005 \001(\010\032\300\003\n\014P2POperation\022B\n\004peer\030" +
-      "\001 \001(\01324.com.seagate.kinetic.proto.Comman" +
-      "d.P2POperation.Peer\022L\n\toperation\030\002 \003(\01329" +
-      ".com.seagate.kinetic.proto.Command.P2POp" +
-      "eration.Operation\022#\n\033allChildOperationsS" +
-      "ucceeded\030\003 \001(\010\032\303\001\n\tOperation\022\013\n\003key\030\003 \001(" +
-      "\014\022\017\n\007version\030\004 \001(\014\022\016\n\006newKey\030\005 \001(\014\022\r\n\005fo" +
-      "rce\030\006 \001(\010\0229\n\006status\030\007 \001(\0132).com.seagate." +
-      "kinetic.proto.Command.Status\022>\n\005p2pop\030\010 ",
-      "\001(\0132/.com.seagate.kinetic.proto.Command." +
-      "P2POperation\0323\n\004Peer\022\020\n\010hostname\030\001 \001(\t\022\014" +
-      "\n\004port\030\002 \001(\005\022\013\n\003tls\030\003 \001(\010\032\251\016\n\006GetLog\022=\n\005" +
-      "types\030\001 \003(\0162..com.seagate.kinetic.proto." +
-      "Command.GetLog.Type\022K\n\014utilizations\030\002 \003(" +
-      "\01325.com.seagate.kinetic.proto.Command.Ge" +
-      "tLog.Utilization\022K\n\014temperatures\030\003 \003(\01325" +
-      ".com.seagate.kinetic.proto.Command.GetLo" +
-      "g.Temperature\022D\n\010capacity\030\004 \001(\01322.com.se" +
-      "agate.kinetic.proto.Command.GetLog.Capac",
-      "ity\022N\n\rconfiguration\030\005 \001(\01327.com.seagate" +
-      ".kinetic.proto.Command.GetLog.Configurat" +
-      "ion\022H\n\nstatistics\030\006 \003(\01324.com.seagate.ki" +
-      "netic.proto.Command.GetLog.Statistics\022\020\n" +
-      "\010messages\030\007 \001(\014\022@\n\006limits\030\010 \001(\01320.com.se" +
-      "agate.kinetic.proto.Command.GetLog.Limit" +
-      "s\022@\n\006device\030\t \001(\01320.com.seagate.kinetic." +
-      "proto.Command.GetLog.Device\032*\n\013Utilizati" +
-      "on\022\014\n\004name\030\001 \001(\t\022\r\n\005value\030\002 \001(\002\032^\n\013Tempe" +
-      "rature\022\014\n\004name\030\001 \001(\t\022\017\n\007current\030\002 \001(\002\022\017\n",
-      "\007minimum\030\003 \001(\002\022\017\n\007maximum\030\004 \001(\002\022\016\n\006targe" +
-      "t\030\005 \001(\002\032?\n\010Capacity\022\036\n\026nominalCapacityIn" +
-      "Bytes\030\004 \001(\004\022\023\n\013portionFull\030\005 \001(\002\032\266\003\n\rCon" +
-      "figuration\022\016\n\006vendor\030\005 \001(\t\022\r\n\005model\030\006 \001(" +
-      "\t\022\024\n\014serialNumber\030\007 \001(\014\022\025\n\rworldWideName" +
-      "\030\016 \001(\014\022\017\n\007version\030\010 \001(\t\022\027\n\017compilationDa" +
-      "te\030\014 \001(\t\022\022\n\nsourceHash\030\r \001(\t\022\027\n\017protocol" +
-      "Version\030\017 \001(\t\022\037\n\027protocolCompilationDate" +
-      "\030\020 \001(\t\022\032\n\022protocolSourceHash\030\021 \001(\t\022T\n\tin" +
-      "terface\030\t \003(\0132A.com.seagate.kinetic.prot",
-      "o.Command.GetLog.Configuration.Interface" +
-      "\022\014\n\004port\030\n \001(\005\022\017\n\007tlsPort\030\013 \001(\005\032P\n\tInter" +
-      "face\022\014\n\004name\030\001 \001(\t\022\013\n\003MAC\030\002 \001(\014\022\023\n\013ipv4A" +
-      "ddress\030\003 \001(\014\022\023\n\013ipv6Address\030\004 \001(\014\032o\n\nSta" +
-      "tistics\022C\n\013messageType\030\001 \001(\0162..com.seaga" +
-      "te.kinetic.proto.Command.MessageType\022\r\n\005" +
-      "count\030\004 \001(\004\022\r\n\005bytes\030\005 \001(\004\032\237\002\n\006Limits\022\022\n" +
-      "\nmaxKeySize\030\001 \001(\r\022\024\n\014maxValueSize\030\002 \001(\r\022" +
-      "\026\n\016maxVersionSize\030\003 \001(\r\022\022\n\nmaxTagSize\030\004 " +
-      "\001(\r\022\026\n\016maxConnections\030\005 \001(\r\022\"\n\032maxOutsta",
-      "ndingReadRequests\030\006 \001(\r\022#\n\033maxOutstandin" +
-      "gWriteRequests\030\007 \001(\r\022\026\n\016maxMessageSize\030\010" +
-      " \001(\r\022\030\n\020maxKeyRangeCount\030\t \001(\r\022\030\n\020maxIde" +
-      "ntityCount\030\n \001(\r\022\022\n\nmaxPinSize\030\013 \001(\r\032\026\n\006" +
-      "Device\022\014\n\004name\030\001 \001(\014\"\236\001\n\004Type\022\031\n\014INVALID" +
-      "_TYPE\020\377\377\377\377\377\377\377\377\377\001\022\020\n\014UTILIZATIONS\020\000\022\020\n\014TE" +
-      "MPERATURES\020\001\022\016\n\nCAPACITIES\020\002\022\021\n\rCONFIGUR" +
-      "ATION\020\003\022\016\n\nSTATISTICS\020\004\022\014\n\010MESSAGES\020\005\022\n\n" +
-      "\006LIMITS\020\006\022\n\n\006DEVICE\020\007\032\375\005\n\010Security\022<\n\003ac" +
-      "l\030\002 \003(\0132/.com.seagate.kinetic.proto.Comm",
-      "and.Security.ACL\022\022\n\noldLockPIN\030\003 \001(\014\022\022\n\n" +
-      "newLockPIN\030\004 \001(\014\022\023\n\013oldErasePIN\030\005 \001(\014\022\023\n" +
-      "\013newErasePIN\030\006 \001(\014\032\340\004\n\003ACL\022\020\n\010identity\030\001" +
-      " \001(\003\022\013\n\003key\030\002 \001(\014\022T\n\rhmacAlgorithm\030\003 \001(\016" +
-      "2=.com.seagate.kinetic.proto.Command.Sec" +
-      "urity.ACL.HMACAlgorithm\022D\n\005scope\030\004 \003(\01325" +
-      ".com.seagate.kinetic.proto.Command.Secur" +
-      "ity.ACL.Scope\022@\n\013maxPriority\030\005 \001(\0162+.com" +
-      ".seagate.kinetic.proto.Command.Priority\032" +
-      "\213\001\n\005Scope\022\016\n\006offset\030\001 \001(\003\022\r\n\005value\030\002 \001(\014",
-      "\022N\n\npermission\030\003 \003(\0162:.com.seagate.kinet" +
-      "ic.proto.Command.Security.ACL.Permission" +
-      "\022\023\n\013TlsRequired\030\004 \001(\010\"B\n\rHMACAlgorithm\022#" +
-      "\n\026INVALID_HMAC_ALGORITHM\020\377\377\377\377\377\377\377\377\377\001\022\014\n\010H" +
-      "macSHA1\020\001\"\211\001\n\nPermission\022\037\n\022INVALID_PERM" +
-      "ISSION\020\377\377\377\377\377\377\377\377\377\001\022\010\n\004READ\020\000\022\t\n\005WRITE\020\001\022\n" +
-      "\n\006DELETE\020\002\022\t\n\005RANGE\020\003\022\t\n\005SETUP\020\004\022\t\n\005P2PO" +
-      "P\020\005\022\n\n\006GETLOG\020\007\022\014\n\010SECURITY\020\010\032\320\001\n\014PinOpe" +
-      "ration\022L\n\tpinOpType\030\001 \001(\01629.com.seagate." +
-      "kinetic.proto.Command.PinOperation.PinOp",
-      "Type\"r\n\tPinOpType\022\032\n\rINVALID_PINOP\020\377\377\377\377\377" +
-      "\377\377\377\377\001\022\020\n\014UNLOCK_PINOP\020\001\022\016\n\nLOCK_PINOP\020\002\022" +
-      "\017\n\013ERASE_PINOP\020\003\022\026\n\022SECURE_ERASE_PINOP\020\004" +
-      "\"c\n\017Synchronization\022$\n\027INVALID_SYNCHRONI" +
-      "ZATION\020\377\377\377\377\377\377\377\377\377\001\022\020\n\014WRITETHROUGH\020\001\022\r\n\tW" +
-      "RITEBACK\020\002\022\t\n\005FLUSH\020\003\"F\n\010Priority\022\n\n\006NOR" +
-      "MAL\020\005\022\n\n\006LOWEST\020\001\022\t\n\005LOWER\020\003\022\n\n\006HIGHER\020\007" +
-      "\022\013\n\007HIGHEST\020\t\"_\n\tAlgorithm\022\036\n\021INVALID_AL" +
-      "GORITHM\020\377\377\377\377\377\377\377\377\377\001\022\010\n\004SHA1\020\001\022\010\n\004SHA2\020\002\022\010" +
-      "\n\004SHA3\020\003\022\t\n\005CRC32\020\004\022\t\n\005CRC64\020\005\"\374\004\n\013Messa",
-      "geType\022!\n\024INVALID_MESSAGE_TYPE\020\377\377\377\377\377\377\377\377\377" +
-      "\001\022\007\n\003GET\020\002\022\020\n\014GET_RESPONSE\020\001\022\007\n\003PUT\020\004\022\020\n" +
-      "\014PUT_RESPONSE\020\003\022\n\n\006DELETE\020\006\022\023\n\017DELETE_RE" +
-      "SPONSE\020\005\022\013\n\007GETNEXT\020\010\022\024\n\020GETNEXT_RESPONS" +
-      "E\020\007\022\017\n\013GETPREVIOUS\020\n\022\030\n\024GETPREVIOUS_RESP" +
-      "ONSE\020\t\022\017\n\013GETKEYRANGE\020\014\022\030\n\024GETKEYRANGE_R" +
-      "ESPONSE\020\013\022\016\n\nGETVERSION\020\020\022\027\n\023GETVERSION_" +
-      "RESPONSE\020\017\022\t\n\005SETUP\020\026\022\022\n\016SETUP_RESPONSE\020" +
-      "\025\022\n\n\006GETLOG\020\030\022\023\n\017GETLOG_RESPONSE\020\027\022\014\n\010SE" +
-      "CURITY\020\032\022\025\n\021SECURITY_RESPONSE\020\031\022\021\n\rPEER2",
-      "PEERPUSH\020\034\022\032\n\026PEER2PEERPUSH_RESPONSE\020\033\022\010" +
-      "\n\004NOOP\020\036\022\021\n\rNOOP_RESPONSE\020\035\022\020\n\014FLUSHALLD" +
-      "ATA\020 \022\031\n\025FLUSHALLDATA_RESPONSE\020\037\022\t\n\005PINO" +
-      "P\020$\022\022\n\016PINOP_RESPONSE\020#\022\r\n\tMEDIASCAN\020&\022\026" +
-      "\n\022MEDIASCAN_RESPONSE\020%\022\021\n\rMEDIAOPTIMIZE\020" +
-      "(\022\032\n\026MEDIAOPTIMIZE_RESPONSE\020\'B\tB\007Kinetic"
+      "\022\031\n\025CONNECTION_TERMINATED\020\024\022\021\n\rINVALID_B",
+      "ATCH\020\025\032\376\001\n\010KeyValue\022\022\n\nnewVersion\030\002 \001(\014\022" +
+      "\r\n\005force\030\010 \001(\010\022\013\n\003key\030\003 \001(\014\022\021\n\tdbVersion" +
+      "\030\004 \001(\014\022\013\n\003tag\030\005 \001(\014\022?\n\talgorithm\030\006 \001(\0162," +
+      ".com.seagate.kinetic.proto.Command.Algor" +
+      "ithm\022\024\n\014metadataOnly\030\007 \001(\010\022K\n\017synchroniz" +
+      "ation\030\t \001(\01622.com.seagate.kinetic.proto." +
+      "Command.Synchronization\032\221\001\n\005Range\022\020\n\010sta" +
+      "rtKey\030\001 \001(\014\022\016\n\006endKey\030\002 \001(\014\022\031\n\021startKeyI" +
+      "nclusive\030\003 \001(\010\022\027\n\017endKeyInclusive\030\004 \001(\010\022" +
+      "\023\n\013maxReturned\030\005 \001(\005\022\017\n\007reverse\030\006 \001(\010\022\014\n",
+      "\004keys\030\010 \003(\014\032<\n\005Setup\022\031\n\021newClusterVersio" +
+      "n\030\001 \001(\003\022\030\n\020firmwareDownload\030\005 \001(\010\032\300\003\n\014P2" +
+      "POperation\022B\n\004peer\030\001 \001(\01324.com.seagate.k" +
+      "inetic.proto.Command.P2POperation.Peer\022L" +
+      "\n\toperation\030\002 \003(\01329.com.seagate.kinetic." +
+      "proto.Command.P2POperation.Operation\022#\n\033" +
+      "allChildOperationsSucceeded\030\003 \001(\010\032\303\001\n\tOp" +
+      "eration\022\013\n\003key\030\003 \001(\014\022\017\n\007version\030\004 \001(\014\022\016\n" +
+      "\006newKey\030\005 \001(\014\022\r\n\005force\030\006 \001(\010\0229\n\006status\030\007" +
+      " \001(\0132).com.seagate.kinetic.proto.Command",
+      ".Status\022>\n\005p2pop\030\010 \001(\0132/.com.seagate.kin" +
+      "etic.proto.Command.P2POperation\0323\n\004Peer\022" +
+      "\020\n\010hostname\030\001 \001(\t\022\014\n\004port\030\002 \001(\005\022\013\n\003tls\030\003" +
+      " \001(\010\032\251\016\n\006GetLog\022=\n\005types\030\001 \003(\0162..com.sea" +
+      "gate.kinetic.proto.Command.GetLog.Type\022K" +
+      "\n\014utilizations\030\002 \003(\01325.com.seagate.kinet" +
+      "ic.proto.Command.GetLog.Utilization\022K\n\014t" +
+      "emperatures\030\003 \003(\01325.com.seagate.kinetic." +
+      "proto.Command.GetLog.Temperature\022D\n\010capa" +
+      "city\030\004 \001(\01322.com.seagate.kinetic.proto.C",
+      "ommand.GetLog.Capacity\022N\n\rconfiguration\030" +
+      "\005 \001(\01327.com.seagate.kinetic.proto.Comman" +
+      "d.GetLog.Configuration\022H\n\nstatistics\030\006 \003" +
+      "(\01324.com.seagate.kinetic.proto.Command.G" +
+      "etLog.Statistics\022\020\n\010messages\030\007 \001(\014\022@\n\006li" +
+      "mits\030\010 \001(\01320.com.seagate.kinetic.proto.C" +
+      "ommand.GetLog.Limits\022@\n\006device\030\t \001(\01320.c" +
+      "om.seagate.kinetic.proto.Command.GetLog." +
+      "Device\032*\n\013Utilization\022\014\n\004name\030\001 \001(\t\022\r\n\005v" +
+      "alue\030\002 \001(\002\032^\n\013Temperature\022\014\n\004name\030\001 \001(\t\022",
+      "\017\n\007current\030\002 \001(\002\022\017\n\007minimum\030\003 \001(\002\022\017\n\007max" +
+      "imum\030\004 \001(\002\022\016\n\006target\030\005 \001(\002\032?\n\010Capacity\022\036" +
+      "\n\026nominalCapacityInBytes\030\004 \001(\004\022\023\n\013portio" +
+      "nFull\030\005 \001(\002\032\266\003\n\rConfiguration\022\016\n\006vendor\030" +
+      "\005 \001(\t\022\r\n\005model\030\006 \001(\t\022\024\n\014serialNumber\030\007 \001" +
+      "(\014\022\025\n\rworldWideName\030\016 \001(\014\022\017\n\007version\030\010 \001" +
+      "(\t\022\027\n\017compilationDate\030\014 \001(\t\022\022\n\nsourceHas" +
+      "h\030\r \001(\t\022\027\n\017protocolVersion\030\017 \001(\t\022\037\n\027prot" +
+      "ocolCompilationDate\030\020 \001(\t\022\032\n\022protocolSou" +
+      "rceHash\030\021 \001(\t\022T\n\tinterface\030\t \003(\0132A.com.s",
+      "eagate.kinetic.proto.Command.GetLog.Conf" +
+      "iguration.Interface\022\014\n\004port\030\n \001(\005\022\017\n\007tls" +
+      "Port\030\013 \001(\005\032P\n\tInterface\022\014\n\004name\030\001 \001(\t\022\013\n" +
+      "\003MAC\030\002 \001(\014\022\023\n\013ipv4Address\030\003 \001(\014\022\023\n\013ipv6A" +
+      "ddress\030\004 \001(\014\032o\n\nStatistics\022C\n\013messageTyp" +
+      "e\030\001 \001(\0162..com.seagate.kinetic.proto.Comm" +
+      "and.MessageType\022\r\n\005count\030\004 \001(\004\022\r\n\005bytes\030" +
+      "\005 \001(\004\032\237\002\n\006Limits\022\022\n\nmaxKeySize\030\001 \001(\r\022\024\n\014" +
+      "maxValueSize\030\002 \001(\r\022\026\n\016maxVersionSize\030\003 \001" +
+      "(\r\022\022\n\nmaxTagSize\030\004 \001(\r\022\026\n\016maxConnections",
+      "\030\005 \001(\r\022\"\n\032maxOutstandingReadRequests\030\006 \001" +
+      "(\r\022#\n\033maxOutstandingWriteRequests\030\007 \001(\r\022" +
+      "\026\n\016maxMessageSize\030\010 \001(\r\022\030\n\020maxKeyRangeCo" +
+      "unt\030\t \001(\r\022\030\n\020maxIdentityCount\030\n \001(\r\022\022\n\nm" +
+      "axPinSize\030\013 \001(\r\032\026\n\006Device\022\014\n\004name\030\001 \001(\014\"" +
+      "\236\001\n\004Type\022\031\n\014INVALID_TYPE\020\377\377\377\377\377\377\377\377\377\001\022\020\n\014U" +
+      "TILIZATIONS\020\000\022\020\n\014TEMPERATURES\020\001\022\016\n\nCAPAC" +
+      "ITIES\020\002\022\021\n\rCONFIGURATION\020\003\022\016\n\nSTATISTICS" +
+      "\020\004\022\014\n\010MESSAGES\020\005\022\n\n\006LIMITS\020\006\022\n\n\006DEVICE\020\007" +
+      "\032\375\005\n\010Security\022<\n\003acl\030\002 \003(\0132/.com.seagate",
+      ".kinetic.proto.Command.Security.ACL\022\022\n\no" +
+      "ldLockPIN\030\003 \001(\014\022\022\n\nnewLockPIN\030\004 \001(\014\022\023\n\013o" +
+      "ldErasePIN\030\005 \001(\014\022\023\n\013newErasePIN\030\006 \001(\014\032\340\004" +
+      "\n\003ACL\022\020\n\010identity\030\001 \001(\003\022\013\n\003key\030\002 \001(\014\022T\n\r" +
+      "hmacAlgorithm\030\003 \001(\0162=.com.seagate.kineti" +
+      "c.proto.Command.Security.ACL.HMACAlgorit" +
+      "hm\022D\n\005scope\030\004 \003(\01325.com.seagate.kinetic." +
+      "proto.Command.Security.ACL.Scope\022@\n\013maxP" +
+      "riority\030\005 \001(\0162+.com.seagate.kinetic.prot" +
+      "o.Command.Priority\032\213\001\n\005Scope\022\016\n\006offset\030\001",
+      " \001(\003\022\r\n\005value\030\002 \001(\014\022N\n\npermission\030\003 \003(\0162" +
+      ":.com.seagate.kinetic.proto.Command.Secu" +
+      "rity.ACL.Permission\022\023\n\013TlsRequired\030\004 \001(\010" +
+      "\"B\n\rHMACAlgorithm\022#\n\026INVALID_HMAC_ALGORI" +
+      "THM\020\377\377\377\377\377\377\377\377\377\001\022\014\n\010HmacSHA1\020\001\"\211\001\n\nPermiss" +
+      "ion\022\037\n\022INVALID_PERMISSION\020\377\377\377\377\377\377\377\377\377\001\022\010\n\004" +
+      "READ\020\000\022\t\n\005WRITE\020\001\022\n\n\006DELETE\020\002\022\t\n\005RANGE\020\003" +
+      "\022\t\n\005SETUP\020\004\022\t\n\005P2POP\020\005\022\n\n\006GETLOG\020\007\022\014\n\010SE" +
+      "CURITY\020\010\032\320\001\n\014PinOperation\022L\n\tpinOpType\030\001" +
+      " \001(\01629.com.seagate.kinetic.proto.Command",
+      ".PinOperation.PinOpType\"r\n\tPinOpType\022\032\n\r" +
+      "INVALID_PINOP\020\377\377\377\377\377\377\377\377\377\001\022\020\n\014UNLOCK_PINOP" +
+      "\020\001\022\016\n\nLOCK_PINOP\020\002\022\017\n\013ERASE_PINOP\020\003\022\026\n\022S" +
+      "ECURE_ERASE_PINOP\020\004\"c\n\017Synchronization\022$" +
+      "\n\027INVALID_SYNCHRONIZATION\020\377\377\377\377\377\377\377\377\377\001\022\020\n\014" +
+      "WRITETHROUGH\020\001\022\r\n\tWRITEBACK\020\002\022\t\n\005FLUSH\020\003" +
+      "\"F\n\010Priority\022\n\n\006NORMAL\020\005\022\n\n\006LOWEST\020\001\022\t\n\005" +
+      "LOWER\020\003\022\n\n\006HIGHER\020\007\022\013\n\007HIGHEST\020\t\"_\n\tAlgo" +
+      "rithm\022\036\n\021INVALID_ALGORITHM\020\377\377\377\377\377\377\377\377\377\001\022\010\n" +
+      "\004SHA1\020\001\022\010\n\004SHA2\020\002\022\010\n\004SHA3\020\003\022\t\n\005CRC32\020\004\022\t",
+      "\n\005CRC64\020\005\"\316\005\n\013MessageType\022!\n\024INVALID_MES" +
+      "SAGE_TYPE\020\377\377\377\377\377\377\377\377\377\001\022\007\n\003GET\020\002\022\020\n\014GET_RES" +
+      "PONSE\020\001\022\007\n\003PUT\020\004\022\020\n\014PUT_RESPONSE\020\003\022\n\n\006DE" +
+      "LETE\020\006\022\023\n\017DELETE_RESPONSE\020\005\022\013\n\007GETNEXT\020\010" +
+      "\022\024\n\020GETNEXT_RESPONSE\020\007\022\017\n\013GETPREVIOUS\020\n\022" +
+      "\030\n\024GETPREVIOUS_RESPONSE\020\t\022\017\n\013GETKEYRANGE" +
+      "\020\014\022\030\n\024GETKEYRANGE_RESPONSE\020\013\022\016\n\nGETVERSI" +
+      "ON\020\020\022\027\n\023GETVERSION_RESPONSE\020\017\022\t\n\005SETUP\020\026" +
+      "\022\022\n\016SETUP_RESPONSE\020\025\022\n\n\006GETLOG\020\030\022\023\n\017GETL" +
+      "OG_RESPONSE\020\027\022\014\n\010SECURITY\020\032\022\025\n\021SECURITY_",
+      "RESPONSE\020\031\022\021\n\rPEER2PEERPUSH\020\034\022\032\n\026PEER2PE" +
+      "ERPUSH_RESPONSE\020\033\022\010\n\004NOOP\020\036\022\021\n\rNOOP_RESP" +
+      "ONSE\020\035\022\020\n\014FLUSHALLDATA\020 \022\031\n\025FLUSHALLDATA" +
+      "_RESPONSE\020\037\022\t\n\005PINOP\020$\022\022\n\016PINOP_RESPONSE" +
+      "\020#\022\r\n\tMEDIASCAN\020&\022\026\n\022MEDIASCAN_RESPONSE\020" +
+      "%\022\021\n\rMEDIAOPTIMIZE\020(\022\032\n\026MEDIAOPTIMIZE_RE" +
+      "SPONSE\020\'\022\017\n\013START_BATCH\020*\022\030\n\024START_BATCH" +
+      "_RESPONSE\020)\022\r\n\tEND_BATCH\020,\022\026\n\022END_BATCH_" +
+      "RESPONSE\020+B\tB\007Kinetic"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {

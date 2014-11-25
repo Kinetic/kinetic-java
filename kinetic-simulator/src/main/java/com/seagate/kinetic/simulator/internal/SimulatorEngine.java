@@ -141,6 +141,9 @@ public class SimulatorEngine implements MessageService {
 
     private P2POperationHandler p2pHandler = null;
 
+    // batch op handler
+    private BatchOpHandler batchOp = null;
+
     private NioEventLoopGroupManager nioManager = null;
 
     private Heartbeat heartbeat = null;
@@ -450,13 +453,23 @@ public class SimulatorEngine implements MessageService {
 
         MessageType mtype = kmreq.getCommand().getHeader().getMessageType();
 
+        // response message type
+        commandBuilder.getHeaderBuilder().setMessageType(
+                MessageType.valueOf(mtype.getNumber() - 1));
+
         try {
 
             HeaderOp.checkHeader(kmreq, kmresp, key, clusterVersion);
 
             checkDeviceLocked(kmreq, kmresp);
 
-            if (kmreq.getMessage().getAuthType() == AuthType.PINAUTH) {
+            if (mtype == MessageType.START_BATCH) {
+                // init batch operation
+                this.initBatchOperation(kmreq, kmresp);
+            } else if (this.batchOp != null) {
+                // handle batch
+                this.batchOp.handleRequest(kmreq, kmresp);
+            } else if (kmreq.getMessage().getAuthType() == AuthType.PINAUTH) {
                 // perform pin op
                 PinOperationHandler.handleOperation(kmreq, kmresp, this);
             } else if (mtype == MessageType.FLUSHALLDATA) {
@@ -523,7 +536,16 @@ public class SimulatorEngine implements MessageService {
 
             commandBuilder.getStatusBuilder().setStatusMessage(
                     "Device is locked");
-
+        } catch (NotAttemptedException nae) {
+            // handle not attempted exception
+            commandBuilder.getStatusBuilder().setCode(StatusCode.NOT_ATTEMPTED);
+            commandBuilder.getStatusBuilder()
+                    .setStatusMessage(nae.getMessage());
+        } catch (InvalidBatchException boe) {
+            // handle invalid batch exception
+            commandBuilder.getStatusBuilder().setCode(StatusCode.INVALID_BATCH);
+            commandBuilder.getStatusBuilder()
+                    .setStatusMessage(boe.getMessage());
         } catch (Exception e) {
 
             logger.log(Level.WARNING, e.getMessage(), e);
@@ -538,6 +560,11 @@ public class SimulatorEngine implements MessageService {
         } finally {
 
             try {
+                
+                if (this.batchOp != null && batchOp.isClosed()) {
+                    this.releaseBatchOperation();
+                }
+                
                 // get command byte stirng
                 ByteString commandByteString = commandBuilder.build()
                         .toByteString();
@@ -997,6 +1024,24 @@ public class SimulatorEngine implements MessageService {
      */
     public boolean getDeviceLocked() {
         return this.deviceLocked;
+    }
+
+    private synchronized void initBatchOperation(KineticMessage kmreq,
+            KineticMessage kmresp) throws InvalidBatchException {
+
+        if (this.batchOp != null) {
+            throw new InvalidBatchException("batch op already started");
+        }
+
+        // start a new batch, db is locked by this user
+        this.batchOp = new BatchOpHandler(kmreq, kmresp, this);
+
+        logger.info("batch op handler initialized ...");
+    }
+
+    private synchronized void releaseBatchOperation() {
+        this.batchOp = null;
+        logger.info("batch op handler released ...");
     }
 
 }

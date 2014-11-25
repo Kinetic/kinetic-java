@@ -45,6 +45,7 @@ import com.seagate.kinetic.simulator.internal.KVStoreException;
 import com.seagate.kinetic.simulator.internal.KVStoreNotFound;
 import com.seagate.kinetic.simulator.internal.KVStoreVersionMismatch;
 import com.seagate.kinetic.simulator.internal.SimulatorEngine;
+import com.seagate.kinetic.simulator.persist.BatchOperation;
 import com.seagate.kinetic.simulator.persist.KVKey;
 import com.seagate.kinetic.simulator.persist.KVValue;
 import com.seagate.kinetic.simulator.persist.PersistOption;
@@ -689,6 +690,12 @@ public class LevelDbStore implements Store<ByteString, ByteString, KVValue> {
         }
 
         return wOptions;
+    }
+
+    @Override
+    public BatchOperation<ByteString, KVValue> createBatchOperation()
+            throws KVStoreException {
+        return new LdbBatchOperation(db);
     }
 
 }

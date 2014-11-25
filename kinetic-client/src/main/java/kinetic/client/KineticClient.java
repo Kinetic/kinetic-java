@@ -499,6 +499,13 @@ public interface KineticClient extends GenericKineticClient {
             CallbackHandler<EntryMetadata> handler) throws KineticException;
 
     /**
+     * Create a new instance of <code>BatchOperation</code> object.
+     * 
+     * @return a new instance of <code>BatchOperation</code> object.
+     */
+    public BatchOperation createBatchOperation() throws KineticException;;
+
+    /**
      * Close the connection and release all resources allocated by this
      * instance.
      * 

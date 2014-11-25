@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
+import kinetic.client.BatchOperation;
 import kinetic.client.CallbackHandler;
 import kinetic.client.ClientConfiguration;
 import kinetic.client.Entry;
@@ -36,7 +37,6 @@ import com.seagate.kinetic.client.internal.ClientProxy.LCException;
 import com.seagate.kinetic.client.lib.ClientLogger;
 import com.seagate.kinetic.common.lib.KineticMessage;
 import com.seagate.kinetic.proto.Kinetic.Command;
-
 import com.seagate.kinetic.proto.Kinetic.Command.MessageType;
 import com.seagate.kinetic.proto.Kinetic.Command.Synchronization;
 
@@ -936,6 +936,57 @@ public class DefaultKineticClient implements AdvancedKineticClient {
                 true);
 
         this.client.requestAsync(message, handler);
+    }
+
+    /**
+     * start a new batch operation.
+     * 
+     * @throws KineticException
+     *             if any error occurred.
+     */
+    void startBatchOperation() throws KineticException {
+
+        KineticMessage request = null;
+        KineticMessage response = null;
+
+        // create get request message
+        request = MessageFactory.createStartBatchRequestMessage();
+
+        // send request
+        response = this.client.request(request);
+
+        // check response
+        MessageFactory.checkReply(request, response);
+    }
+
+    /**
+     * commit the batch operation.
+     * 
+     * @throws KineticException
+     *             if any error occurred.
+     */
+    void endBatchOperation() throws KineticException {
+
+        KineticMessage request = null;
+        KineticMessage response = null;
+
+        // create get request message
+        request = MessageFactory.createEndBatchRequestMessage();
+
+        // send request
+        response = this.client.request(request);
+
+        // check response
+        MessageFactory.checkReply(request, response);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public BatchOperation createBatchOperation() throws KineticException {
+        // create and return a new instance of BatchOperation implementation
+        return new DefaultBatchOperation(this);
     }
 
 }

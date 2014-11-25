@@ -27,6 +27,7 @@ import kinetic.simulator.SimulatorConfiguration;
 
 import com.google.protobuf.ByteString;
 import com.seagate.kinetic.simulator.internal.KVStoreException;
+import com.seagate.kinetic.simulator.persist.BatchOperation;
 import com.seagate.kinetic.simulator.persist.KVValue;
 import com.seagate.kinetic.simulator.persist.PersistOption;
 import com.seagate.kinetic.simulator.persist.Store;
@@ -141,6 +142,13 @@ public class BdbStore implements Store<ByteString, ByteString, KVValue> {
         }
 
         return erased;
+    }
+
+    @Override
+    public BatchOperation<ByteString, KVValue> createBatchOperation()
+            throws KVStoreException {
+        // TODO Auto-generated method stub
+        throw new java.lang.UnsupportedOperationException();
     }
 
 }

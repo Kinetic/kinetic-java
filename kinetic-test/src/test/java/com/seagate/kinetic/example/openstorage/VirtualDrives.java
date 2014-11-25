@@ -42,8 +42,12 @@ public class VirtualDrives {
     // base ssl port
     private int sslPort = 18123;
     
-    public VirtualDrives (int maxSimulator) {
+    public VirtualDrives(int maxSimulator, int portBase, int sslportBase) {
         this.maxSimulator = maxSimulator;
+
+        this.port = portBase;
+
+        this.sslPort = sslportBase;
     }
     
     public void run() {
@@ -71,7 +75,7 @@ public class VirtualDrives {
             // start the simulator instance
             simulators[i] = new KineticSimulator(config);
 
-            System.out.println("\nstarted simulator. port="
+            System.out.println("\n " + i + ": started simulator. port="
                     + config.getPort() + ", ssl port=" + config.getSslPort()
                     + "\n");
         }
@@ -82,9 +86,24 @@ public class VirtualDrives {
 	    
 	    //use bdb store 
 	    //System.setProperty("kinetic.db.class", "com.seagate.kinetic.simulator.persist.bdb.BdbStore");
+        int maxSimulator = 10;
+        if (args.length >= 1) {
+            maxSimulator = Integer.parseInt(args[0]);
+        }
+
+        int portBase = 8123;
+        if (args.length >= 2) {
+            portBase = Integer.parseInt(args[1]);
+        }
+
+        int sslportBase = 18123;
+        if (args.length >= 3) {
+            sslportBase = Integer.parseInt(args[2]);
+        }
 	    
 		// max number of simulators to instantiate.
-		VirtualDrives vdrives = new VirtualDrives(MAX_SIMULATOR);
+        VirtualDrives vdrives = new VirtualDrives(maxSimulator, portBase,
+                sslportBase);
 		//start the simulator
 		vdrives.run();
 	}

@@ -232,4 +232,11 @@ public interface Store<K, O, V> {
      * Erase the store and recreate it
      */
     void reset() throws KVStoreException;
+
+    /**
+     * Create a new instance of batch operation object.
+     * 
+     * @return a new instance of batch operation object.
+     */
+    public BatchOperation<K, V> createBatchOperation() throws KVStoreException;
 }
