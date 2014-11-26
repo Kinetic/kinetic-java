@@ -57,34 +57,29 @@ public class BatchOperationExample implements CallbackHandler<Entry> {
         // create client instance
         client = KineticClientFactory.createInstance(clientConfig);
 
-        logger.info("*** starting batch op ...");
+        // put entry bar
+        Entry bar = new Entry();
+        bar.setKey("bar".getBytes("UTF8"));
+        bar.setValue("bar".getBytes("UTF8"));
+        client.putForced(bar);
 
-        byte[] key = "hello".getBytes("UTF8");
+        logger.info("*** starting batch op ...");
 
         // start batch a new batch operation
         BatchOperation batch = client.createBatchOperation();
 
         // put entry 1
-        Entry entry = new Entry();
-        entry.setKey(key);
-        entry.setValue("world".getBytes("UTF8"));
+        Entry foo = new Entry();
+        foo.setKey("foo".getBytes("UTF8"));
+        foo.setValue("foo".getBytes("UTF8"));
 
         // client.putAsync(entry, null, this);
-        batch.putForcedAsync(entry, this);
-
-        // put entry 2
-        Entry entry2 = new Entry();
-        byte[] key2 = "hello2".getBytes("UTF8");
-        entry2.setKey(key2);
-        entry2.setValue("world2".getBytes("UTF8"));
-
-        // client.putAsync(entry2, null, this);
-        batch.putForcedAsync(entry2, this);
+        batch.putForcedAsync(foo, this);
 
         // delet entry 1
         DeleteCbHandler dhandler = new DeleteCbHandler();
         // client.deleteAsync(entry, dhandler);
-        batch.deleteAsync(entry, dhandler);
+        batch.deleteAsync(bar, dhandler);
 
         // end/commit batch operation
         batch.commit();
@@ -93,25 +88,30 @@ public class BatchOperationExample implements CallbackHandler<Entry> {
 
         // start verifying result
 
-        // get entry2, expect to find it
-        Entry entry3 = client.get(key2);
+        // get foo, expect to find it
+        Entry foo1 = client.get(foo.getKey());
 
-        byte[] key3 = entry3.getKey();
+        // cannot be null
+        if (foo1 == null) {
+            throw new RuntimeException("Expect to find foo but not found");
+        }
+
+        byte[] key3 = foo1.getKey();
         String k = new String(key3, "UTF8");
 
-        byte[] value3 = entry3.getValue();
+        byte[] value3 = foo1.getValue();
         String v = new String(value3, "UTF8");
 
-        logger.info("expect entry2 existed, key =" + k + ", value = "
+        logger.info("expect foo existed, key =" + k + ", value = "
                 + v);
 
         // get entry, expect to be not found
-        Entry entry4 = client.get(key);
-        if (entry4 != null) {
+        Entry bar1 = client.get(bar.getKey());
+        if (bar1 != null) {
             throw new RuntimeException("error: found deleted entry ...");
         }
 
-        logger.info("Expect entry hello to be null, entry=" + entry4);
+        logger.info("Expect entry bar to be null, entry=" + bar1);
 
         // close kinetic client
         client.close();

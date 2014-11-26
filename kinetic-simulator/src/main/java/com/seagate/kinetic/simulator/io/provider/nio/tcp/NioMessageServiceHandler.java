@@ -26,9 +26,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.seagate.kinetic.common.lib.KineticMessage;
+import com.seagate.kinetic.proto.Kinetic.Command.MessageType;
 import com.seagate.kinetic.simulator.internal.ConnectionInfo;
 import com.seagate.kinetic.simulator.internal.FaultInjectedCloseConnectionException;
 import com.seagate.kinetic.simulator.internal.SimulatorEngine;
+import com.seagate.kinetic.simulator.io.provider.nio.BatchQueue;
 import com.seagate.kinetic.simulator.io.provider.nio.NioConnectionStateManager;
 import com.seagate.kinetic.simulator.io.provider.nio.NioQueuedRequestProcessRunner;
 import com.seagate.kinetic.simulator.io.provider.nio.RequestProcessRunner;
@@ -49,6 +51,8 @@ public class NioMessageServiceHandler extends
 	private boolean enforceOrdering = false;
 
 	private NioQueuedRequestProcessRunner queuedRequestProcessRunner = null;
+
+    private BatchQueue batchQueue = null;
 
 	private static boolean faultInjectCloseConnection = Boolean
 			.getBoolean(FaultInjectedCloseConnectionException.FAULT_INJECT_CLOSE_CONNECTION);
@@ -92,15 +96,38 @@ public class NioMessageServiceHandler extends
 		// check if conn id is set
 		NioConnectionStateManager.checkIfConnectionIdSet(ctx, request);
 
-		if (enforceOrdering) {
-			// process request sequentially
-		    queuedRequestProcessRunner.processRequest(ctx, request);
-		} else {
-			// each request is independently processed
-			RequestProcessRunner rpr = null;
-			rpr = new RequestProcessRunner(lcservice, ctx,request);
-			this.lcservice.execute(rpr);
-		}
+        // add to queue if batchQueue has started
+        if (this.shouldAddToBatch(request)) {
+
+            this.addToBatchQueue(request);
+
+            // the commands are queued until END_BATCH is received
+            return;
+        }
+
+        // check if this is a start batchQueue message
+        if (this.isStartBatch(request)) {
+            this.createBatchQueue(request);
+        } else if (this.isEndBatch(request)) {
+            this.processBatchQueue(ctx);
+        }
+
+        // process regular request
+        processRequest(ctx, request);
+    }
+
+    private void processRequest(ChannelHandlerContext ctx,
+            KineticMessage request) throws InterruptedException {
+
+        if (enforceOrdering) {
+            // process request sequentially
+            queuedRequestProcessRunner.processRequest(ctx, request);
+        } else {
+            // each request is independently processed
+            RequestProcessRunner rpr = null;
+            rpr = new RequestProcessRunner(lcservice, ctx, request);
+            this.lcservice.execute(rpr);
+        }
 	}
 
 	@Override
@@ -138,4 +165,86 @@ public class NioMessageServiceHandler extends
 			this.queuedRequestProcessRunner.close();
 		}
 	}
+
+    @SuppressWarnings("unused")
+    private boolean isBatchMessage(KineticMessage request) {
+
+        MessageType mtype = request.getCommand().getHeader().getMessageType();
+
+        switch (mtype) {
+        case START_BATCH:
+        case END_BATCH:
+            return true;
+        default:
+            return false;
+        }
+    }
+
+    private boolean isStartBatch(KineticMessage request) {
+
+        if (request.getCommand().getHeader().getMessageType() == MessageType.START_BATCH) {
+            return true;
+        }
+
+        return false;
+    }
+
+    private boolean isEndBatch(KineticMessage request) {
+
+        if (request.getCommand().getHeader().getMessageType() == MessageType.END_BATCH) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * check if batch has started.
+     * 
+     * @return
+     */
+    @SuppressWarnings("unused")
+    private boolean isBatchStarted() {
+        return (batchQueue != null);
+    }
+
+    private synchronized void addToBatchQueue(KineticMessage request) {
+        batchQueue.add(request);
+    }
+
+    private synchronized void createBatchQueue(KineticMessage request) {
+        if (batchQueue == null) {
+            this.batchQueue = new BatchQueue(request);
+        }
+    }
+
+    private boolean shouldAddToBatch(KineticMessage request) {
+
+        boolean flag = false;
+
+        if (batchQueue != null && batchQueue.isSameClient(request)) {
+
+            MessageType mtype = request.getCommand().getHeader()
+                    .getMessageType();
+
+            if (mtype == MessageType.PUT || mtype == MessageType.DELETE) {
+                flag = true;
+            }
+        }
+
+        return flag;
+    }
+
+    private synchronized void processBatchQueue(ChannelHandlerContext ctx)
+            throws InterruptedException {
+        
+        try {
+
+            for (KineticMessage request : batchQueue.getMessageList()) {
+                this.processRequest(ctx, request);
+            }
+
+        } finally {
+            this.batchQueue = null;
+        }
+    }
 }

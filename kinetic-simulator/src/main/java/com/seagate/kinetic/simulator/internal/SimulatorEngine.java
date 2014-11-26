@@ -142,7 +142,7 @@ public class SimulatorEngine implements MessageService {
     private P2POperationHandler p2pHandler = null;
 
     // batch op handler
-    private BatchOpHandler batchOp = null;
+    private BatchOperationHandler batchOp = null;
 
     private NioEventLoopGroupManager nioManager = null;
 
@@ -1034,7 +1034,7 @@ public class SimulatorEngine implements MessageService {
         }
 
         // start a new batch, db is locked by this user
-        this.batchOp = new BatchOpHandler(kmreq, kmresp, this);
+        this.batchOp = new BatchOperationHandler(kmreq, kmresp, this);
 
         logger.info("batch op handler initialized ...");
     }
