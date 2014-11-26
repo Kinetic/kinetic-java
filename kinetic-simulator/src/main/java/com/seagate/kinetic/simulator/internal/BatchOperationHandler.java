@@ -30,6 +30,7 @@ import com.seagate.kinetic.proto.Kinetic.Command.KeyValue;
 import com.seagate.kinetic.proto.Kinetic.Command.MessageType;
 import com.seagate.kinetic.simulator.persist.BatchOperation;
 import com.seagate.kinetic.simulator.persist.KVValue;
+import com.seagate.kinetic.simulator.persist.Store;
 
 /**
  * Batch operation handler.
@@ -44,6 +45,9 @@ public class BatchOperationHandler {
 
     @SuppressWarnings("unused")
     private SimulatorEngine engine = null;
+
+    @SuppressWarnings("rawtypes")
+    private Store store = null;
 
     private long cid = -1;
 
@@ -67,6 +71,10 @@ public class BatchOperationHandler {
 
             // simulator engine
             this.engine = engine;
+
+            // store
+            this.store = engine.getStore();
+
         } catch (Exception e) {
             throw new InvalidBatchException(e);
         }
@@ -103,9 +111,15 @@ public class BatchOperationHandler {
                         + mtype);
             }
         } catch (NotAttemptedException nae) {
+            logger.log(Level.WARNING, nae.getMessage(), nae);
             close();
             throw nae;
+        } catch (KVStoreException kvse) {
+            logger.log(Level.WARNING, kvse.getMessage(), kvse);
+            close();
+            throw new NotAttemptedException(kvse);
         } catch (Exception e) {
+            logger.log(Level.WARNING, e.getMessage(), e);
             close();
             throw new InvalidBatchException(e);
         }
@@ -113,27 +127,24 @@ public class BatchOperationHandler {
         return isEndBatch;
     }
 
-    private void batchDelete(KineticMessage km) throws NotAttemptedException {
+    private void batchDelete(KineticMessage km) throws KVStoreException {
 
-        ByteString key = km.getCommand().getBody().getKeyValue().getKey();
 
-        if (km.getCommand().getBody().getKeyValue().getForce() == false) {
 
-            boolean isVersionMatched = true;
+        // proto request KV
+        KeyValue requestKeyValue = km.getCommand().getBody().getKeyValue();
 
-            // XXX: check version
-            // ByteString dbv =
-            // km.getCommand().getBody().getKeyValue().getDbVersion();
-            if (isVersionMatched == false) {
-                throw new NotAttemptedException("version mismatch");
-            }
+        ByteString key = requestKeyValue.getKey();
 
+        // check version if required
+        if (requestKeyValue.getForce() == false) {
+            checkVersion(requestKeyValue);
         }
 
         batch.delete(key);
     }
 
-    private void batchPut(KineticMessage km) throws NotAttemptedException {
+    private void batchPut(KineticMessage km) throws KVStoreException {
 
         ByteString key = km.getCommand().getBody().getKeyValue().getKey();
 
@@ -146,9 +157,15 @@ public class BatchOperationHandler {
             valueByteString = ByteString.EMPTY;
         }
 
-        // KV in;
+        // proto request KV
         KeyValue requestKeyValue = km.getCommand().getBody().getKeyValue();
 
+        // check version if required
+        if (requestKeyValue.getForce() == false) {
+            checkVersion(requestKeyValue);
+        }
+
+        // construct store KV
         Algorithm al = null;
         if (requestKeyValue.hasAlgorithm()) {
             al = requestKeyValue.getAlgorithm();
@@ -158,15 +175,7 @@ public class BatchOperationHandler {
                 requestKeyValue.getNewVersion(), requestKeyValue.getTag(), al,
                 valueByteString);
 
-        // XXX: check version
-        // ByteString dbv =
-        // km.getCommand().getBody().getKeyValue().getDbVersion();
-        boolean isVersionMatched = true;
-        if (isVersionMatched == false) {
-            throw new NotAttemptedException("version mismatch");
-        }
-
-        // XXX: check version
+        // batch put
         batch.put(key, data);
 
         logger.info("*** batch op put entry., key = " + key);
@@ -201,6 +210,50 @@ public class BatchOperationHandler {
         } finally {
             this.isEndBatch = true;
         }
+    }
+
+    private static void compareVersion(ByteString storeDbVersion,
+            ByteString requestDbVersion) throws KVStoreVersionMismatch {
+
+        if (mySize(storeDbVersion) != mySize(requestDbVersion)) {
+            throw new KVStoreVersionMismatch("Length mismatch");
+        }
+
+        if (mySize(storeDbVersion) == 0) {
+            return;
+        }
+
+        if (!storeDbVersion.equals(requestDbVersion)) {
+            throw new KVStoreVersionMismatch("Compare mismatch");
+        }
+    }
+
+    private static int mySize(ByteString s) {
+        if (s == null)
+            return 0;
+        return s.size();
+    }
+
+    private void checkVersion(KeyValue requestKeyValue) throws KVStoreException {
+
+        ByteString requestDbVersion = requestKeyValue.getDbVersion();
+
+        ByteString storeDbVersion = null;
+
+        ByteString key = requestKeyValue.getKey();
+
+        KVValue storeKv = (KVValue) store.get(key);
+
+        if (storeKv != null) {
+            storeDbVersion = storeKv.getVersion();
+        }
+
+        logger.info("*********comparing version., storeV=" + storeDbVersion
+                + "requestV=" + requestDbVersion);
+
+        compareVersion(storeDbVersion, requestDbVersion);
+
+        logger.info("*********batch op version checked and passed ...");
     }
 
     public synchronized boolean isClosed() {

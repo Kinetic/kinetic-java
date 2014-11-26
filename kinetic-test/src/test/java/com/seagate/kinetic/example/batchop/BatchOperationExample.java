@@ -61,24 +61,25 @@ public class BatchOperationExample implements CallbackHandler<Entry> {
         Entry bar = new Entry();
         bar.setKey("bar".getBytes("UTF8"));
         bar.setValue("bar".getBytes("UTF8"));
+        bar.getEntryMetadata().setVersion("1234".getBytes("UTF8"));
+
         client.putForced(bar);
 
-        logger.info("*** starting batch op ...");
+        logger.info("*** starting batch operation ...");
 
         // start batch a new batch operation
         BatchOperation batch = client.createBatchOperation();
 
-        // put entry 1
+        // put foo
         Entry foo = new Entry();
         foo.setKey("foo".getBytes("UTF8"));
         foo.setValue("foo".getBytes("UTF8"));
+        foo.getEntryMetadata().setVersion("5678".getBytes("UTF8"));
 
-        // client.putAsync(entry, null, this);
         batch.putForcedAsync(foo, this);
 
-        // delet entry 1
+        // delete bar
         DeleteCbHandler dhandler = new DeleteCbHandler();
-        // client.deleteAsync(entry, dhandler);
         batch.deleteAsync(bar, dhandler);
 
         // end/commit batch operation
@@ -108,7 +109,7 @@ public class BatchOperationExample implements CallbackHandler<Entry> {
         // get entry, expect to be not found
         Entry bar1 = client.get(bar.getKey());
         if (bar1 != null) {
-            throw new RuntimeException("error: found deleted entry ...");
+            throw new RuntimeException("error: found deleted entry.");
         }
 
         logger.info("Expect entry bar to be null, entry=" + bar1);
