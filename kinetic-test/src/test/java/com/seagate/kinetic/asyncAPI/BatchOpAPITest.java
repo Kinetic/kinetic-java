@@ -30,8 +30,10 @@ import java.util.Arrays;
 import kinetic.client.BatchOperation;
 import kinetic.client.CallbackHandler;
 import kinetic.client.CallbackResult;
+import kinetic.client.ClientConfiguration;
 import kinetic.client.Entry;
 import kinetic.client.KineticClient;
+import kinetic.client.KineticClientFactory;
 import kinetic.client.KineticException;
 
 import org.testng.annotations.Test;
@@ -64,7 +66,7 @@ import com.seagate.kinetic.KineticTestHelpers;
 public class BatchOpAPITest extends IntegrationTestCase {
 
     @Test(dataProvider = "transportProtocolOptions")
-    public void testBatchOperation_Succeeds(String clientName)
+    public void testBatchOperation_PutAndDeleteSucceeds(String clientName)
             throws KineticException, UnsupportedEncodingException {
         Entry bar = getBarEntry();
 
@@ -106,6 +108,73 @@ public class BatchOpAPITest extends IntegrationTestCase {
     }
 
     @Test(dataProvider = "transportProtocolOptions")
+    public void testBatchOperation_PutsSucceeds(String clientName)
+            throws KineticException, UnsupportedEncodingException {
+        Entry bar = getBarEntry();
+        Entry foo = getFooEntry();
+
+        BatchOperation batch = getClient(clientName).createBatchOperation();
+
+        CallbackHandler<Entry> handler = buildSuccessOnlyCallbackHandler(new KineticTestHelpers.SuccessAsyncHandler<Entry>() {
+            @Override
+            public void onSuccess(CallbackResult<Entry> result) {
+            }
+        });
+
+        batch.putForcedAsync(foo, handler);
+        batch.putForcedAsync(bar, handler);
+
+        batch.commit();
+
+        // get foo, expect to find it
+        assertTrue(Arrays.equals(foo.getKey(),
+                getClient(clientName).get(foo.getKey()).getKey()));
+        assertTrue(Arrays.equals(foo.getValue(),
+                getClient(clientName).get(foo.getKey()).getValue()));
+        assertTrue(Arrays.equals(foo.getEntryMetadata().getVersion(),
+                getClient(clientName).get(foo.getKey()).getEntryMetadata()
+                        .getVersion()));
+
+        // get bar, expect to find it
+        assertTrue(Arrays.equals(bar.getKey(),
+                getClient(clientName).get(bar.getKey()).getKey()));
+        assertTrue(Arrays.equals(bar.getValue(),
+                getClient(clientName).get(bar.getKey()).getValue()));
+        assertTrue(Arrays.equals(bar.getEntryMetadata().getVersion(),
+                getClient(clientName).get(bar.getKey()).getEntryMetadata()
+                        .getVersion()));
+    }
+
+    @Test(dataProvider = "transportProtocolOptions")
+    public void testBatchOperation_DeletesSucceeds(String clientName)
+            throws KineticException, UnsupportedEncodingException {
+        Entry bar = getBarEntry();
+        Entry foo = getFooEntry();
+        getClient(clientName).putForced(bar);
+        getClient(clientName).putForced(foo);
+
+        BatchOperation batch = getClient(clientName).createBatchOperation();
+
+        CallbackHandler<Boolean> dhandler = buildSuccessOnlyCallbackHandler(new KineticTestHelpers.SuccessAsyncHandler<Boolean>() {
+            @Override
+            public void onSuccess(CallbackResult<Boolean> result) {
+            }
+        });
+
+        batch.deleteAsync(bar, dhandler);
+
+        batch.deleteAsync(foo, dhandler);
+
+        batch.commit();
+
+        // get foo, expect to null
+        assertNull(getClient(clientName).get(foo.getKey()));
+
+        // get bar, expect to null
+        assertNull(getClient(clientName).get(bar.getKey()));
+    }
+
+    @Test(dataProvider = "transportProtocolOptions")
     public void testBatchOperation_FollowedBothReadByOneClient_Failed(
             String clientName) throws KineticException,
             UnsupportedEncodingException {
@@ -132,19 +201,22 @@ public class BatchOpAPITest extends IntegrationTestCase {
 
         batch.deleteAsync(bar, dhandler);
 
-        KineticClient client1 = getClient(clientName);
+        ClientConfiguration cc = new ClientConfiguration();
+        KineticClient client1 = KineticClientFactory.createInstance(cc);
         try {
             client1.get(foo.getKey());
         } catch (KineticException e) {
             // assertTrue(e.getResponseMessage().getCommand().getStatus()
-            // .getCode().equals(StatusCode.NOT_ATTEMPTED));
+            // .getCode().equals(StatusCode.INVALID_BATCH));
         }
 
         try {
             client1.get(bar.getKey());
         } catch (KineticException e) {
             // assertTrue(e.getResponseMessage().getCommand().getStatus()
-            // .getCode().equals(StatusCode.NOT_ATTEMPTED));
+            // .getCode().equals(StatusCode.INVALID_BATCH));
+        } finally {
+            client1.close();
         }
 
         batch.commit();
@@ -189,18 +261,26 @@ public class BatchOpAPITest extends IntegrationTestCase {
 
         batch.deleteAsync(bar, dhandler);
 
+        ClientConfiguration cc = new ClientConfiguration();
+        KineticClient client1 = KineticClientFactory.createInstance(cc);
+        KineticClient client2 = KineticClientFactory.createInstance(cc);
+
         try {
-            getClient(clientName).get(foo.getKey());
+            client1.get(foo.getKey());
         } catch (KineticException e) {
             // assertTrue(e.getResponseMessage().getCommand().getStatus()
             // .getCode().equals(StatusCode.NOT_ATTEMPTED));
+        } finally {
+            client1.close();
         }
 
         try {
-            getClient(clientName).get(bar.getKey());
+            client2.get(bar.getKey());
         } catch (KineticException e) {
             // assertTrue(e.getResponseMessage().getCommand().getStatus()
             // .getCode().equals(StatusCode.NOT_ATTEMPTED));
+        } finally {
+            client2.close();
         }
 
         batch.commit();
