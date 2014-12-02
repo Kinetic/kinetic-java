@@ -22,6 +22,8 @@ package com.seagate.kinetic.simulator.io.provider.nio.tcp;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -46,15 +48,16 @@ public class NioMessageServiceHandler extends
 	private static final Logger logger = Logger
 			.getLogger(NioMessageServiceHandler.class.getName());
 
+    private static final String SEP = "-";
+
 	private MessageService lcservice = null;
 
 	private boolean enforceOrdering = false;
 
 	private NioQueuedRequestProcessRunner queuedRequestProcessRunner = null;
 
-    private BatchQueue batchQueue = null;
-
-    private ChannelHandlerContext batchCtx = null;
+    // key = connId + "-" + batchId
+    private Map<String, BatchQueue> batchMap = new ConcurrentHashMap<String, BatchQueue>();
 
 	private static boolean faultInjectCloseConnection = Boolean
 			.getBoolean(FaultInjectedCloseConnectionException.FAULT_INJECT_CLOSE_CONNECTION);
@@ -100,10 +103,7 @@ public class NioMessageServiceHandler extends
 
         // add to queue if batchQueue has started
         if (this.shouldAddToBatch(ctx, request)) {
-
-            this.addToBatchQueue(request);
-
-            // the commands are queued until END_BATCH is received
+            // the command was queued until END_BATCH is received
             return;
         }
 
@@ -111,7 +111,7 @@ public class NioMessageServiceHandler extends
         if (this.isStartBatch(ctx, request)) {
             this.createBatchQueue(ctx, request);
         } else if (this.isEndBatch(ctx, request)) {
-            this.processBatchQueue(ctx);
+            this.processBatchQueue(ctx, request);
         }
 
         // process regular request
@@ -157,22 +157,17 @@ public class NioMessageServiceHandler extends
 	    
         // remove connection info of the channel handler context from conn info
         // map
-	    @SuppressWarnings("unused")
         ConnectionInfo info = SimulatorEngine.removeConnectionInfo(ctx);
 
-        if (ctx == batchCtx) {
-            this.batchCtx = null;
-            this.batchQueue = null;
-        }
-	   
-	    //logger.info("connection info is removed, id=" + info.getConnectionId() );
+        this.batchMap = null;
+
+        logger.info("connection info is removed, id=" + info.getConnectionId());
 	}
 
     private boolean isStartBatch(ChannelHandlerContext ctx,
             KineticMessage request) {
 
-        if (batchQueue == null
-                && (request.getCommand().getHeader().getMessageType() == MessageType.START_BATCH)) {
+        if (request.getCommand().getHeader().getMessageType() == MessageType.START_BATCH) {
             return true;
         }
 
@@ -183,31 +178,31 @@ public class NioMessageServiceHandler extends
 
         if (request.getCommand().getHeader().getMessageType() == MessageType.END_BATCH) {
 
-            if (ctx == this.batchCtx) {
-                return true;
-            } else {
-                throw new RuntimeException(
-                        "Received END_BATCH from wrong client");
-            }
+            request.setIsBatchMessage(true);
+
+            return true;
         }
 
         return false;
     }
 
-    private synchronized void addToBatchQueue(KineticMessage request) {
-        batchQueue.add(request);
-    }
-
     private synchronized void createBatchQueue(ChannelHandlerContext ctx,
             KineticMessage request) {
 
+        String key = request.getCommand().getHeader().getConnectionID() + SEP
+                + request.getCommand().getHeader().getBatchID();
+
+        BatchQueue batchQueue = this.batchMap.get(key);
+
         if (batchQueue == null) {
-            this.batchCtx = ctx;
-            this.batchQueue = new BatchQueue(request);
+            batchQueue = new BatchQueue(request);
+            this.batchMap.put(key, batchQueue);
         } else {
             // concurrent start batch is not allowed
             throw new RuntimeException("batch already started");
         }
+
+        logger.info("batch queue created for key: " + key);
     }
 
     private boolean shouldAddToBatch(ChannelHandlerContext ctx,
@@ -215,22 +210,45 @@ public class NioMessageServiceHandler extends
 
         boolean flag = false;
 
-        if (batchQueue != null && (ctx == batchCtx)) {
+        String key = request.getCommand().getHeader().getConnectionID() + SEP
+                + request.getCommand().getHeader().getBatchID();
+
+        BatchQueue batchQueue = this.batchMap.get(key);
+
+        if (batchQueue != null) {
 
             MessageType mtype = request.getCommand().getHeader()
                     .getMessageType();
 
             if (mtype == MessageType.PUT || mtype == MessageType.DELETE) {
+
+                // is added to batch queue
                 flag = true;
+
+                // is a batch message
+                request.setIsBatchMessage(true);
+
+                // add to batch queue
+                batchQueue.add(request);
             }
         }
 
         return flag;
     }
 
-    private synchronized void processBatchQueue(ChannelHandlerContext ctx)
+    private synchronized void processBatchQueue(ChannelHandlerContext ctx,
+            KineticMessage km)
             throws InterruptedException {
         
+        String key = km.getCommand().getHeader().getConnectionID() + SEP
+                + km.getCommand().getHeader().getBatchID();
+
+        BatchQueue batchQueue = this.batchMap.get(key);
+
+        if (batchQueue == null) {
+            throw new RuntimeException("No batch Id found for key: " + key);
+        }
+
         try {
 
             for (KineticMessage request : batchQueue.getMessageList()) {
@@ -238,8 +256,7 @@ public class NioMessageServiceHandler extends
             }
 
         } finally {
-            this.batchQueue = null;
-            this.batchCtx = null;
+            this.batchMap.remove(key);
         }
     }
 }

@@ -46,6 +46,9 @@ public class KineticMessage {
 	// set to true if traveling through TLS/SSL
 	private volatile boolean isSecuredChannel = false;  
 
+    // set to true if this is a batch message
+    private volatile boolean isBatchMessage = false;
+
 	/**
 	 * Set protocol buffer message.
 	 *
@@ -117,5 +120,24 @@ public class KineticMessage {
 	public boolean getIsSecureChannel() {
 	    return this.isSecuredChannel;
 	}
+
+    /**
+     * Get if this message is a batch message.
+     * 
+     * @return true if this is a batch message
+     */
+    public boolean getIsBatchMessage() {
+        return this.isBatchMessage;
+    }
+
+    /**
+     * Set if this message is a batch message.
+     * 
+     * @param flag
+     *            true if this is a batch message.
+     */
+    public void setIsBatchMessage(boolean flag) {
+        this.isBatchMessage = flag;
+    }
 
 }

@@ -174,6 +174,9 @@ public class SimulatorEngine implements MessageService {
 
     private volatile boolean deviceLocked = false;
 
+    // db lock for batch operations
+    private volatile boolean isInBatchMode = false;
+
     static {
         // add shutdown hook to clean up resources
         Runtime.getRuntime().addShutdownHook(shutdownHook);
@@ -463,11 +466,19 @@ public class SimulatorEngine implements MessageService {
 
             checkDeviceLocked(kmreq, kmresp);
 
+            checkBatchMode(kmreq);
+
             if (mtype == MessageType.START_BATCH) {
+                // do nothing, simply send OK response
+                ;
+            } else if (kmreq.getIsBatchMessage()) {
+
                 // init batch operation
-                this.initBatchOperation(kmreq, kmresp);
-            } else if (this.batchOp != null) {
-                // handle batch
+                if (this.batchOp == null) {
+                    this.initBatchOperation(kmreq, kmresp);
+                }
+
+                // process batch message
                 this.batchOp.handleRequest(kmreq, kmresp);
             } else if (kmreq.getMessage().getAuthType() == AuthType.PINAUTH) {
                 // perform pin op
@@ -1033,6 +1044,8 @@ public class SimulatorEngine implements MessageService {
             throw new InvalidBatchException("batch op already started");
         }
 
+        this.isInBatchMode = true;
+
         // start a new batch, db is locked by this user
         this.batchOp = new BatchOperationHandler(kmreq, kmresp, this);
 
@@ -1040,8 +1053,41 @@ public class SimulatorEngine implements MessageService {
     }
 
     private synchronized void releaseBatchOperation() {
+
         this.batchOp = null;
+
+        this.isInBatchMode = false;
+
+        this.notifyAll();
+
         logger.info("batch op handler released ...");
+    }
+
+    private synchronized void checkBatchMode(KineticMessage kmreq) {
+
+        if (this.isInBatchMode == false) {
+            return;
+        }
+
+        if (kmreq.getCommand().getHeader().getBatchID() == this.batchOp
+                .getBatchId()
+                && kmreq.getCommand().getHeader().getConnectionID() == this.batchOp
+                        .getConnectionId()) {
+
+            return;
+        }
+
+        while (this.isInBatchMode) {
+
+            try {
+                this.wait(3000);
+                if (this.isInBatchMode) {
+                    logger.warning("waiting for batch mode to complete...");
+                }
+            } catch (InterruptedException e) {
+                logger.log(Level.WARNING, e.getMessage(), e);
+            }
+        }
     }
 
 }

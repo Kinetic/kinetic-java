@@ -31,47 +31,58 @@ import kinetic.client.KineticException;
  */
 public class DefaultBatchOperation implements BatchOperation {
 
+    private static int batchIdSequence = 1;
+
+    private int batchId = -1;
+
     private DefaultKineticClient client = null;
 
     public DefaultBatchOperation(DefaultKineticClient client)
             throws KineticException {
 
+        this.batchId = nextBatchId();
+
         this.client = client;
 
-        this.client.startBatchOperation();
+        this.client.startBatchOperation(batchId);
     }
 
     @Override
     public void putAsync(Entry entry, byte[] newVersion,
             CallbackHandler<Entry> handler) throws KineticException {
-        this.client.putAsync(entry, newVersion, handler);
+
+        this.client.batchPutAsync(entry, newVersion, handler, batchId);
     }
 
     @Override
     public void putForcedAsync(Entry entry, CallbackHandler<Entry> handler)
             throws KineticException {
 
-        this.client.putForcedAsync(entry, handler);
+        this.client.batchPutForcedAsync(entry, handler, batchId);
     }
 
     @Override
     public void deleteAsync(Entry entry, CallbackHandler<Boolean> handler)
             throws KineticException {
 
-        this.client.deleteAsync(entry, handler);
+        this.client.batchDeleteAsync(entry, handler, batchId);
     }
 
     @Override
     public void deleteForcedAsync(byte[] key, CallbackHandler<Boolean> handler)
             throws KineticException {
 
-        this.client.deleteForcedAsync(key, handler);
+        this.client.batchDeleteForcedAsync(key, handler, batchId);
     }
 
     @Override
     public void commit() throws KineticException {
 
-        this.client.endBatchOperation();
+        this.client.endBatchOperation(batchId);
+    }
+
+    private synchronized static int nextBatchId() {
+        return batchIdSequence++;
     }
 
 }

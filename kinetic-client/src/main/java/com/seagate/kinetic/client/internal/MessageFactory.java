@@ -418,7 +418,7 @@ public class MessageFactory {
         return kineticMessage;
     }
     
-    public static KineticMessage createStartBatchRequestMessage()
+    public static KineticMessage createStartBatchRequestMessage(int batchId)
             throws KineticException {
 
         KineticMessage kineticMessage = createKineticMessageWithBuilder();
@@ -427,10 +427,12 @@ public class MessageFactory {
 
         request.getHeaderBuilder().setMessageType(MessageType.START_BATCH);
 
+        request.getHeaderBuilder().setBatchID(batchId);
+
         return kineticMessage;
     }
 
-    public static KineticMessage createEndBatchRequestMessage()
+    public static KineticMessage createEndBatchRequestMessage(int batchId)
             throws KineticException {
 
         KineticMessage kineticMessage = createKineticMessageWithBuilder();
@@ -438,6 +440,8 @@ public class MessageFactory {
         Command.Builder request = (Command.Builder) kineticMessage.getCommand();
 
         request.getHeaderBuilder().setMessageType(MessageType.END_BATCH);
+
+        request.getHeaderBuilder().setBatchID(batchId);
 
         return kineticMessage;
     }

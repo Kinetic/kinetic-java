@@ -51,6 +51,8 @@ public class BatchOperationHandler {
 
     private long cid = -1;
 
+    private int batchId = -1;
+
     boolean isEndBatch = false;
 
     private BatchOperation<ByteString, KVValue> batch = null;
@@ -68,6 +70,8 @@ public class BatchOperationHandler {
 
             // this batch op handler belongs to this connection
             this.cid = request.getCommand().getHeader().getConnectionID();
+
+            this.batchId = request.getCommand().getHeader().getBatchID();
 
             // simulator engine
             this.engine = engine;
@@ -258,5 +262,13 @@ public class BatchOperationHandler {
 
     public synchronized boolean isClosed() {
         return this.isEndBatch;
+    }
+
+    public long getConnectionId() {
+        return this.cid;
+    }
+
+    public int getBatchId() {
+        return this.batchId;
     }
 }
