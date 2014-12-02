@@ -446,6 +446,20 @@ public class MessageFactory {
         return kineticMessage;
     }
 
+    public static KineticMessage createAbortBatchRequestMessage(int batchId)
+            throws KineticException {
+
+        KineticMessage kineticMessage = createKineticMessageWithBuilder();
+
+        Command.Builder request = (Command.Builder) kineticMessage.getCommand();
+
+        request.getHeaderBuilder().setMessageType(MessageType.ABORT_BATCH);
+
+        request.getHeaderBuilder().setBatchID(batchId);
+
+        return kineticMessage;
+    }
+
     /**
      * create an internal message with empty builder message.
      *

@@ -468,7 +468,8 @@ public class SimulatorEngine implements MessageService {
 
             checkBatchMode(kmreq);
 
-            if (mtype == MessageType.START_BATCH) {
+            if (mtype == MessageType.START_BATCH
+                    || mtype == MessageType.ABORT_BATCH) {
                 // do nothing, simply send OK response
                 ;
             } else if (kmreq.getIsBatchMessage()) {

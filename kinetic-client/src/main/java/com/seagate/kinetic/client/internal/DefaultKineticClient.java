@@ -1052,6 +1052,21 @@ public class DefaultKineticClient implements AdvancedKineticClient {
         MessageFactory.checkReply(request, response);
     }
 
+    void abortBatchOperation(int batchId) throws KineticException {
+
+        KineticMessage request = null;
+        KineticMessage response = null;
+
+        // create get request message
+        request = MessageFactory.createAbortBatchRequestMessage(batchId);
+
+        // send request
+        response = this.client.request(request);
+
+        // check response
+        MessageFactory.checkReply(request, response);
+    }
+
     /**
      * {@inheritDoc}
      */

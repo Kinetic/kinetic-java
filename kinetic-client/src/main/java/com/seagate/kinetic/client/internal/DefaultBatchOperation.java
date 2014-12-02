@@ -85,4 +85,9 @@ public class DefaultBatchOperation implements BatchOperation {
         return batchIdSequence++;
     }
 
+    @Override
+    public void abort() throws KineticException {
+        this.client.abortBatchOperation(batchId);
+    }
+
 }

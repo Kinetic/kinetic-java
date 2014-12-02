@@ -112,6 +112,8 @@ public class NioMessageServiceHandler extends
             this.createBatchQueue(ctx, request);
         } else if (this.isEndBatch(ctx, request)) {
             this.processBatchQueue(ctx, request);
+        } else if (this.isAbortBatch(ctx, request)) {
+            this.processBatchAbort(ctx, request);
         }
 
         // process regular request
@@ -177,6 +179,19 @@ public class NioMessageServiceHandler extends
     private boolean isEndBatch(ChannelHandlerContext ctx, KineticMessage request) {
 
         if (request.getCommand().getHeader().getMessageType() == MessageType.END_BATCH) {
+
+            request.setIsBatchMessage(true);
+
+            return true;
+        }
+
+        return false;
+    }
+
+    private boolean isAbortBatch(ChannelHandlerContext ctx,
+            KineticMessage request) {
+
+        if (request.getCommand().getHeader().getMessageType() == MessageType.ABORT_BATCH) {
 
             request.setIsBatchMessage(true);
 
@@ -258,5 +273,18 @@ public class NioMessageServiceHandler extends
         } finally {
             this.batchMap.remove(key);
         }
+    }
+
+    private void processBatchAbort(ChannelHandlerContext ctx, KineticMessage km) {
+        String key = km.getCommand().getHeader().getConnectionID() + SEP
+                + km.getCommand().getHeader().getBatchID();
+
+        BatchQueue batchQueue = this.batchMap.remove(key);
+
+        if (batchQueue == null) {
+            throw new RuntimeException("No batch Id found for key: " + key);
+        }
+
+        logger.info("batch aborted ... key=" + key);
     }
 }

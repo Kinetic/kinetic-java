@@ -110,7 +110,15 @@ public interface BatchOperation {
 
     /**
      * Abort the current batch operation.
+     * <p>
+     * When this call returned successfully, all the commands queued in the
+     * current batch are aborted. Resources related to the current batch are
+     * cleaned up and released.
+     * <p>
+     * 
+     * @throws KineticException
+     *             if any internal error occurred.
      * 
      */
-    // public void abort();
+    public void abort() throws KineticException;
 }
