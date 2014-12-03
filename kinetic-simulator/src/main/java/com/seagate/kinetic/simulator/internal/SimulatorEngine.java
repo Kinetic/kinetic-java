@@ -468,19 +468,8 @@ public class SimulatorEngine implements MessageService {
 
             checkBatchMode(kmreq);
 
-            if (mtype == MessageType.START_BATCH
-                    || mtype == MessageType.ABORT_BATCH) {
-                // do nothing, simply send OK response
-                ;
-            } else if (kmreq.getIsBatchMessage()) {
-
-                // init batch operation
-                if (this.batchOp == null) {
-                    this.initBatchOperation(kmreq, kmresp);
-                }
-
-                // process batch message
-                this.batchOp.handleRequest(kmreq, kmresp);
+            if (kmreq.getIsBatchMessage()) {
+                this.processBatchOpMessage(kmreq, kmresp);
             } else if (kmreq.getMessage().getAuthType() == AuthType.PINAUTH) {
                 // perform pin op
                 PinOperationHandler.handleOperation(kmreq, kmresp, this);
@@ -1045,6 +1034,10 @@ public class SimulatorEngine implements MessageService {
             throw new InvalidBatchException("batch op already started");
         }
 
+        if (kmreq.getCommand().getHeader().getMessageType() == MessageType.END_BATCH) {
+            throw new InvalidBatchException("batch op failed");
+        }
+
         this.isInBatchMode = true;
 
         // start a new batch, db is locked by this user
@@ -1089,6 +1082,26 @@ public class SimulatorEngine implements MessageService {
                 logger.log(Level.WARNING, e.getMessage(), e);
             }
         }
+    }
+
+    private void processBatchOpMessage(KineticMessage kmreq,
+            KineticMessage kmresp) throws InvalidBatchException,
+            NotAttemptedException {
+
+        MessageType mtype = kmreq.getCommand().getHeader().getMessageType();
+
+        if (mtype == MessageType.START_BATCH
+                || mtype == MessageType.ABORT_BATCH) {
+            return;
+        }
+
+        // init batch operation
+        if (this.batchOp == null) {
+            this.initBatchOperation(kmreq, kmresp);
+        }
+
+        // process batch message
+        this.batchOp.handleRequest(kmreq, kmresp);
     }
 
 }

@@ -89,7 +89,7 @@ public class BatchOperationHandler {
             throws InvalidBatchException, NotAttemptedException {
 
         if (this.isEndBatch) {
-            throw new InvalidBatchException("batch is not started");
+            throw new InvalidBatchException("batch is not started or has ended");
         }
 
         try {

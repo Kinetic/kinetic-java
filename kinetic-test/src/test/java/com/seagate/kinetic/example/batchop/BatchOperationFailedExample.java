@@ -37,10 +37,10 @@ import kinetic.client.KineticException;
  * @author chiaming
  *
  */
-public class BatchOperationAbortExample implements CallbackHandler<Entry> {
+public class BatchOperationFailedExample implements CallbackHandler<Entry> {
 
     private final static java.util.logging.Logger logger = Logger
-            .getLogger(BatchOperationAbortExample.class.getName());
+            .getLogger(BatchOperationFailedExample.class.getName());
 
     public void run(String host, int port) throws KineticException,
             UnsupportedEncodingException {
@@ -48,70 +48,51 @@ public class BatchOperationAbortExample implements CallbackHandler<Entry> {
         // kinetic client
         KineticClient client = null;
 
-        // Client configuration and initialization
-        ClientConfiguration clientConfig = new ClientConfiguration();
+        try {
 
-        clientConfig.setHost(host);
-        clientConfig.setPort(port);
+            // Client configuration and initialization
+            ClientConfiguration clientConfig = new ClientConfiguration();
 
-        // create client instance
-        client = KineticClientFactory.createInstance(clientConfig);
+            clientConfig.setHost(host);
+            clientConfig.setPort(port);
 
-        // put entry bar
-        Entry bar = new Entry();
-        bar.setKey("bar".getBytes("UTF8"));
-        bar.setValue("bar".getBytes("UTF8"));
-        bar.getEntryMetadata().setVersion("1234".getBytes("UTF8"));
+            // create client instance
+            client = KineticClientFactory.createInstance(clientConfig);
 
-        client.putForced(bar);
+            // put entry bar
+            Entry bar = new Entry();
+            bar.setKey("bar".getBytes("UTF8"));
+            bar.setValue("bar".getBytes("UTF8"));
+            bar.getEntryMetadata().setVersion("1234".getBytes("UTF8"));
 
-        // clean up before batch op
-        client.deleteForced("foo".getBytes("UTF8"));
+            client.putForced(bar);
 
-        logger.info("*** starting batch operation ...");
+            logger.info("*** starting batch operation ...");
 
-        // start batch a new batch operation
-        BatchOperation batch = client.createBatchOperation();
+            // start batch a new batch operation
+            BatchOperation batch = client.createBatchOperation();
 
-        // put foo
-        Entry foo = new Entry();
-        foo.setKey("foo".getBytes("UTF8"));
-        foo.setValue("foo".getBytes("UTF8"));
-        foo.getEntryMetadata().setVersion("5678".getBytes("UTF8"));
+            // put foo
+            Entry foo = new Entry();
+            foo.setKey("foo".getBytes("UTF8"));
+            foo.setValue("foo".getBytes("UTF8"));
+            foo.getEntryMetadata().setVersion("5678".getBytes("UTF8"));
 
-        batch.putForcedAsync(foo, this);
+            batch.putForcedAsync(foo, this);
 
-        // delete bar
-        DeleteCbHandler dhandler = new DeleteCbHandler();
-        batch.deleteAsync(bar, dhandler);
+            // delete bar
+            // DeleteCbHandler dhandler = new DeleteCbHandler();
+            bar.getEntryMetadata().setVersion("12341234".getBytes("UTF8"));
+            batch.putAsync(bar, "".getBytes(), this);
 
-        // end/commit batch operation
-        batch.abort();
+            // end/commit batch operation
+            batch.commit();
 
-        logger.info("*** batch op aborted ...");
-
-        // start verifying result
-
-        // get foo, expect to find it
-        Entry foo1 = client.get(foo.getKey());
-
-        // must be null
-        if (foo1 != null) {
-            throw new RuntimeException("Does not expect to find foo");
+        } catch (KineticException e) {
+            logger.log(Level.WARNING, e.getMessage(), e);
+        } finally {
+            client.close();
         }
-
-        logger.info("Expect entry foo to be null!");
-
-        // get entry, expect to be found
-        Entry bar1 = client.get(bar.getKey());
-        if (bar1 == null) {
-            throw new RuntimeException("error: cannot find bar entry.");
-        }
-
-        logger.info("Expected entry bar to be existed!");
-
-        // close kinetic client
-        client.close();
     }
 
     @Override
@@ -127,7 +108,7 @@ public class BatchOperationAbortExample implements CallbackHandler<Entry> {
     public static void main(String[] args) throws KineticException,
             InterruptedException, UnsupportedEncodingException {
 
-        BatchOperationAbortExample batch = new BatchOperationAbortExample();
+        BatchOperationFailedExample batch = new BatchOperationFailedExample();
 
         batch.run("localhost", 8123);
     }

@@ -170,6 +170,7 @@ public class NioMessageServiceHandler extends
             KineticMessage request) {
 
         if (request.getCommand().getHeader().getMessageType() == MessageType.START_BATCH) {
+            request.setIsBatchMessage(true);
             return true;
         }
 
@@ -225,14 +226,21 @@ public class NioMessageServiceHandler extends
 
         boolean flag = false;
 
+        boolean hasBatchId = request.getCommand().getHeader().hasBatchID();
+        if (hasBatchId == false) {
+            return false;
+        }
+
         String key = request.getCommand().getHeader().getConnectionID() + SEP
                 + request.getCommand().getHeader().getBatchID();
 
         BatchQueue batchQueue = this.batchMap.get(key);
 
+        MessageType mtype = null;
+
         if (batchQueue != null) {
 
-            MessageType mtype = request.getCommand().getHeader()
+            mtype = request.getCommand().getHeader()
                     .getMessageType();
 
             if (mtype == MessageType.PUT || mtype == MessageType.DELETE) {
