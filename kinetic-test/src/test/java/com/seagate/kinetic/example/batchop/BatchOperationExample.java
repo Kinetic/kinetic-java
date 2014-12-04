@@ -65,6 +65,9 @@ public class BatchOperationExample implements CallbackHandler<Entry> {
 
         client.putForced(bar);
 
+        // delete foo if existed
+        client.deleteForced("foo".getBytes("UTF8"));
+
         logger.info("*** starting batch operation ...");
 
         // start batch a new batch operation
@@ -74,9 +77,9 @@ public class BatchOperationExample implements CallbackHandler<Entry> {
         Entry foo = new Entry();
         foo.setKey("foo".getBytes("UTF8"));
         foo.setValue("foo".getBytes("UTF8"));
-        foo.getEntryMetadata().setVersion("5678".getBytes("UTF8"));
+        // foo.getEntryMetadata().setVersion("5678".getBytes("UTF8"));
 
-        batch.putForcedAsync(foo, this);
+        batch.putAsync(foo, "5678".getBytes("UTF8"), this);
 
         // delete bar
         DeleteCbHandler dhandler = new DeleteCbHandler();

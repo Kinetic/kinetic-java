@@ -245,16 +245,9 @@ public class BatchOperationHandler {
 
         ByteString requestDbVersion = requestKeyValue.getDbVersion();
 
-        ByteString storeDbVersion = null;
-
         ByteString key = requestKeyValue.getKey();
 
-        @SuppressWarnings("unchecked")
-        KVValue storeKv = (KVValue) store.get(key);
-
-        if (storeKv != null) {
-            storeDbVersion = storeKv.getVersion();
-        }
+        ByteString storeDbVersion = this.getDbVersion(key);
 
         logger.info("*********comparing version., storeV=" + storeDbVersion
                 + "requestV=" + requestDbVersion);
@@ -262,6 +255,22 @@ public class BatchOperationHandler {
         compareVersion(storeDbVersion, requestDbVersion);
 
         logger.info("*********batch op version checked and passed ...");
+    }
+
+    @SuppressWarnings("unchecked")
+    private ByteString getDbVersion(ByteString key) {
+
+        KVValue storeKv = null;
+        ByteString storeDbVersion = null;
+
+        try {
+            storeKv = (KVValue) store.get(key);
+            storeDbVersion = storeKv.getVersion();
+        } catch (Exception e) {
+            ;
+        }
+
+        return storeDbVersion;
     }
 
     public synchronized boolean isClosed() {
