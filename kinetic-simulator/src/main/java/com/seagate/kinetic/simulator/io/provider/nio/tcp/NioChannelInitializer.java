@@ -28,6 +28,7 @@ import java.util.logging.Logger;
 
 import com.seagate.kinetic.common.protocol.codec.KineticDecoder;
 import com.seagate.kinetic.common.protocol.codec.KineticEncoder;
+import com.seagate.kinetic.simulator.io.provider.nio.NioMessageServiceHandler;
 //import com.seagate.kinetic.proto.Kinetic;
 import com.seagate.kinetic.simulator.io.provider.spi.MessageService;
 
@@ -55,8 +56,8 @@ ChannelInitializer<SocketChannel> {
 			p.addLast("encoder", new KineticEncoder());
 		
 
-		p.addLast("handler", new NioMessageServiceHandler(lcservice));
+        p.addLast("handler", new NioMessageServiceHandler(lcservice, false));
 
-		logger.info("nio channel initialized ...");
+        logger.info("nio channel initialized., is secure channel=false");
 	}
 }

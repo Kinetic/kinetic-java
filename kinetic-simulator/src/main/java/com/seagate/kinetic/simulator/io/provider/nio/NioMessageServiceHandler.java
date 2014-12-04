@@ -17,7 +17,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  *
  */
-package com.seagate.kinetic.simulator.io.provider.nio.tcp;
+package com.seagate.kinetic.simulator.io.provider.nio;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
@@ -34,10 +34,6 @@ import com.seagate.kinetic.simulator.internal.ConnectionInfo;
 import com.seagate.kinetic.simulator.internal.FaultInjectedCloseConnectionException;
 import com.seagate.kinetic.simulator.internal.InvalidBatchException;
 import com.seagate.kinetic.simulator.internal.SimulatorEngine;
-import com.seagate.kinetic.simulator.io.provider.nio.BatchQueue;
-import com.seagate.kinetic.simulator.io.provider.nio.NioConnectionStateManager;
-import com.seagate.kinetic.simulator.io.provider.nio.NioQueuedRequestProcessRunner;
-import com.seagate.kinetic.simulator.io.provider.nio.RequestProcessRunner;
 import com.seagate.kinetic.simulator.io.provider.spi.MessageService;
 
 /**
@@ -64,8 +60,13 @@ public class NioMessageServiceHandler extends
 	private static boolean faultInjectCloseConnection = Boolean
 			.getBoolean(FaultInjectedCloseConnectionException.FAULT_INJECT_CLOSE_CONNECTION);
 
-	public NioMessageServiceHandler(MessageService lcservice2) {
+    private boolean isSecureChannel = false;
+
+    public NioMessageServiceHandler(MessageService lcservice2,
+            boolean isSecureChannel) {
 		this.lcservice = lcservice2;
+
+        this.isSecureChannel = isSecureChannel;
 
 		this.enforceOrdering = lcservice.getServiceConfiguration()
 				.getMessageOrderingEnforced();
@@ -98,7 +99,7 @@ public class NioMessageServiceHandler extends
 		}
 		
 		// set ssl channel flag to false
-		request.setIsSecureChannel(false);
+        request.setIsSecureChannel(isSecureChannel);
 		
 		// check if conn id is set
 		NioConnectionStateManager.checkIfConnectionIdSet(ctx, request);
@@ -165,7 +166,8 @@ public class NioMessageServiceHandler extends
 
         this.batchMap = null;
 
-        logger.info("connection info is removed, id=" + info.getConnectionId());
+        logger.info("connection info is removed, id=" + info.getConnectionId()
+                + ", is secure channel=" + this.isSecureChannel);
 	}
 
     private boolean isStartBatch(ChannelHandlerContext ctx,

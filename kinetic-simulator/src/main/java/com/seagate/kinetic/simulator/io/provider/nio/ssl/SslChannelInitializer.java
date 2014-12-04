@@ -23,7 +23,6 @@ package com.seagate.kinetic.simulator.io.provider.nio.ssl;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.SocketChannel;
-
 import io.netty.handler.ssl.SslHandler;
 
 import java.util.logging.Logger;
@@ -33,6 +32,7 @@ import javax.net.ssl.SSLEngine;
 import com.seagate.kinetic.common.lib.TlsUtil;
 import com.seagate.kinetic.common.protocol.codec.KineticDecoder;
 import com.seagate.kinetic.common.protocol.codec.KineticEncoder;
+import com.seagate.kinetic.simulator.io.provider.nio.NioMessageServiceHandler;
 //import com.seagate.kinetic.proto.Kinetic;
 import com.seagate.kinetic.simulator.io.provider.spi.MessageService;
 
@@ -71,7 +71,10 @@ ChannelInitializer<SocketChannel> {
 			pipeline.addLast("encoder", new KineticEncoder());
 		
 
-		pipeline.addLast("handler", new SslMessageServiceHandler(lcservice));
+        // pipeline.addLast("handler", new SslMessageServiceHandler(lcservice));
+
+        pipeline.addLast("handler", new NioMessageServiceHandler(lcservice,
+                true));
 
 		logger.info("ssl nio channel initialized ... ");
 	}

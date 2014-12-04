@@ -52,7 +52,9 @@ public class BatchOperationAbortExample implements CallbackHandler<Entry> {
         ClientConfiguration clientConfig = new ClientConfiguration();
 
         clientConfig.setHost(host);
-        clientConfig.setPort(port);
+        clientConfig.setUseSsl(true);
+        clientConfig.setPort(8443);
+        // clientConfig.setPort(port);
 
         // create client instance
         client = KineticClientFactory.createInstance(clientConfig);
