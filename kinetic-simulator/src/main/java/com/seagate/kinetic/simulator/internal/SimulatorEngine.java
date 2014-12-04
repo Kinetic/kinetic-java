@@ -557,6 +557,10 @@ public class SimulatorEngine implements MessageService {
             commandBuilder.getHeaderBuilder().setMessageType(
                     MessageType.valueOf(number));
 
+            commandBuilder.getStatusBuilder().setCode(
+                    StatusCode.INVALID_REQUEST);
+            commandBuilder.getStatusBuilder().setStatusMessage(e.getMessage());
+
             logger.log(Level.WARNING, e.getMessage(), e);
         } finally {
 
@@ -1059,7 +1063,14 @@ public class SimulatorEngine implements MessageService {
         logger.info("batch op ended/released ...");
     }
 
-    private synchronized void checkBatchMode(KineticMessage kmreq) {
+    private synchronized void checkBatchMode(KineticMessage kmreq)
+            throws InvalidRequestException {
+
+        if (kmreq.getIsInvalidBatchMessage()) {
+            throw new InvalidRequestException(
+                    "Invalid batch Id found in message: "
+                            + kmreq.getCommand().getHeader().getBatchID());
+        }
 
         if (this.isInBatchMode == false) {
             return;

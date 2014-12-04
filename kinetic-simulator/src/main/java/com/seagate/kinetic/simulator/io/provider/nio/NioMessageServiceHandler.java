@@ -240,12 +240,9 @@ public class NioMessageServiceHandler extends
 
         BatchQueue batchQueue = this.batchMap.get(key);
 
-        MessageType mtype = null;
+        MessageType mtype = request.getCommand().getHeader().getMessageType();
 
         if (batchQueue != null) {
-
-            mtype = request.getCommand().getHeader()
-                    .getMessageType();
 
             if (mtype == MessageType.PUT || mtype == MessageType.DELETE) {
 
@@ -257,6 +254,12 @@ public class NioMessageServiceHandler extends
 
                 // add to batch queue
                 batchQueue.add(request);
+            }
+        } else {
+            // there is a batch ID not known at this point
+            // the only allowed message type is start message.
+            if (mtype != MessageType.START_BATCH) {
+                request.setIsInvalidBatchMessage(true);
             }
         }
 

@@ -52,6 +52,9 @@ public class KineticMessage {
     // set to true if this is the first message in the batch
     private volatile boolean isFirstBatchMessage = false;
 
+    // set to true if this message is marked as invalid batch
+    private volatile boolean isInvalidBatchMessage = false;
+
 	/**
 	 * Set protocol buffer message.
 	 *
@@ -160,6 +163,25 @@ public class KineticMessage {
      */
     public void setIsFirstBatchMessage(boolean flag) {
         this.isFirstBatchMessage = flag;
+    }
+
+    /**
+     * Get if this message is not a valid batch message
+     * 
+     * @return true if this is NOT a valid batch message
+     */
+    public boolean getIsInvalidBatchMessage() {
+        return this.isInvalidBatchMessage;
+    }
+
+    /**
+     * Set if this message is an invalid batch message.
+     * 
+     * @param flag
+     *            true if this is an invalid batch message.
+     */
+    public void setIsInvalidBatchMessage(boolean flag) {
+        this.isInvalidBatchMessage = flag;
     }
 
 }
