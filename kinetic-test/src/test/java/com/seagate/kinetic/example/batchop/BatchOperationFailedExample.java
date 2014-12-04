@@ -65,12 +65,20 @@ public class BatchOperationFailedExample implements CallbackHandler<Entry> {
             bar.setValue("bar".getBytes("UTF8"));
             bar.getEntryMetadata().setVersion("1234".getBytes("UTF8"));
 
+            // put bar
             client.putForced(bar);
+
+            // delete foo
+            client.deleteForced("foo".getBytes("UTF8"));
 
             logger.info("*** starting batch operation ...");
 
             // start batch a new batch operation
             BatchOperation batch = client.createBatchOperation();
+
+            // put bar with wrong version, will fail
+            bar.getEntryMetadata().setVersion("12341234".getBytes("UTF8"));
+            batch.putAsync(bar, "".getBytes(), this);
 
             // put foo
             Entry foo = new Entry();
@@ -80,13 +88,20 @@ public class BatchOperationFailedExample implements CallbackHandler<Entry> {
 
             batch.putForcedAsync(foo, this);
 
-            // delete bar
-            // DeleteCbHandler dhandler = new DeleteCbHandler();
-            bar.getEntryMetadata().setVersion("12341234".getBytes("UTF8"));
-            batch.putAsync(bar, "".getBytes(), this);
-
             // end/commit batch operation
-            batch.commit();
+            try {
+                batch.commit();
+            } catch (Exception e) {
+                logger.info("received expected exception");
+            }
+
+            Entry foo1 = client.get("foo".getBytes("UTF8"));
+            if (foo1 != null) {
+                throw new RuntimeException(
+                        "received unexpected value from key foo");
+            } else {
+                logger.info("Test was successfully validated.");
+            }
 
         } catch (KineticException e) {
             logger.log(Level.WARNING, e.getMessage(), e);

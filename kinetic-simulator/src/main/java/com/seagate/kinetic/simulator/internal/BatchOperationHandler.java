@@ -60,7 +60,7 @@ public class BatchOperationHandler {
     private ArrayList<KineticMessage> list = new ArrayList<KineticMessage>();
 
     @SuppressWarnings("unchecked")
-    public BatchOperationHandler(KineticMessage request, KineticMessage respond,
+    public BatchOperationHandler(KineticMessage request,
  SimulatorEngine engine)
             throws InvalidBatchException {
 
@@ -94,11 +94,14 @@ public class BatchOperationHandler {
 
         try {
 
-            // check if request is from the same client/connection
-            if (request.getCommand().getHeader().getConnectionID() != this.cid) {
-                throw new RuntimeException("DB is locked by: " + cid
-                        + ", request cid: "
-                        + request.getCommand().getHeader().getConnectionID());
+            // check if request is from the same batch
+            if (request.getCommand().getHeader().getConnectionID() != this.cid
+                    || request.getCommand().getHeader().getBatchID() != this.batchId) {
+
+                throw new RuntimeException("DB is locked by: " + cid + "-"
+                        + batchId + ", request id: "
+                        + request.getCommand().getHeader().getConnectionID()
+                        + request.getCommand().getHeader().getBatchID());
             }
 
             MessageType mtype = request.getCommand().getHeader()
@@ -246,6 +249,7 @@ public class BatchOperationHandler {
 
         ByteString key = requestKeyValue.getKey();
 
+        @SuppressWarnings("unchecked")
         KVValue storeKv = (KVValue) store.get(key);
 
         if (storeKv != null) {

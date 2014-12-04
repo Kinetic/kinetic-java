@@ -49,6 +49,9 @@ public class KineticMessage {
     // set to true if this is a batch message
     private volatile boolean isBatchMessage = false;
 
+    // set to true if this is the first message in the batch
+    private volatile boolean isFirstBatchMessage = false;
+
 	/**
 	 * Set protocol buffer message.
 	 *
@@ -138,6 +141,25 @@ public class KineticMessage {
      */
     public void setIsBatchMessage(boolean flag) {
         this.isBatchMessage = flag;
+    }
+
+    /**
+     * Get if this message is the first batch message.
+     * 
+     * @return true if this is a batch message
+     */
+    public boolean getIsFirstBatchMessage() {
+        return this.isFirstBatchMessage;
+    }
+
+    /**
+     * Set if this message is the first batch message.
+     * 
+     * @param flag
+     *            true if this is a batch message.
+     */
+    public void setIsFirstBatchMessage(boolean flag) {
+        this.isFirstBatchMessage = flag;
     }
 
 }

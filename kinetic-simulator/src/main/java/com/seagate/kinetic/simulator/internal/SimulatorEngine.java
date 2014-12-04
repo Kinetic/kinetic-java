@@ -563,7 +563,7 @@ public class SimulatorEngine implements MessageService {
             try {
                 
                 if (this.batchOp != null && batchOp.isClosed()) {
-                    this.releaseBatchOperation();
+                    this.endBatchOperation(kmreq);
                 }
                 
                 // get command byte stirng
@@ -1027,8 +1027,9 @@ public class SimulatorEngine implements MessageService {
         return this.deviceLocked;
     }
 
-    private synchronized void initBatchOperation(KineticMessage kmreq,
-            KineticMessage kmresp) throws InvalidBatchException {
+    @Override
+    public synchronized void startBatchOperation(KineticMessage kmreq)
+            throws InvalidBatchException {
 
         if (this.batchOp != null) {
             throw new InvalidBatchException("batch op already started");
@@ -1041,12 +1042,13 @@ public class SimulatorEngine implements MessageService {
         this.isInBatchMode = true;
 
         // start a new batch, db is locked by this user
-        this.batchOp = new BatchOperationHandler(kmreq, kmresp, this);
+        this.batchOp = new BatchOperationHandler(kmreq, this);
 
-        logger.info("batch op handler initialized ...");
+        logger.info("batch op started ...");
     }
 
-    private synchronized void releaseBatchOperation() {
+    @Override
+    public synchronized void endBatchOperation(KineticMessage kmreq) {
 
         this.batchOp = null;
 
@@ -1054,7 +1056,7 @@ public class SimulatorEngine implements MessageService {
 
         this.notifyAll();
 
-        logger.info("batch op handler released ...");
+        logger.info("batch op ended/released ...");
     }
 
     private synchronized void checkBatchMode(KineticMessage kmreq) {
@@ -1095,9 +1097,14 @@ public class SimulatorEngine implements MessageService {
             return;
         }
 
+        if (kmreq.getIsFirstBatchMessage()) {
+            startBatchOperation(kmreq);
+        }
+
         // init batch operation
         if (this.batchOp == null) {
-            this.initBatchOperation(kmreq, kmresp);
+            throw new InvalidBatchException(
+                    "batch operation is either not started or failed");
         }
 
         // process batch message

@@ -22,6 +22,7 @@ package com.seagate.kinetic.simulator.io.provider.nio.tcp;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
@@ -31,6 +32,7 @@ import com.seagate.kinetic.common.lib.KineticMessage;
 import com.seagate.kinetic.proto.Kinetic.Command.MessageType;
 import com.seagate.kinetic.simulator.internal.ConnectionInfo;
 import com.seagate.kinetic.simulator.internal.FaultInjectedCloseConnectionException;
+import com.seagate.kinetic.simulator.internal.InvalidBatchException;
 import com.seagate.kinetic.simulator.internal.SimulatorEngine;
 import com.seagate.kinetic.simulator.io.provider.nio.BatchQueue;
 import com.seagate.kinetic.simulator.io.provider.nio.NioConnectionStateManager;
@@ -260,8 +262,8 @@ public class NioMessageServiceHandler extends
     }
 
     private synchronized void processBatchQueue(ChannelHandlerContext ctx,
-            KineticMessage km)
-            throws InterruptedException {
+            KineticMessage km) throws InterruptedException,
+            InvalidBatchException {
         
         String key = km.getCommand().getHeader().getConnectionID() + SEP
                 + km.getCommand().getHeader().getBatchID();
@@ -274,12 +276,23 @@ public class NioMessageServiceHandler extends
 
         try {
 
+            List<KineticMessage> mlist = batchQueue.getMessageList();
+            if (mlist.size() > 0) {
+                mlist.get(0).setIsFirstBatchMessage(true);
+            }
+
             for (KineticMessage request : batchQueue.getMessageList()) {
                 this.processRequest(ctx, request);
             }
 
         } finally {
+
             this.batchMap.remove(key);
+
+            /**
+             * end batch is called in the end of message processing
+             * (simulatorEngine).
+             */
         }
     }
 
