@@ -860,7 +860,8 @@ public class BatchOpAPITest extends IntegrationTestCase {
         try {
             batch.commit();
         } catch (KineticException e) {
-            Assert.fail("Batch commit throw exception. " + e.getMessage());
+            Assert.assertTrue(e.getResponseMessage().getCommand().getStatus()
+                    .getCode().equals(StatusCode.INVALID_BATCH));
         }
 
         // get foo, expect to find null
@@ -940,7 +941,8 @@ public class BatchOpAPITest extends IntegrationTestCase {
         try {
             batch.commit();
         } catch (KineticException e) {
-            Assert.fail("Batch commit throw exception. " + e.getMessage());
+            Assert.assertTrue(e.getResponseMessage().getCommand().getStatus()
+                    .getCode().equals(StatusCode.INVALID_BATCH));
         }
 
         // get foo, expect to find null
