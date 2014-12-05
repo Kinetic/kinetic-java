@@ -557,7 +557,10 @@ public class SimulatorEngine implements MessageService {
             commandBuilder.getHeaderBuilder().setMessageType(
                     MessageType.valueOf(number));
 
-            if (commandBuilder.getStatusBuilder().hasCode() == false) {
+            /**
+             * reset to default error response code if not set
+             */
+            if (commandBuilder.getStatusBuilder().getCode() == StatusCode.SUCCESS) {
                 commandBuilder.getStatusBuilder().setCode(
                     StatusCode.INVALID_REQUEST);
             }
