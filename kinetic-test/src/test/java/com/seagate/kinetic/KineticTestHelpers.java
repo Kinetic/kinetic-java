@@ -97,6 +97,20 @@ public class KineticTestHelpers {
         };
     }
 
+    public static <T> CallbackHandler<T> buildAsyncCallbackHandler(
+            final AsyncHandler<T> handler) {
+        return new CallbackHandler<T>() {
+            @Override
+            public void onSuccess(CallbackResult<T> result) {
+                handler.onSuccess(result);
+            }
+
+            @Override
+            public void onError(AsyncKineticException exception) {
+            }
+        };
+    }
+
     /**
      * Reset pin, unless kinetic.test.disable-clean-pin system property is set
      * to 'true'
@@ -126,6 +140,16 @@ public class KineticTestHelpers {
      */
     public interface SuccessAsyncHandler<T> {
         void onSuccess(CallbackResult<T> result);
+    }
+
+    /**
+     * Async success handler interface.
+     *
+     */
+    public interface AsyncHandler<T> {
+        void onSuccess(CallbackResult<T> result);
+
+        void onError(AsyncKineticException exception);
     }
 
     /**

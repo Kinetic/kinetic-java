@@ -19,17 +19,19 @@
  */
 package com.seagate.kinetic.asyncAPI;
 
-import static com.seagate.kinetic.KineticTestHelpers.buildSuccessOnlyCallbackHandler;
+import static com.seagate.kinetic.KineticTestHelpers.buildAsyncCallbackHandler;
 import static com.seagate.kinetic.KineticTestHelpers.toByteArray;
 import static org.testng.AssertJUnit.assertNull;
 import static org.testng.AssertJUnit.assertTrue;
 
 import java.io.UnsupportedEncodingException;
+import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import kinetic.client.AsyncKineticException;
 import kinetic.client.BatchOperation;
 import kinetic.client.CallbackHandler;
 import kinetic.client.CallbackResult;
@@ -70,6 +72,8 @@ import com.seagate.kinetic.proto.Kinetic.Command.Status.StatusCode;
 @Test(groups = { "simulator", "drive" })
 public class BatchOpAPITest extends IntegrationTestCase {
 
+    private final int valueSize = 1024;
+
     @Test(dataProvider = "transportProtocolOptions")
     public void testBatchOperation_PutsForcedAsyncSucceeds(String clientName) {
         Entry bar = getBarEntry();
@@ -83,9 +87,13 @@ public class BatchOpAPITest extends IntegrationTestCase {
         }
 
         try {
-            CallbackHandler<Entry> handler = buildSuccessOnlyCallbackHandler(new KineticTestHelpers.SuccessAsyncHandler<Entry>() {
+            CallbackHandler<Entry> handler = buildAsyncCallbackHandler(new KineticTestHelpers.AsyncHandler<Entry>() {
                 @Override
                 public void onSuccess(CallbackResult<Entry> result) {
+                }
+
+                @Override
+                public void onError(AsyncKineticException e) {
                 }
             });
 
@@ -105,25 +113,25 @@ public class BatchOpAPITest extends IntegrationTestCase {
         Entry fooGet = null;
         try {
             fooGet = getClient(clientName).get(foo.getKey());
+            assertTrue(Arrays.equals(foo.getKey(), fooGet.getKey()));
+            assertTrue(Arrays.equals(foo.getValue(), fooGet.getValue()));
+            assertTrue(Arrays.equals(foo.getEntryMetadata().getVersion(),
+                    fooGet.getEntryMetadata().getVersion()));
         } catch (KineticException e) {
             Assert.fail("Get entry foo throw exception: " + e.getMessage());
         }
-        assertTrue(Arrays.equals(foo.getKey(), fooGet.getKey()));
-        assertTrue(Arrays.equals(foo.getValue(), fooGet.getValue()));
-        assertTrue(Arrays.equals(foo.getEntryMetadata().getVersion(), fooGet
-                .getEntryMetadata().getVersion()));
 
         // get bar, expect to find it
         Entry barGet = null;
         try {
             barGet = getClient(clientName).get(bar.getKey());
+            assertTrue(Arrays.equals(bar.getKey(), barGet.getKey()));
+            assertTrue(Arrays.equals(bar.getValue(), barGet.getValue()));
+            assertTrue(Arrays.equals(bar.getEntryMetadata().getVersion(),
+                    barGet.getEntryMetadata().getVersion()));
         } catch (KineticException e) {
             Assert.fail("Get entry foo throw exception: " + e.getMessage());
         }
-        assertTrue(Arrays.equals(bar.getKey(), barGet.getKey()));
-        assertTrue(Arrays.equals(bar.getValue(), barGet.getValue()));
-        assertTrue(Arrays.equals(bar.getEntryMetadata().getVersion(), barGet
-                .getEntryMetadata().getVersion()));
     }
 
     @Test(dataProvider = "transportProtocolOptions")
@@ -142,9 +150,13 @@ public class BatchOpAPITest extends IntegrationTestCase {
         }
 
         try {
-            CallbackHandler<Entry> handler = buildSuccessOnlyCallbackHandler(new KineticTestHelpers.SuccessAsyncHandler<Entry>() {
+            CallbackHandler<Entry> handler = buildAsyncCallbackHandler(new KineticTestHelpers.AsyncHandler<Entry>() {
                 @Override
                 public void onSuccess(CallbackResult<Entry> result) {
+                }
+
+                @Override
+                public void onError(AsyncKineticException e) {
                 }
             });
 
@@ -185,7 +197,7 @@ public class BatchOpAPITest extends IntegrationTestCase {
         }
     }
 
-    @Test(dataProvider = "transportProtocolOptions", enabled = false)
+    @Test(dataProvider = "transportProtocolOptions")
     public void testBatchOperation_PutsAsyncOneFailedOnePutAsyncSuccess_AllFailed(
             String clientName) {
         Entry bar = getBarEntry();
@@ -202,9 +214,15 @@ public class BatchOpAPITest extends IntegrationTestCase {
         }
 
         try {
-            CallbackHandler<Entry> handler = buildSuccessOnlyCallbackHandler(new KineticTestHelpers.SuccessAsyncHandler<Entry>() {
+            CallbackHandler<Entry> handler = buildAsyncCallbackHandler(new KineticTestHelpers.AsyncHandler<Entry>() {
                 @Override
                 public void onSuccess(CallbackResult<Entry> result) {
+                }
+
+                @Override
+                public void onError(AsyncKineticException e) {
+                    assertTrue(e.getResponseMessage().getCommand().getStatus()
+                            .getCode().equals(StatusCode.NOT_ATTEMPTED));
                 }
             });
 
@@ -258,12 +276,15 @@ public class BatchOpAPITest extends IntegrationTestCase {
         }
 
         try {
-            CallbackHandler<Entry> handler = buildSuccessOnlyCallbackHandler(new KineticTestHelpers.SuccessAsyncHandler<Entry>() {
+            CallbackHandler<Entry> handler = buildAsyncCallbackHandler(new KineticTestHelpers.AsyncHandler<Entry>() {
                 @Override
                 public void onSuccess(CallbackResult<Entry> result) {
                 }
-            });
 
+                @Override
+                public void onError(AsyncKineticException e) {
+                }
+            });
             batch.putForcedAsync(bar, handler);
             batch.putAsync(foo, newVersion, handler);
         } catch (KineticException e) {
@@ -301,7 +322,7 @@ public class BatchOpAPITest extends IntegrationTestCase {
         }
     }
 
-    @Test(dataProvider = "transportProtocolOptions", enabled = false)
+    @Test(dataProvider = "transportProtocolOptions")
     public void testBatchOperation_PutsAsyncOneFailedOnePutForcedAsyncSuccess_AllFailed(
             String clientName) {
         Entry bar = getBarEntry();
@@ -317,9 +338,15 @@ public class BatchOpAPITest extends IntegrationTestCase {
         }
 
         try {
-            CallbackHandler<Entry> handler = buildSuccessOnlyCallbackHandler(new KineticTestHelpers.SuccessAsyncHandler<Entry>() {
+            CallbackHandler<Entry> handler = buildAsyncCallbackHandler(new KineticTestHelpers.AsyncHandler<Entry>() {
                 @Override
                 public void onSuccess(CallbackResult<Entry> result) {
+                }
+
+                @Override
+                public void onError(AsyncKineticException e) {
+                    assertTrue(e.getResponseMessage().getCommand().getStatus()
+                            .getCode().equals(StatusCode.NOT_ATTEMPTED));
                 }
             });
 
@@ -376,9 +403,13 @@ public class BatchOpAPITest extends IntegrationTestCase {
         }
 
         try {
-            CallbackHandler<Boolean> dhandler = buildSuccessOnlyCallbackHandler(new KineticTestHelpers.SuccessAsyncHandler<Boolean>() {
+            CallbackHandler<Boolean> dhandler = buildAsyncCallbackHandler(new KineticTestHelpers.AsyncHandler<Boolean>() {
                 @Override
                 public void onSuccess(CallbackResult<Boolean> result) {
+                }
+
+                @Override
+                public void onError(AsyncKineticException e) {
                 }
             });
 
@@ -413,7 +444,7 @@ public class BatchOpAPITest extends IntegrationTestCase {
         }
     }
 
-    @Test(dataProvider = "transportProtocolOptions", enabled = false)
+    @Test(dataProvider = "transportProtocolOptions")
     public void testBatchOperation_DeletesAsyncOneFailed_AllFailed(
             String clientName) {
         Entry bar = getBarEntry();
@@ -433,9 +464,15 @@ public class BatchOpAPITest extends IntegrationTestCase {
         }
 
         try {
-            CallbackHandler<Boolean> dhandler = buildSuccessOnlyCallbackHandler(new KineticTestHelpers.SuccessAsyncHandler<Boolean>() {
+            CallbackHandler<Boolean> dhandler = buildAsyncCallbackHandler(new KineticTestHelpers.AsyncHandler<Boolean>() {
                 @Override
                 public void onSuccess(CallbackResult<Boolean> result) {
+                }
+
+                @Override
+                public void onError(AsyncKineticException e) {
+                    assertTrue(e.getResponseMessage().getCommand().getStatus()
+                            .getCode().equals(StatusCode.NOT_ATTEMPTED));
                 }
             });
 
@@ -473,8 +510,8 @@ public class BatchOpAPITest extends IntegrationTestCase {
             barGet = getClient(clientName).get(bar.getKey());
             assertTrue(Arrays.equals(bar.getKey(), barGet.getKey()));
             assertTrue(Arrays.equals(bar.getValue(), barGet.getValue()));
-            assertTrue(Arrays.equals(bar.getEntryMetadata().getVersion(),
-                    barGet.getEntryMetadata().getVersion()));
+            assertTrue(Arrays.equals(toByteArray("1234"), barGet
+                    .getEntryMetadata().getVersion()));
         } catch (KineticException e) {
             Assert.fail("Get entry foo throw exception: " + e.getMessage());
         }
@@ -499,9 +536,14 @@ public class BatchOpAPITest extends IntegrationTestCase {
         }
 
         try {
-            CallbackHandler<Boolean> dhandler = buildSuccessOnlyCallbackHandler(new KineticTestHelpers.SuccessAsyncHandler<Boolean>() {
+            CallbackHandler<Boolean> dhandler = buildAsyncCallbackHandler(new KineticTestHelpers.AsyncHandler<Boolean>() {
                 @Override
                 public void onSuccess(CallbackResult<Boolean> result) {
+                }
+
+                @Override
+                public void onError(AsyncKineticException e) {
+
                 }
             });
 
@@ -537,7 +579,7 @@ public class BatchOpAPITest extends IntegrationTestCase {
     }
 
     @Test(dataProvider = "transportProtocolOptions")
-    public void testBatchOperation_DeleteForcedAsyncAnddeleteAsyncSucceeds(
+    public void testBatchOperation_DeleteForcedAsyncAndDeleteAsyncSucceeds(
             String clientName) {
         Entry bar = getBarEntry();
         Entry foo = getFooEntry();
@@ -556,9 +598,14 @@ public class BatchOpAPITest extends IntegrationTestCase {
         }
 
         try {
-            CallbackHandler<Boolean> dhandler = buildSuccessOnlyCallbackHandler(new KineticTestHelpers.SuccessAsyncHandler<Boolean>() {
+            CallbackHandler<Boolean> dhandler = buildAsyncCallbackHandler(new KineticTestHelpers.AsyncHandler<Boolean>() {
                 @Override
                 public void onSuccess(CallbackResult<Boolean> result) {
+                }
+
+                @Override
+                public void onError(AsyncKineticException e) {
+
                 }
             });
 
@@ -593,7 +640,7 @@ public class BatchOpAPITest extends IntegrationTestCase {
         }
     }
 
-    @Test(dataProvider = "transportProtocolOptions", enabled = false)
+    @Test(dataProvider = "transportProtocolOptions")
     public void testBatchOperation_DeletesAsyncOneFailed_OneDeleteForcedAsyncSuccess_AllFailed(
             String clientName) {
         Entry bar = getBarEntry();
@@ -613,9 +660,15 @@ public class BatchOpAPITest extends IntegrationTestCase {
         }
 
         try {
-            CallbackHandler<Boolean> dhandler = buildSuccessOnlyCallbackHandler(new KineticTestHelpers.SuccessAsyncHandler<Boolean>() {
+            CallbackHandler<Boolean> dhandler = buildAsyncCallbackHandler(new KineticTestHelpers.AsyncHandler<Boolean>() {
                 @Override
                 public void onSuccess(CallbackResult<Boolean> result) {
+                }
+
+                @Override
+                public void onError(AsyncKineticException e) {
+                    assertTrue(e.getResponseMessage().getCommand().getStatus()
+                            .getCode().equals(StatusCode.NOT_ATTEMPTED));
                 }
             });
 
@@ -641,10 +694,10 @@ public class BatchOpAPITest extends IntegrationTestCase {
             fooGet = getClient(clientName).get(foo.getKey());
             assertTrue(Arrays.equals(foo.getKey(), fooGet.getKey()));
             assertTrue(Arrays.equals(foo.getValue(), fooGet.getValue()));
-            assertTrue(Arrays.equals(foo.getEntryMetadata().getVersion(),
-                    fooGet.getEntryMetadata().getVersion()));
+            assertTrue(Arrays.equals(toByteArray("1234"), fooGet
+                    .getEntryMetadata().getVersion()));
         } catch (KineticException e) {
-            Assert.fail("Get entry foo throw exception: " + e.getMessage());
+            Assert.fail("Get entry throw exception: " + e.getMessage());
         }
 
         // get bar, expect to find it
@@ -656,7 +709,7 @@ public class BatchOpAPITest extends IntegrationTestCase {
             assertTrue(Arrays.equals(bar.getEntryMetadata().getVersion(),
                     barGet.getEntryMetadata().getVersion()));
         } catch (KineticException e) {
-            Assert.fail("Get entry foo throw exception: " + e.getMessage());
+            Assert.fail("Get entry throw exception: " + e.getMessage());
         }
     }
 
@@ -682,9 +735,15 @@ public class BatchOpAPITest extends IntegrationTestCase {
         byte[] newVersion = toByteArray("5678");
 
         try {
-            CallbackHandler<Entry> handler = buildSuccessOnlyCallbackHandler(new KineticTestHelpers.SuccessAsyncHandler<Entry>() {
+            CallbackHandler<Entry> handler = buildAsyncCallbackHandler(new KineticTestHelpers.AsyncHandler<Entry>() {
                 @Override
                 public void onSuccess(CallbackResult<Entry> result) {
+                }
+
+                @Override
+                public void onError(AsyncKineticException e) {
+                    assertTrue(e.getResponseMessage().getCommand().getStatus()
+                            .getCode().equals(StatusCode.NOT_ATTEMPTED));
                 }
             });
 
@@ -695,9 +754,15 @@ public class BatchOpAPITest extends IntegrationTestCase {
         }
 
         try {
-            CallbackHandler<Boolean> dhandler = buildSuccessOnlyCallbackHandler(new KineticTestHelpers.SuccessAsyncHandler<Boolean>() {
+            CallbackHandler<Boolean> dhandler = buildAsyncCallbackHandler(new KineticTestHelpers.AsyncHandler<Boolean>() {
                 @Override
                 public void onSuccess(CallbackResult<Boolean> result) {
+                }
+
+                @Override
+                public void onError(AsyncKineticException e) {
+                    assertTrue(e.getResponseMessage().getCommand().getStatus()
+                            .getCode().equals(StatusCode.NOT_ATTEMPTED));
                 }
             });
 
@@ -718,6 +783,93 @@ public class BatchOpAPITest extends IntegrationTestCase {
             fooGet = getClient(clientName).get(foo.getKey());
             assertTrue(Arrays.equals(foo.getKey(), fooGet.getKey()));
             assertTrue(Arrays.equals(foo.getValue(), fooGet.getValue()));
+            assertTrue(Arrays.equals(newVersion, fooGet.getEntryMetadata()
+                    .getVersion()));
+        } catch (KineticException e) {
+            Assert.fail("Get foo throw exception. " + e.getMessage());
+        }
+
+        // get bar, expect to null
+        Entry barGet;
+        try {
+            barGet = getClient(clientName).get(bar.getKey());
+            assertNull(barGet);
+        } catch (KineticException e) {
+            Assert.fail("Get bar throw exception. " + e.getMessage());
+        }
+    }
+
+    @Test(dataProvider = "transportProtocolOptions")
+    public void testBatchOperation_PutAndDelete_WithBigValue_Succeeds(
+            String clientName) {
+        Entry bar = getBarEntry();
+        byte[] barBigValue = ByteBuffer.allocate(valueSize).array();
+        bar.setValue(barBigValue);
+
+        try {
+            getClient(clientName).putForced(bar);
+        } catch (KineticException e) {
+            Assert.fail("Put entry failed. " + e.getMessage());
+        }
+
+        BatchOperation batch = null;
+        try {
+            batch = getClient(clientName).createBatchOperation();
+        } catch (KineticException e) {
+            Assert.fail("Create batch operation throw exception. "
+                    + e.getMessage());
+        }
+
+        Entry foo = getFooEntry();
+        foo.getEntryMetadata().setVersion(null);
+        byte[] newVersion = toByteArray("5678");
+        byte[] fooBigValue = ByteBuffer.allocate(valueSize).array();
+        foo.setValue(fooBigValue);
+
+        try {
+            CallbackHandler<Entry> handler = buildAsyncCallbackHandler(new KineticTestHelpers.AsyncHandler<Entry>() {
+                @Override
+                public void onSuccess(CallbackResult<Entry> result) {
+                }
+
+                @Override
+                public void onError(AsyncKineticException e) {
+                }
+            });
+
+            batch.putAsync(foo, newVersion, handler);
+        } catch (KineticException e) {
+            Assert.fail("Put entry throw exception. " + e.getMessage());
+        }
+
+        try {
+            CallbackHandler<Boolean> dhandler = buildAsyncCallbackHandler(new KineticTestHelpers.AsyncHandler<Boolean>() {
+                @Override
+                public void onSuccess(CallbackResult<Boolean> result) {
+                }
+
+                @Override
+                public void onError(AsyncKineticException e) {
+                }
+            });
+
+            batch.deleteAsync(bar, dhandler);
+        } catch (KineticException e) {
+            Assert.fail("Delete async throw exception. " + e.getMessage());
+        }
+
+        try {
+            batch.commit();
+        } catch (KineticException e) {
+            Assert.fail("Batch commit throw exception. " + e.getMessage());
+        }
+
+        // get foo, expect to find it
+        Entry fooGet;
+        try {
+            fooGet = getClient(clientName).get(foo.getKey());
+            assertTrue(Arrays.equals(foo.getKey(), fooGet.getKey()));
+            assertTrue(Arrays.equals(fooBigValue, fooGet.getValue()));
             assertTrue(Arrays.equals(newVersion, fooGet.getEntryMetadata()
                     .getVersion()));
         } catch (KineticException e) {
@@ -756,9 +908,15 @@ public class BatchOpAPITest extends IntegrationTestCase {
         byte[] newVersion = toByteArray("5678");
 
         try {
-            CallbackHandler<Entry> handler = buildSuccessOnlyCallbackHandler(new KineticTestHelpers.SuccessAsyncHandler<Entry>() {
+            CallbackHandler<Entry> handler = buildAsyncCallbackHandler(new KineticTestHelpers.AsyncHandler<Entry>() {
                 @Override
                 public void onSuccess(CallbackResult<Entry> result) {
+                }
+
+                @Override
+                public void onError(AsyncKineticException e) {
+                    assertTrue(e.getResponseMessage().getCommand().getStatus()
+                            .getCode().equals(StatusCode.NOT_ATTEMPTED));
                 }
             });
 
@@ -769,9 +927,13 @@ public class BatchOpAPITest extends IntegrationTestCase {
         }
 
         try {
-            CallbackHandler<Boolean> dhandler = buildSuccessOnlyCallbackHandler(new KineticTestHelpers.SuccessAsyncHandler<Boolean>() {
+            CallbackHandler<Boolean> dhandler = buildAsyncCallbackHandler(new KineticTestHelpers.AsyncHandler<Boolean>() {
                 @Override
                 public void onSuccess(CallbackResult<Boolean> result) {
+                }
+
+                @Override
+                public void onError(AsyncKineticException e) {
                 }
             });
 
@@ -806,7 +968,7 @@ public class BatchOpAPITest extends IntegrationTestCase {
         }
     }
 
-    @Test(dataProvider = "transportProtocolOptions", enabled = false)
+    @Test(dataProvider = "transportProtocolOptions")
     public void testBatchOperation_PutAndDeleteForcedPartiallyFailed_AllFailed(
             String clientName) {
         Entry bar = getBarEntry();
@@ -829,9 +991,15 @@ public class BatchOpAPITest extends IntegrationTestCase {
         byte[] newVersion = toByteArray("5678");
 
         try {
-            CallbackHandler<Entry> handler = buildSuccessOnlyCallbackHandler(new KineticTestHelpers.SuccessAsyncHandler<Entry>() {
+            CallbackHandler<Entry> handler = buildAsyncCallbackHandler(new KineticTestHelpers.AsyncHandler<Entry>() {
                 @Override
                 public void onSuccess(CallbackResult<Entry> result) {
+                }
+
+                @Override
+                public void onError(AsyncKineticException e) {
+                    assertTrue(e.getResponseMessage().getCommand().getStatus()
+                            .getCode().equals(StatusCode.NOT_ATTEMPTED));
                 }
             });
 
@@ -840,16 +1008,21 @@ public class BatchOpAPITest extends IntegrationTestCase {
             batch.putAsync(foo, newVersion, handler);
 
         } catch (KineticException e) {
-            Assert.fail("Put entry throw exception. " + e.getMessage());
+            Assert.fail("Put async throw exception. " + e.getMessage());
         }
 
         try {
-            CallbackHandler<Boolean> dhandler = buildSuccessOnlyCallbackHandler(new KineticTestHelpers.SuccessAsyncHandler<Boolean>() {
+            CallbackHandler<Boolean> dhandler = buildAsyncCallbackHandler(new KineticTestHelpers.AsyncHandler<Boolean>() {
                 @Override
                 public void onSuccess(CallbackResult<Boolean> result) {
                 }
-            });
 
+                @Override
+                public void onError(AsyncKineticException e) {
+                    assertTrue(e.getResponseMessage().getCommand().getStatus()
+                            .getCode().equals(StatusCode.NOT_ATTEMPTED));
+                }
+            });
             bar.getEntryMetadata().setVersion(toByteArray("NoMatchDbVersion"));
             batch.deleteAsync(bar, dhandler);
             batch.deleteForcedAsync(foo.getKey(), dhandler);
@@ -879,14 +1052,14 @@ public class BatchOpAPITest extends IntegrationTestCase {
             barGet = getClient(clientName).get(bar.getKey());
             assertTrue(Arrays.equals(bar.getKey(), barGet.getKey()));
             assertTrue(Arrays.equals(bar.getValue(), barGet.getValue()));
-            assertTrue(Arrays.equals(bar.getEntryMetadata().getVersion(),
-                    barGet.getEntryMetadata().getVersion()));
+            assertTrue(Arrays.equals(toByteArray("1234"), barGet
+                    .getEntryMetadata().getVersion()));
         } catch (KineticException e) {
             Assert.fail("Get bar throw exception. " + e.getMessage());
         }
     }
 
-    @Test(dataProvider = "transportProtocolOptions", enabled = false)
+    @Test(dataProvider = "transportProtocolOptions")
     public void testBatchOperation_PutAndDeleteForcedAllOperationFailed_AllFailed(
             String clientName) {
         Entry bar = getBarEntry();
@@ -909,9 +1082,15 @@ public class BatchOpAPITest extends IntegrationTestCase {
         byte[] newVersion = toByteArray("5678");
 
         try {
-            CallbackHandler<Entry> handler = buildSuccessOnlyCallbackHandler(new KineticTestHelpers.SuccessAsyncHandler<Entry>() {
+            CallbackHandler<Entry> handler = buildAsyncCallbackHandler(new KineticTestHelpers.AsyncHandler<Entry>() {
                 @Override
                 public void onSuccess(CallbackResult<Entry> result) {
+                }
+
+                @Override
+                public void onError(AsyncKineticException e) {
+                    assertTrue(e.getResponseMessage().getCommand().getStatus()
+                            .getCode().equals(StatusCode.NOT_ATTEMPTED));
                 }
             });
 
@@ -923,9 +1102,15 @@ public class BatchOpAPITest extends IntegrationTestCase {
         }
 
         try {
-            CallbackHandler<Boolean> dhandler = buildSuccessOnlyCallbackHandler(new KineticTestHelpers.SuccessAsyncHandler<Boolean>() {
+            CallbackHandler<Boolean> dhandler = buildAsyncCallbackHandler(new KineticTestHelpers.AsyncHandler<Boolean>() {
                 @Override
                 public void onSuccess(CallbackResult<Boolean> result) {
+                }
+
+                @Override
+                public void onError(AsyncKineticException e) {
+                    assertTrue(e.getResponseMessage().getCommand().getStatus()
+                            .getCode().equals(StatusCode.NOT_ATTEMPTED));
                 }
             });
 
@@ -960,8 +1145,8 @@ public class BatchOpAPITest extends IntegrationTestCase {
             barGet = getClient(clientName).get(bar.getKey());
             assertTrue(Arrays.equals(bar.getKey(), barGet.getKey()));
             assertTrue(Arrays.equals(bar.getValue(), barGet.getValue()));
-            assertTrue(Arrays.equals(bar.getEntryMetadata().getVersion(),
-                    barGet.getEntryMetadata().getVersion()));
+            assertTrue(Arrays.equals(toByteArray("1234"), barGet
+                    .getEntryMetadata().getVersion()));
         } catch (KineticException e) {
             Assert.fail("Get bar throw exception. " + e.getMessage());
         }
@@ -988,9 +1173,13 @@ public class BatchOpAPITest extends IntegrationTestCase {
         Entry foo = getFooEntry();
 
         try {
-            CallbackHandler<Entry> handler = buildSuccessOnlyCallbackHandler(new KineticTestHelpers.SuccessAsyncHandler<Entry>() {
+            CallbackHandler<Entry> handler = buildAsyncCallbackHandler(new KineticTestHelpers.AsyncHandler<Entry>() {
                 @Override
                 public void onSuccess(CallbackResult<Entry> result) {
+                }
+
+                @Override
+                public void onError(AsyncKineticException e) {
                 }
             });
 
@@ -1000,9 +1189,13 @@ public class BatchOpAPITest extends IntegrationTestCase {
         }
 
         try {
-            CallbackHandler<Boolean> dhandler = buildSuccessOnlyCallbackHandler(new KineticTestHelpers.SuccessAsyncHandler<Boolean>() {
+            CallbackHandler<Boolean> dhandler = buildAsyncCallbackHandler(new KineticTestHelpers.AsyncHandler<Boolean>() {
                 @Override
                 public void onSuccess(CallbackResult<Boolean> result) {
+                }
+
+                @Override
+                public void onError(AsyncKineticException e) {
                 }
             });
 
@@ -1060,9 +1253,13 @@ public class BatchOpAPITest extends IntegrationTestCase {
         Entry foo = getFooEntry();
 
         try {
-            CallbackHandler<Entry> handler = buildSuccessOnlyCallbackHandler(new KineticTestHelpers.SuccessAsyncHandler<Entry>() {
+            CallbackHandler<Entry> handler = buildAsyncCallbackHandler(new KineticTestHelpers.AsyncHandler<Entry>() {
                 @Override
                 public void onSuccess(CallbackResult<Entry> result) {
+                }
+
+                @Override
+                public void onError(AsyncKineticException e) {
                 }
             });
 
@@ -1072,9 +1269,13 @@ public class BatchOpAPITest extends IntegrationTestCase {
         }
 
         try {
-            CallbackHandler<Boolean> dhandler = buildSuccessOnlyCallbackHandler(new KineticTestHelpers.SuccessAsyncHandler<Boolean>() {
+            CallbackHandler<Boolean> dhandler = buildAsyncCallbackHandler(new KineticTestHelpers.AsyncHandler<Boolean>() {
                 @Override
                 public void onSuccess(CallbackResult<Boolean> result) {
+                }
+
+                @Override
+                public void onError(AsyncKineticException e) {
                 }
             });
 
@@ -1133,9 +1334,13 @@ public class BatchOpAPITest extends IntegrationTestCase {
         Entry foo = getFooEntry();
 
         try {
-            CallbackHandler<Entry> handler = buildSuccessOnlyCallbackHandler(new KineticTestHelpers.SuccessAsyncHandler<Entry>() {
+            CallbackHandler<Entry> handler = buildAsyncCallbackHandler(new KineticTestHelpers.AsyncHandler<Entry>() {
                 @Override
                 public void onSuccess(CallbackResult<Entry> result) {
+                }
+
+                @Override
+                public void onError(AsyncKineticException e) {
                 }
             });
 
@@ -1146,9 +1351,13 @@ public class BatchOpAPITest extends IntegrationTestCase {
         }
 
         try {
-            CallbackHandler<Boolean> dhandler = buildSuccessOnlyCallbackHandler(new KineticTestHelpers.SuccessAsyncHandler<Boolean>() {
+            CallbackHandler<Boolean> dhandler = buildAsyncCallbackHandler(new KineticTestHelpers.AsyncHandler<Boolean>() {
                 @Override
                 public void onSuccess(CallbackResult<Boolean> result) {
+                }
+
+                @Override
+                public void onError(AsyncKineticException e) {
                 }
             });
 
@@ -1187,7 +1396,7 @@ public class BatchOpAPITest extends IntegrationTestCase {
     }
 
     @Test(dataProvider = "transportProtocolOptions")
-    public void testBatchOperation_FollowedBothReadByOneClient_Failed(
+    public void testBatchOperation_FollowedBothGetAndPutByOneClient_PutSuccess(
             String clientName) {
         Entry bar = getBarEntry();
         try {
@@ -1207,9 +1416,13 @@ public class BatchOpAPITest extends IntegrationTestCase {
         Entry foo = getFooEntry();
 
         try {
-            CallbackHandler<Entry> handler = buildSuccessOnlyCallbackHandler(new KineticTestHelpers.SuccessAsyncHandler<Entry>() {
+            CallbackHandler<Entry> handler = buildAsyncCallbackHandler(new KineticTestHelpers.AsyncHandler<Entry>() {
                 @Override
                 public void onSuccess(CallbackResult<Entry> result) {
+                }
+
+                @Override
+                public void onError(AsyncKineticException e) {
                 }
             });
 
@@ -1219,9 +1432,13 @@ public class BatchOpAPITest extends IntegrationTestCase {
         }
 
         try {
-            CallbackHandler<Boolean> dhandler = buildSuccessOnlyCallbackHandler(new KineticTestHelpers.SuccessAsyncHandler<Boolean>() {
+            CallbackHandler<Boolean> dhandler = buildAsyncCallbackHandler(new KineticTestHelpers.AsyncHandler<Boolean>() {
                 @Override
                 public void onSuccess(CallbackResult<Boolean> result) {
+                }
+
+                @Override
+                public void onError(AsyncKineticException e) {
                 }
             });
             batch.deleteAsync(bar, dhandler);
@@ -1238,14 +1455,34 @@ public class BatchOpAPITest extends IntegrationTestCase {
                     + e.getMessage());
         }
         try {
-            client1.get(foo.getKey());
+            assertNull(client1.get(foo.getKey()));
         } catch (KineticException e) {
             Assert.fail("Another connection can not operate before batch operation end. "
                     + e.getMessage());
         }
 
+        byte[] newFooVersion = null;
+        byte[] newValue = null;
         try {
-            client1.get(bar.getKey());
+            newValue = toByteArray("newValue");
+            foo.setValue(newValue);
+            foo.getEntryMetadata().setVersion(null);
+            newFooVersion = toByteArray("newVersion");
+
+            client1.put(foo, newFooVersion);
+            assertTrue(Arrays.equals(newValue, client1.get(foo.getKey())
+                    .getValue()));
+            assertTrue(Arrays.equals(newFooVersion, client1.get(foo.getKey())
+                    .getEntryMetadata().getVersion()));
+
+        } catch (KineticException e1) {
+        }
+
+        try {
+            Entry barGet = client1.get(bar.getKey());
+            assertTrue(Arrays.equals(bar.getValue(), barGet.getValue()));
+            assertTrue(Arrays.equals(bar.getEntryMetadata().getVersion(),
+                    barGet.getEntryMetadata().getVersion()));
         } catch (KineticException e) {
             Assert.fail("Another connection can not operate before batch operation end. "
                     + e.getMessage());
@@ -1270,9 +1507,10 @@ public class BatchOpAPITest extends IntegrationTestCase {
         try {
             fooGet = getClient(clientName).get(foo.getKey());
             assertTrue(Arrays.equals(foo.getKey(), fooGet.getKey()));
-            assertTrue(Arrays.equals(foo.getValue(), fooGet.getValue()));
-            assertTrue(Arrays.equals(foo.getEntryMetadata().getVersion(),
-                    fooGet.getEntryMetadata().getVersion()));
+            assertTrue(Arrays
+                    .equals(toByteArray("foovalue"), fooGet.getValue()));
+            assertTrue(Arrays.equals(toByteArray("1234"), fooGet
+                    .getEntryMetadata().getVersion()));
         } catch (KineticException e) {
             Assert.fail("Get entry failed. " + e.getMessage());
         }
@@ -1306,9 +1544,13 @@ public class BatchOpAPITest extends IntegrationTestCase {
         Entry foo = getFooEntry();
 
         try {
-            CallbackHandler<Entry> handler = buildSuccessOnlyCallbackHandler(new KineticTestHelpers.SuccessAsyncHandler<Entry>() {
+            CallbackHandler<Entry> handler = buildAsyncCallbackHandler(new KineticTestHelpers.AsyncHandler<Entry>() {
                 @Override
                 public void onSuccess(CallbackResult<Entry> result) {
+                }
+
+                @Override
+                public void onError(AsyncKineticException e) {
                 }
             });
 
@@ -1318,9 +1560,13 @@ public class BatchOpAPITest extends IntegrationTestCase {
         }
 
         try {
-            CallbackHandler<Boolean> dhandler = buildSuccessOnlyCallbackHandler(new KineticTestHelpers.SuccessAsyncHandler<Boolean>() {
+            CallbackHandler<Boolean> dhandler = buildAsyncCallbackHandler(new KineticTestHelpers.AsyncHandler<Boolean>() {
                 @Override
                 public void onSuccess(CallbackResult<Boolean> result) {
+                }
+
+                @Override
+                public void onError(AsyncKineticException e) {
                 }
             });
             batch.deleteAsync(bar, dhandler);
@@ -1385,6 +1631,389 @@ public class BatchOpAPITest extends IntegrationTestCase {
     }
 
     @Test(dataProvider = "transportProtocolOptions")
+    public void testBatchOperation_FollowedBothGetAndPutByOneClient_PutFailed(
+            String clientName) {
+        Entry bar = getBarEntry();
+        try {
+            getClient(clientName).putForced(bar);
+        } catch (KineticException e) {
+            Assert.fail("Put entry failed. " + e.getMessage());
+        }
+
+        BatchOperation batch = null;
+        try {
+            batch = getClient(clientName).createBatchOperation();
+        } catch (KineticException e) {
+            Assert.fail("Create batch operation throw exception. "
+                    + e.getMessage());
+        }
+
+        Entry foo = getFooEntry();
+
+        try {
+            CallbackHandler<Entry> handler = buildAsyncCallbackHandler(new KineticTestHelpers.AsyncHandler<Entry>() {
+                @Override
+                public void onSuccess(CallbackResult<Entry> result) {
+                }
+
+                @Override
+                public void onError(AsyncKineticException e) {
+                }
+            });
+
+            batch.putForcedAsync(foo, handler);
+        } catch (KineticException e) {
+            Assert.fail("Put async throw exception. " + e.getMessage());
+        }
+
+        try {
+            CallbackHandler<Boolean> dhandler = buildAsyncCallbackHandler(new KineticTestHelpers.AsyncHandler<Boolean>() {
+                @Override
+                public void onSuccess(CallbackResult<Boolean> result) {
+                }
+
+                @Override
+                public void onError(AsyncKineticException e) {
+                }
+            });
+            batch.deleteAsync(bar, dhandler);
+        } catch (KineticException e) {
+            Assert.fail("Delete async throw exception. " + e.getMessage());
+        }
+
+        ClientConfiguration cc = kineticClientConfigutations.get(clientName);
+        KineticClient client1 = null;
+        try {
+            client1 = KineticClientFactory.createInstance(cc);
+        } catch (KineticException e) {
+            Assert.fail("Create a new client throw exception. "
+                    + e.getMessage());
+        }
+        try {
+            assertNull(client1.get(foo.getKey()));
+        } catch (KineticException e) {
+            Assert.fail("Another connection can not operate before batch operation end. "
+                    + e.getMessage());
+        }
+
+        byte[] newFooVersion = null;
+        byte[] newValue = null;
+        try {
+            newValue = toByteArray("newValue");
+            foo.setValue(newValue);
+            foo.getEntryMetadata().setVersion(toByteArray("1111"));
+            newFooVersion = toByteArray("newVersion");
+
+            client1.put(foo, newFooVersion);
+
+        } catch (KineticException e1) {
+            assertTrue(e1.getResponseMessage().getCommand().getStatus()
+                    .getCode().equals(StatusCode.VERSION_MISMATCH));
+        }
+
+        try {
+            Entry barGet = client1.get(bar.getKey());
+            assertTrue(Arrays.equals(bar.getValue(), barGet.getValue()));
+            assertTrue(Arrays.equals(bar.getEntryMetadata().getVersion(),
+                    barGet.getEntryMetadata().getVersion()));
+        } catch (KineticException e) {
+            Assert.fail("Another connection can not operate before batch operation end. "
+                    + e.getMessage());
+        } finally {
+            try {
+                client1.close();
+            } catch (KineticException e) {
+                Assert.fail("Another connection close throw exception. "
+                        + e.getMessage());
+            }
+        }
+
+        try {
+            batch.commit();
+        } catch (KineticException e) {
+            Assert.fail("Batch operation commit throw exception. "
+                    + e.getMessage());
+        }
+
+        // get foo, expect to find it
+        Entry fooGet;
+        try {
+            fooGet = getClient(clientName).get(foo.getKey());
+            assertTrue(Arrays.equals(foo.getKey(), fooGet.getKey()));
+            assertTrue(Arrays
+                    .equals(toByteArray("foovalue"), fooGet.getValue()));
+            assertTrue(Arrays.equals(toByteArray("1234"), fooGet
+                    .getEntryMetadata().getVersion()));
+        } catch (KineticException e) {
+            Assert.fail("Get entry failed. " + e.getMessage());
+        }
+
+        // get bar, expect to null
+        try {
+            assertNull(getClient(clientName).get(bar.getKey()));
+        } catch (KineticException e) {
+            Assert.fail("Get entry failed. " + e.getMessage());
+        }
+    }
+
+    @Test(dataProvider = "transportProtocolOptions")
+    public void testBatchOperation_FollowedBothGetAndPutByOneClient_PutAsyncAndPutSuccess(
+            String clientName) {
+        Entry bar = getBarEntry();
+        try {
+            getClient(clientName).putForced(bar);
+        } catch (KineticException e) {
+            Assert.fail("Put entry failed. " + e.getMessage());
+        }
+
+        BatchOperation batch = null;
+        try {
+            batch = getClient(clientName).createBatchOperation();
+        } catch (KineticException e) {
+            Assert.fail("Create batch operation throw exception. "
+                    + e.getMessage());
+        }
+
+        Entry foo = getFooEntry();
+
+        try {
+            CallbackHandler<Entry> handler = buildAsyncCallbackHandler(new KineticTestHelpers.AsyncHandler<Entry>() {
+                @Override
+                public void onSuccess(CallbackResult<Entry> result) {
+                }
+
+                @Override
+                public void onError(AsyncKineticException e) {
+                }
+            });
+
+            foo.getEntryMetadata().setVersion(toByteArray("1111"));
+            foo.setValue(toByteArray("newfoovalue"));
+            byte[] newVersion = toByteArray("3333");
+            batch.putAsync(foo, newVersion, handler);
+        } catch (KineticException e) {
+            Assert.fail("Put async throw exception. " + e.getMessage());
+        }
+
+        try {
+            CallbackHandler<Boolean> dhandler = buildAsyncCallbackHandler(new KineticTestHelpers.AsyncHandler<Boolean>() {
+                @Override
+                public void onSuccess(CallbackResult<Boolean> result) {
+                }
+
+                @Override
+                public void onError(AsyncKineticException e) {
+                }
+            });
+            batch.deleteAsync(bar, dhandler);
+        } catch (KineticException e) {
+            Assert.fail("Delete async throw exception. " + e.getMessage());
+        }
+
+        ClientConfiguration cc = kineticClientConfigutations.get(clientName);
+        KineticClient client1 = null;
+        try {
+            client1 = KineticClientFactory.createInstance(cc);
+        } catch (KineticException e) {
+            Assert.fail("Create a new client throw exception. "
+                    + e.getMessage());
+        }
+        try {
+            assertNull(client1.get(foo.getKey()));
+        } catch (KineticException e) {
+            Assert.fail("Another connection can not operate before batch operation end. "
+                    + e.getMessage());
+        }
+
+        byte[] newFooVersion = null;
+        byte[] newValue = null;
+        try {
+            newValue = toByteArray("newValue");
+            foo.setValue(newValue);
+            foo.getEntryMetadata().setVersion(null);
+            newFooVersion = toByteArray("1111");
+
+            client1.put(foo, newFooVersion);
+
+        } catch (KineticException e1) {
+        }
+
+        try {
+            Entry barGet = client1.get(bar.getKey());
+            assertTrue(Arrays.equals(bar.getValue(), barGet.getValue()));
+            assertTrue(Arrays.equals(bar.getEntryMetadata().getVersion(),
+                    barGet.getEntryMetadata().getVersion()));
+        } catch (KineticException e) {
+            Assert.fail("Another connection can not operate before batch operation end. "
+                    + e.getMessage());
+        } finally {
+            try {
+                client1.close();
+            } catch (KineticException e) {
+                Assert.fail("Another connection close throw exception. "
+                        + e.getMessage());
+            }
+        }
+
+        try {
+            batch.commit();
+        } catch (KineticException e) {
+            Assert.fail("Batch operation commit throw exception. "
+                    + e.getMessage());
+        }
+
+        // get foo, expect to find it
+        Entry fooGet;
+        try {
+            fooGet = getClient(clientName).get(foo.getKey());
+            assertTrue(Arrays.equals(foo.getKey(), fooGet.getKey()));
+            assertTrue(Arrays.equals(toByteArray("newfoovalue"),
+                    fooGet.getValue()));
+            assertTrue(Arrays.equals(toByteArray("3333"), fooGet
+                    .getEntryMetadata().getVersion()));
+        } catch (KineticException e) {
+            Assert.fail("Get entry failed. " + e.getMessage());
+        }
+
+        // get bar, expect to null
+        try {
+            assertNull(getClient(clientName).get(bar.getKey()));
+        } catch (KineticException e) {
+            Assert.fail("Get entry failed. " + e.getMessage());
+        }
+    }
+
+    @Test(dataProvider = "transportProtocolOptions")
+    public void testBatchOperation_FollowedBothGetAndPutByOneClient_PutAsyncFailed(
+            String clientName) {
+        Entry bar = getBarEntry();
+        try {
+            getClient(clientName).putForced(bar);
+        } catch (KineticException e) {
+            Assert.fail("Put entry failed. " + e.getMessage());
+        }
+
+        BatchOperation batch = null;
+        try {
+            batch = getClient(clientName).createBatchOperation();
+        } catch (KineticException e) {
+            Assert.fail("Create batch operation throw exception. "
+                    + e.getMessage());
+        }
+
+        Entry foo = getFooEntry();
+
+        try {
+            CallbackHandler<Entry> handler = buildAsyncCallbackHandler(new KineticTestHelpers.AsyncHandler<Entry>() {
+                @Override
+                public void onSuccess(CallbackResult<Entry> result) {
+                }
+
+                @Override
+                public void onError(AsyncKineticException e) {
+                }
+            });
+
+            batch.putAsync(foo, toByteArray("2222"), handler);
+        } catch (KineticException e) {
+            Assert.fail("Put async throw exception. " + e.getMessage());
+        }
+
+        try {
+            CallbackHandler<Boolean> dhandler = buildAsyncCallbackHandler(new KineticTestHelpers.AsyncHandler<Boolean>() {
+                @Override
+                public void onSuccess(CallbackResult<Boolean> result) {
+                }
+
+                @Override
+                public void onError(AsyncKineticException e) {
+                }
+            });
+            batch.deleteAsync(bar, dhandler);
+        } catch (KineticException e) {
+            Assert.fail("Delete async throw exception. " + e.getMessage());
+        }
+
+        ClientConfiguration cc = kineticClientConfigutations.get(clientName);
+        KineticClient client1 = null;
+        try {
+            client1 = KineticClientFactory.createInstance(cc);
+        } catch (KineticException e) {
+            Assert.fail("Create a new client throw exception. "
+                    + e.getMessage());
+        }
+        try {
+            assertNull(client1.get(foo.getKey()));
+        } catch (KineticException e) {
+            Assert.fail("Another connection can not operate before batch operation end. "
+                    + e.getMessage());
+        }
+
+        try {
+            Entry barGet = client1.get(bar.getKey());
+            assertTrue(Arrays.equals(bar.getValue(), barGet.getValue()));
+            assertTrue(Arrays.equals(bar.getEntryMetadata().getVersion(),
+                    barGet.getEntryMetadata().getVersion()));
+        } catch (KineticException e) {
+            Assert.fail("Another connection can not operate before batch operation end. "
+                    + e.getMessage());
+        }
+
+        byte[] newFooVersion = null;
+        byte[] newValue = null;
+        try {
+            newValue = toByteArray("newValue");
+            foo.setValue(newValue);
+            foo.getEntryMetadata().setVersion(null);
+            newFooVersion = toByteArray("1111");
+
+            client1.put(foo, newFooVersion);
+            assertTrue(Arrays.equals(newValue, client1.get(foo.getKey())
+                    .getValue()));
+            assertTrue(Arrays.equals(newFooVersion, client1.get(foo.getKey())
+                    .getEntryMetadata().getVersion()));
+
+        } catch (KineticException e1) {
+        } finally {
+            try {
+                client1.close();
+            } catch (KineticException e) {
+                Assert.fail("Another connection close throw exception. "
+                        + e.getMessage());
+            }
+        }
+
+        try {
+            batch.commit();
+        } catch (KineticException e) {
+            assertTrue(e.getResponseMessage().getCommand().getStatus()
+                    .getCode().equals(StatusCode.INVALID_BATCH));
+        }
+
+        // get foo, expect to find it
+        Entry fooGet;
+        try {
+            fooGet = getClient(clientName).get(foo.getKey());
+            assertTrue(Arrays.equals(newValue, fooGet.getValue()));
+            assertTrue(Arrays.equals(newFooVersion, fooGet.getEntryMetadata()
+                    .getVersion()));
+
+        } catch (KineticException e) {
+            Assert.fail("Get entry failed. " + e.getMessage());
+        }
+
+        // get bar, expect to null
+        try {
+            Entry barGet = getClient(clientName).get(bar.getKey());
+            assertTrue(Arrays.equals(bar.getValue(), barGet.getValue()));
+            assertTrue(Arrays.equals(bar.getEntryMetadata().getVersion(),
+                    barGet.getEntryMetadata().getVersion()));
+        } catch (KineticException e) {
+            Assert.fail("Get entry failed. " + e.getMessage());
+        }
+    }
+
+    @Test(dataProvider = "transportProtocolOptions")
     public void testBatchOperation_FollowedBothReadByTwoClientAfterBatchCommit_Success(
             String clientName) {
         Entry bar = getBarEntry();
@@ -1405,9 +2034,13 @@ public class BatchOpAPITest extends IntegrationTestCase {
         Entry foo = getFooEntry();
 
         try {
-            CallbackHandler<Entry> handler = buildSuccessOnlyCallbackHandler(new KineticTestHelpers.SuccessAsyncHandler<Entry>() {
+            CallbackHandler<Entry> handler = buildAsyncCallbackHandler(new KineticTestHelpers.AsyncHandler<Entry>() {
                 @Override
                 public void onSuccess(CallbackResult<Entry> result) {
+                }
+
+                @Override
+                public void onError(AsyncKineticException e) {
                 }
             });
 
@@ -1417,9 +2050,13 @@ public class BatchOpAPITest extends IntegrationTestCase {
         }
 
         try {
-            CallbackHandler<Boolean> dhandler = buildSuccessOnlyCallbackHandler(new KineticTestHelpers.SuccessAsyncHandler<Boolean>() {
+            CallbackHandler<Boolean> dhandler = buildAsyncCallbackHandler(new KineticTestHelpers.AsyncHandler<Boolean>() {
                 @Override
                 public void onSuccess(CallbackResult<Boolean> result) {
+                }
+
+                @Override
+                public void onError(AsyncKineticException e) {
                 }
             });
             batch.deleteAsync(bar, dhandler);
@@ -1514,9 +2151,13 @@ public class BatchOpAPITest extends IntegrationTestCase {
         Entry foo = getFooEntry();
 
         try {
-            CallbackHandler<Entry> handler = buildSuccessOnlyCallbackHandler(new KineticTestHelpers.SuccessAsyncHandler<Entry>() {
+            CallbackHandler<Entry> handler = buildAsyncCallbackHandler(new KineticTestHelpers.AsyncHandler<Entry>() {
                 @Override
                 public void onSuccess(CallbackResult<Entry> result) {
+                }
+
+                @Override
+                public void onError(AsyncKineticException e) {
                 }
             });
 
@@ -1526,9 +2167,13 @@ public class BatchOpAPITest extends IntegrationTestCase {
         }
 
         try {
-            CallbackHandler<Boolean> dhandler = buildSuccessOnlyCallbackHandler(new KineticTestHelpers.SuccessAsyncHandler<Boolean>() {
+            CallbackHandler<Boolean> dhandler = buildAsyncCallbackHandler(new KineticTestHelpers.AsyncHandler<Boolean>() {
                 @Override
                 public void onSuccess(CallbackResult<Boolean> result) {
+                }
+
+                @Override
+                public void onError(AsyncKineticException e) {
                 }
             });
             batch.deleteAsync(bar, dhandler);
@@ -1689,9 +2334,15 @@ class BatchThread implements Runnable {
         byte[] fooVersion = toByteArray("1234");
         foo.getEntryMetadata().setVersion(fooVersion);
 
-        CallbackHandler<Entry> handler = buildSuccessOnlyCallbackHandler(new KineticTestHelpers.SuccessAsyncHandler<Entry>() {
+        CallbackHandler<Entry> handler = buildAsyncCallbackHandler(new KineticTestHelpers.AsyncHandler<Entry>() {
             @Override
             public void onSuccess(CallbackResult<Entry> result) {
+            }
+
+            @Override
+            public void onError(AsyncKineticException e) {
+                assertTrue(e.getResponseMessage().getCommand().getStatus()
+                        .getCode().equals(StatusCode.NOT_ATTEMPTED));
             }
         });
 
@@ -1705,9 +2356,13 @@ class BatchThread implements Runnable {
         byte[] barBatchVersion = toByteArray("5678");
         bar.getEntryMetadata().setVersion(barBatchVersion);
 
-        CallbackHandler<Boolean> dhandler = buildSuccessOnlyCallbackHandler(new KineticTestHelpers.SuccessAsyncHandler<Boolean>() {
+        CallbackHandler<Boolean> dhandler = buildAsyncCallbackHandler(new KineticTestHelpers.AsyncHandler<Boolean>() {
             @Override
             public void onSuccess(CallbackResult<Boolean> result) {
+            }
+
+            @Override
+            public void onError(AsyncKineticException e) {
             }
         });
 
