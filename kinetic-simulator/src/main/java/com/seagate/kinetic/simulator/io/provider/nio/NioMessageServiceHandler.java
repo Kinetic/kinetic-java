@@ -22,17 +22,12 @@ package com.seagate.kinetic.simulator.io.provider.nio;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.seagate.kinetic.common.lib.KineticMessage;
-import com.seagate.kinetic.proto.Kinetic.Command.MessageType;
 import com.seagate.kinetic.simulator.internal.ConnectionInfo;
 import com.seagate.kinetic.simulator.internal.FaultInjectedCloseConnectionException;
-import com.seagate.kinetic.simulator.internal.InvalidBatchException;
 import com.seagate.kinetic.simulator.internal.SimulatorEngine;
 import com.seagate.kinetic.simulator.io.provider.spi.MessageService;
 
@@ -46,16 +41,11 @@ public class NioMessageServiceHandler extends
 	private static final Logger logger = Logger
 			.getLogger(NioMessageServiceHandler.class.getName());
 
-    private static final String SEP = "-";
-
 	private MessageService lcservice = null;
 
 	private boolean enforceOrdering = false;
 
 	private NioQueuedRequestProcessRunner queuedRequestProcessRunner = null;
-
-    // key = connId + "-" + batchId
-    private Map<String, BatchQueue> batchMap = new ConcurrentHashMap<String, BatchQueue>();
 
 	private static boolean faultInjectCloseConnection = Boolean
 			.getBoolean(FaultInjectedCloseConnectionException.FAULT_INJECT_CLOSE_CONNECTION);
@@ -104,26 +94,16 @@ public class NioMessageServiceHandler extends
 		// check if conn id is set
 		NioConnectionStateManager.checkIfConnectionIdSet(ctx, request);
 
-        // add to queue if batchQueue has started
-        if (this.shouldAddToBatch(ctx, request)) {
-            // the command was queued until END_BATCH is received
-            return;
-        }
+        boolean shouldContinue = NioBatchOpPreProcessor.processMessage(this,
+                ctx, request);
 
-        // check if this is a start batchQueue message
-        if (this.isStartBatch(ctx, request)) {
-            this.createBatchQueue(ctx, request);
-        } else if (this.isEndBatch(ctx, request)) {
-            this.processBatchQueue(ctx, request);
-        } else if (this.isAbortBatch(ctx, request)) {
-            this.processBatchAbort(ctx, request);
+        if (shouldContinue) {
+            // process regular request
+            processRequest(ctx, request);
         }
-
-        // process regular request
-        processRequest(ctx, request);
     }
 
-    private void processRequest(ChannelHandlerContext ctx,
+    public void processRequest(ChannelHandlerContext ctx,
             KineticMessage request) throws InterruptedException {
 
         if (enforceOrdering) {
@@ -164,153 +144,12 @@ public class NioMessageServiceHandler extends
         // map
         ConnectionInfo info = SimulatorEngine.removeConnectionInfo(ctx);
 
-        this.batchMap = null;
-
         logger.info("connection info is removed, id=" + info.getConnectionId()
                 + ", is secure channel=" + this.isSecureChannel);
 	}
 
-    private boolean isStartBatch(ChannelHandlerContext ctx,
-            KineticMessage request) {
-
-        if (request.getCommand().getHeader().getMessageType() == MessageType.START_BATCH) {
-            request.setIsBatchMessage(true);
-            return true;
-        }
-
-        return false;
+    public MessageService getMessageService() {
+        return this.lcservice;
     }
 
-    private boolean isEndBatch(ChannelHandlerContext ctx, KineticMessage request) {
-
-        if (request.getCommand().getHeader().getMessageType() == MessageType.END_BATCH) {
-
-            request.setIsBatchMessage(true);
-
-            return true;
-        }
-
-        return false;
-    }
-
-    private boolean isAbortBatch(ChannelHandlerContext ctx,
-            KineticMessage request) {
-
-        if (request.getCommand().getHeader().getMessageType() == MessageType.ABORT_BATCH) {
-
-            request.setIsBatchMessage(true);
-
-            return true;
-        }
-
-        return false;
-    }
-
-    private synchronized void createBatchQueue(ChannelHandlerContext ctx,
-            KineticMessage request) {
-
-        String key = request.getCommand().getHeader().getConnectionID() + SEP
-                + request.getCommand().getHeader().getBatchID();
-
-        BatchQueue batchQueue = this.batchMap.get(key);
-
-        if (batchQueue == null) {
-            batchQueue = new BatchQueue(request);
-            this.batchMap.put(key, batchQueue);
-        } else {
-            // concurrent start batch is not allowed
-            throw new RuntimeException("batch already started");
-        }
-
-        logger.info("batch queue created for key: " + key);
-    }
-
-    private boolean shouldAddToBatch(ChannelHandlerContext ctx,
-            KineticMessage request) {
-
-        boolean flag = false;
-
-        boolean hasBatchId = request.getCommand().getHeader().hasBatchID();
-        if (hasBatchId == false) {
-            return false;
-        }
-
-        String key = request.getCommand().getHeader().getConnectionID() + SEP
-                + request.getCommand().getHeader().getBatchID();
-
-        BatchQueue batchQueue = this.batchMap.get(key);
-
-        MessageType mtype = request.getCommand().getHeader().getMessageType();
-
-        if (batchQueue != null) {
-
-            if (mtype == MessageType.PUT || mtype == MessageType.DELETE) {
-
-                // is added to batch queue
-                flag = true;
-
-                // is a batch message
-                request.setIsBatchMessage(true);
-
-                // add to batch queue
-                batchQueue.add(request);
-            }
-        } else {
-            // there is a batch ID not known at this point
-            // the only allowed message type is start message.
-            if (mtype != MessageType.START_BATCH) {
-                request.setIsInvalidBatchMessage(true);
-            }
-        }
-
-        return flag;
-    }
-
-    private synchronized void processBatchQueue(ChannelHandlerContext ctx,
-            KineticMessage km) throws InterruptedException,
-            InvalidBatchException {
-        
-        String key = km.getCommand().getHeader().getConnectionID() + SEP
-                + km.getCommand().getHeader().getBatchID();
-
-        BatchQueue batchQueue = this.batchMap.get(key);
-
-        if (batchQueue == null) {
-            throw new RuntimeException("No batch Id found for key: " + key);
-        }
-
-        try {
-
-            List<KineticMessage> mlist = batchQueue.getMessageList();
-            if (mlist.size() > 0) {
-                mlist.get(0).setIsFirstBatchMessage(true);
-            }
-
-            for (KineticMessage request : batchQueue.getMessageList()) {
-                this.processRequest(ctx, request);
-            }
-
-        } finally {
-
-            this.batchMap.remove(key);
-
-            /**
-             * end batch is called in the end of message processing
-             * (simulatorEngine).
-             */
-        }
-    }
-
-    private void processBatchAbort(ChannelHandlerContext ctx, KineticMessage km) {
-        String key = km.getCommand().getHeader().getConnectionID() + SEP
-                + km.getCommand().getHeader().getBatchID();
-
-        BatchQueue batchQueue = this.batchMap.remove(key);
-
-        if (batchQueue == null) {
-            throw new RuntimeException("No batch Id found for key: " + key);
-        }
-
-        logger.info("batch aborted ... key=" + key);
-    }
 }

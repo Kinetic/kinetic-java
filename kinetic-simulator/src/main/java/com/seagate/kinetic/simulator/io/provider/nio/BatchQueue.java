@@ -1,3 +1,22 @@
+/**
+ * 
+ * Copyright (C) 2014 Seagate Technology.
+ * 
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ *
+ */
 package com.seagate.kinetic.simulator.io.provider.nio;
 
 import java.util.ArrayList;
@@ -5,7 +24,6 @@ import java.util.List;
 import java.util.logging.Logger;
 
 import com.seagate.kinetic.common.lib.KineticMessage;
-import com.seagate.kinetic.proto.Kinetic.Command.MessageType;
 
 public class BatchQueue {
 
@@ -15,17 +33,8 @@ public class BatchQueue {
 
     private ArrayList<KineticMessage> mlist = new ArrayList<KineticMessage>();
 
-    private long cid = -1;
-
-    private int queueDepth = 100;
-
-    public static boolean isStartBatchMessage(KineticMessage request) {
-        return (request.getCommand().getHeader().getMessageType() == MessageType.START_BATCH);
-    }
-
     public BatchQueue(KineticMessage request) {
-        // this batch op handler belongs to this connection
-        this.cid = request.getCommand().getHeader().getConnectionID();
+        ;
     }
 
     public void add(KineticMessage request) {
@@ -33,51 +42,16 @@ public class BatchQueue {
         this.mlist.add(request);
     }
 
-    /**
-     * only one batch at a time is supported.
-     * 
-     * @param request
-     */
-    @SuppressWarnings("unused")
-    private void checkPermission(KineticMessage request) {
-
-        // check if request is from the same client/connection
-        if (request.getCommand().getHeader().getConnectionID() != this.cid) {
-            throw new RuntimeException("DB is locked by: " + cid
-                    + ", request cid: "
-                    + request.getCommand().getHeader().getConnectionID());
-        }
-
-        // check message type, only supports put/delete
-        this.checkMessageType(request);
-
-        // check if reached limit
-        if (mlist.size() > this.queueDepth) {
-            throw new RuntimeException("exceed max queue depth: "
-                    + this.queueDepth);
-        }
-    }
-
-    private void checkMessageType(KineticMessage request) {
-
-        MessageType mtype = request.getCommand().getHeader().getMessageType();
-
-        switch (mtype) {
-        case PUT:
-        case DELETE:
-            return;
-        default:
-            throw new RuntimeException("invalid message type: " + mtype);
-        }
-
-    }
-
     public List<KineticMessage> getMessageList() {
         return this.mlist;
     }
 
-    public boolean isSameClient(KineticMessage request) {
-        return (cid == request.getCommand().getHeader().getConnectionID());
+    public int size() {
+        return this.mlist.size();
+    }
+
+    public void clear() {
+        this.mlist.clear();
     }
 
 }
