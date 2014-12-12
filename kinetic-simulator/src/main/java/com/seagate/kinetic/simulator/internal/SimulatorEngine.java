@@ -48,15 +48,11 @@ import com.seagate.kinetic.proto.Kinetic.Local;
 import com.seagate.kinetic.proto.Kinetic.Message;
 import com.seagate.kinetic.proto.Kinetic.Message.AuthType;
 import com.seagate.kinetic.simulator.heartbeat.Heartbeat;
-import com.seagate.kinetic.simulator.internal.p2p.P2POperationHandler;
+import com.seagate.kinetic.simulator.internal.handler.CommandManager;
 import com.seagate.kinetic.simulator.io.provider.nio.NioEventLoopGroupManager;
 import com.seagate.kinetic.simulator.io.provider.spi.MessageService;
 import com.seagate.kinetic.simulator.io.provider.spi.TransportProvider;
 import com.seagate.kinetic.simulator.lib.HeaderOp;
-import com.seagate.kinetic.simulator.lib.HmacStore;
-import com.seagate.kinetic.simulator.lib.SetupInfo;
-import com.seagate.kinetic.simulator.persist.KVOp;
-import com.seagate.kinetic.simulator.persist.RangeOp;
 import com.seagate.kinetic.simulator.persist.Store;
 import com.seagate.kinetic.simulator.persist.StoreFactory;
 import com.seagate.kinetic.simulator.utility.ConfigurationUtil;
@@ -139,7 +135,7 @@ public class SimulatorEngine implements MessageService {
 
     private static final String SSL_NIO_TRANSPORT = "com.seagate.kinetic.simulator.io.provider.nio.ssl.SslNioTransportProvider";
 
-    private P2POperationHandler p2pHandler = null;
+    // private P2POperationHandler p2pHandler = null;
 
     // batch op handler
     private BatchOperationHandler batchOp = null;
@@ -182,6 +178,8 @@ public class SimulatorEngine implements MessageService {
         Runtime.getRuntime().addShutdownHook(shutdownHook);
     }
 
+    private CommandManager manager = null;
+
     /**
      * Simulator constructor.
      *
@@ -203,7 +201,7 @@ public class SimulatorEngine implements MessageService {
         tpService.register(this);
 
         // p2p op handler.
-        p2pHandler = new P2POperationHandler();
+        // p2pHandler = new P2POperationHandler();
 
         try {
 
@@ -221,6 +219,9 @@ public class SimulatorEngine implements MessageService {
 
             // init network io service
             this.initIoService();
+
+            // init op handlers
+            this.initHandlers();
 
             logger.info("simulator protocol version = "
                     + SimulatorConfiguration.getProtocolVersion());
@@ -309,6 +310,32 @@ public class SimulatorEngine implements MessageService {
         }
     }
 
+    private void initHandlers() {
+
+        this.manager = new CommandManager(this);
+
+        // this.pinOpHandler = new PinOpHandler();
+        // this.pinOpHandler.init(this);
+        //
+        // this.flushHandler = new FlushOpHandler();
+        // this.flushHandler.init(this);
+        //
+        // this.noOpHandler = new NoOpHandler();
+        // this.noOpHandler.init(this);
+        //
+        // this.keyValueOpHandler = new KeyValueOpHandler();
+        // this.keyValueOpHandler.init(this);
+        //
+        // this.rangeOpHandler = new RangeOpHandler();
+        // this.rangeOpHandler.init(this);
+        //
+        // this.securityOpHandler = new SecurityOpHandler();
+        // this.securityOpHandler.init(this);
+        //
+        // this.setupOpHandler = new SetupOpHandler();
+        // this.setupOpHandler.init(this);
+    }
+
     public boolean useNio() {
         return this.config.getUseNio();
     }
@@ -377,11 +404,12 @@ public class SimulatorEngine implements MessageService {
 
         tpService.deregister(this);
 
-        // close p2p handler
-        if (this.p2pHandler != null) {
-            this.p2pHandler.close();
+        // close handlers
+        if (this.manager != null) {
+            this.manager.close();
         }
 
+        // close io resources
         if (this.nioManager != null) {
             this.nioManager.close();
         }
@@ -436,7 +464,6 @@ public class SimulatorEngine implements MessageService {
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public KineticMessage processRequest(KineticMessage kmreq) {
 
         // create response message
@@ -470,61 +497,10 @@ public class SimulatorEngine implements MessageService {
 
             if (kmreq.getIsBatchMessage()) {
                 this.processBatchOpMessage(kmreq, kmresp);
-            } else if (kmreq.getMessage().getAuthType() == AuthType.PINAUTH) {
-                // perform pin op
-                PinOperationHandler.handleOperation(kmreq, kmresp, this);
-            } else if (mtype == MessageType.FLUSHALLDATA) {
-                commandBuilder.getHeaderBuilder().setMessageType(
-                        MessageType.FLUSHALLDATA_RESPONSE);
-                logger.warning("received flush data command, this is a no op on simulator at this time ...");
-            } else if (mtype == MessageType.NOOP) {
-                commandBuilder.getHeaderBuilder().setMessageType(
-                        MessageType.NOOP_RESPONSE);
-            } else if (kmreq.getCommand().getBody().hasKeyValue()) {
-                KVOp.Op(aclmap, store, kmreq, kmresp);
-            } else if (mtype == MessageType.GETKEYRANGE) {
-                RangeOp.operation(store, kmreq, kmresp, aclmap);
-            } else if (kmreq.getCommand().getBody().hasSecurity()) {
-                boolean hasPermission = SecurityHandler.checkPermission(kmreq,
-                        kmresp, aclmap);
-                if (hasPermission) {
-                    synchronized (this.hmacKeyMap) {
-                        SecurityHandler.handleSecurity(kmreq, kmresp, this);
-                        this.hmacKeyMap = HmacStore.getHmacKeyMap(aclmap);
-                    }
-                }
-
-            } else if (kmreq.getCommand().getBody().hasSetup()) {
-                boolean hasPermission = SetupHandler.checkPermission(kmreq,
-                        kmresp, aclmap);
-                if (hasPermission) {
-                    SetupInfo setupInfo = SetupHandler.handleSetup(kmreq,
-                            kmresp, store, kineticHome);
-                    if (setupInfo != null) {
-                        this.clusterVersion = setupInfo.getClusterVersion();
-                        // this.pin = setupInfo.getPin();
-                    }
-                }
-            } else if (kmreq.getCommand().getBody().hasGetLog()) {
-                boolean hasPermission = GetLogHandler.checkPermission(kmreq,
-                        kmresp, aclmap);
-                if (hasPermission) {
-                    GetLogHandler.handleGetLog(this, kmreq, kmresp);
-                }
-            } else if (kmreq.getCommand().getBody().hasP2POperation()) {
-
-                // check permission
-                boolean hasPermission = P2POperationHandler.checkPermission(
-                        kmreq, kmresp, aclmap);
-
-                if (hasPermission) {
-                    this.p2pHandler.push(aclmap, store, kmreq, kmresp);
-                }
-            } else if (mtype == MessageType.MEDIASCAN) {
-                BackGroundOpHandler.mediaScan(kmreq, kmresp, this);
-            } else if (mtype == MessageType.MEDIAOPTIMIZE) {
-                BackGroundOpHandler.mediaOptimize(kmreq, kmresp, this);
+            } else {
+                this.manager.getHandler(mtype).processRequest(kmreq, kmresp);
             }
+
         } catch (DeviceLockedException ire) {
 
             int number = kmreq.getCommand().getHeader().getMessageType()
