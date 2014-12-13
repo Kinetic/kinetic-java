@@ -157,6 +157,13 @@ public class HeaderOp {
                 long cid = km.getCommand().getHeader().getConnectionID();
                 respCommandBuilder.getHeaderBuilder().setConnectionID(cid);
 
+                // set response message type
+                int number = km.getCommand().getHeader().getMessageType()
+                        .getNumber() - 1;
+
+                respCommandBuilder.getHeaderBuilder().setMessageType(
+                        MessageType.valueOf(number));
+
             } catch (Exception e) {
                 LOG.warning(e.getMessage());
             }
