@@ -32,8 +32,6 @@ import java.util.logging.Logger;
 
 import kinetic.simulator.SimulatorConfiguration;
 
-import com.google.protobuf.ByteString;
-import com.seagate.kinetic.common.lib.Hmac;
 import com.seagate.kinetic.common.lib.KineticMessage;
 import com.seagate.kinetic.heartbeat.message.ByteCounter;
 import com.seagate.kinetic.heartbeat.message.OperationCounter;
@@ -41,7 +39,6 @@ import com.seagate.kinetic.proto.Kinetic.Command;
 import com.seagate.kinetic.proto.Kinetic.Command.GetLog.Configuration;
 import com.seagate.kinetic.proto.Kinetic.Command.GetLog.Limits;
 import com.seagate.kinetic.proto.Kinetic.Command.MessageType;
-import com.seagate.kinetic.proto.Kinetic.Command.PinOperation.PinOpType;
 import com.seagate.kinetic.proto.Kinetic.Command.Security.ACL;
 import com.seagate.kinetic.proto.Kinetic.Command.Status.StatusCode;
 import com.seagate.kinetic.proto.Kinetic.Local;
@@ -52,7 +49,6 @@ import com.seagate.kinetic.simulator.internal.handler.CommandManager;
 import com.seagate.kinetic.simulator.io.provider.nio.NioEventLoopGroupManager;
 import com.seagate.kinetic.simulator.io.provider.spi.MessageService;
 import com.seagate.kinetic.simulator.io.provider.spi.TransportProvider;
-import com.seagate.kinetic.simulator.lib.HeaderOp;
 import com.seagate.kinetic.simulator.persist.Store;
 import com.seagate.kinetic.simulator.persist.StoreFactory;
 import com.seagate.kinetic.simulator.utility.ConfigurationUtil;
@@ -311,29 +307,11 @@ public class SimulatorEngine implements MessageService {
     }
 
     private void initHandlers() {
-
         this.manager = new CommandManager(this);
+    }
 
-        // this.pinOpHandler = new PinOpHandler();
-        // this.pinOpHandler.init(this);
-        //
-        // this.flushHandler = new FlushOpHandler();
-        // this.flushHandler.init(this);
-        //
-        // this.noOpHandler = new NoOpHandler();
-        // this.noOpHandler.init(this);
-        //
-        // this.keyValueOpHandler = new KeyValueOpHandler();
-        // this.keyValueOpHandler.init(this);
-        //
-        // this.rangeOpHandler = new RangeOpHandler();
-        // this.rangeOpHandler.init(this);
-        //
-        // this.securityOpHandler = new SecurityOpHandler();
-        // this.securityOpHandler.init(this);
-        //
-        // this.setupOpHandler = new SetupOpHandler();
-        // this.setupOpHandler.init(this);
+    public CommandManager getCommandManager() {
+        return this.manager;
     }
 
     public boolean useNio() {
@@ -367,6 +345,10 @@ public class SimulatorEngine implements MessageService {
 
     public void setClusterVersion(long cversion) {
         this.clusterVersion = cversion;
+    }
+
+    public long getClusterVersion() {
+        return this.clusterVersion;
     }
 
     public SecurityPin getSecurityPin() {
@@ -466,83 +448,52 @@ public class SimulatorEngine implements MessageService {
     @Override
     public KineticMessage processRequest(KineticMessage kmreq) {
 
-        // create response message
-        KineticMessage kmresp = createKineticMessageWithBuilder();
-
-        // get command builder
-        Command.Builder commandBuilder = (Command.Builder) kmresp.getCommand();
-
-        // get message builder
-        Message.Builder messageBuilder = (Message.Builder) kmresp.getMessage();
-
-        // get user identity for this message
-        long userId = kmreq.getMessage().getHmacAuth().getIdentity();
-
-        // get user key
-        Key key = this.hmacKeyMap.get(Long.valueOf(userId));
-
-        MessageType mtype = kmreq.getCommand().getHeader().getMessageType();
-
-        // response message type
-        commandBuilder.getHeaderBuilder().setMessageType(
-                MessageType.valueOf(mtype.getNumber() - 1));
+        // create request context
+        RequestContext context = new RequestContext(this, kmreq);
 
         try {
 
-            HeaderOp.checkHeader(kmreq, kmresp, key, clusterVersion);
-
-            checkDeviceLocked(kmreq, kmresp);
+            // prepare to process this request
+            context.preProcessRequest();
 
             checkBatchMode(kmreq);
 
             if (kmreq.getIsBatchMessage()) {
-                this.processBatchOpMessage(kmreq, kmresp);
+                this.processBatchOpMessage(context);
             } else {
-                this.manager.getHandler(mtype).processRequest(kmreq, kmresp);
+                // process request
+                context.processRequest();
             }
 
-        } catch (DeviceLockedException ire) {
-
-            int number = kmreq.getCommand().getHeader().getMessageType()
-                    .getNumber() - 1;
-
-            commandBuilder.getHeaderBuilder().setMessageType(
-                    MessageType.valueOf(number));
-
-            commandBuilder.getStatusBuilder().setCode(StatusCode.DEVICE_LOCKED);
-
-            commandBuilder.getStatusBuilder().setStatusMessage(
-                    "Device is locked");
         } catch (NotAttemptedException nae) {
             // handle not attempted exception
-            commandBuilder.getStatusBuilder().setCode(StatusCode.NOT_ATTEMPTED);
-            commandBuilder.getStatusBuilder()
+            context.getCommandBuilder().getStatusBuilder()
+                    .setCode(StatusCode.NOT_ATTEMPTED);
+            context.getCommandBuilder().getStatusBuilder()
                     .setStatusMessage(nae.getMessage());
         } catch (InvalidBatchException boe) {
             // handle invalid batch exception
-            commandBuilder.getStatusBuilder().setCode(StatusCode.INVALID_BATCH);
-            commandBuilder.getStatusBuilder()
+            context.getCommandBuilder().getStatusBuilder()
+                    .setCode(StatusCode.INVALID_BATCH);
+            context.getCommandBuilder().getStatusBuilder()
                     .setStatusMessage(boe.getMessage());
         } catch (Exception e) {
 
             logger.log(Level.WARNING, e.getMessage(), e);
 
-            int number = kmreq.getCommand().getHeader().getMessageType()
-                    .getNumber() - 1;
-
-            commandBuilder.getHeaderBuilder().setMessageType(
-                    MessageType.valueOf(number));
-
             /**
              * reset to default error response code if not set
              */
-            if (commandBuilder.getStatusBuilder().getCode() == StatusCode.SUCCESS) {
-                commandBuilder.getStatusBuilder().setCode(
+            if (context.getCommandBuilder().getStatusBuilder().getCode() == StatusCode.SUCCESS) {
+                context.getCommandBuilder().getStatusBuilder()
+                        .setCode(
                     StatusCode.INVALID_REQUEST);
             }
 
-            if (commandBuilder.getStatusBuilder().hasStatusMessage() == false) {
-                commandBuilder.getStatusBuilder().setStatusMessage(
+            if (context.getCommandBuilder().getStatusBuilder()
+                    .hasStatusMessage() == false) {
+                context.getCommandBuilder().getStatusBuilder()
+                        .setStatusMessage(
                         e.getMessage());
             }
 
@@ -550,58 +501,26 @@ public class SimulatorEngine implements MessageService {
         } finally {
 
             try {
-                
-                if (this.batchOp != null && batchOp.isClosed()) {
-                    this.endBatchOperation(kmreq);
-                }
-                
-                // get command byte stirng
-                ByteString commandByteString = commandBuilder.build()
-                        .toByteString();
 
-                // get command byte[]
-                byte[] commandByte = commandByteString.toByteArray();
+                checkAndReleaseBatchOperation(kmreq);
 
-                // require Hmac calculation ?
-                if (kmreq.getMessage().getAuthType() == AuthType.HMACAUTH) {
+                // post process message
+                context.postProcessRequest();
 
-                    // calculate hmac
-                    ByteString hmac = Hmac.calc(commandByte, key);
-
-                    // set identity
-                    messageBuilder.getHmacAuthBuilder().setIdentity(userId);
-
-                    // set hmac
-                    messageBuilder.getHmacAuthBuilder().setHmac(hmac);
-                }
-
-                // set command bytes
-                messageBuilder.setCommandBytes(commandByteString);
             } catch (Exception e2) {
                 logger.log(Level.WARNING, e2.getMessage(), e2);
             }
 
-            this.addStatisticCounter(kmreq, kmresp);
+            this.addStatisticCounter(kmreq, context.getResponseMessage());
         }
 
-        return kmresp;
+        return context.getResponseMessage();
     }
 
-    private void checkDeviceLocked(KineticMessage kmreq, KineticMessage kmresp)
-            throws DeviceLockedException {
-
-        if (this.deviceLocked == false) {
-            return;
+    public void checkAndReleaseBatchOperation(KineticMessage request) {
+        if (this.batchOp != null && batchOp.isClosed()) {
+            this.endBatchOperation(request);
         }
-
-        PinOpType pinOpType = kmreq.getCommand().getBody().getPinOp()
-                .getPinOpType();
-
-        if (pinOpType != PinOpType.UNLOCK_PINOP
-                && pinOpType != PinOpType.LOCK_PINOP) {
-            throw new DeviceLockedException();
-        }
-
     }
 
     private void addStatisticCounter(KineticMessage kmreq, KineticMessage kmresp) {
@@ -1039,13 +958,16 @@ public class SimulatorEngine implements MessageService {
     @Override
     public synchronized void endBatchOperation(KineticMessage kmreq) {
 
-        this.batchOp = null;
+        if (this.batchOp != null && batchOp.isClosed()) {
 
-        this.isInBatchMode = false;
+            this.batchOp = null;
 
-        this.notifyAll();
+            this.isInBatchMode = false;
 
-        logger.info("batch op ended/released ...");
+            this.notifyAll();
+
+            logger.info("batch op ended/released ...");
+        }
     }
 
     private synchronized void checkBatchMode(KineticMessage kmreq)
@@ -1082,29 +1004,31 @@ public class SimulatorEngine implements MessageService {
         }
     }
 
-    private void processBatchOpMessage(KineticMessage kmreq,
-            KineticMessage kmresp) throws InvalidBatchException,
+    public void processBatchOpMessage(RequestContext context)
+            throws InvalidBatchException,
             NotAttemptedException {
 
-        MessageType mtype = kmreq.getCommand().getHeader().getMessageType();
+        MessageType mtype = context.getMessageType();
 
         if (mtype == MessageType.START_BATCH
                 || mtype == MessageType.ABORT_BATCH) {
             return;
         }
 
-        if (kmreq.getIsFirstBatchMessage()) {
-            startBatchOperation(kmreq);
+        if (context.getRequestMessage().getIsFirstBatchMessage()) {
+            startBatchOperation(context.getRequestMessage());
         }
 
         // init batch operation
         if (this.batchOp == null) {
+
             throw new InvalidBatchException(
                     "batch operation is either not started or failed");
         }
 
         // process batch message
-        this.batchOp.handleRequest(kmreq, kmresp);
+        this.batchOp.handleRequest(context.getRequestMessage(),
+                context.getResponseMessage());
     }
 
 }

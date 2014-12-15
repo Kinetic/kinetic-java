@@ -205,6 +205,16 @@ public class SimulatorConfiguration extends Properties {
     private static int maxIdentityCount = -1;
 
     /**
+     * max number of commands per batch.
+     */
+    private static int maxCommandsPerBatch = 15;
+
+    /**
+     * max number of outstanding batch requests per drive.
+     */
+    private static int maxOutstandingBatches = 5;
+
+    /**
      * current simulator version.
      */
     public static final String SIMULATOR_VERSION = "0.8.0.2-SNAPSHOT";
@@ -1039,6 +1049,24 @@ public class SimulatorConfiguration extends Properties {
         } catch (Exception e) {
             logger.warning(e.getMessage());
         }
+    }
+
+    /**
+     * Get maximum number of commands per batch request.
+     * 
+     * @return maximum number of commands per batch request.
+     */
+    public int getMaxCommandsPerBatch() {
+        return maxCommandsPerBatch;
+    }
+
+    /**
+     * Get maximum number of outstanding batch requests per device.
+     * 
+     * @return maximum number of outstanding batch requests per device.
+     */
+    public int getMaxOutstandingBatches() {
+        return maxOutstandingBatches;
     }
 
 }
