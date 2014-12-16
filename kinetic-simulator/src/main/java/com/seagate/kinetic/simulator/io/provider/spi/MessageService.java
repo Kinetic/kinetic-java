@@ -24,7 +24,6 @@ import kinetic.simulator.SimulatorConfiguration;
 
 import com.seagate.kinetic.common.lib.KineticMessage;
 import com.seagate.kinetic.simulator.internal.ConnectionInfo;
-import com.seagate.kinetic.simulator.internal.InvalidBatchException;
 import com.seagate.kinetic.simulator.io.provider.nio.NioEventLoopGroupManager;
 
 /**
@@ -86,26 +85,4 @@ public interface MessageService {
 	 * @return
 	 */
 	public ConnectionInfo registerNewConnection (ChannelHandlerContext ctx);
-
-    /**
-     * Start a new batch operation.
-     * 
-     * @param req
-     *            request message
-     * @throws InvalidBatchException
-     *             if any internal error occurred.
-     */
-    public void startBatchOperation(KineticMessage req)
-            throws InvalidBatchException;
-
-    /**
-     * End the batch operation.
-     * 
-     * @param req
-     *            request message
-     * @throws InvalidBatchException
-     *             if any internal error occurred.
-     */
-    public void endBatchOperation(KineticMessage req)
-            throws InvalidBatchException;
 }

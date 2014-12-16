@@ -166,9 +166,6 @@ public class SimulatorEngine implements MessageService {
 
     private volatile boolean deviceLocked = false;
 
-    // db lock for batch operations
-    private volatile boolean isInBatchMode = false;
-
     static {
         // add shutdown hook to clean up resources
         Runtime.getRuntime().addShutdownHook(shutdownHook);
@@ -308,6 +305,8 @@ public class SimulatorEngine implements MessageService {
 
     private void initHandlers() {
         this.manager = new CommandManager(this);
+        
+        this.batchOp = new BatchOperationHandler(this);
     }
 
     public CommandManager getCommandManager() {
@@ -456,27 +455,16 @@ public class SimulatorEngine implements MessageService {
             // prepare to process this request
             context.preProcessRequest();
 
-            checkBatchMode(kmreq);
+            // check if in batch mode
+            this.batchOp.checkBatchMode(kmreq);
 
             if (kmreq.getIsBatchMessage()) {
-                this.processBatchOpMessage(context);
+                this.batchOp.handleRequest(context);
             } else {
                 // process request
                 context.processRequest();
             }
 
-        } catch (NotAttemptedException nae) {
-            // handle not attempted exception
-            context.getCommandBuilder().getStatusBuilder()
-                    .setCode(StatusCode.NOT_ATTEMPTED);
-            context.getCommandBuilder().getStatusBuilder()
-                    .setStatusMessage(nae.getMessage());
-        } catch (InvalidBatchException boe) {
-            // handle invalid batch exception
-            context.getCommandBuilder().getStatusBuilder()
-                    .setCode(StatusCode.INVALID_BATCH);
-            context.getCommandBuilder().getStatusBuilder()
-                    .setStatusMessage(boe.getMessage());
         } catch (Exception e) {
 
             logger.log(Level.WARNING, e.getMessage(), e);
@@ -502,8 +490,6 @@ public class SimulatorEngine implements MessageService {
 
             try {
 
-                checkAndReleaseBatchOperation(kmreq);
-
                 // post process message
                 context.postProcessRequest();
 
@@ -515,12 +501,6 @@ public class SimulatorEngine implements MessageService {
         }
 
         return context.getResponseMessage();
-    }
-
-    public void checkAndReleaseBatchOperation(KineticMessage request) {
-        if (this.batchOp != null && batchOp.isClosed()) {
-            this.endBatchOperation(request);
-        }
     }
 
     private void addStatisticCounter(KineticMessage kmreq, KineticMessage kmresp) {
@@ -820,12 +800,6 @@ public class SimulatorEngine implements MessageService {
             logger.log(Level.WARNING, e.getMessage(), e);
         }
 
-        // cb.getBodyBuilder().getGetLogBuilder().getConfigurationBuilder().setProtocolVersion(PROTOCOL_VERSION);
-        // cb.getBodyBuilder().getGetLogBuilder().getConfigurationBuilder().setCompilationDate(ConfigurationUtil.COMPILATION_DATE);
-        // cb.getBodyBuilder().getGetLogBuilder().getConfigurationBuilder().setModel(ConfigurationUtil.MODEL);
-        // cb.getBodyBuilder().getGetLogBuilder().getConfigurationBuilder().setVersion(SimulatorConfiguration.getSimulatorVersion());
-        // cb.getBodyBuilder().getGetLogBuilder().getConfigurationBuilder().setSerialNumber(ByteString.copyFrom(ConfigurationUtil.SERIAL_NUMBER));
-        //
         // limits
         try {
             Limits limits = LimitsUtil.getLimits(this.config);
@@ -845,8 +819,8 @@ public class SimulatorEngine implements MessageService {
 
         ctx.writeAndFlush(km);
 
-        logger.info("***** connection registered., sent UNSOLICITEDSTATUS with cid = "
-                + info.getConnectionId());
+        // logger.info("***** connection registered., sent UNSOLICITEDSTATUS with cid = "
+        // + info.getConnectionId());
 
         return info;
     }
@@ -933,102 +907,6 @@ public class SimulatorEngine implements MessageService {
      */
     public boolean getDeviceLocked() {
         return this.deviceLocked;
-    }
-
-    @Override
-    public synchronized void startBatchOperation(KineticMessage kmreq)
-            throws InvalidBatchException {
-
-        if (this.batchOp != null) {
-            throw new InvalidBatchException("batch op already started");
-        }
-
-        if (kmreq.getCommand().getHeader().getMessageType() == MessageType.END_BATCH) {
-            throw new InvalidBatchException("batch op failed");
-        }
-
-        this.isInBatchMode = true;
-
-        // start a new batch, db is locked by this user
-        this.batchOp = new BatchOperationHandler(kmreq, this);
-
-        logger.info("batch op started ...");
-    }
-
-    @Override
-    public synchronized void endBatchOperation(KineticMessage kmreq) {
-
-        if (this.batchOp != null && batchOp.isClosed()) {
-
-            this.batchOp = null;
-
-            this.isInBatchMode = false;
-
-            this.notifyAll();
-
-            logger.info("batch op ended/released ...");
-        }
-    }
-
-    private synchronized void checkBatchMode(KineticMessage kmreq)
-            throws InvalidRequestException {
-
-        if (kmreq.getIsInvalidBatchMessage()) {
-            throw new InvalidRequestException(
-                    "Invalid batch Id found in message: "
-                            + kmreq.getCommand().getHeader().getBatchID());
-        }
-
-        if (this.isInBatchMode == false) {
-            return;
-        }
-
-        if (kmreq.getCommand().getHeader().getBatchID() == this.batchOp
-                .getBatchId()
-                && kmreq.getCommand().getHeader().getConnectionID() == this.batchOp
-                        .getConnectionId()) {
-
-            return;
-        }
-
-        while (this.isInBatchMode) {
-
-            try {
-                this.wait(3000);
-                if (this.isInBatchMode) {
-                    logger.warning("waiting for batch mode to complete...");
-                }
-            } catch (InterruptedException e) {
-                logger.log(Level.WARNING, e.getMessage(), e);
-            }
-        }
-    }
-
-    public void processBatchOpMessage(RequestContext context)
-            throws InvalidBatchException,
-            NotAttemptedException {
-
-        MessageType mtype = context.getMessageType();
-
-        if (mtype == MessageType.START_BATCH
-                || mtype == MessageType.ABORT_BATCH) {
-            return;
-        }
-
-        if (context.getRequestMessage().getIsFirstBatchMessage()) {
-            startBatchOperation(context.getRequestMessage());
-        }
-
-        // init batch operation
-        if (this.batchOp == null) {
-
-            throw new InvalidBatchException(
-                    "batch operation is either not started or failed");
-        }
-
-        // process batch message
-        this.batchOp.handleRequest(context.getRequestMessage(),
-                context.getResponseMessage());
     }
 
 }

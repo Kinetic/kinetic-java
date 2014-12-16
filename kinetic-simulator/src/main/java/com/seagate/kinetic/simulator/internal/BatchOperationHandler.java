@@ -28,6 +28,7 @@ import com.seagate.kinetic.common.lib.KineticMessage;
 import com.seagate.kinetic.proto.Kinetic.Command.Algorithm;
 import com.seagate.kinetic.proto.Kinetic.Command.KeyValue;
 import com.seagate.kinetic.proto.Kinetic.Command.MessageType;
+import com.seagate.kinetic.proto.Kinetic.Command.Status.StatusCode;
 import com.seagate.kinetic.simulator.persist.BatchOperation;
 import com.seagate.kinetic.simulator.persist.KVValue;
 import com.seagate.kinetic.simulator.persist.Store;
@@ -43,100 +44,238 @@ public class BatchOperationHandler {
     private final static Logger logger = Logger.getLogger(BatchOperationHandler.class
             .getName());
 
-    @SuppressWarnings("unused")
+    private long MAX_TIME_OUT = 30000;
+
     private SimulatorEngine engine = null;
 
     @SuppressWarnings("rawtypes")
     private Store store = null;
 
+    RequestContext context = null;
+
     private long cid = -1;
 
     private int batchId = -1;
 
-    boolean isEndBatch = false;
+    // boolean isClosed = false;
 
     private BatchOperation<ByteString, KVValue> batch = null;
 
     private ArrayList<KineticMessage> list = new ArrayList<KineticMessage>();
 
-    @SuppressWarnings("unchecked")
-    public BatchOperationHandler(KineticMessage request,
- SimulatorEngine engine)
-            throws InvalidBatchException {
-
-        try {
-            // start batch
-            batch = engine.getStore().createBatchOperation();
-
-            // this batch op handler belongs to this connection
-            this.cid = request.getCommand().getHeader().getConnectionID();
-
-            this.batchId = request.getCommand().getHeader().getBatchID();
+    public BatchOperationHandler(SimulatorEngine engine) {
 
             // simulator engine
             this.engine = engine;
 
             // store
             this.store = engine.getStore();
+    }
 
-        } catch (Exception e) {
+    @SuppressWarnings("unchecked")
+    public synchronized void init(RequestContext context)
+            throws InvalidBatchException, InvalidRequestException {
+
+        if (this.batch != null) {
+            throw new InvalidRequestException("Alread in batch mode.");
+        }
+
+        // init with this context
+        this.context = context;
+
+        // this batch op handler belongs to this connection
+        this.cid = context.getRequestMessage().getCommand().getHeader()
+                .getConnectionID();
+
+        // batch Id
+        this.batchId = context.getRequestMessage().getCommand().getHeader()
+                .getBatchID();
+
+        // start batch
+        try {
+            // create new batch instance
+            batch = engine.getStore().createBatchOperation();
+        } catch (KVStoreException e) {
             throw new InvalidBatchException(e);
         }
     }
 
-    public synchronized boolean handleRequest(KineticMessage request,
-            KineticMessage response)
-            throws InvalidBatchException, NotAttemptedException {
+    public void checkBatchMode(KineticMessage kmreq)
+            throws InvalidRequestException {
 
-        if (this.isEndBatch) {
-            throw new InvalidBatchException("batch is not started or has ended");
+        if (kmreq.getIsInvalidBatchMessage()) {
+            throw new InvalidRequestException(
+                    "Invalid batch Id found in message: "
+                            + kmreq.getCommand().getHeader().getBatchID());
+        }
+
+        if (this.batch == null) {
+            return;
+        }
+
+        if (kmreq.getCommand().getHeader().getBatchID() == this.batchId
+                && kmreq.getCommand().getHeader().getConnectionID() == this.cid) {
+
+            return;
+        }
+
+        this.waitForBatchToFinish();
+    }
+
+    private synchronized void waitForBatchToFinish() {
+
+
+
+        long timeout = 0;
+        long period = 3000;
+
+        while (batch != null) {
+
+            try {
+
+                this.wait(period);
+
+                if (batch == null) {
+                    return;
+                }
+
+                timeout += period;
+
+                if (timeout >= MAX_TIME_OUT) {
+                    throw new RuntimeException(
+                            "Timeout waiting for batch mode to finish");
+                } else {
+                    logger.warning("waiting for batch mode to finish., total wait time ="
+                            + timeout);
+                }
+            } catch (InterruptedException e) {
+                logger.log(Level.WARNING, e.getMessage(), e);
+            }
+        }
+    }
+
+    public synchronized void handleRequest(RequestContext context)
+            throws InvalidBatchException,
+            NotAttemptedException, KVStoreException {
+
+        /**
+         * messages will be queued or dequeued. no process until end batch is
+         * received.
+         */
+        if (context.getMessageType() == MessageType.START_BATCH
+                || context.getMessageType() == MessageType.ABORT_BATCH) {
+            return;
         }
 
         try {
 
-            // check if request is from the same batch
-            if (request.getCommand().getHeader().getConnectionID() != this.cid
-                    || request.getCommand().getHeader().getBatchID() != this.batchId) {
-
-                throw new RuntimeException("DB is locked by: " + cid + "-"
-                        + batchId + ", request id: "
-                        + request.getCommand().getHeader().getConnectionID()
-                        + request.getCommand().getHeader().getBatchID());
+            /**
+             * start batch if message is tagged as first batch message
+             */
+            if (context.getRequestMessage().getIsFirstBatchMessage()) {
+                this.init(context);
             }
 
-            MessageType mtype = request.getCommand().getHeader()
-                    .getMessageType();
+            // check if this is a valid batch message
+            checkBatch(context);
+
+            MessageType mtype = context.getMessageType();
 
             if (mtype == MessageType.END_BATCH) {
                 this.commitBatch();
             } else if (mtype == MessageType.PUT) {
-                this.batchPut(request);
+                this.batchPut(context.getRequestMessage());
             } else if (mtype == MessageType.DELETE) {
-                this.batchDelete(request);
+                this.batchDelete(context.getRequestMessage());
             } else {
                 throw new NotAttemptedException("invalid message type: "
                         + mtype);
             }
         } catch (NotAttemptedException nae) {
+
             logger.log(Level.WARNING, nae.getMessage(), nae);
+
+            // set status code and message
+            context.getCommandBuilder().getStatusBuilder()
+                    .setCode(StatusCode.NOT_ATTEMPTED);
+            context.getCommandBuilder().getStatusBuilder()
+                    .setStatusMessage(nae.getMessage());
+
             close();
+
             throw nae;
+        } catch (KVStoreVersionMismatch vmismatch) {
+
+            logger.log(Level.WARNING, vmismatch.getMessage(), vmismatch);
+
+            // set status code and message
+            context.getCommandBuilder().getStatusBuilder()
+                    .setCode(StatusCode.VERSION_MISMATCH);
+            context.getCommandBuilder().getStatusBuilder()
+                    .setStatusMessage(vmismatch.getMessage());
+
+            close();
+
+            throw vmismatch;
         } catch (KVStoreException kvse) {
+
             logger.log(Level.WARNING, kvse.getMessage(), kvse);
+
+            context.getCommandBuilder().getStatusBuilder()
+                    .setCode(StatusCode.INTERNAL_ERROR);
+            context.getCommandBuilder().getStatusBuilder()
+                    .setStatusMessage(kvse.getMessage());
+
             close();
-            throw new NotAttemptedException(kvse);
+
+            throw kvse;
         } catch (Exception e) {
+
             logger.log(Level.WARNING, e.getMessage(), e);
+
+            context.getCommandBuilder().getStatusBuilder()
+                    .setCode(StatusCode.INVALID_BATCH);
+            context.getCommandBuilder().getStatusBuilder()
+                    .setStatusMessage(e.getMessage());
+
             close();
-            throw new InvalidBatchException(e);
+        }
+    }
+
+    private void checkBatch(RequestContext context)
+            throws InvalidBatchException, NotAttemptedException {
+
+        if (this.batch == null) {
+
+            String msg = "batch is not started or has ended";
+
+            if (context.getMessageType() == MessageType.END_BATCH) {
+                throw new InvalidBatchException(msg);
+            } else {
+                throw new NotAttemptedException(msg);
+            }
         }
 
-        return isEndBatch;
+        // check if request is from the same batch
+        if (context.getRequestMessage().getCommand().getHeader()
+                .getConnectionID() != this.cid
+                || context.getRequestMessage().getCommand().getHeader()
+                        .getBatchID() != this.batchId) {
+
+            throw new RuntimeException("DB is locked by: "
+                    + cid
+                    + "-"
+                    + batchId
+                    + ", request id: "
+                    + context.getRequestMessage().getCommand().getHeader()
+                            .getConnectionID()
+                    + context.getRequestMessage().getCommand().getHeader()
+                            .getBatchID());
+        }
+
     }
 
     private void batchDelete(KineticMessage km) throws KVStoreException {
-
-
 
         // proto request KV
         KeyValue requestKeyValue = km.getCommand().getBody().getKeyValue();
@@ -200,13 +339,15 @@ public class BatchOperationHandler {
     /**
      * close the current batch operation.
      */
-    public void close() {
+    public synchronized void close() {
+
+        if (this.batch == null) {
+            return;
+        }
 
         try {
-
-            if (batch != null) {
-                batch.close();
-            }
+            // close db batch
+            batch.close();
 
             // clear list
             list.clear();
@@ -215,7 +356,8 @@ public class BatchOperationHandler {
         } catch (Exception e) {
             logger.log(Level.WARNING, e.getMessage(), e);
         } finally {
-            this.isEndBatch = true;
+            batch = null;
+            this.notifyAll();
         }
     }
 
@@ -274,7 +416,7 @@ public class BatchOperationHandler {
     }
 
     public synchronized boolean isClosed() {
-        return this.isEndBatch;
+        return (this.batch == null);
     }
 
     public long getConnectionId() {
