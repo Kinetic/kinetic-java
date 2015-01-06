@@ -124,8 +124,6 @@ public class BatchOperationHandler {
 
     private synchronized void waitForBatchToFinish() {
 
-
-
         long timeout = 0;
         long period = 3000;
 

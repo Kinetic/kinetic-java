@@ -407,4 +407,10 @@ public class MemoryStore implements Store<ByteString, ByteString, KVValue> {
         throw new java.lang.UnsupportedOperationException();
     }
 
+    @Override
+    public void flush() throws KVStoreException {
+        // no op for mem store
+        ;
+    }
+
 }

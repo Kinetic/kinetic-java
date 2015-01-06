@@ -239,4 +239,12 @@ public interface Store<K, O, V> {
      * @return a new instance of batch operation object.
      */
     public BatchOperation<K, V> createBatchOperation() throws KVStoreException;
+
+    /**
+     * Flush data to store.
+     * 
+     * @throws KVStoreException
+     *             if any internal error occurred.
+     */
+    public void flush() throws KVStoreException;
 }

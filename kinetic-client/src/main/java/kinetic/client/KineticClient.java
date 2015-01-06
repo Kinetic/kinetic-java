@@ -19,6 +19,8 @@ package kinetic.client;
 
 import java.util.List;
 
+import kinetic.client.advanced.PersistOption;
+
 /**
  * Kinetic Client Application Interface.
  * <p>
@@ -68,14 +70,16 @@ public interface KineticClient extends GenericKineticClient {
 
     /**
      * The flush operation flushes any outstanding PUTs or DELETEs on the
-     * device.
+     * device/simulator.
      * <p>
-     * Currently only Kinetic drive supports this operation. This command has no
-     * effect on the simulator.
+     * If the call returns successfully, all PUT/DELETE operations with
+     * SYNC/ASYNC PersistOption received by the service prior to this are
+     * flushed to the store.
      * 
      * @throws KineticException
      *             if any internal error occurred.
      * 
+     * @see PersistOption
      */
     public void flush() throws KineticException;
 

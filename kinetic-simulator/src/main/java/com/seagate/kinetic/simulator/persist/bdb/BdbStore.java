@@ -151,4 +151,9 @@ public class BdbStore implements Store<ByteString, ByteString, KVValue> {
         throw new java.lang.UnsupportedOperationException();
     }
 
+    @Override
+    public void flush() throws KVStoreException {
+        logger.warning("flush is not implemented for bdb");
+    }
+
 }

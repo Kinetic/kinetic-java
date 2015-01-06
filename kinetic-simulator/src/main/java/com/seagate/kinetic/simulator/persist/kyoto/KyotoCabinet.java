@@ -485,4 +485,9 @@ public class KyotoCabinet implements Store<ByteString, ByteString, KVValue> {
         throw new java.lang.UnsupportedOperationException();
     }
 
+    @Override
+    public void flush() throws KVStoreException {
+        logger.warning("Flush is not yet implemented.");
+    }
+
 }

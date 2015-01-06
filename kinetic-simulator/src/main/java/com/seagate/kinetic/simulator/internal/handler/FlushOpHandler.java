@@ -27,7 +27,12 @@ public class FlushOpHandler extends CommandHandlerBase implements
     @Override
     public void processRequest(KineticMessage request, KineticMessage response)
             throws ServiceException {
-        ;
+
+        try {
+            super.engine.getStore().flush();
+        } catch (Exception e) {
+            throw new ServiceException(e.getMessage());
+        }
     }
 
 }
