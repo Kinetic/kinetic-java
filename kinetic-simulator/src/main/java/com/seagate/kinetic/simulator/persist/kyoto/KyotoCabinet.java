@@ -490,4 +490,10 @@ public class KyotoCabinet implements Store<ByteString, ByteString, KVValue> {
         logger.warning("Flush is not yet implemented.");
     }
 
+    @Override
+    public void compactRange(ByteString startKey, ByteString endKey)
+            throws KVStoreException {
+        logger.warning("method is not yet implemented.");
+    }
+
 }

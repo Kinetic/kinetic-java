@@ -700,6 +700,7 @@ public class LevelDbStore implements Store<ByteString, ByteString, KVValue> {
         return new LdbBatchOperation(db);
     }
 
+    @Override
     public void flush() throws KVStoreException {
         try {
             doFlush();
@@ -747,6 +748,35 @@ public class LevelDbStore implements Store<ByteString, ByteString, KVValue> {
         } finally {
             // close the batch
             batch.close();
+        }
+    }
+
+
+    @Override
+    public void compactRange(ByteString startKey, ByteString endKey)
+            throws KVStoreException {
+
+        try {
+
+            // start key
+            byte[] begin = null;
+            // end key
+            byte[] end = null;
+
+            if (startKey != null && startKey.isEmpty() == false) {
+                begin = startKey.toByteArray();
+            }
+
+            if (endKey != null && endKey.isEmpty() == false) {
+                end = endKey.toByteArray();
+            }
+
+            this.db.compactRange(begin, end);
+
+            logger.info("Media optimization finished");
+
+        } catch (Exception e) {
+            throw new KVStoreException(e.getMessage());
         }
     }
 

@@ -23,11 +23,10 @@ import java.util.logging.Logger;
 
 import kinetic.client.KineticException;
 
+import com.google.protobuf.ByteString;
 import com.seagate.kinetic.common.lib.KineticMessage;
 import com.seagate.kinetic.proto.Kinetic.Command;
-
 import com.seagate.kinetic.proto.Kinetic.Command.MessageType;
-
 import com.seagate.kinetic.proto.Kinetic.Command.Security.ACL.Permission;
 import com.seagate.kinetic.proto.Kinetic.Command.Status.StatusCode;
 
@@ -97,6 +96,7 @@ public abstract class BackGroundOpHandler {
         }
     }
     
+    @SuppressWarnings("unchecked")
     public static void mediaOptimize(KineticMessage request,
             KineticMessage respond, SimulatorEngine engine)
             throws KVStoreException, KineticException {
@@ -127,6 +127,17 @@ public abstract class BackGroundOpHandler {
              *  The following statements are for testing purpose only
              */
             
+            // get start key
+            ByteString startKey = request.getCommand().getBody().getRange()
+                    .getStartKey();
+
+            // get end key
+            ByteString endKey = request.getCommand().getBody().getRange()
+                    .getEndKey();
+
+            // ask store to do media compaction
+            engine.getStore().compactRange(startKey, endKey);
+
             // set endkey in response
             commandBuilder
                     .getBodyBuilder()

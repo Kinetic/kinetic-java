@@ -247,4 +247,14 @@ public interface Store<K, O, V> {
      *             if any internal error occurred.
      */
     public void flush() throws KVStoreException;
+
+    /**
+     * Force a compaction of the specified key range.
+     * 
+     * @param startKey
+     *            if null then compaction start from the first key
+     * @param endKey
+     *            if null then compaction ends at the last key
+     */
+    public void compactRange(K startKey, K endKey) throws KVStoreException;
 }

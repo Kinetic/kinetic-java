@@ -26,6 +26,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.seagate.kinetic.common.lib.KineticMessage;
+import com.seagate.kinetic.proto.Kinetic.Command.MessageType;
 import com.seagate.kinetic.simulator.internal.ConnectionInfo;
 import com.seagate.kinetic.simulator.internal.FaultInjectedCloseConnectionException;
 import com.seagate.kinetic.simulator.internal.SimulatorEngine;
@@ -107,15 +108,49 @@ public class NioMessageServiceHandler extends
             KineticMessage request) throws InterruptedException {
 
         if (enforceOrdering) {
-            // process request sequentially
-            queuedRequestProcessRunner.processRequest(ctx, request);
+            if (this.shouldProcessRequestAsync(request)) {
+                // process request async
+                this.processRequestAsync(ctx, request);
+            } else {
+                // process request sequentially
+                queuedRequestProcessRunner.processRequest(ctx, request);
+            }
         } else {
-            // each request is independently processed
-            RequestProcessRunner rpr = null;
-            rpr = new RequestProcessRunner(lcservice, ctx, request);
-            this.lcservice.execute(rpr);
+            this.processRequestAsync(ctx, request);
         }
 	}
+
+    /**
+     * Process request asynchronously. The calling thread does not wait for the
+     * request to be processed and returns immediately.
+     * 
+     * @param ctx
+     * @param request
+     * @throws InterruptedException
+     */
+    private void processRequestAsync(ChannelHandlerContext ctx,
+            KineticMessage request) throws InterruptedException {
+
+        // each request is independently processed
+        RequestProcessRunner rpr = null;
+        rpr = new RequestProcessRunner(lcservice, ctx, request);
+        this.lcservice.execute(rpr);
+
+        logger.info("***** request processed asynchronously ....");
+    }
+
+    private boolean shouldProcessRequestAsync(KineticMessage request) {
+        boolean flag = false;
+
+        MessageType mtype = request.getCommand().getHeader().getMessageType();
+
+        if (mtype == MessageType.MEDIAOPTIMIZE
+                || mtype == MessageType.MEDIASCAN) {
+            flag = true;
+        }
+
+        return flag;
+    }
 
 	@Override
 	public void channelReadComplete(ChannelHandlerContext ctx) throws Exception {

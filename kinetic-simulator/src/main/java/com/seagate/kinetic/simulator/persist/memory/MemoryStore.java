@@ -413,4 +413,11 @@ public class MemoryStore implements Store<ByteString, ByteString, KVValue> {
         ;
     }
 
+    @Override
+    public void compactRange(ByteString startKey, ByteString endKey)
+            throws KVStoreException {
+        // no op
+        ;
+    }
+
 }

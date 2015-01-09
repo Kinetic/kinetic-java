@@ -156,4 +156,11 @@ public class BdbStore implements Store<ByteString, ByteString, KVValue> {
         logger.warning("flush is not implemented for bdb");
     }
 
+    @Override
+    public void compactRange(ByteString startKey, ByteString endKey)
+            throws KVStoreException {
+        // TODO Auto-generated method stub
+        logger.warning("method is not implemented for bdb");
+    }
+
 }
