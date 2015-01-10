@@ -96,8 +96,7 @@ do
     fi
 done
 
-
-for((i=0;i<${total_nodes};i++)); 
+for((i=0;i<2*${total_nodes};i++)); 
 do
 	j=$(echo "$i+1" | bc -l) 
     wait %$j 

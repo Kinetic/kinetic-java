@@ -83,8 +83,8 @@ public class AdminAPISanityExample {
             "8123"));
     private int sslPort = Integer.parseInt(System.getProperty(
             "KINEITC_SSL_PORT", "8443"));
-    private boolean useSsl = Boolean.parseBoolean(System.getProperty("RUN_SSL_TEST",
-            "true"));
+    private boolean useSsl = Boolean.parseBoolean(System.getProperty(
+            "RUN_SSL_TEST", "true"));
 
     public AdminAPISanityExample() throws KineticException {
         acconfig = new AdminClientConfiguration();
@@ -486,14 +486,23 @@ public class AdminAPISanityExample {
         kac.close();
     }
 
-    public static void main(String[] args) throws KineticException {
-        AdminAPISanityExample example = new AdminAPISanityExample();
-        example.test_setClusterVersion();
-        example.test_getLog();
-        example.test_getLog_withLogType();
-        example.test_getVendorSpecificDeviceLog_ForDrive();
-        example.test_setAcl();
-
-        example.close();
+    public static void main(String[] args) {
+        AdminAPISanityExample example = null;
+        try {
+            example = new AdminAPISanityExample();
+            example.test_setClusterVersion();
+            example.test_getLog();
+            example.test_getLog_withLogType();
+            example.test_getVendorSpecificDeviceLog_ForDrive();
+            example.test_setAcl();
+        } catch (KineticException e) {
+            logger.severe(e.getMessage());
+        } finally {
+            try {
+                example.close();
+            } catch (KineticException e) {
+                logger.severe(e.getMessage());
+            }
+        }
     }
 }

@@ -12,6 +12,7 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.logging.Logger;
 
 import kinetic.client.ClientConfiguration;
 import kinetic.client.Entry;
@@ -21,8 +22,12 @@ import kinetic.client.KineticClientFactory;
 import kinetic.client.KineticException;
 
 import com.google.common.collect.Lists;
+import com.seagate.kinetic.IntegrationTestLoggerFactory;
 
 public class BasicAPISanityExample {
+    private static final Logger logger = IntegrationTestLoggerFactory
+            .getLogger(BasicAPISanityExample.class.getName());
+
     private ClientConfiguration cconfig;
     private KineticClient client;
     private String host = System.getProperty("KINETIC_HOST", "127.0.0.1");
@@ -30,8 +35,8 @@ public class BasicAPISanityExample {
             "8123"));
     private int sslPort = Integer.parseInt(System.getProperty(
             "KINEITC_SSL_PORT", "8443"));
-    private boolean useSsl = Boolean.parseBoolean(System.getProperty("RUN_SSL_TEST",
-            "false"));
+    private boolean useSsl = Boolean.parseBoolean(System.getProperty(
+            "RUN_SSL_TEST", "false"));
     private final String KEY_PREFIX = "key";
     private final int MAX_KEYS = 1;
 
@@ -288,16 +293,25 @@ public class BasicAPISanityExample {
         client.close();
     }
 
-    public static void main(String[] args) throws KineticException {
-        BasicAPISanityExample example = new BasicAPISanityExample();
-        example.testDelete();
-        example.testGet();
-        example.testGetKeyRange();
-        example.testGetMetadata();
-        example.testGetNext();
-        example.testGetPrevious();
-        example.testPut();
-
-        example.close();
+    public static void main(String[] args) {
+        BasicAPISanityExample example = null;
+        try {
+            example = new BasicAPISanityExample();
+            example.testDelete();
+            example.testGet();
+            example.testGetKeyRange();
+            example.testGetMetadata();
+            example.testGetNext();
+            example.testGetPrevious();
+            example.testPut();
+        } catch (KineticException e) {
+            logger.severe(e.getMessage());
+        } finally {
+            try {
+                example.close();
+            } catch (KineticException e) {
+                logger.severe(e.getMessage());
+            }
+        }
     }
 }

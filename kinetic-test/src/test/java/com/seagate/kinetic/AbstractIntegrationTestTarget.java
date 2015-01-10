@@ -83,6 +83,7 @@ public abstract class AbstractIntegrationTestTarget {
 		clientConfiguration.setHost(host);
 		clientConfiguration.setPort(tlsPort);
 		clientConfiguration.setNioServiceThreads(1);
+		clientConfiguration.setRequestTimeoutMillis(180000);
 		return clientConfiguration;
 	}
 
