@@ -153,6 +153,7 @@ public class KineticAdminCLI {
     public void init(String host, String tlsPort, String clusterVersion)
             throws KineticException {
         AdminClientConfiguration adminClientConfig = new AdminClientConfiguration();
+        adminClientConfig.setRequestTimeoutMillis(180000);
         if (host != null && !host.isEmpty()) {
             validateHost(host);
             adminClientConfig.setHost(host);
@@ -397,8 +398,7 @@ public class KineticAdminCLI {
             }
         }
 
-        if (index != -1 && args.length > (index + 1)
-                && !args[index + 1].isEmpty()) {
+        if (index != -1 && args.length > (index + 1)) {
             if (args[index + 1].startsWith("-")) {
                 throw new IllegalArgumentException("value can't start with -");
             }
