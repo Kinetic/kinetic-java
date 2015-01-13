@@ -52,9 +52,26 @@ public interface KineticAdminClient extends KineticP2pClient {
      * <p>
      * 
      * @param pin
-     *            Compare the pin with drive's pin. If equal, can download
-     *            firmware the information for the drive, if not, drive will
-     *            reject the firmwareDownload request.
+     *            No used. This is for backward compatibility only.
+     * 
+     * @param bytes
+     *            update firmware bytes for the drive.
+     * 
+     * @throws KineticException
+     *             if unable to load firmware bytes to the drive.
+     * 
+     * @deprecated
+     * @see #firmwareDownload(byte[])
+     */
+    @Deprecated
+    public void firmwareDownload(byte[] pin, byte[] bytes)
+            throws KineticException;
+
+    /**
+     * Load firmware byte[] to the drive.
+     * <p>
+     * The firmware byte[] is itself protected on its own for integrity,
+     * authenticity, etc
      * 
      * @param bytes
      *            update firmware bytes for the drive.
@@ -62,8 +79,7 @@ public interface KineticAdminClient extends KineticP2pClient {
      * @throws KineticException
      *             if unable to load firmware bytes to the drive.
      */
-    public void firmwareDownload(byte[] pin, byte[] bytes)
-            throws KineticException;
+    public void firmwareDownload(byte[] bytes) throws KineticException;
 
     /**
      * Get all Kinetic logs, such as the utilization temperature and capacity
