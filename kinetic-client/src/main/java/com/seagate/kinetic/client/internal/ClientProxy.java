@@ -40,12 +40,12 @@ import com.seagate.kinetic.common.lib.Hmac;
 import com.seagate.kinetic.common.lib.Hmac.HmacException;
 import com.seagate.kinetic.common.lib.KineticMessage;
 import com.seagate.kinetic.proto.Kinetic.Command;
-import com.seagate.kinetic.proto.Kinetic.Message;
-import com.seagate.kinetic.proto.Kinetic.Message.AuthType;
-import com.seagate.kinetic.proto.Kinetic.Message.Builder;
 import com.seagate.kinetic.proto.Kinetic.Command.Header;
 import com.seagate.kinetic.proto.Kinetic.Command.MessageType;
 import com.seagate.kinetic.proto.Kinetic.Command.Range;
+import com.seagate.kinetic.proto.Kinetic.Message;
+import com.seagate.kinetic.proto.Kinetic.Message.AuthType;
+import com.seagate.kinetic.proto.Kinetic.Message.Builder;
 
 
 /**
@@ -594,11 +594,21 @@ public class ClientProxy {
          */
         if (header.getMessageType() == MessageType.PUT) {
             if (commandBuilder.getBodyBuilder().getKeyValueBuilder().hasTag() == false) {
-                // calculate value Hmac
-                ByteString tag = Hmac.calcTag(kineticMessage, this.myKey);
+
+                // calculate value message digest
+                // ByteString tag = Hmac.calcTag(kineticMessage, this.myKey);
+
+                // ByteString tag =
+                // MessageDigestUtil.calculateTag(Algorithm.SHA1,
+                // kineticMessage.getValue());
+                //
                 // set tag
-                commandBuilder.getBodyBuilder().getKeyValueBuilder()
-                        .setTag(tag);
+                // commandBuilder.getBodyBuilder().getKeyValueBuilder()
+                // .setTag(tag);
+                //
+                // Algorithm algo = Algorithm.SHA1;
+                // commandBuilder.getBodyBuilder().getKeyValueBuilder()
+                // .setAlgorithm(algo);
             }
         }
 

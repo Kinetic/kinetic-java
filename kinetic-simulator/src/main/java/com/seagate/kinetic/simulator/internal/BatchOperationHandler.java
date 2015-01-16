@@ -100,7 +100,7 @@ public class BatchOperationHandler {
         }
     }
 
-    public void checkBatchMode(KineticMessage kmreq)
+    public synchronized void checkBatchMode(KineticMessage kmreq)
             throws InvalidRequestException {
 
         if (kmreq.getIsInvalidBatchMessage()) {
