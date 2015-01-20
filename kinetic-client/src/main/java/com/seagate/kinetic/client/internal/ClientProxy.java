@@ -594,22 +594,16 @@ public class ClientProxy {
          */
         if (header.getMessageType() == MessageType.PUT) {
             if (commandBuilder.getBodyBuilder().getKeyValueBuilder().hasTag() == false) {
+                // set tag to empty for backward compatibility with drive.
+                // this can be removed when drive does not require the tag
+                // to be set.
+                commandBuilder.getBodyBuilder().getKeyValueBuilder()
+                        .setTag(ByteString.EMPTY);
 
-                // calculate value message digest
-                // ByteString tag = Hmac.calcTag(kineticMessage, this.myKey);
-
-                // ByteString tag =
-                // MessageDigestUtil.calculateTag(Algorithm.SHA1,
-                // kineticMessage.getValue());
-                //
-                // set tag
                 // commandBuilder.getBodyBuilder().getKeyValueBuilder()
-                // .setTag(tag);
-                //
-                // Algorithm algo = Algorithm.SHA1;
-                // commandBuilder.getBodyBuilder().getKeyValueBuilder()
-                // .setAlgorithm(algo);
+                // .setAlgorithm(Algorithm.INVALID_ALGORITHM);
             }
+
         }
 
         /**
