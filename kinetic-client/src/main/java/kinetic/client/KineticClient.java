@@ -504,8 +504,13 @@ public interface KineticClient extends GenericKineticClient {
 
     /**
      * Create a new instance of <code>BatchOperation</code> object.
+     * <p>
+     * Please note that this API is only supported by the simulator and Drive
+     * that implement Kinetic protocol 3.0.6 and later.
      * 
      * @return a new instance of <code>BatchOperation</code> object.
+     * 
+     * @since protocol version 3.0.6
      */
     public BatchOperation createBatchOperation() throws KineticException;;
 
