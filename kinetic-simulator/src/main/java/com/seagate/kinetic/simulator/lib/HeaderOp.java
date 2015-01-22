@@ -31,6 +31,7 @@ import com.seagate.kinetic.proto.Kinetic.Command.MessageType;
 import com.seagate.kinetic.proto.Kinetic.Command.Status;
 import com.seagate.kinetic.proto.Kinetic.Command.Status.StatusCode;
 import com.seagate.kinetic.proto.Kinetic.Message.AuthType;
+import com.seagate.kinetic.simulator.internal.SimulatorEngine;
 
 class HeaderException extends Exception {
 	private static final long serialVersionUID = 5201751340412081922L;
@@ -80,7 +81,7 @@ public class HeaderOp {
 	}
 
 	public static void checkHeader(KineticMessage km, KineticMessage kmresp,
-			Key key, long clusterVersion) throws HeaderException {
+            Key key, SimulatorEngine engine) throws HeaderException {
 
 		LOG.fine("Header processing");
 		
@@ -92,6 +93,11 @@ public class HeaderOp {
 				throw new HeaderException(StatusCode.HEADER_REQUIRED,
 						"no header");
 			}
+
+            if (km.getIsInvalidRequest()) {
+                throw new HeaderException(Status.StatusCode.INVALID_REQUEST,
+                        km.getErrorMessage());
+            }
 
 			Command.Header in = km.getCommand().getHeader();
 
@@ -110,16 +116,16 @@ public class HeaderOp {
                 // check hmac
                 checkHmac(km, key);
 
-                if (in.getClusterVersion() != clusterVersion) {
+                if (in.getClusterVersion() != engine.getClusterVersion()) {
 
                     // set cluster version in response message
                     respCommandBuilder.getHeaderBuilder().setClusterVersion(
-                            clusterVersion);
+                            engine.getClusterVersion());
 
                     throw new HeaderException(
                             Status.StatusCode.VERSION_FAILURE,
                             "CLUSTER_VERSION_FAILURE: Simulator cluster version is "
-                                    + clusterVersion
+                                    + engine.getClusterVersion()
                                     + "; Received request cluster version is "
                                     + in.getClusterVersion());
                 }
@@ -156,6 +162,13 @@ public class HeaderOp {
                 // set connection Id in the response message
                 long cid = km.getCommand().getHeader().getConnectionID();
                 respCommandBuilder.getHeaderBuilder().setConnectionID(cid);
+
+                // set response message type
+                int number = km.getCommand().getHeader().getMessageType()
+                        .getNumber() - 1;
+
+                respCommandBuilder.getHeaderBuilder().setMessageType(
+                        MessageType.valueOf(number));
 
             } catch (Exception e) {
                 LOG.warning(e.getMessage());

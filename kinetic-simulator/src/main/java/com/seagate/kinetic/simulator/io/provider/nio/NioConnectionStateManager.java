@@ -19,6 +19,8 @@
  */
 package com.seagate.kinetic.simulator.io.provider.nio;
 
+import io.netty.channel.ChannelHandlerContext;
+
 import java.util.logging.Logger;
 
 import kinetic.simulator.SimulatorConfiguration;
@@ -26,8 +28,6 @@ import kinetic.simulator.SimulatorConfiguration;
 import com.seagate.kinetic.common.lib.KineticMessage;
 import com.seagate.kinetic.simulator.internal.ConnectionInfo;
 import com.seagate.kinetic.simulator.internal.SimulatorEngine;
-
-import io.netty.channel.ChannelHandlerContext;
 
 /**
  * Nio connection manager utility.
@@ -58,6 +58,9 @@ public class NioConnectionStateManager {
         // get connection info for this channel
         ConnectionInfo cinfo = SimulatorEngine.getConnectionInfo(ctx);
         
+        // check sequence
+        cinfo.checkAndSetLastReceivedSequence(request);
+
         if (cinfo.getConnectionId() != request.getCommand().getHeader().getConnectionID()) {
             
             logger.warning ("expect connection Id="

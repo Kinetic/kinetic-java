@@ -19,17 +19,23 @@
  */
 package com.seagate.kinetic.simulator.internal;
 
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import kinetic.client.KineticException;
+import kinetic.simulator.SimulatorConfiguration;
 
+import com.google.protobuf.ByteString;
 import com.seagate.kinetic.common.lib.KineticMessage;
+import com.seagate.kinetic.common.lib.MessageDigestUtil;
 import com.seagate.kinetic.proto.Kinetic.Command;
-
+import com.seagate.kinetic.proto.Kinetic.Command.Algorithm;
 import com.seagate.kinetic.proto.Kinetic.Command.MessageType;
-
 import com.seagate.kinetic.proto.Kinetic.Command.Security.ACL.Permission;
 import com.seagate.kinetic.proto.Kinetic.Command.Status.StatusCode;
+import com.seagate.kinetic.simulator.persist.KVValue;
+import com.seagate.kinetic.simulator.persist.Store;
+import com.seagate.kinetic.simulator.persist.memory.KeyComparator;
 
 /**
  * 
@@ -46,9 +52,12 @@ public abstract class BackGroundOpHandler {
     private final static Logger logger = Logger.getLogger(BackGroundOpHandler.class
             .getName());
     
+    @SuppressWarnings({ "rawtypes" })
     public static void mediaScan(KineticMessage request,
             KineticMessage respond, SimulatorEngine engine)
             throws KVStoreException, KineticException {
+
+        KeyComparator comparator = new KeyComparator();
 
         Command.Builder commandBuilder = (Command.Builder) respond.getCommand();
 
@@ -60,13 +69,33 @@ public abstract class BackGroundOpHandler {
         commandBuilder.getHeaderBuilder().setAckSequence(
                 request.getCommand().getHeader().getSequence());
 
+        // max return key count
+        int maxReturned = request.getCommand().getBody().getRange()
+                .getMaxReturned();
+        
+        int MaxSupported = SimulatorConfiguration.getMaxSupportedKeyRangeSize();
+
         try {
             
+            // if not set, set to default
+            if (maxReturned <= 0) {
+                maxReturned = MaxSupported;
+            } else if (maxReturned > MaxSupported) {
+                throw new InvalidRequestException(
+                        "Exceed max returned key range., max allowed="
+                                + SimulatorConfiguration
+                                        .getMaxSupportedKeyRangeSize()
+                                + ", request=" + maxReturned);
+            }
+            
+            // check message type
             checkIsMessageValid (request);
             
             // check permission
             checkPermission (request, engine);  
             
+            Store store = engine.getStore();
+
             /**
              *  XXX 09/09/2014 chiaming:
              *  framework to start background operation
@@ -76,6 +105,116 @@ public abstract class BackGroundOpHandler {
              *  The following statements are for testing purpose only
              */
             
+            // get start key
+            ByteString startKey = request.getCommand().getBody().getRange()
+                    .getStartKey();
+
+            // get end key
+            ByteString endKey = request.getCommand().getBody().getRange()
+                    .getEndKey();
+
+            byte[] endKeybytes = endKey.toByteArray();
+
+            // if scan to the end of the map
+            boolean toEndOfMap = false;
+            if (endKey.isEmpty()) {
+                toEndOfMap = true;
+            }
+
+            // finish scan flag
+            boolean done = false;
+
+            // kv entry
+            KVValue kv = null;
+
+            // check if start key inclusive
+            if (request.getCommand().getBody().getRange()
+                    .getStartKeyInclusive()) {
+                // include start key
+                kv = get(store, startKey);
+                if (kv == null) {
+                    kv = getNext(store, startKey);
+                }
+
+            } else {
+                // get next key
+                kv = getNext(store, startKey);
+            }
+
+            // scan the drive
+            long index = 0;
+            while (done == false) {
+
+                if (kv != null) {
+                    // get algo
+                    Algorithm algo = kv.getAlgorithm();
+                    // get tag
+                    ByteString tag = kv.getTag();
+
+                    // compare tag
+                    logger.info((index++) + ": scan media for key: "
+                            + kv.getKeyOf()
+                            + ", algo: " + algo);
+
+                    if ((tag != null)
+                            && (tag.isEmpty() == false)
+                            && MessageDigestUtil
+                                    .isSupportedForKineticJava(algo)) {
+
+                        ByteString ctag = MessageDigestUtil.calculateTag(algo,
+                                kv.getData()
+                                .toByteArray());
+
+                        if (tag.equals(ctag) == false) {
+
+                            logger.info("tag does not match for key: "
+                                    + kv.getKeyOf() + ", algo: " + algo);
+
+                            if (commandBuilder.getBodyBuilder()
+                                    .getRangeBuilder().getKeysCount() < maxReturned) {
+                                // add bad key
+                                commandBuilder.getBodyBuilder()
+                                        .getRangeBuilder()
+                                        .addKeys(kv.getKeyOf());
+                            } else {
+                                // reached max returned keys
+                                // set endkey in response
+                                commandBuilder.getBodyBuilder()
+                                        .getRangeBuilder()
+                                        .setEndKey(kv.getKeyOf());
+
+                                // finished scan
+                                return;
+                            }
+                        } else {
+                            logger.info("tag validated for key: "
+                                    + kv.getKeyOf() + ", algo: " + algo);
+                        }
+                    }
+
+                    // read next key
+                    kv = getNext(store, kv.getKeyOf());
+
+                    if (kv == null) {
+                        // reached to end of map
+                        done = true;
+                    } else if (toEndOfMap == false) {
+
+                        /**
+                         * check if passed end key
+                         */
+                        if (comparator.compare(endKeybytes, kv.getKeyOf()
+                                .toByteArray()) < 0) {
+                            done = true;
+                        }
+                    }
+
+                } else {
+                    logger.info(index + ": scan media reached end of map");
+                    done = true;
+                }
+            }
+
             // set endkey in response
             commandBuilder
                     .getBodyBuilder()
@@ -97,6 +236,7 @@ public abstract class BackGroundOpHandler {
         }
     }
     
+    @SuppressWarnings("unchecked")
     public static void mediaOptimize(KineticMessage request,
             KineticMessage respond, SimulatorEngine engine)
             throws KVStoreException, KineticException {
@@ -127,6 +267,17 @@ public abstract class BackGroundOpHandler {
              *  The following statements are for testing purpose only
              */
             
+            // get start key
+            ByteString startKey = request.getCommand().getBody().getRange()
+                    .getStartKey();
+
+            // get end key
+            ByteString endKey = request.getCommand().getBody().getRange()
+                    .getEndKey();
+
+            // ask store to do media compaction
+            engine.getStore().compactRange(startKey, endKey);
+
             // set endkey in response
             commandBuilder
                     .getBodyBuilder()
@@ -169,6 +320,32 @@ public abstract class BackGroundOpHandler {
         // check if client has permission
         Authorizer.checkPermission(engine.getAclMap(), request.getMessage().getHmacAuth().getIdentity(), 
                 Permission.RANGE);
+    }
+
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    private static KVValue get(Store store, ByteString key) {
+        KVValue kv = null;
+
+        try {
+            kv = (KVValue) store.get(key);
+        } catch (Exception e) {
+            logger.info(e.getMessage());
+        }
+
+        return kv;
+    }
+
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    private static KVValue getNext(Store store, ByteString key) {
+        KVValue kv = null;
+
+        try {
+            kv = (KVValue) store.getNext(key);
+        } catch (Exception e) {
+            logger.log(Level.WARNING, e.getMessage(), e);
+        }
+
+        return kv;
     }
 
 }

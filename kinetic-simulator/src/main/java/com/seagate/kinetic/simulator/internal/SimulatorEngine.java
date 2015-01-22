@@ -32,8 +32,6 @@ import java.util.logging.Logger;
 
 import kinetic.simulator.SimulatorConfiguration;
 
-import com.google.protobuf.ByteString;
-import com.seagate.kinetic.common.lib.Hmac;
 import com.seagate.kinetic.common.lib.KineticMessage;
 import com.seagate.kinetic.heartbeat.message.ByteCounter;
 import com.seagate.kinetic.heartbeat.message.OperationCounter;
@@ -41,22 +39,16 @@ import com.seagate.kinetic.proto.Kinetic.Command;
 import com.seagate.kinetic.proto.Kinetic.Command.GetLog.Configuration;
 import com.seagate.kinetic.proto.Kinetic.Command.GetLog.Limits;
 import com.seagate.kinetic.proto.Kinetic.Command.MessageType;
-import com.seagate.kinetic.proto.Kinetic.Command.PinOperation.PinOpType;
 import com.seagate.kinetic.proto.Kinetic.Command.Security.ACL;
 import com.seagate.kinetic.proto.Kinetic.Command.Status.StatusCode;
 import com.seagate.kinetic.proto.Kinetic.Local;
 import com.seagate.kinetic.proto.Kinetic.Message;
 import com.seagate.kinetic.proto.Kinetic.Message.AuthType;
 import com.seagate.kinetic.simulator.heartbeat.Heartbeat;
-import com.seagate.kinetic.simulator.internal.p2p.P2POperationHandler;
+import com.seagate.kinetic.simulator.internal.handler.CommandManager;
 import com.seagate.kinetic.simulator.io.provider.nio.NioEventLoopGroupManager;
 import com.seagate.kinetic.simulator.io.provider.spi.MessageService;
 import com.seagate.kinetic.simulator.io.provider.spi.TransportProvider;
-import com.seagate.kinetic.simulator.lib.HeaderOp;
-import com.seagate.kinetic.simulator.lib.HmacStore;
-import com.seagate.kinetic.simulator.lib.SetupInfo;
-import com.seagate.kinetic.simulator.persist.KVOp;
-import com.seagate.kinetic.simulator.persist.RangeOp;
 import com.seagate.kinetic.simulator.persist.Store;
 import com.seagate.kinetic.simulator.persist.StoreFactory;
 import com.seagate.kinetic.simulator.utility.ConfigurationUtil;
@@ -139,7 +131,10 @@ public class SimulatorEngine implements MessageService {
 
     private static final String SSL_NIO_TRANSPORT = "com.seagate.kinetic.simulator.io.provider.nio.ssl.SslNioTransportProvider";
 
-    private P2POperationHandler p2pHandler = null;
+    // private P2POperationHandler p2pHandler = null;
+
+    // batch op handler
+    private BatchOperationHandler batchOp = null;
 
     private NioEventLoopGroupManager nioManager = null;
 
@@ -176,6 +171,8 @@ public class SimulatorEngine implements MessageService {
         Runtime.getRuntime().addShutdownHook(shutdownHook);
     }
 
+    private CommandManager manager = null;
+
     /**
      * Simulator constructor.
      *
@@ -197,7 +194,7 @@ public class SimulatorEngine implements MessageService {
         tpService.register(this);
 
         // p2p op handler.
-        p2pHandler = new P2POperationHandler();
+        // p2pHandler = new P2POperationHandler();
 
         try {
 
@@ -215,6 +212,9 @@ public class SimulatorEngine implements MessageService {
 
             // init network io service
             this.initIoService();
+
+            // init op handlers
+            this.initHandlers();
 
             logger.info("simulator protocol version = "
                     + SimulatorConfiguration.getProtocolVersion());
@@ -303,6 +303,16 @@ public class SimulatorEngine implements MessageService {
         }
     }
 
+    private void initHandlers() {
+        this.manager = new CommandManager(this);
+        
+        this.batchOp = new BatchOperationHandler(this);
+    }
+
+    public CommandManager getCommandManager() {
+        return this.manager;
+    }
+
     public boolean useNio() {
         return this.config.getUseNio();
     }
@@ -334,6 +344,10 @@ public class SimulatorEngine implements MessageService {
 
     public void setClusterVersion(long cversion) {
         this.clusterVersion = cversion;
+    }
+
+    public long getClusterVersion() {
+        return this.clusterVersion;
     }
 
     public SecurityPin getSecurityPin() {
@@ -371,11 +385,12 @@ public class SimulatorEngine implements MessageService {
 
         tpService.deregister(this);
 
-        // close p2p handler
-        if (this.p2pHandler != null) {
-            this.p2pHandler.close();
+        // close handlers
+        if (this.manager != null) {
+            this.manager.close();
         }
 
+        // close io resources
         if (this.nioManager != null) {
             this.nioManager.close();
         }
@@ -430,161 +445,62 @@ public class SimulatorEngine implements MessageService {
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public KineticMessage processRequest(KineticMessage kmreq) {
 
-        // create response message
-        KineticMessage kmresp = createKineticMessageWithBuilder();
-
-        // get command builder
-        Command.Builder commandBuilder = (Command.Builder) kmresp.getCommand();
-
-        // get message builder
-        Message.Builder messageBuilder = (Message.Builder) kmresp.getMessage();
-
-        // get user identity for this message
-        long userId = kmreq.getMessage().getHmacAuth().getIdentity();
-
-        // get user key
-        Key key = this.hmacKeyMap.get(Long.valueOf(userId));
-
-        MessageType mtype = kmreq.getCommand().getHeader().getMessageType();
+        // create request context
+        RequestContext context = new RequestContext(this, kmreq);
 
         try {
 
-            HeaderOp.checkHeader(kmreq, kmresp, key, clusterVersion);
+            // prepare to process this request
+            context.preProcessRequest();
 
-            checkDeviceLocked(kmreq, kmresp);
+            // check if in batch mode
+            this.batchOp.checkBatchMode(kmreq);
 
-            if (kmreq.getMessage().getAuthType() == AuthType.PINAUTH) {
-                // perform pin op
-                PinOperationHandler.handleOperation(kmreq, kmresp, this);
-            } else if (mtype == MessageType.FLUSHALLDATA) {
-                commandBuilder.getHeaderBuilder().setMessageType(
-                        MessageType.FLUSHALLDATA_RESPONSE);
-                logger.warning("received flush data command, this is a no op on simulator at this time ...");
-            } else if (mtype == MessageType.NOOP) {
-                commandBuilder.getHeaderBuilder().setMessageType(
-                        MessageType.NOOP_RESPONSE);
-            } else if (kmreq.getCommand().getBody().hasKeyValue()) {
-                KVOp.Op(aclmap, store, kmreq, kmresp);
-            } else if (mtype == MessageType.GETKEYRANGE) {
-                RangeOp.operation(store, kmreq, kmresp, aclmap);
-            } else if (kmreq.getCommand().getBody().hasSecurity()) {
-                boolean hasPermission = SecurityHandler.checkPermission(kmreq,
-                        kmresp, aclmap);
-                if (hasPermission) {
-                    synchronized (this.hmacKeyMap) {
-                        SecurityHandler.handleSecurity(kmreq, kmresp, this);
-                        this.hmacKeyMap = HmacStore.getHmacKeyMap(aclmap);
-                    }
-                }
-
-            } else if (kmreq.getCommand().getBody().hasSetup()) {
-                boolean hasPermission = SetupHandler.checkPermission(kmreq,
-                        kmresp, aclmap);
-                if (hasPermission) {
-                    SetupInfo setupInfo = SetupHandler.handleSetup(kmreq,
-                            kmresp, store, kineticHome);
-                    if (setupInfo != null) {
-                        this.clusterVersion = setupInfo.getClusterVersion();
-                        // this.pin = setupInfo.getPin();
-                    }
-                }
-            } else if (kmreq.getCommand().getBody().hasGetLog()) {
-                boolean hasPermission = GetLogHandler.checkPermission(kmreq,
-                        kmresp, aclmap);
-                if (hasPermission) {
-                    GetLogHandler.handleGetLog(this, kmreq, kmresp);
-                }
-            } else if (kmreq.getCommand().getBody().hasP2POperation()) {
-
-                // check permission
-                boolean hasPermission = P2POperationHandler.checkPermission(
-                        kmreq, kmresp, aclmap);
-
-                if (hasPermission) {
-                    this.p2pHandler.push(aclmap, store, kmreq, kmresp);
-                }
-            } else if (mtype == MessageType.MEDIASCAN) {
-                BackGroundOpHandler.mediaScan(kmreq, kmresp, this);
-            } else if (mtype == MessageType.MEDIAOPTIMIZE) {
-                BackGroundOpHandler.mediaOptimize(kmreq, kmresp, this);
+            if (kmreq.getIsBatchMessage()) {
+                this.batchOp.handleRequest(context);
+            } else {
+                // process request
+                context.processRequest();
             }
-        } catch (DeviceLockedException ire) {
-
-            int number = kmreq.getCommand().getHeader().getMessageType()
-                    .getNumber() - 1;
-
-            commandBuilder.getHeaderBuilder().setMessageType(
-                    MessageType.valueOf(number));
-
-            commandBuilder.getStatusBuilder().setCode(StatusCode.DEVICE_LOCKED);
-
-            commandBuilder.getStatusBuilder().setStatusMessage(
-                    "Device is locked");
 
         } catch (Exception e) {
 
             logger.log(Level.WARNING, e.getMessage(), e);
 
-            int number = kmreq.getCommand().getHeader().getMessageType()
-                    .getNumber() - 1;
+            /**
+             * reset to default error response code if not set
+             */
+            if (context.getCommandBuilder().getStatusBuilder().getCode() == StatusCode.SUCCESS) {
+                context.getCommandBuilder().getStatusBuilder()
+                        .setCode(
+                    StatusCode.INVALID_REQUEST);
+            }
 
-            commandBuilder.getHeaderBuilder().setMessageType(
-                    MessageType.valueOf(number));
+            if (context.getCommandBuilder().getStatusBuilder()
+                    .hasStatusMessage() == false) {
+                context.getCommandBuilder().getStatusBuilder()
+                        .setStatusMessage(
+                        e.getMessage());
+            }
 
             logger.log(Level.WARNING, e.getMessage(), e);
         } finally {
 
             try {
-                // get command byte stirng
-                ByteString commandByteString = commandBuilder.build()
-                        .toByteString();
 
-                // get command byte[]
-                byte[] commandByte = commandByteString.toByteArray();
+                // post process message
+                context.postProcessRequest();
 
-                // require Hmac calculation ?
-                if (kmreq.getMessage().getAuthType() == AuthType.HMACAUTH) {
-
-                    // calculate hmac
-                    ByteString hmac = Hmac.calc(commandByte, key);
-
-                    // set identity
-                    messageBuilder.getHmacAuthBuilder().setIdentity(userId);
-
-                    // set hmac
-                    messageBuilder.getHmacAuthBuilder().setHmac(hmac);
-                }
-
-                // set command bytes
-                messageBuilder.setCommandBytes(commandByteString);
             } catch (Exception e2) {
                 logger.log(Level.WARNING, e2.getMessage(), e2);
             }
 
-            this.addStatisticCounter(kmreq, kmresp);
+            this.addStatisticCounter(kmreq, context.getResponseMessage());
         }
 
-        return kmresp;
-    }
-
-    private void checkDeviceLocked(KineticMessage kmreq, KineticMessage kmresp)
-            throws DeviceLockedException {
-
-        if (this.deviceLocked == false) {
-            return;
-        }
-
-        PinOpType pinOpType = kmreq.getCommand().getBody().getPinOp()
-                .getPinOpType();
-
-        if (pinOpType != PinOpType.UNLOCK_PINOP
-                && pinOpType != PinOpType.LOCK_PINOP) {
-            throw new DeviceLockedException();
-        }
-
+        return context.getResponseMessage();
     }
 
     private void addStatisticCounter(KineticMessage kmreq, KineticMessage kmresp) {
@@ -884,12 +800,6 @@ public class SimulatorEngine implements MessageService {
             logger.log(Level.WARNING, e.getMessage(), e);
         }
 
-        // cb.getBodyBuilder().getGetLogBuilder().getConfigurationBuilder().setProtocolVersion(PROTOCOL_VERSION);
-        // cb.getBodyBuilder().getGetLogBuilder().getConfigurationBuilder().setCompilationDate(ConfigurationUtil.COMPILATION_DATE);
-        // cb.getBodyBuilder().getGetLogBuilder().getConfigurationBuilder().setModel(ConfigurationUtil.MODEL);
-        // cb.getBodyBuilder().getGetLogBuilder().getConfigurationBuilder().setVersion(SimulatorConfiguration.getSimulatorVersion());
-        // cb.getBodyBuilder().getGetLogBuilder().getConfigurationBuilder().setSerialNumber(ByteString.copyFrom(ConfigurationUtil.SERIAL_NUMBER));
-        //
         // limits
         try {
             Limits limits = LimitsUtil.getLimits(this.config);
@@ -909,8 +819,8 @@ public class SimulatorEngine implements MessageService {
 
         ctx.writeAndFlush(km);
 
-        logger.info("***** connection registered., sent UNSOLICITEDSTATUS with cid = "
-                + info.getConnectionId());
+        // logger.info("***** connection registered., sent UNSOLICITEDSTATUS with cid = "
+        // + info.getConnectionId());
 
         return info;
     }

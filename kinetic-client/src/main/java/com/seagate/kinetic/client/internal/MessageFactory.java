@@ -27,15 +27,14 @@ import kinetic.client.VersionMismatchException;
 import com.google.protobuf.ByteString;
 import com.seagate.kinetic.common.lib.KineticMessage;
 import com.seagate.kinetic.proto.Kinetic.Command;
-import com.seagate.kinetic.proto.Kinetic.Message;
 import com.seagate.kinetic.proto.Kinetic.Command.Algorithm;
-import com.seagate.kinetic.proto.Kinetic.Message.AuthType;
-
 import com.seagate.kinetic.proto.Kinetic.Command.KeyValue;
 import com.seagate.kinetic.proto.Kinetic.Command.MessageType;
 import com.seagate.kinetic.proto.Kinetic.Command.Range;
 import com.seagate.kinetic.proto.Kinetic.Command.Status.StatusCode;
 import com.seagate.kinetic.proto.Kinetic.Command.Synchronization;
+import com.seagate.kinetic.proto.Kinetic.Message;
+import com.seagate.kinetic.proto.Kinetic.Message.AuthType;
 
 /**
  * Kinetic Message factory for the Java API client runtime implementation.
@@ -419,6 +418,47 @@ public class MessageFactory {
         return kineticMessage;
     }
     
+    public static KineticMessage createStartBatchRequestMessage(int batchId)
+            throws KineticException {
+
+        KineticMessage kineticMessage = createKineticMessageWithBuilder();
+
+        Command.Builder request = (Command.Builder) kineticMessage.getCommand();
+
+        request.getHeaderBuilder().setMessageType(MessageType.START_BATCH);
+
+        request.getHeaderBuilder().setBatchID(batchId);
+
+        return kineticMessage;
+    }
+
+    public static KineticMessage createEndBatchRequestMessage(int batchId)
+            throws KineticException {
+
+        KineticMessage kineticMessage = createKineticMessageWithBuilder();
+
+        Command.Builder request = (Command.Builder) kineticMessage.getCommand();
+
+        request.getHeaderBuilder().setMessageType(MessageType.END_BATCH);
+
+        request.getHeaderBuilder().setBatchID(batchId);
+
+        return kineticMessage;
+    }
+
+    public static KineticMessage createAbortBatchRequestMessage(int batchId)
+            throws KineticException {
+
+        KineticMessage kineticMessage = createKineticMessageWithBuilder();
+
+        Command.Builder request = (Command.Builder) kineticMessage.getCommand();
+
+        request.getHeaderBuilder().setMessageType(MessageType.ABORT_BATCH);
+
+        request.getHeaderBuilder().setBatchID(batchId);
+
+        return kineticMessage;
+    }
 
     /**
      * create an internal message with empty builder message.

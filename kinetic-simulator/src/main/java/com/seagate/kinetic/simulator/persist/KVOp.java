@@ -28,9 +28,7 @@ import kinetic.simulator.SimulatorConfiguration;
 import com.google.protobuf.ByteString;
 import com.seagate.kinetic.common.lib.KineticMessage;
 import com.seagate.kinetic.proto.Kinetic.Command;
-
 import com.seagate.kinetic.proto.Kinetic.Command.Algorithm;
-
 import com.seagate.kinetic.proto.Kinetic.Command.KeyValue;
 import com.seagate.kinetic.proto.Kinetic.Command.MessageType;
 import com.seagate.kinetic.proto.Kinetic.Command.Security.ACL;

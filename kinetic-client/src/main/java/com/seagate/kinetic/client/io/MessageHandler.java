@@ -419,7 +419,7 @@ public class MessageHandler implements ClientMessageService, Runnable {
 			MessageFactory.checkDeleteReply(context.getRequestMessage(), context.getResponseMessage());
 		} catch (KineticException e) {
 
-			lce = new AsyncKineticException(lce);
+            lce = new AsyncKineticException(e);
 
 			lce.setRequestMessage(context.getRequestMessage());
 			lce.setResponseMessage(context.getResponseMessage());

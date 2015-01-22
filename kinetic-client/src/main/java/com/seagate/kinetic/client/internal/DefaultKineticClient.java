@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
+import kinetic.client.BatchOperation;
 import kinetic.client.CallbackHandler;
 import kinetic.client.ClientConfiguration;
 import kinetic.client.Entry;
@@ -36,7 +37,6 @@ import com.seagate.kinetic.client.internal.ClientProxy.LCException;
 import com.seagate.kinetic.client.lib.ClientLogger;
 import com.seagate.kinetic.common.lib.KineticMessage;
 import com.seagate.kinetic.proto.Kinetic.Command;
-
 import com.seagate.kinetic.proto.Kinetic.Command.MessageType;
 import com.seagate.kinetic.proto.Kinetic.Command.Synchronization;
 
@@ -530,6 +530,24 @@ public class DefaultKineticClient implements AdvancedKineticClient {
         this.client.requestAsync(km, handler);
     }
 
+    public void batchPutAsync(Entry entry, byte[] newVersion,
+            CallbackHandler<Entry> handler, int batchId)
+            throws KineticException {
+
+        // construct put request message
+        KineticMessage km = MessageFactory.createPutRequestMessage(entry,
+                newVersion);
+
+        // proto builder
+        Command.Builder command = (Command.Builder) km.getCommand();
+
+        // set batch id
+        command.getHeaderBuilder().setBatchID(batchId);
+
+        // send request to the drive
+        this.client.requestAsync(km, handler);
+    }
+
     /**
      * {@inheritDoc}
      */
@@ -568,6 +586,20 @@ public class DefaultKineticClient implements AdvancedKineticClient {
 
         // set persist option
         setPersistOption(message, option);
+
+        this.client.requestAsync(km, handler);
+    }
+
+    public void batchDeleteAsync(Entry entry, CallbackHandler<Boolean> handler,
+            int batchId) throws KineticException {
+
+        KineticMessage km = MessageFactory.createDeleteRequestMessage(entry);
+
+        // proto builder
+        Command.Builder message = (Command.Builder) km.getCommand();
+
+        // set batch id
+        message.getHeaderBuilder().setBatchID(batchId);
 
         this.client.requestAsync(km, handler);
     }
@@ -761,6 +793,30 @@ public class DefaultKineticClient implements AdvancedKineticClient {
 
     }
 
+    public void batchPutForcedAsync(Entry entry,
+            CallbackHandler<Entry> handler, int batchId)
+            throws KineticException {
+        byte[] newVersion = null;
+
+        if (entry.getEntryMetadata() != null) {
+            newVersion = entry.getEntryMetadata().getVersion();
+        }
+
+        // construct put request message
+        KineticMessage km = MessageFactory.createPutRequestMessage(entry,
+                newVersion);
+
+        Command.Builder commandBuilder = (Command.Builder) km.getCommand();
+
+        // set batchId
+        commandBuilder.getHeaderBuilder().setBatchID(batchId);
+
+        // set force bit
+        commandBuilder.getBodyBuilder().getKeyValueBuilder().setForce(true);
+
+        this.client.requestAsync(km, handler);
+    }
+
     /**
      * {@inheritDoc}
      */
@@ -814,6 +870,22 @@ public class DefaultKineticClient implements AdvancedKineticClient {
 
         // set persist option
         setPersistOption(request, option);
+
+        // do async delete
+        this.client.requestAsync(km, handler);
+    }
+    
+    public void batchDeleteForcedAsync(byte[] key,
+            CallbackHandler<Boolean> handler, int batchId)
+            throws KineticException {
+        
+        // create force delete request message
+        KineticMessage km = MessageFactory
+                .createForceDeleteRequestMessage(key);
+
+        Command.Builder request = (Command.Builder) km.getCommand();
+
+        request.getHeaderBuilder().setBatchID(batchId);
 
         // do async delete
         this.client.requestAsync(km, handler);
@@ -936,6 +1008,72 @@ public class DefaultKineticClient implements AdvancedKineticClient {
                 true);
 
         this.client.requestAsync(message, handler);
+    }
+
+    /**
+     * start a new batch operation.
+     * 
+     * @throws KineticException
+     *             if any error occurred.
+     */
+    void startBatchOperation(int batchId) throws KineticException {
+
+        KineticMessage request = null;
+        KineticMessage response = null;
+
+        // create get request message
+        request = MessageFactory.createStartBatchRequestMessage(batchId);
+
+        // send request
+        response = this.client.request(request);
+
+        // check response
+        MessageFactory.checkReply(request, response);
+    }
+
+    /**
+     * commit the batch operation.
+     * 
+     * @throws KineticException
+     *             if any error occurred.
+     */
+    void endBatchOperation(int batchId) throws KineticException {
+
+        KineticMessage request = null;
+        KineticMessage response = null;
+
+        // create get request message
+        request = MessageFactory.createEndBatchRequestMessage(batchId);
+
+        // send request
+        response = this.client.request(request);
+
+        // check response
+        MessageFactory.checkReply(request, response);
+    }
+
+    void abortBatchOperation(int batchId) throws KineticException {
+
+        KineticMessage request = null;
+        KineticMessage response = null;
+
+        // create get request message
+        request = MessageFactory.createAbortBatchRequestMessage(batchId);
+
+        // send request
+        response = this.client.request(request);
+
+        // check response
+        MessageFactory.checkReply(request, response);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public BatchOperation createBatchOperation() throws KineticException {
+        // create and return a new instance of BatchOperation implementation
+        return new DefaultBatchOperation(this);
     }
 
 }

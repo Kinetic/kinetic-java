@@ -46,6 +46,21 @@ public class KineticMessage {
 	// set to true if traveling through TLS/SSL
 	private volatile boolean isSecuredChannel = false;  
 
+    // set to true if this is a batch message
+    private volatile boolean isBatchMessage = false;
+
+    // set to true if this is the first message in the batch
+    private volatile boolean isFirstBatchMessage = false;
+
+    // set to true if this message is marked as invalid batch
+    private volatile boolean isInvalidBatchMessage = false;
+
+    // set to true if request is not valid
+    private volatile boolean isInValidRequest = false;
+
+    // error message
+    private String errorMsg = null;
+
 	/**
 	 * Set protocol buffer message.
 	 *
@@ -117,5 +132,100 @@ public class KineticMessage {
 	public boolean getIsSecureChannel() {
 	    return this.isSecuredChannel;
 	}
+
+    /**
+     * Get if this message is a batch message.
+     * 
+     * @return true if this is a batch message
+     */
+    public boolean getIsBatchMessage() {
+        return this.isBatchMessage;
+    }
+
+    /**
+     * Set if this message is a batch message.
+     * 
+     * @param flag
+     *            true if this is a batch message.
+     */
+    public void setIsBatchMessage(boolean flag) {
+        this.isBatchMessage = flag;
+    }
+
+    /**
+     * Get if this message is the first batch message.
+     * 
+     * @return true if this is a batch message
+     */
+    public boolean getIsFirstBatchMessage() {
+        return this.isFirstBatchMessage;
+    }
+
+    /**
+     * Set if this message is the first batch message.
+     * 
+     * @param flag
+     *            true if this is a batch message.
+     */
+    public void setIsFirstBatchMessage(boolean flag) {
+        this.isFirstBatchMessage = flag;
+    }
+
+    /**
+     * Get if this message is not a valid batch message
+     * 
+     * @return true if this is NOT a valid batch message
+     */
+    public boolean getIsInvalidBatchMessage() {
+        return this.isInvalidBatchMessage;
+    }
+
+    /**
+     * Set if this message is an invalid batch message.
+     * 
+     * @param flag
+     *            true if this is an invalid batch message.
+     */
+    public void setIsInvalidBatchMessage(boolean flag) {
+        this.isInvalidBatchMessage = flag;
+    }
+
+    /**
+     * Set if this message is an invalid kinetic message.
+     * 
+     * @param flag
+     *            true if this is an invalid kinetic message.
+     */
+    public void setIsInvalidRequest(boolean flag) {
+        this.isInValidRequest = flag;
+    }
+
+    /**
+     * get if this message is an invalid kinetic message.
+     * 
+     * @return true if invalid message.
+     */
+    public boolean getIsInvalidRequest() {
+        return this.isInValidRequest;
+    }
+
+    /**
+     * set error message for this message.
+     * 
+     * @param msg
+     *            the error message to be set.
+     */
+    public void setErrorMessage(String msg) {
+        this.errorMsg = msg;
+    }
+
+    /**
+     * Get error message for this message.
+     * 
+     * @return error message for this message.
+     */
+    public String getErrorMessage() {
+        return this.errorMsg;
+    }
 
 }

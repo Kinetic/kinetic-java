@@ -32,4 +32,12 @@ public class KVStoreNotFound extends KVStoreException{
 	 */
 	private static final long serialVersionUID = 335206057367584819L;
 
+    public KVStoreNotFound() {
+        super();
+    }
+
+    public KVStoreNotFound(String msg) {
+        super(msg);
+    }
+
 }

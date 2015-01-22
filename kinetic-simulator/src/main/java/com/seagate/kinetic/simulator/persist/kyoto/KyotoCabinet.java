@@ -36,6 +36,7 @@ import com.seagate.kinetic.simulator.internal.KVStoreException;
 import com.seagate.kinetic.simulator.internal.KVStoreNotFound;
 import com.seagate.kinetic.simulator.internal.KVStoreVersionMismatch;
 import com.seagate.kinetic.simulator.internal.SimulatorEngine;
+import com.seagate.kinetic.simulator.persist.BatchOperation;
 import com.seagate.kinetic.simulator.persist.KVKey;
 import com.seagate.kinetic.simulator.persist.KVValue;
 import com.seagate.kinetic.simulator.persist.PersistOption;
@@ -475,6 +476,24 @@ public class KyotoCabinet implements Store<ByteString, ByteString, KVValue> {
         }
 
         return left.length - right.length;
+    }
+
+    @Override
+    public BatchOperation<ByteString, KVValue> createBatchOperation()
+            throws KVStoreException {
+        // TODO Auto-generated method stub
+        throw new java.lang.UnsupportedOperationException();
+    }
+
+    @Override
+    public void flush() throws KVStoreException {
+        logger.warning("Flush is not yet implemented.");
+    }
+
+    @Override
+    public void compactRange(ByteString startKey, ByteString endKey)
+            throws KVStoreException {
+        logger.warning("method is not yet implemented.");
     }
 
 }

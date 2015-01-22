@@ -19,6 +19,7 @@
  */
 package kinetic.simulator;
 
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.seagate.kinetic.simulator.internal.SimulatorEngine;
@@ -36,6 +37,9 @@ import com.seagate.kinetic.simulator.internal.SimulatorEngine;
  * start the simulator with customized configurations.
  * 
  * @see SimulatorConfiguration
+ * 
+ * @author James Hughes
+ * @author Chiaming Yang
  * 
  */
 public class KineticSimulator {
@@ -61,7 +65,7 @@ public class KineticSimulator {
 		try {
 			this.engine = new SimulatorEngine(this.getServerConfiguration());
 		} catch (Exception e) {
-			e.printStackTrace();
+            logger.log(Level.SEVERE, e.getMessage(), e);
 			close();
 		}
 	}

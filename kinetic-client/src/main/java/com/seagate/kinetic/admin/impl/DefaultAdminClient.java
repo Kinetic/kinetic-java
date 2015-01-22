@@ -25,19 +25,15 @@ import kinetic.admin.Domain;
 import kinetic.admin.KineticAdminClient;
 import kinetic.admin.KineticLog;
 import kinetic.admin.KineticLogType;
-
 import kinetic.client.ClientConfiguration;
-
 import kinetic.client.KineticException;
 
 import com.google.protobuf.ByteString;
-
 import com.seagate.kinetic.client.internal.MessageFactory;
 import com.seagate.kinetic.client.internal.p2p.DefaultKineticP2pClient;
 import com.seagate.kinetic.common.lib.HMACAlgorithmUtil;
 import com.seagate.kinetic.common.lib.KineticMessage;
 import com.seagate.kinetic.proto.Kinetic.Command;
-
 import com.seagate.kinetic.proto.Kinetic.Command.GetLog;
 import com.seagate.kinetic.proto.Kinetic.Command.GetLog.Type;
 import com.seagate.kinetic.proto.Kinetic.Command.Header;
@@ -50,8 +46,8 @@ import com.seagate.kinetic.proto.Kinetic.Command.Security.ACL.HMACAlgorithm;
 import com.seagate.kinetic.proto.Kinetic.Command.Setup;
 import com.seagate.kinetic.proto.Kinetic.Command.Status;
 import com.seagate.kinetic.proto.Kinetic.Command.Status.StatusCode;
-import com.seagate.kinetic.proto.Kinetic.Message.AuthType;
 import com.seagate.kinetic.proto.Kinetic.Message;
+import com.seagate.kinetic.proto.Kinetic.Message.AuthType;
 import com.seagate.kinetic.proto.Kinetic.Message.PINauth;
 
 /**
@@ -459,7 +455,7 @@ public class DefaultAdminClient extends DefaultKineticP2pClient implements Kinet
      * {@inheritDoc}
      */
     @Override
-    public void firmwareDownload(byte[] pin, byte[] bytes)
+    public void firmwareDownload(byte[] bytes)
             throws KineticException {
 
         KineticMessage km = MessageFactory.createKineticMessageWithBuilder();
@@ -468,10 +464,6 @@ public class DefaultAdminClient extends DefaultKineticP2pClient implements Kinet
         
         Setup.Builder setup = commandBuilder.getBodyBuilder()
                 .getSetupBuilder();
-
-//        if (null != pin && pin.length > 0) {
-//            setup.setPin(ByteString.copyFrom(pin));
-//        }
 
         setup.setFirmwareDownload(true);
 
@@ -811,6 +803,16 @@ public class DefaultAdminClient extends DefaultKineticP2pClient implements Kinet
         }
         
         return kmresp;
+    }
+
+    /**
+     * @deprecated
+     */
+    @Deprecated
+    @Override
+    public void firmwareDownload(byte[] pin, byte[] bytes)
+            throws KineticException {
+        this.firmwareDownload(bytes);
     }
     
     

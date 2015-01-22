@@ -232,4 +232,29 @@ public interface Store<K, O, V> {
      * Erase the store and recreate it
      */
     void reset() throws KVStoreException;
+
+    /**
+     * Create a new instance of batch operation object.
+     * 
+     * @return a new instance of batch operation object.
+     */
+    public BatchOperation<K, V> createBatchOperation() throws KVStoreException;
+
+    /**
+     * Flush data to store.
+     * 
+     * @throws KVStoreException
+     *             if any internal error occurred.
+     */
+    public void flush() throws KVStoreException;
+
+    /**
+     * Force a compaction of the specified key range.
+     * 
+     * @param startKey
+     *            if null then compaction start from the first key
+     * @param endKey
+     *            if null then compaction ends at the last key
+     */
+    public void compactRange(K startKey, K endKey) throws KVStoreException;
 }

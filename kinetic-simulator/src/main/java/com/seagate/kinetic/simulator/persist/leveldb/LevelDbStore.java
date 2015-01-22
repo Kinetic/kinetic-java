@@ -24,6 +24,7 @@ import static org.fusesource.leveldbjni.JniDBFactory.factory;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -38,6 +39,7 @@ import kinetic.simulator.SimulatorConfiguration;
 import org.iq80.leveldb.DB;
 import org.iq80.leveldb.DBIterator;
 import org.iq80.leveldb.Options;
+import org.iq80.leveldb.WriteBatch;
 import org.iq80.leveldb.WriteOptions;
 
 import com.google.protobuf.ByteString;
@@ -45,6 +47,7 @@ import com.seagate.kinetic.simulator.internal.KVStoreException;
 import com.seagate.kinetic.simulator.internal.KVStoreNotFound;
 import com.seagate.kinetic.simulator.internal.KVStoreVersionMismatch;
 import com.seagate.kinetic.simulator.internal.SimulatorEngine;
+import com.seagate.kinetic.simulator.persist.BatchOperation;
 import com.seagate.kinetic.simulator.persist.KVKey;
 import com.seagate.kinetic.simulator.persist.KVValue;
 import com.seagate.kinetic.simulator.persist.PersistOption;
@@ -71,7 +74,7 @@ public class LevelDbStore implements Store<ByteString, ByteString, KVValue> {
     private SimulatorConfiguration config = null;
 
     // sync write option
-    private static final WriteOptions syncWriteOption = new WriteOptions()
+    private static final WriteOptions SYNC_WRITE_OPTION = new WriteOptions()
             .sync(true);
 
     // async write option
@@ -679,16 +682,102 @@ public class LevelDbStore implements Store<ByteString, ByteString, KVValue> {
         switch (pOption) {
         case SYNC:
         case FLUSH:
-            wOptions = syncWriteOption;
+            wOptions = SYNC_WRITE_OPTION;
             break;
         case ASYNC:
             wOptions = asyncWriteOption;
             break;
         default:
-            wOptions = syncWriteOption;
+            wOptions = SYNC_WRITE_OPTION;
         }
 
         return wOptions;
+    }
+
+    @Override
+    public BatchOperation<ByteString, KVValue> createBatchOperation()
+            throws KVStoreException {
+        return new LdbBatchOperation(db);
+    }
+
+    @Override
+    public void flush() throws KVStoreException {
+        try {
+            doFlush();
+        } catch (Exception e) {
+            KVStoreException kvse = new KVStoreException(e.getMessage());
+            throw kvse;
+        }
+    }
+
+    public synchronized void doFlush() throws IOException {
+
+        // make a key so that no key in DB matches it
+        byte[] key = new byte[4 * 1024 + 1];
+
+        // fill with 0
+        Arrays.fill(key, (byte) 0);
+
+        // get value
+        byte[] data = db.get(key);
+
+        WriteBatch batch = db.createWriteBatch();
+
+        try {
+
+            if (data == null) {
+                /**
+                 * no entry for key. perform no op
+                 */
+                batch.put(key, key);
+                batch.delete(key);
+            } else {
+                /**
+                 * entry found, put back after delete
+                 */
+                batch.delete(key);
+                batch.put(key, data);
+            }
+
+            /**
+             * do batch operation with sync option.
+             */
+            db.write(batch, SYNC_WRITE_OPTION);
+
+            logger.info("data flushed to db ....");
+        } finally {
+            // close the batch
+            batch.close();
+        }
+    }
+
+
+    @Override
+    public void compactRange(ByteString startKey, ByteString endKey)
+            throws KVStoreException {
+
+        try {
+
+            // start key
+            byte[] begin = null;
+            // end key
+            byte[] end = null;
+
+            if (startKey != null && startKey.isEmpty() == false) {
+                begin = startKey.toByteArray();
+            }
+
+            if (endKey != null && endKey.isEmpty() == false) {
+                end = endKey.toByteArray();
+            }
+
+            this.db.compactRange(begin, end);
+
+            logger.info("Media optimization finished");
+
+        } catch (Exception e) {
+            throw new KVStoreException(e.getMessage());
+        }
     }
 
 }

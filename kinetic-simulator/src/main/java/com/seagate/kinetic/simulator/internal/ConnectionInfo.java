@@ -19,6 +19,10 @@
  */
 package com.seagate.kinetic.simulator.internal;
 
+import java.util.logging.Logger;
+
+import com.seagate.kinetic.common.lib.KineticMessage;
+
 /**
  * Container to hold connection id and its status of being set to the client.
  * 
@@ -26,10 +30,16 @@ package com.seagate.kinetic.simulator.internal;
  */
 public class ConnectionInfo {
 
+    private final static Logger logger = Logger.getLogger(SimulatorEngine.class
+            .getName());
+
     private long connectionId = -1;
     
     private boolean isConnectionIdSetToClient = false;
     
+    // last received seq#
+    private long lastSequenceReceived = Long.MIN_VALUE;
+
     /**
      * default constructor.
      */
@@ -70,5 +80,43 @@ public class ConnectionInfo {
      */
     public synchronized boolean getIsConnectionIdSetToClient() {
         return this.isConnectionIdSetToClient;
+    }
+
+    /**
+     * check and set received sequence number. The sequence number received must
+     * be greater than previous in a connection.
+     * <p>
+     * The internal sequence# is set to the sequence received if the comparison
+     * is true.
+     * 
+     * @param sequence
+     *            the last sequence received
+     * @return true if last sequence received is greater than previous.
+     */
+    public synchronized boolean checkAndSetLastReceivedSequence(
+            KineticMessage request) {
+
+        boolean flag = false;
+
+        // request sequence
+        long sequence = request.getCommand().getHeader().getSequence();
+
+        /**
+         * update last received if there is a new one and set return flag to
+         * true.
+         */
+        if (sequence > lastSequenceReceived) {
+            this.lastSequenceReceived = sequence;
+            flag = true;
+        } else {
+            // mark this message as invalid
+            request.setIsInvalidRequest(true);
+            request.setErrorMessage("Invalid Sequence Id: " + sequence);
+
+            logger.warning("invalid sequence Id: " + sequence
+                    + ", lastSequenceReceived: " + lastSequenceReceived);
+        }
+
+        return flag;
     }
 }

@@ -19,13 +19,13 @@ package kinetic.admin;
 
 import java.util.List;
 
-import com.seagate.kinetic.common.lib.KineticMessage;
-
-import com.seagate.kinetic.proto.Kinetic.Command.Priority;
-import com.seagate.kinetic.proto.Kinetic.Command.Range;
-
+import kinetic.client.EntryNotFoundException;
 import kinetic.client.KineticException;
 import kinetic.client.p2p.KineticP2pClient;
+
+import com.seagate.kinetic.common.lib.KineticMessage;
+import com.seagate.kinetic.proto.Kinetic.Command.Priority;
+import com.seagate.kinetic.proto.Kinetic.Command.Range;
 
 /**
  * 
@@ -52,9 +52,26 @@ public interface KineticAdminClient extends KineticP2pClient {
      * <p>
      * 
      * @param pin
-     *            Compare the pin with drive's pin. If equal, can download
-     *            firmware the information for the drive, if not, drive will
-     *            reject the firmwareDownload request.
+     *            No used. This is for backward compatibility only.
+     * 
+     * @param bytes
+     *            update firmware bytes for the drive.
+     * 
+     * @throws KineticException
+     *             if unable to load firmware bytes to the drive.
+     * 
+     * @deprecated
+     * @see #firmwareDownload(byte[])
+     */
+    @Deprecated
+    public void firmwareDownload(byte[] pin, byte[] bytes)
+            throws KineticException;
+
+    /**
+     * Load firmware byte[] to the drive.
+     * <p>
+     * The firmware byte[] is itself protected on its own for integrity,
+     * authenticity, etc
      * 
      * @param bytes
      *            update firmware bytes for the drive.
@@ -62,8 +79,7 @@ public interface KineticAdminClient extends KineticP2pClient {
      * @throws KineticException
      *             if unable to load firmware bytes to the drive.
      */
-    public void firmwareDownload(byte[] pin, byte[] bytes)
-            throws KineticException;
+    public void firmwareDownload(byte[] bytes) throws KineticException;
 
     /**
      * Get all Kinetic logs, such as the utilization temperature and capacity
@@ -160,20 +176,19 @@ public interface KineticAdminClient extends KineticP2pClient {
     public void setErasePin (byte[] oldErasePin, byte[] newErasePin) throws KineticException;
     
     /**
-     * Erase all data in database for the drive.
+     * Erase all data in database for the drive. This maybe secure or not. This
+     * operation implies that it maybe faster than the secured erase
+     * alternative.
      * <p>
-     * Erase data in database with Db API.
-     * <p>
+     * Please use {@link #secureErase(byte[])} if secured erase is desirable.
      * 
      * @param pin
-     *            Compare the pin with drive's pin. If equal, can download
-     *            firmware the information for the drive, if not, drive will
-     *            reject the firmwareDownload request.
+     *            the pin used to authenticate for this operation.
      * 
      * @throws KineticException
      *             if unable to load firmware bytes to the drive.
-     *             
      * 
+     * @see #secureErase(byte[])
      */
     public void instantErase(byte[] pin) throws KineticException;
     
