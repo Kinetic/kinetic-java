@@ -211,7 +211,7 @@ public class RequestContext {
     public void preProcessRequest() throws Exception {
 
         HeaderOp.checkHeader(this.request, this.response, key,
-                this.engine.getClusterVersion());
+ this.engine);
 
         checkDeviceLocked();
     }

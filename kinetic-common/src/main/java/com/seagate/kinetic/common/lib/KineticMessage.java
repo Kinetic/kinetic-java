@@ -55,6 +55,12 @@ public class KineticMessage {
     // set to true if this message is marked as invalid batch
     private volatile boolean isInvalidBatchMessage = false;
 
+    // set to true if request is not valid
+    private volatile boolean isInValidRequest = false;
+
+    // error message
+    private String errorMsg = null;
+
 	/**
 	 * Set protocol buffer message.
 	 *
@@ -182,6 +188,44 @@ public class KineticMessage {
      */
     public void setIsInvalidBatchMessage(boolean flag) {
         this.isInvalidBatchMessage = flag;
+    }
+
+    /**
+     * Set if this message is an invalid kinetic message.
+     * 
+     * @param flag
+     *            true if this is an invalid kinetic message.
+     */
+    public void setIsInvalidRequest(boolean flag) {
+        this.isInValidRequest = flag;
+    }
+
+    /**
+     * get if this message is an invalid kinetic message.
+     * 
+     * @return true if invalid message.
+     */
+    public boolean getIsInvalidRequest() {
+        return this.isInValidRequest;
+    }
+
+    /**
+     * set error message for this message.
+     * 
+     * @param msg
+     *            the error message to be set.
+     */
+    public void setErrorMessage(String msg) {
+        this.errorMsg = msg;
+    }
+
+    /**
+     * Get error message for this message.
+     * 
+     * @return error message for this message.
+     */
+    public String getErrorMessage() {
+        return this.errorMsg;
     }
 
 }
