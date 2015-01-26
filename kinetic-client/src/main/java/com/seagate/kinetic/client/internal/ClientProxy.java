@@ -134,7 +134,7 @@ public class ClientProxy {
         }
         
         if (this.isConnectionIdSetByServer == false) {
-            throw new KineticException ("Did not receive a Status message from service.");
+            throw new KineticException("Hand shake failed with the service.");
         }
     }
     
@@ -166,13 +166,29 @@ public class ClientProxy {
             this.connectionID = kresponse.getCommand().getHeader()
                     .getConnectionID();
 
-            // set flag to true
-            this.isConnectionIdSetByServer = true;
-            
-            // countdown
-            this.cidLatch.countDown();
+            if (this.config.getExpectedWwn() != null) {
 
-            logger.fine("set connection Id: " + this.connectionID);
+                String recvd = kresponse.getCommand().getBody().getGetLog()
+                        .getConfiguration().getWorldWideName().toStringUtf8();
+
+                if (config.getExpectedWwn().equals(recvd) == false) {
+
+                    this.close();
+
+                    logger.log(Level.SEVERE, "wwn does not match., expected="
+                            + config.getExpectedWwn() + ", but received: "
+                            + recvd);
+                } else {
+                    // set flag to true
+                    this.isConnectionIdSetByServer = true;
+                }
+            } else {
+                // set flag to true
+                this.isConnectionIdSetByServer = true;
+            }
+
+            // count down
+            this.cidLatch.countDown();
         }
 
     }

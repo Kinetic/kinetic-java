@@ -105,17 +105,25 @@ public class IoHandler {
 	 * @throws KineticException
 	 *             if any I/O or internal exception occurred.
 	 */
-	private void init() throws KineticException {
+    private void init() throws KineticException {
 
-		// get the transport provider for this kinetic instance.
-		getTransport();
+        try {
+            // get the transport provider for this kinetic instance.
+            getTransport();
 
-		// message handler to route messages
-		this.messageHandler = new MessageHandler(this);
+            // message handler to route messages
+            this.messageHandler = new MessageHandler(this);
 
-		// init transport
-		this.transport.init(messageHandler);
-	}
+            // init transport
+            this.transport.init(messageHandler);
+        } catch (KineticException ke) {
+            close();
+            throw ke;
+        } catch (Exception e) {
+            close();
+            throw new KineticException(e);
+        }
+    }
 
 	public ClientProxy getClient() {
 		return this.client;

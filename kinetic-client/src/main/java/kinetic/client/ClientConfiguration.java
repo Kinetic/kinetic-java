@@ -120,6 +120,9 @@ public class ClientConfiguration extends Properties {
      */
     private int asyncQueueSize = 10;
 
+    // expected wwn to connect to.
+    private String expectedWwn = null;
+
     /**
      * Client configuration constructor.
      * 
@@ -512,6 +515,32 @@ public class ClientConfiguration extends Properties {
      */
     public static String getProtocolSourceHash() {
         return PROTOCOL_SOURCE_HASH;
+    }
+
+    /**
+     * Set expected WWN for the connected drive.
+     * <p>
+     * If set, the drive's WWN will be validated by the Java Client Runtime
+     * library with the expected WWN when a connection is created to the drive.
+     * <p>
+     * A connection creation will fail if the expected WWN is set to a non-empty
+     * value and it does not match the drive's WWN. In this case, the connection
+     * is closed and KineticException is raised.
+     * 
+     * @param wwn
+     *            the expected drive's WWN to be validated.
+     */
+    public void setExpectedWwn(String wwn) {
+        this.expectedWwn = wwn;
+    }
+
+    /**
+     * Get expected WWN set by the application.
+     * 
+     * @return expected WWN set by the application.
+     */
+    public String getExpectedWwn() {
+        return this.expectedWwn;
     }
 
 }
