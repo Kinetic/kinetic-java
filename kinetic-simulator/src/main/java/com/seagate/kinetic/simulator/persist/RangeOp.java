@@ -36,10 +36,11 @@ import com.google.protobuf.ByteString;
 import com.seagate.kinetic.common.lib.Hmac;
 import com.seagate.kinetic.common.lib.KineticMessage;
 import com.seagate.kinetic.proto.Kinetic.Command;
-
 import com.seagate.kinetic.proto.Kinetic.Command.MessageType;
 import com.seagate.kinetic.proto.Kinetic.Command.Range;
+import com.seagate.kinetic.proto.Kinetic.Command.Security.ACL.Permission;
 import com.seagate.kinetic.proto.Kinetic.Command.Status;
+import com.seagate.kinetic.proto.Kinetic.Command.Status.StatusCode;
 import com.seagate.kinetic.simulator.internal.Authorizer;
 import com.seagate.kinetic.simulator.internal.InvalidRequestException;
 import com.seagate.kinetic.simulator.internal.KVSecurityException;
@@ -110,6 +111,7 @@ public class RangeOp {
 
                 reverse = r.getReverse();
 
+
                 if (n < 1) {
                     oops("the number of entries is <= 0");
                 }
@@ -118,6 +120,14 @@ public class RangeOp {
 
                 switch (request.getCommand().getHeader().getMessageType()) {
                 case GETKEYRANGE:
+
+                    // check permission
+                    Authorizer.checkPermission(aclMap, request.getMessage()
+                            .getHmacAuth().getIdentity(), Permission.RANGE, k1);
+
+                    Authorizer.checkPermission(aclMap, request.getMessage()
+                            .getHmacAuth().getIdentity(), Permission.RANGE, k2);
+
                     if (reverse) {
                         List<KVKey> l = (ArrayList<KVKey>) store.getRangeReversed(
                                 k1, i1, k2, i2, n);
@@ -162,6 +172,8 @@ public class RangeOp {
             } catch (InvalidRequestException  ire) {
                 oops(Status.StatusCode.INVALID_REQUEST,
                         ire.getMessage());
+            } catch (KVSecurityException se) {
+                oops(StatusCode.NOT_AUTHORIZED, se.getMessage());
             } catch (Exception e) {
                 LOG.fine(e.toString());
                 Writer writer = new StringWriter();

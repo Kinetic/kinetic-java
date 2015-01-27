@@ -19,19 +19,15 @@
  */
 package com.seagate.kinetic.boundary;
 
-import static org.testng.AssertJUnit.assertArrayEquals;
-import static org.testng.AssertJUnit.assertEquals;
-import static org.testng.AssertJUnit.assertFalse;
-import static org.testng.AssertJUnit.assertTrue;
-import static org.testng.AssertJUnit.assertNull;
-
-import org.testng.annotations.Test;
-import org.testng.Assert;
-
 import static com.seagate.kinetic.KineticAssertions.assertEntryEquals;
 import static com.seagate.kinetic.KineticAssertions.assertKeyNotFound;
 import static com.seagate.kinetic.KineticTestHelpers.int32;
 import static com.seagate.kinetic.KineticTestHelpers.toByteArray;
+import static org.testng.AssertJUnit.assertEquals;
+import static org.testng.AssertJUnit.assertFalse;
+import static org.testng.AssertJUnit.assertNull;
+import static org.testng.AssertJUnit.assertTrue;
+import static org.testng.internal.junit.ArrayAsserts.assertArrayEquals;
 
 import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
@@ -48,6 +44,9 @@ import kinetic.client.KineticException;
 import kinetic.client.VersionMismatchException;
 import kinetic.client.advanced.AdvancedKineticClient;
 import kinetic.simulator.SimulatorConfiguration;
+
+import org.testng.Assert;
+import org.testng.annotations.Test;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -2319,8 +2318,11 @@ public class KineticBoundaryTest extends IntegrationTestCase {
 
         KineticClient clientWithVisibilityGap = createClientWithSpecifiedRolesForEntries(clientName,entryToRoleMap);
 
+        // XXX chiaming 01/27/2015: RANGE op throws Exception if no permission
+        // for all keys.
+        // for all domains.
         List<byte[]> keyRange = clientWithVisibilityGap.getKeyRange(
-                entry02.getKey(), true, entry09.getKey(), true, 10);
+                entry02.getKey(), true, entry03.getKey(), true, 10);
         assertEquals(2, keyRange.size());
         assertArrayEquals(entry02.getKey(), keyRange.get(0));
         assertArrayEquals(entry03.getKey(), keyRange.get(1));
@@ -2376,8 +2378,10 @@ public class KineticBoundaryTest extends IntegrationTestCase {
 
         AdvancedKineticClient clientWithVisibilityGap = createClientWithSpecifiedRolesForEntries(clientName, entryToRoleMap);
 
+        // XXX chiaming 01/27/2015: Range Op throws exception if no permission
+        // for all keys.
         List<byte[]> keyRange = clientWithVisibilityGap.getKeyRangeReversed(
-                entry01.getKey(), true, entry09.getKey(), true, 10);
+                entry06.getKey(), true, entry08.getKey(), true, 10);
         assertEquals(3, keyRange.size());
         assertArrayEquals(entry08.getKey(), keyRange.get(0));
         assertArrayEquals(entry07.getKey(), keyRange.get(1));
