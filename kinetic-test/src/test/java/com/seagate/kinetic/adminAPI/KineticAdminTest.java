@@ -19,6 +19,7 @@
  */
 package com.seagate.kinetic.adminAPI;
 
+import static com.seagate.kinetic.KineticTestHelpers.instantErase;
 import static com.seagate.kinetic.KineticTestHelpers.setDefaultAcls;
 import static com.seagate.kinetic.KineticTestHelpers.toByteArray;
 import static org.testng.AssertJUnit.assertEquals;
@@ -26,7 +27,6 @@ import static org.testng.AssertJUnit.assertNull;
 import static org.testng.AssertJUnit.assertTrue;
 import static org.testng.internal.junit.ArrayAsserts.assertArrayEquals;
 
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -56,7 +56,6 @@ import kinetic.client.KineticClientFactory;
 import kinetic.client.KineticException;
 
 import org.testng.Assert;
-import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import com.google.protobuf.ByteString;
@@ -99,16 +98,6 @@ public class KineticAdminTest extends IntegrationTestCase {
     private final byte[] INIT_VERSION = toByteArray("0");
     private final long DEFAULT_CLUSTER_VERSION = 0;
 
-    @BeforeMethod
-    public void setUp() throws Exception {
-        EntryMetadata entryMetadata = new EntryMetadata();
-        KineticClient kineticClient = KineticClientFactory
-                .createInstance(getClientConfig());
-        kineticClient.put(new Entry(INIT_KEY, INIT_VALUE, entryMetadata),
-                INIT_VERSION);
-        kineticClient.close();
-    }
-
     /**
      * Test setup API, erase data in simulator/drive. The result should be true.
      * <p>
@@ -119,7 +108,7 @@ public class KineticAdminTest extends IntegrationTestCase {
     @Test
     public void testSetup_EraseDB() throws KineticException {
         EntryMetadata entryMetadata = new EntryMetadata();
-        entryMetadata.setVersion(toByteArray("0"));
+        entryMetadata.setVersion(INIT_VERSION);
 
         KineticClient client = KineticClientFactory
                 .createInstance(getClientConfig());
@@ -129,7 +118,7 @@ public class KineticAdminTest extends IntegrationTestCase {
         client.put(new Entry(toByteArray("key"), toByteArray("value"),
                 entryMetadata), toByteArray("0"));
 
-        getAdminClient().instantErase(null);
+        instantErase("", "123", getAdminClient());
 
         assertNull(client.get("key".getBytes()));
 
@@ -215,6 +204,31 @@ public class KineticAdminTest extends IntegrationTestCase {
     }
 
     /**
+     * Test setup API, set cluster version for simulator/drive first, then reset
+     * it with correct cluster version. The result should be fine.
+     * <p>
+     * 
+     */
+    @Test
+    public void testSetup_ClusterVersion() {
+        long newClusterVersion = 1;
+
+        try {
+            getAdminClient().setClusterVersion(newClusterVersion);
+        } catch (KineticException e1) {
+            Assert.fail("set cluster version throw exception: "
+                    + e1.getMessage());
+        }
+
+        try {
+            resetClusterVersionToDefault(newClusterVersion);
+        } catch (KineticException e) {
+            Assert.fail("Should have thrown");
+        }
+
+    }
+
+    /**
      * Test setup API, set cluster version for simulator/drive first, then erase
      * data with wrong cluster version. The result should be fine.
      * <p>
@@ -232,13 +246,7 @@ public class KineticAdminTest extends IntegrationTestCase {
         }
 
         try {
-            getAdminClient().instantErase(null);
-        } catch (KineticException e) {
-            Assert.fail("Should have thrown");
-        }
-
-        try {
-            resetClusterVersionToDefault(newClusterVersion);
+            resetClusterVersionToDefault(DEFAULT_CLUSTER_VERSION);
         } catch (ClusterVersionFailureException e) {
             assertTrue(e.getResponseMessage().getCommand().getStatus()
                     .getCode().equals(StatusCode.VERSION_FAILURE));
@@ -256,34 +264,12 @@ public class KineticAdminTest extends IntegrationTestCase {
         } catch (Exception e1) {
             Assert.fail("Throw wrong exception. " + e1.getMessage());
         }
-
-        logger.info(this.testEndInfo());
-    }
-
-    /**
-     * Test setup API, set cluster version for simulator/drive first, then erase
-     * data with correct cluster version. The result should be success.
-     * <p>
-     */
-    @Test
-    public void testSetup_ClusterVersion_ErasedByISE() {
-        long newClusterVersion = 1;
-
+        
+        // reset cluster version to default one.
         try {
-            getAdminClient().setClusterVersion(newClusterVersion);
-        } catch (KineticException e1) {
-            Assert.fail("set cluster version throw exception: "
-                    + e1.getMessage());
-        }
-
-        try {
-            // Perform ISE. New cluster version should be ignored.
-            final KineticAdminClient client = KineticAdminClientFactory
-                    .createInstance(getAdminClientConfig(newClusterVersion));
-            client.instantErase("anything".getBytes(Charset.forName("UTF-8")));
-            client.close();
-        } catch (KineticException e) {
-            Assert.fail("Should have thrown");
+            resetClusterVersionToDefault(newClusterVersion);
+        } catch (KineticException e){
+            Assert.fail("reset cluster version to default one throw exception! " + e.getMessage());
         }
 
         logger.info(this.testEndInfo());
@@ -316,10 +302,7 @@ public class KineticAdminTest extends IntegrationTestCase {
 
         try {
             // Perform ISE. New cluster version should be ignored.
-            final KineticAdminClient client = KineticAdminClientFactory
-                    .createInstance(getAdminClientConfig(newClusterVersion));
-            client.instantErase("anything".getBytes(Charset.forName("UTF-8")));
-            client.close();
+            resetClusterVersionToDefault(newClusterVersion);
         } catch (KineticException e) {
             Assert.fail("Should have thrown");
         }
@@ -475,14 +458,6 @@ public class KineticAdminTest extends IntegrationTestCase {
             getAdminClient().setAcl(acls);
         } catch (KineticException e) {
             Assert.fail("Set Security throw exception" + e.getMessage());
-        }
-
-        // erase pin
-        try {
-            getAdminClient().instantErase(
-                    "anything".getBytes(Charset.forName("UTF-8")));
-        } catch (KineticException e) {
-            Assert.fail("instant erase throw exception" + e.getMessage());
         }
 
         logger.info(this.testEndInfo());
@@ -864,6 +839,19 @@ public class KineticAdminTest extends IntegrationTestCase {
 
         acls.add(acl7);
 
+        EntryMetadata entryMetadata1 = new EntryMetadata();
+        KineticClient kineticClient;
+        try {
+            kineticClient = KineticClientFactory
+                    .createInstance(getClientConfig());
+            kineticClient.deleteForced(toByteArray("0"));
+            kineticClient.put(new Entry(toByteArray("0"), toByteArray("0"),
+                    entryMetadata1), toByteArray("0"));
+            kineticClient.close();
+        } catch (KineticException e2) {
+            Assert.fail("Prepare for test data put failed. " + e2.getMessage());
+        }
+
         try {
             getAdminClient().setAcl(acls);
         } catch (KineticException e1) {
@@ -1163,6 +1151,62 @@ public class KineticAdminTest extends IntegrationTestCase {
     }
 
     /**
+     * Test set security, get key range without range operation permit.
+     * <p>
+     */
+    @Test
+    public void testACLs_VerifyRange() {
+        // client has all roles without range
+        List<Role> roles1 = new ArrayList<Role>();
+        roles1.add(Role.DELETE);
+        roles1.add(Role.GETLOG);
+        roles1.add(Role.READ);
+        roles1.add(Role.SECURITY);
+        roles1.add(Role.SETUP);
+        roles1.add(Role.WRITE);
+        roles1.add(Role.P2POP);
+
+        Domain domain1 = new Domain();
+        domain1.setRoles(roles1);
+
+        List<Domain> domains1 = new ArrayList<Domain>();
+        domains1.add(domain1);
+
+        List<ACL> acls = new ArrayList<ACL>();
+        ACL acl1 = new ACL();
+        acl1.setDomains(domains1);
+        acl1.setUserId(1);
+        acl1.setKey("asdfasdf");
+
+        acls.add(acl1);
+
+        try {
+            getAdminClient().setAcl(acls);
+        } catch (KineticException e1) {
+            Assert.fail("set security throw exception: " + e1.getMessage());
+        }
+
+        // client1 can not do range
+        KineticClient kineticClient1 = null;
+        try {
+            kineticClient1 = KineticClientFactory
+                    .createInstance(getClientConfig(1, "asdfasdf"));
+        } catch (KineticException e1) {
+            Assert.fail("create kinetic client throw exception: "
+                    + e1.getMessage());
+        }
+
+        try {
+            kineticClient1.getKeyRange("123".getBytes(), true,
+                    "456".getBytes(), true, 10);
+            Assert.fail("should thrown exception!");
+        } catch (KineticException e) {
+            assertEquals(e.getResponseMessage().getCommand().getStatus()
+                    .getCode(), StatusCode.NOT_AUTHORIZED);
+        }
+    }
+
+    /**
      * Test set security API. Single user with multi domain.
      * <p>
      */
@@ -1311,8 +1355,9 @@ public class KineticAdminTest extends IntegrationTestCase {
         }
 
         // operation in scope 1
+        byte[] key1 = null;
         try {
-            byte[] key1 = toByteArray("adomain1key001");
+            key1 = toByteArray("adomain1key001");
             EntryMetadata entryMetadata = new EntryMetadata();
             kineticClient.put(new Entry(key1, value, entryMetadata), version);
         } catch (Exception e) {
@@ -1320,7 +1365,6 @@ public class KineticAdminTest extends IntegrationTestCase {
         }
         Entry vGet = null;
         try {
-            byte[] key1 = toByteArray("adomain1key001");
             vGet = kineticClient.get(key1);
             assertArrayEquals(key1, vGet.getKey());
             assertArrayEquals(value, vGet.getValue());
@@ -1336,8 +1380,9 @@ public class KineticAdminTest extends IntegrationTestCase {
         }
 
         // operation in scope 2
+        byte[] key2 = null;
         try {
-            byte[] key2 = toByteArray("abdomain2key002");
+            key2 = toByteArray("abdomain2key002");
             EntryMetadata entryMetadata = new EntryMetadata();
             kineticClient.put(new Entry(key2, value, entryMetadata), version);
             Assert.fail("The user does not have put rights");
@@ -1345,7 +1390,6 @@ public class KineticAdminTest extends IntegrationTestCase {
             assertTrue(e.getMessage().indexOf("permission denied") != -1);
         }
         try {
-            byte[] key2 = toByteArray("abdomain2key002");
             vGet = kineticClient.get(key2);
             assertEquals(null, vGet);
         } catch (Exception e) {
@@ -1353,7 +1397,6 @@ public class KineticAdminTest extends IntegrationTestCase {
         }
 
         try {
-            byte[] key2 = toByteArray("abdomain2key002");
             EntryMetadata entryMetadata = new EntryMetadata();
             entryMetadata.setVersion(version);
             Entry vDel = new Entry(key2, value, entryMetadata);
@@ -1363,23 +1406,22 @@ public class KineticAdminTest extends IntegrationTestCase {
         }
 
         // operation in scope 3
+        byte[] key3 = null;
         try {
-            byte[] key3 = toByteArray("abcdomain3key003");
+            key3 = toByteArray("abcdomain3key003");
             EntryMetadata entryMetadata = new EntryMetadata();
             kineticClient.put(new Entry(key3, value, entryMetadata), version);
         } catch (Exception e) {
             Assert.fail("put in domain3 exception" + e.getMessage());
         }
         try {
-            byte[] key3 = toByteArray("abcdomain3key003");
             vGet = kineticClient.get(key3);
             Assert.fail("The user do not have get rights");
         } catch (Exception e) {
             assertTrue(e.getMessage().indexOf("permission denied") != -1);
         }
-
+        
         try {
-            byte[] key3 = toByteArray("abcdomain3key003");
             EntryMetadata entryMetadata = new EntryMetadata();
             entryMetadata.setVersion(version);
             Entry v = new Entry(key3, value, entryMetadata);
@@ -1492,6 +1534,18 @@ public class KineticAdminTest extends IntegrationTestCase {
         } catch (KineticException e) {
             Assert.fail("close kienticClient throw exception: "
                     + e.getMessage());
+        }
+        
+        // clean up data(key1 and key3)
+        KineticClient kineticClientAd = null;
+        try {
+            kineticClientAd = KineticClientFactory
+                    .createInstance(getClientConfig());
+            kineticClientAd.deleteForced(key1);
+            kineticClientAd.deleteForced(key3);
+        } catch (KineticException e1) {
+            Assert.fail("create kineticClient throw exception: "
+                    + e1.getMessage());
         }
 
         logger.info(this.testEndInfo());
@@ -1628,15 +1682,14 @@ public class KineticAdminTest extends IntegrationTestCase {
         byte[] erasePinB = toByteArray(erasePin);
 
         try {
-            getAdminClient().setErasePin(
-                    "anything".getBytes(Charset.forName("UTF-8")), erasePinB);
+            getAdminClient().setErasePin(toByteArray(""), erasePinB);
         } catch (KineticException e) {
             Assert.fail("Set erase pin throw exception" + e.getMessage());
         }
 
-        // erase pin
+        // reset pin
         try {
-            getAdminClient().instantErase(erasePinB);
+            getAdminClient().setErasePin(erasePinB, toByteArray(""));
         } catch (KineticException e) {
             Assert.fail("instant erase throw exception" + e.getMessage());
         }
@@ -1653,9 +1706,7 @@ public class KineticAdminTest extends IntegrationTestCase {
         String oldErasePin = "oldErasePin";
         byte[] oldErasePinB = toByteArray(oldErasePin);
         try {
-            getAdminClient()
-                    .setErasePin("anything".getBytes(Charset.forName("UTF-8")),
-                            oldErasePinB);
+            getAdminClient().setErasePin(toByteArray(""), oldErasePinB);
         } catch (KineticException e) {
             Assert.fail("Change erase pin throw exception" + e.getMessage());
         }
@@ -1670,7 +1721,7 @@ public class KineticAdminTest extends IntegrationTestCase {
 
         // erase pin
         try {
-            getAdminClient().instantErase(newErasePinB);
+            getAdminClient().setErasePin(newErasePinB, toByteArray(""));
         } catch (KineticException e) {
             Assert.fail("instant erase throw exception" + e.getMessage());
         }
@@ -1706,8 +1757,7 @@ public class KineticAdminTest extends IntegrationTestCase {
         byte[] erasePinB = toByteArray("");
 
         try {
-            getAdminClient().setErasePin(
-                    "anything".getBytes(Charset.forName("UTF-8")), erasePinB);
+            getAdminClient().setErasePin(toByteArray(""), erasePinB);
         } catch (KineticException e) {
             Assert.fail("set erase pin is empty throw exception: "
                     + e.getMessage());
@@ -1732,7 +1782,7 @@ public class KineticAdminTest extends IntegrationTestCase {
         String oldErasePin = "oldErasePin";
         byte[] oldErasePinB = toByteArray(oldErasePin);
         try {
-            getAdminClient().setErasePin(null, oldErasePinB);
+            getAdminClient().setErasePin(toByteArray(""), oldErasePinB);
         } catch (KineticException e) {
             Assert.fail("Change erase pin throw exception" + e.getMessage());
         }
@@ -1764,9 +1814,7 @@ public class KineticAdminTest extends IntegrationTestCase {
         String oldErasePin = "oldErasePin";
         byte[] oldErasePinB = toByteArray(oldErasePin);
         try {
-            getAdminClient()
-                    .setErasePin("anything".getBytes(Charset.forName("UTF-8")),
-                            oldErasePinB);
+            getAdminClient().setErasePin(toByteArray(""), oldErasePinB);
         } catch (KineticException e) {
             Assert.fail("Change erase pin throw exception" + e.getMessage());
         }
@@ -1795,20 +1843,18 @@ public class KineticAdminTest extends IntegrationTestCase {
      */
     @Test
     public void testSetSecurity_setLockPin() {
-        String lockPin = "lockPin";
+        String lockPin = "123";
         byte[] lockPinB = toByteArray(lockPin);
 
         try {
-            getAdminClient().setLockPin(
-                    "anything".getBytes(Charset.forName("UTF-8")), lockPinB);
+            getAdminClient().setLockPin(toByteArray(""), lockPinB);
         } catch (KineticException e) {
             Assert.fail("Set erase pin throw exception" + e.getMessage());
         }
 
         // erase pin
         try {
-            getAdminClient().secureErase(
-                    "anything".getBytes(Charset.forName("UTF-8")));
+            getAdminClient().setLockPin(lockPinB, toByteArray(""));
         } catch (KineticException e) {
             Assert.fail("instant erase throw exception" + e.getMessage());
         }
@@ -1822,16 +1868,15 @@ public class KineticAdminTest extends IntegrationTestCase {
      */
     @Test
     public void testSetSecurity_modifyLockPin() {
-        String oldLockPin = "oldLockPin";
+        String oldLockPin = "123";
         byte[] oldLockPinB = toByteArray(oldLockPin);
         try {
-            getAdminClient().setLockPin(
-                    "anything".getBytes(Charset.forName("UTF-8")), oldLockPinB);
+            getAdminClient().setLockPin(toByteArray(""), oldLockPinB);
         } catch (KineticException e) {
             Assert.fail("Change lock pin throw exception" + e.getMessage());
         }
 
-        String newLockPin = "newLockPin";
+        String newLockPin = "456";
         byte[] newLockPinB = toByteArray(newLockPin);
         try {
             getAdminClient().setLockPin(oldLockPinB, newLockPinB);
@@ -1841,8 +1886,7 @@ public class KineticAdminTest extends IntegrationTestCase {
 
         // erase
         try {
-            getAdminClient().secureErase(
-                    "anything".getBytes(Charset.forName("UTF-8")));
+            getAdminClient().setLockPin(newLockPinB, toByteArray(""));
         } catch (KineticException e) {
             Assert.fail("instant erase throw exception" + e.getMessage());
         }
@@ -1877,8 +1921,7 @@ public class KineticAdminTest extends IntegrationTestCase {
         byte[] lockPinB = toByteArray("");
 
         try {
-            getAdminClient().setLockPin(
-                    "anything".getBytes(Charset.forName("UTF-8")), lockPinB);
+            getAdminClient().setLockPin(toByteArray(""), lockPinB);
         } catch (KineticException e) {
             Assert.fail("set lock pin is empty throw exception: "
                     + e.getMessage());
@@ -1886,8 +1929,7 @@ public class KineticAdminTest extends IntegrationTestCase {
 
         // erase pin
         try {
-            getAdminClient().instantErase(
-                    "anything".getBytes(Charset.forName("UTF-8")));
+            instantErase("", "123", getAdminClient());
         } catch (KineticException e) {
             Assert.fail("instant erase throw exception" + e.getMessage());
         }
@@ -1919,7 +1961,7 @@ public class KineticAdminTest extends IntegrationTestCase {
 
         // erase pin
         try {
-            getAdminClient().instantErase(null);
+            instantErase("", "123", getAdminClient());
         } catch (KineticException e) {
             Assert.fail("instant erase throw exception" + e.getMessage());
         }
@@ -1936,8 +1978,7 @@ public class KineticAdminTest extends IntegrationTestCase {
         String oldLockPin = "oldLockPin";
         byte[] oldLockPinB = toByteArray(oldLockPin);
         try {
-            getAdminClient().setLockPin(
-                    "anything".getBytes(Charset.forName("UTF-8")), oldLockPinB);
+            getAdminClient().setLockPin(toByteArray(""), oldLockPinB);
         } catch (KineticException e) {
             Assert.fail("Change erase pin throw exception" + e.getMessage());
         }
@@ -1952,8 +1993,7 @@ public class KineticAdminTest extends IntegrationTestCase {
 
         // erase pin
         try {
-            getAdminClient().instantErase(
-                    "anything".getBytes(Charset.forName("UTF-8")));
+            instantErase("", "123", getAdminClient());
         } catch (KineticException e) {
             Assert.fail("instant erase throw exception" + e.getMessage());
         }
@@ -1965,13 +2005,12 @@ public class KineticAdminTest extends IntegrationTestCase {
      * Test lock device with correct lock pin, should lock the device.
      * <p>
      */
-    @Test
+    @Test(enabled = false)
     public void testLockDevice_withCorrectLockpin() {
         // set a lock pin
-        byte[] lockPinB = toByteArray("lockpin");
+        byte[] lockPinB = toByteArray("123");
         try {
-            getAdminClient().setLockPin(
-                    "anything".getBytes(Charset.forName("UTF-8")), lockPinB);
+            getAdminClient().setLockPin(toByteArray(""), lockPinB);
         } catch (KineticException e1) {
             Assert.fail("set lock pin throw exception: " + e1.getMessage());
         }
@@ -1998,12 +2037,11 @@ public class KineticAdminTest extends IntegrationTestCase {
             Assert.fail("instant erase throw exception" + e.getMessage());
         }
 
-        // erase pin
+        // reset lock pin
         try {
-            getAdminClient().secureErase(
-                    "anything".getBytes(Charset.forName("UTF-8")));
+            getAdminClient().setLockPin(lockPinB, toByteArray(""));
         } catch (KineticException e) {
-            Assert.fail("secure erase throw exception" + e.getMessage());
+            Assert.fail("reset lock pin throw exception" + e.getMessage());
         }
 
         logger.info(this.testEndInfo());
@@ -2016,10 +2054,9 @@ public class KineticAdminTest extends IntegrationTestCase {
     @Test
     public void testLockDevice_withIncorrectLockpin() {
         // set a lock pin
-        byte[] lockPinB = toByteArray("lockpin");
+        byte[] lockPinB = toByteArray("123");
         try {
-            getAdminClient().setLockPin(
-                    "anything".getBytes(Charset.forName("UTF-8")), lockPinB);
+            getAdminClient().setLockPin(toByteArray(""), lockPinB);
         } catch (KineticException e1) {
             Assert.fail("set lock pin throw exception: " + e1.getMessage());
         }
@@ -2040,12 +2077,11 @@ public class KineticAdminTest extends IntegrationTestCase {
                     + e.getMessage());
         }
 
-        // erase
+        // reset lock pin
         try {
-            getAdminClient().secureErase(
-                    "anything".getBytes(Charset.forName("UTF-8")));
+            getAdminClient().setLockPin(lockPinB, toByteArray(""));
         } catch (KineticException e) {
-            Assert.fail("instant erase throw exception" + e.getMessage());
+            Assert.fail("reset lock pin throw exception" + e.getMessage());
         }
 
         logger.info(this.testEndInfo());
@@ -2092,10 +2128,9 @@ public class KineticAdminTest extends IntegrationTestCase {
     @Test
     public void testunLockDevice_withCorrectLockpin() {
         // set a lock pin
-        byte[] lockPinB = toByteArray("lockpin");
+        byte[] lockPinB = toByteArray("123");
         try {
-            getAdminClient().setLockPin(
-                    "anything".getBytes(Charset.forName("UTF-8")), lockPinB);
+            getAdminClient().setLockPin(toByteArray(""), lockPinB);
         } catch (KineticException e1) {
             Assert.fail("set lock pin throw exception: " + e1.getMessage());
         }
@@ -2121,12 +2156,11 @@ public class KineticAdminTest extends IntegrationTestCase {
                     + e.getMessage());
         }
 
-        // erase
+        // reset lock pin
         try {
-            getAdminClient().secureErase(
-                    "anything".getBytes(Charset.forName("UTF-8")));
+            getAdminClient().setLockPin(lockPinB, toByteArray(""));
         } catch (KineticException e) {
-            Assert.fail("secure erase throw exception" + e.getMessage());
+            Assert.fail("reset lock pin throw exception" + e.getMessage());
         }
 
         logger.info(this.testEndInfo());
@@ -2137,13 +2171,12 @@ public class KineticAdminTest extends IntegrationTestCase {
      * device.
      * <p>
      */
-    @Test
+    @Test(enabled = false)
     public void testunLockDevice_withIncorrectLockpin() {
         // set a lock pin
-        byte[] lockPinB = toByteArray("lockpin");
+        byte[] lockPinB = toByteArray("123");
         try {
-            getAdminClient().setLockPin(
-                    "anything".getBytes(Charset.forName("UTF-8")), lockPinB);
+            getAdminClient().setLockPin(toByteArray(""), lockPinB);
         } catch (KineticException e1) {
             Assert.fail("set lock pin throw exception: " + e1.getMessage());
         }
@@ -2181,8 +2214,7 @@ public class KineticAdminTest extends IntegrationTestCase {
 
         // erase
         try {
-            getAdminClient().secureErase(
-                    "anything".getBytes(Charset.forName("UTF-8")));
+            getAdminClient().setLockPin(lockPinB, toByteArray(""));
         } catch (KineticException e) {
             Assert.fail("secure erase throw exception" + e.getMessage());
         }
@@ -2802,8 +2834,7 @@ public class KineticAdminTest extends IntegrationTestCase {
 
         // clean up acls
         try {
-            getAdminClient().instantErase(
-                    "anything".getBytes(Charset.forName("UTF-8")));
+            instantErase("", "123", getAdminClient());
         } catch (KineticException e) {
             Assert.fail("clean up acls throw excaption: " + e.getMessage());
         }
@@ -2916,8 +2947,7 @@ public class KineticAdminTest extends IntegrationTestCase {
 
         // clean up acls
         try {
-            getAdminClient().instantErase(
-                    "anything".getBytes(Charset.forName("UTF-8")));
+            instantErase("", "123", getAdminClient());
         } catch (KineticException e) {
             Assert.fail("clean up acls throw excaption: " + e.getMessage());
         }

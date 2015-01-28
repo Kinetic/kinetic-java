@@ -34,6 +34,7 @@ import kinetic.admin.Role;
 import kinetic.client.AsyncKineticException;
 import kinetic.client.CallbackHandler;
 import kinetic.client.CallbackResult;
+import kinetic.client.KineticClient;
 import kinetic.client.KineticException;
 
 import org.testng.AssertJUnit;
@@ -110,28 +111,31 @@ public class KineticTestHelpers {
             }
         };
     }
-
-    /**
-     * Reset pin, unless kinetic.test.disable-clean-pin system property is set
-     * to 'true'
-     *
-     * @param pin
-     *            new pin
-     * @param client
-     *            client to use
-     * @throws KineticException
-     *             if any kinetic internal error occurred.
-     */
-    public static void cleanPin(String pin, KineticAdminClient client)
+    
+    public static void instantErase(String oldErasePin, String newErasePin, KineticAdminClient client)
             throws KineticException {
 
-        if (Boolean.getBoolean("kinetic.test.disable-clean-pin")) {
-            return;
+        byte[] oldErasePinB = toByteArray(oldErasePin);
+        byte[] newErasePinB = toByteArray(newErasePin);
+        client.setErasePin(oldErasePinB, newErasePinB);
+        client.instantErase(newErasePinB);
+    }
+    
+    public static void cleanData(int keyCount, KineticClient client)
+            throws KineticException {
+        for (int i = 0; i < keyCount; i++) {
+            byte[] key = toByteArray("key" + i);
+            client.deleteForced(key);
         }
-
-        byte[] oldErasePin = toByteArray(pin);
-
-        client.setErasePin(oldErasePin, null);
+    }
+    
+    public static void cleanKVGenData(int keyCount, KineticClient client)
+            throws KineticException {
+        KVGenerator kvGen = new KVGenerator(); 
+        for (int i = 0; i < keyCount; i++) {
+            byte[] key = toByteArray(kvGen.getNextKey());
+            client.deleteForced(key);
+        }
     }
 
     /**

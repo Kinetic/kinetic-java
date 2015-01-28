@@ -17,7 +17,6 @@ import kinetic.client.Entry;
 import kinetic.client.EntryMetadata;
 import kinetic.client.KineticException;
 
-import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import com.google.common.collect.Lists;
@@ -27,12 +26,6 @@ import com.seagate.kinetic.IntegrationTestCase;
 public class BasicAPISanityTest extends IntegrationTestCase {
     private final String KEY_PREFIX = "key";
     private final int MAX_KEYS = 1;
-
-    @Override
-    @BeforeMethod(alwaysRun = true)
-    public void securityEraseTarget() {
-        // do nothing, so the parent won't erase the data
-    }
 
     private void clean(String clientName, int maxkeys) throws KineticException {
         byte[] key;

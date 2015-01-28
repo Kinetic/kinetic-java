@@ -68,13 +68,15 @@ public class KineticPutConcurrentTest extends IntegrationTestCase {
 		String key = "samekey";
 		CountDownLatch latch = new CountDownLatch(writeThreads);
 		ExecutorService pool = Executors.newCachedThreadPool();
+		
+		getClient(clientName).deleteForced(toByteArray(key));
 
 		// thread pool generate threads(concurrent client number)
-		KineticClient kineticClient;
+		KineticClient kineticClient = null;
 		for (int i = 0; i < writeThreads; i++) {
 			kineticClient = KineticClientFactory
 					.createInstance(kineticClientConfigutations.get(clientName));
-
+			
 			// every threads write using the same key
 			pool.execute(new SameKeyWriteThread(kineticClient, key,
 					writesEachThread, latch));
@@ -83,6 +85,8 @@ public class KineticPutConcurrentTest extends IntegrationTestCase {
 		// wait all threads finish
 		latch.await();
 		pool.shutdown();
+		
+//		kineticClient.deleteForced(toByteArray(key));
 
 		logger.info(this.testEndInfo());
 	}

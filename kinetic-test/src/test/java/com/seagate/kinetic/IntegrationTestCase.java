@@ -23,7 +23,6 @@ import static com.seagate.kinetic.KineticTestHelpers.toByteArray;
 import static org.testng.AssertJUnit.assertEquals;
 
 import java.io.IOException;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -43,7 +42,6 @@ import kinetic.client.p2p.KineticP2pClient;
 
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
-import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;
 
 import com.google.protobuf.ByteString;
@@ -111,15 +109,17 @@ public class IntegrationTestCase {
 	@AfterClass(alwaysRun = true)
 	public void stopTestServer() throws Exception {
 		closeKineticClients();
-		adminClient.close();
+		if (null != adminClient){
+		    adminClient.close();
+		}
 		testTarget.shutdown();
 	}
 
-	@BeforeMethod(alwaysRun = true)
-	protected void securityEraseTarget() throws KineticException {
-		getAdminClient().secureErase(
-				"NULL".getBytes(Charset.forName("UTF-8")));
-	}
+//	@BeforeMethod(alwaysRun = true)
+//	protected void securityEraseTarget() throws KineticException {
+//		getAdminClient().secureErase(
+//				"NULL".getBytes(Charset.forName("UTF-8")));
+//	}
 
 	/**
 	 * Get a Kinetic client.
@@ -323,7 +323,8 @@ public class IntegrationTestCase {
 		}
 		security.addAcl(acl);
 
-		KineticMessage response = getClient(clientName).request(km);
+//		KineticMessage response = getClient(clientName).request(km);
+		KineticMessage response = getAdminClient().request(km);
 		// Ensure setup succeeded, or else fail the calling test.
 		assertEquals(Kinetic.Command.Status.StatusCode.SUCCESS, response
 				.getCommand().getStatus().getCode());
@@ -405,7 +406,9 @@ public class IntegrationTestCase {
 	private void closeKineticClients() throws KineticException {
 
 		for (KineticP2pClient client : kineticClients.values()) {
-			client.close();
+		    if (null != client) {
+		        client.close();
+		    }
 		}
 	}
 }

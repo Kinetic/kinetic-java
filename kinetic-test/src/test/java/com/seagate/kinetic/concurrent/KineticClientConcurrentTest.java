@@ -87,10 +87,13 @@ public class KineticClientConcurrentTest extends IntegrationTestCase {
 		int totalWrites = writeThreads * writesEachThread;
 		CountDownLatch latch = new CountDownLatch(writeThreads);
 		ExecutorService pool = Executors.newCachedThreadPool();
+		
+		cleanData(totalWrites, getClient(clientName));
 
 		// thread pool generate threads(concurrent client number)
 		// logger.info("launch " + writeThreads + " write threads to write "
 		// + totalWrites + " kv pairs");
+		kvGenerator = new KVGenerator();
 		kvGenerator.reset();
 		KineticClient kineticClient;
 		for (int i = 0; i < writeThreads; i++) {
@@ -178,8 +181,18 @@ public class KineticClientConcurrentTest extends IntegrationTestCase {
 		assertTrue(count == totalWrites);
 
 		defaultKineticClient.close();
+		
+		cleanData(totalWrites, getClient(clientName));
 
 		logger.info(this.testEndInfo());
+	}
+	
+    private void cleanData(int dataCount, KineticClient client)
+            throws KineticException {
+	    KVGenerator kvGenerator = new KVGenerator();
+	    for(int i = 0; i < dataCount; i++){
+	        client.deleteForced(toByteArray(kvGenerator.getNextKey()));
+	    }
 	}
 
 	/**

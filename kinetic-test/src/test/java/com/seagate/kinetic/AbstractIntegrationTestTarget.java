@@ -19,8 +19,7 @@
  */
 package com.seagate.kinetic;
 
-import java.nio.charset.Charset;
-
+import static com.seagate.kinetic.KineticTestHelpers.toByteArray;
 import kinetic.admin.AdminClientConfiguration;
 import kinetic.admin.KineticAdminClient;
 import kinetic.admin.KineticAdminClientFactory;
@@ -113,8 +112,9 @@ public abstract class AbstractIntegrationTestTarget {
 	protected void performISE() throws KineticException {
 		KineticAdminClient kineticAdminClient = KineticAdminClientFactory
 				.createInstance(getAdminClientConfig());
-		kineticAdminClient.instantErase("NULL".getBytes(Charset
-				.forName("UTF-8")));
+		byte[] newErasePin = toByteArray("123");
+		kineticAdminClient.setErasePin(toByteArray(""), newErasePin);
+		kineticAdminClient.instantErase(newErasePin);
 		kineticAdminClient.close();
 	}
 }

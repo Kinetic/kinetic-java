@@ -78,6 +78,13 @@ public class BatchOpAPITest extends IntegrationTestCase {
         Entry bar = getBarEntry();
         Entry foo = getFooEntry();
 
+        try {
+            cleanEntry(bar, getClient(clientName));
+            cleanEntry(foo, getClient(clientName));
+        } catch (KineticException e) {
+            Assert.fail("Clean entry failed. " + e.getMessage());
+        }
+
         BatchOperation batch = null;
         try {
             batch = getClient(clientName).createBatchOperation();
@@ -131,6 +138,13 @@ public class BatchOpAPITest extends IntegrationTestCase {
         } catch (KineticException e) {
             Assert.fail("Get entry foo throw exception: " + e.getMessage());
         }
+
+        try {
+            cleanEntry(bar, getClient(clientName));
+            cleanEntry(foo, getClient(clientName));
+        } catch (KineticException e) {
+            Assert.fail("Clean entry failed. " + e.getMessage());
+        }
     }
 
     @Test(dataProvider = "transportProtocolOptions")
@@ -140,6 +154,13 @@ public class BatchOpAPITest extends IntegrationTestCase {
         Entry foo = getFooEntry();
         foo.getEntryMetadata().setVersion(null);
         byte[] newVersion = toByteArray("5678");
+
+        try {
+            cleanEntry(bar, getClient(clientName));
+            cleanEntry(foo, getClient(clientName));
+        } catch (KineticException e) {
+            Assert.fail("Clean entry failed. " + e.getMessage());
+        }
 
         BatchOperation batch = null;
         try {
@@ -194,6 +215,13 @@ public class BatchOpAPITest extends IntegrationTestCase {
         } catch (KineticException e) {
             Assert.fail("Get entry foo throw exception: " + e.getMessage());
         }
+
+        try {
+            cleanEntry(bar, getClient(clientName));
+            cleanEntry(foo, getClient(clientName));
+        } catch (KineticException e) {
+            Assert.fail("Clean entry failed. " + e.getMessage());
+        }
     }
 
     @Test(dataProvider = "transportProtocolOptions")
@@ -204,6 +232,13 @@ public class BatchOpAPITest extends IntegrationTestCase {
         Entry foo = getFooEntry();
         foo.getEntryMetadata().setVersion(null);
         byte[] newVersion = toByteArray("5678");
+
+        try {
+            cleanEntry(bar, getClient(clientName));
+            cleanEntry(foo, getClient(clientName));
+        } catch (KineticException e) {
+            Assert.fail("Clean entry failed. " + e.getMessage());
+        }
 
         BatchOperation batch = null;
         try {
@@ -257,6 +292,13 @@ public class BatchOpAPITest extends IntegrationTestCase {
         } catch (KineticException e) {
             Assert.fail("Get entry foo throw exception: " + e.getMessage());
         }
+
+        try {
+            cleanEntry(bar, getClient(clientName));
+            cleanEntry(foo, getClient(clientName));
+        } catch (KineticException e) {
+            Assert.fail("Clean entry failed. " + e.getMessage());
+        }
     }
 
     @Test(dataProvider = "transportProtocolOptions")
@@ -266,6 +308,13 @@ public class BatchOpAPITest extends IntegrationTestCase {
         Entry foo = getFooEntry();
         foo.getEntryMetadata().setVersion(null);
         byte[] newVersion = toByteArray("5678");
+
+        try {
+            cleanEntry(bar, getClient(clientName));
+            cleanEntry(foo, getClient(clientName));
+        } catch (KineticException e) {
+            Assert.fail("Clean entry failed. " + e.getMessage());
+        }
 
         BatchOperation batch = null;
         try {
@@ -319,6 +368,13 @@ public class BatchOpAPITest extends IntegrationTestCase {
         } catch (KineticException e) {
             Assert.fail("Get entry foo throw exception: " + e.getMessage());
         }
+
+        try {
+            cleanEntry(bar, getClient(clientName));
+            cleanEntry(foo, getClient(clientName));
+        } catch (KineticException e) {
+            Assert.fail("Clean entry failed. " + e.getMessage());
+        }
     }
 
     @Test(dataProvider = "transportProtocolOptions")
@@ -328,6 +384,13 @@ public class BatchOpAPITest extends IntegrationTestCase {
         bar.getEntryMetadata().setVersion(null);
         Entry foo = getFooEntry();
         byte[] newVersion = toByteArray("5678");
+
+        try {
+            cleanEntry(bar, getClient(clientName));
+            cleanEntry(foo, getClient(clientName));
+        } catch (KineticException e) {
+            Assert.fail("Clean entry failed. " + e.getMessage());
+        }
 
         BatchOperation batch = null;
         try {
@@ -381,12 +444,27 @@ public class BatchOpAPITest extends IntegrationTestCase {
         } catch (KineticException e) {
             Assert.fail("Get entry foo throw exception: " + e.getMessage());
         }
+
+        try {
+            cleanEntry(bar, getClient(clientName));
+            cleanEntry(foo, getClient(clientName));
+        } catch (KineticException e) {
+            Assert.fail("Clean entry failed. " + e.getMessage());
+        }
     }
 
     @Test(dataProvider = "transportProtocolOptions")
     public void testBatchOperation_DeletesAsyncSucceeds(String clientName) {
         Entry bar = getBarEntry();
         Entry foo = getFooEntry();
+
+        try {
+            cleanEntry(bar, getClient(clientName));
+            cleanEntry(foo, getClient(clientName));
+        } catch (KineticException e) {
+            Assert.fail("Clean entry failed. " + e.getMessage());
+        }
+
         try {
             getClient(clientName).putForced(bar);
             getClient(clientName).putForced(foo);
@@ -441,6 +519,13 @@ public class BatchOpAPITest extends IntegrationTestCase {
         } catch (KineticException e) {
             Assert.fail("Get bar entry throw exception. " + e.getMessage());
         }
+
+        try {
+            cleanEntry(bar, getClient(clientName));
+            cleanEntry(foo, getClient(clientName));
+        } catch (KineticException e) {
+            Assert.fail("Clean entry failed. " + e.getMessage());
+        }
     }
 
     @Test(dataProvider = "transportProtocolOptions")
@@ -448,6 +533,14 @@ public class BatchOpAPITest extends IntegrationTestCase {
             String clientName) {
         Entry bar = getBarEntry();
         Entry foo = getFooEntry();
+
+        try {
+            cleanEntry(bar, getClient(clientName));
+            cleanEntry(foo, getClient(clientName));
+        } catch (KineticException e) {
+            Assert.fail("Clean entry failed. " + e.getMessage());
+        }
+
         try {
             getClient(clientName).putForced(bar);
             getClient(clientName).putForced(foo);
@@ -514,12 +607,27 @@ public class BatchOpAPITest extends IntegrationTestCase {
         } catch (KineticException e) {
             Assert.fail("Get entry foo throw exception: " + e.getMessage());
         }
+
+        try {
+            cleanEntry(bar, getClient(clientName));
+            cleanEntry(foo, getClient(clientName));
+        } catch (KineticException e) {
+            Assert.fail("Clean entry failed. " + e.getMessage());
+        }
     }
 
     @Test(dataProvider = "transportProtocolOptions")
     public void testBatchOperation_DeletesForcedAsyncSucceeds(String clientName) {
         Entry bar = getBarEntry();
         Entry foo = getFooEntry();
+
+        try {
+            cleanEntry(bar, getClient(clientName));
+            cleanEntry(foo, getClient(clientName));
+        } catch (KineticException e) {
+            Assert.fail("Clean entry failed. " + e.getMessage());
+        }
+
         try {
             getClient(clientName).putForced(bar);
             getClient(clientName).putForced(foo);
@@ -575,6 +683,13 @@ public class BatchOpAPITest extends IntegrationTestCase {
         } catch (KineticException e) {
             Assert.fail("Get bar entry throw exception. " + e.getMessage());
         }
+
+        try {
+            cleanEntry(bar, getClient(clientName));
+            cleanEntry(foo, getClient(clientName));
+        } catch (KineticException e) {
+            Assert.fail("Clean entry failed. " + e.getMessage());
+        }
     }
 
     @Test(dataProvider = "transportProtocolOptions")
@@ -582,6 +697,14 @@ public class BatchOpAPITest extends IntegrationTestCase {
             String clientName) {
         Entry bar = getBarEntry();
         Entry foo = getFooEntry();
+
+        try {
+            cleanEntry(bar, getClient(clientName));
+            cleanEntry(foo, getClient(clientName));
+        } catch (KineticException e) {
+            Assert.fail("Clean entry failed. " + e.getMessage());
+        }
+
         try {
             getClient(clientName).putForced(bar);
             getClient(clientName).putForced(foo);
@@ -637,6 +760,13 @@ public class BatchOpAPITest extends IntegrationTestCase {
         } catch (KineticException e) {
             Assert.fail("Get bar entry throw exception. " + e.getMessage());
         }
+
+        try {
+            cleanEntry(bar, getClient(clientName));
+            cleanEntry(foo, getClient(clientName));
+        } catch (KineticException e) {
+            Assert.fail("Clean entry failed. " + e.getMessage());
+        }
     }
 
     @Test(dataProvider = "transportProtocolOptions")
@@ -644,6 +774,14 @@ public class BatchOpAPITest extends IntegrationTestCase {
             String clientName) {
         Entry bar = getBarEntry();
         Entry foo = getFooEntry();
+
+        try {
+            cleanEntry(bar, getClient(clientName));
+            cleanEntry(foo, getClient(clientName));
+        } catch (KineticException e) {
+            Assert.fail("Clean entry failed. " + e.getMessage());
+        }
+
         try {
             getClient(clientName).putForced(bar);
             getClient(clientName).putForced(foo);
@@ -710,11 +848,25 @@ public class BatchOpAPITest extends IntegrationTestCase {
         } catch (KineticException e) {
             Assert.fail("Get entry throw exception: " + e.getMessage());
         }
+
+        try {
+            cleanEntry(bar, getClient(clientName));
+            cleanEntry(foo, getClient(clientName));
+        } catch (KineticException e) {
+            Assert.fail("Clean entry failed. " + e.getMessage());
+        }
     }
 
     @Test(dataProvider = "transportProtocolOptions", enabled = false)
     public void testBatchOperation_PutAndDeleteSucceeds(String clientName) {
         Entry bar = getBarEntry();
+        Entry foo = getFooEntry();
+        try {
+            cleanEntry(bar, getClient(clientName));
+            cleanEntry(foo, getClient(clientName));
+        } catch (KineticException e) {
+            Assert.fail("Clean entry failed. " + e.getMessage());
+        }
 
         try {
             getClient(clientName).putForced(bar);
@@ -730,7 +882,6 @@ public class BatchOpAPITest extends IntegrationTestCase {
                     + e.getMessage());
         }
 
-        Entry foo = getFooEntry();
         byte[] newVersion = toByteArray("5678");
 
         try {
@@ -796,6 +947,13 @@ public class BatchOpAPITest extends IntegrationTestCase {
         } catch (KineticException e) {
             Assert.fail("Get bar throw exception. " + e.getMessage());
         }
+
+        try {
+            cleanEntry(bar, getClient(clientName));
+            cleanEntry(foo, getClient(clientName));
+        } catch (KineticException e) {
+            Assert.fail("Clean entry failed. " + e.getMessage());
+        }
     }
 
     @Test(dataProvider = "transportProtocolOptions")
@@ -804,6 +962,19 @@ public class BatchOpAPITest extends IntegrationTestCase {
         Entry bar = getBarEntry();
         byte[] barBigValue = ByteBuffer.allocate(valueSize).array();
         bar.setValue(barBigValue);
+
+        Entry foo = getFooEntry();
+        foo.getEntryMetadata().setVersion(null);
+        byte[] newVersion = toByteArray("5678");
+        byte[] fooBigValue = ByteBuffer.allocate(valueSize).array();
+        foo.setValue(fooBigValue);
+
+        try {
+            cleanEntry(bar, getClient(clientName));
+            cleanEntry(foo, getClient(clientName));
+        } catch (KineticException e) {
+            Assert.fail("Clean entry failed. " + e.getMessage());
+        }
 
         try {
             getClient(clientName).putForced(bar);
@@ -818,12 +989,6 @@ public class BatchOpAPITest extends IntegrationTestCase {
             Assert.fail("Create batch operation throw exception. "
                     + e.getMessage());
         }
-
-        Entry foo = getFooEntry();
-        foo.getEntryMetadata().setVersion(null);
-        byte[] newVersion = toByteArray("5678");
-        byte[] fooBigValue = ByteBuffer.allocate(valueSize).array();
-        foo.setValue(fooBigValue);
 
         try {
             CallbackHandler<Entry> handler = buildAsyncCallbackHandler(new KineticTestHelpers.AsyncHandler<Entry>() {
@@ -883,11 +1048,27 @@ public class BatchOpAPITest extends IntegrationTestCase {
         } catch (KineticException e) {
             Assert.fail("Get bar throw exception. " + e.getMessage());
         }
+
+        try {
+            cleanEntry(bar, getClient(clientName));
+            cleanEntry(foo, getClient(clientName));
+        } catch (KineticException e) {
+            Assert.fail("Clean entry failed. " + e.getMessage());
+        }
     }
 
     @Test(dataProvider = "transportProtocolOptions", enabled = false)
     public void testBatchOperation_PutAndDeleteForcedSucceeds(String clientName) {
         Entry bar = getBarEntry();
+        Entry foo = getFooEntry();
+        byte[] newVersion = toByteArray("5678");
+
+        try {
+            cleanEntry(bar, getClient(clientName));
+            cleanEntry(foo, getClient(clientName));
+        } catch (KineticException e) {
+            Assert.fail("Clean entry failed. " + e.getMessage());
+        }
 
         try {
             getClient(clientName).putForced(bar);
@@ -902,9 +1083,6 @@ public class BatchOpAPITest extends IntegrationTestCase {
             Assert.fail("Create batch operation throw exception. "
                     + e.getMessage());
         }
-
-        Entry foo = getFooEntry();
-        byte[] newVersion = toByteArray("5678");
 
         try {
             CallbackHandler<Entry> handler = buildAsyncCallbackHandler(new KineticTestHelpers.AsyncHandler<Entry>() {
@@ -965,12 +1143,28 @@ public class BatchOpAPITest extends IntegrationTestCase {
         } catch (KineticException e) {
             Assert.fail("Get bar throw exception. " + e.getMessage());
         }
+
+        try {
+            cleanEntry(bar, getClient(clientName));
+            cleanEntry(foo, getClient(clientName));
+        } catch (KineticException e) {
+            Assert.fail("Clean entry failed. " + e.getMessage());
+        }
     }
 
     @Test(dataProvider = "transportProtocolOptions")
     public void testBatchOperation_PutAndDeleteForcedPartiallyFailed_AllFailed(
             String clientName) {
         Entry bar = getBarEntry();
+        Entry foo = getFooEntry();
+        byte[] newVersion = toByteArray("5678");
+
+        try {
+            cleanEntry(bar, getClient(clientName));
+            cleanEntry(foo, getClient(clientName));
+        } catch (KineticException e) {
+            Assert.fail("Clean entry failed. " + e.getMessage());
+        }
 
         try {
             getClient(clientName).putForced(bar);
@@ -985,9 +1179,6 @@ public class BatchOpAPITest extends IntegrationTestCase {
             Assert.fail("Create batch operation throw exception. "
                     + e.getMessage());
         }
-
-        Entry foo = getFooEntry();
-        byte[] newVersion = toByteArray("5678");
 
         try {
             CallbackHandler<Entry> handler = buildAsyncCallbackHandler(new KineticTestHelpers.AsyncHandler<Entry>() {
@@ -1056,12 +1247,28 @@ public class BatchOpAPITest extends IntegrationTestCase {
         } catch (KineticException e) {
             Assert.fail("Get bar throw exception. " + e.getMessage());
         }
+
+        try {
+            cleanEntry(bar, getClient(clientName));
+            cleanEntry(foo, getClient(clientName));
+        } catch (KineticException e) {
+            Assert.fail("Clean entry failed. " + e.getMessage());
+        }
     }
 
     @Test(dataProvider = "transportProtocolOptions")
     public void testBatchOperation_PutAndDeleteForcedAllOperationFailed_AllFailed(
             String clientName) {
         Entry bar = getBarEntry();
+        Entry foo = getFooEntry();
+        byte[] newVersion = toByteArray("5678");
+
+        try {
+            cleanEntry(bar, getClient(clientName));
+            cleanEntry(foo, getClient(clientName));
+        } catch (KineticException e) {
+            Assert.fail("Clean entry failed. " + e.getMessage());
+        }
 
         try {
             getClient(clientName).putForced(bar);
@@ -1076,9 +1283,6 @@ public class BatchOpAPITest extends IntegrationTestCase {
             Assert.fail("Create batch operation throw exception. "
                     + e.getMessage());
         }
-
-        Entry foo = getFooEntry();
-        byte[] newVersion = toByteArray("5678");
 
         try {
             CallbackHandler<Entry> handler = buildAsyncCallbackHandler(new KineticTestHelpers.AsyncHandler<Entry>() {
@@ -1149,12 +1353,27 @@ public class BatchOpAPITest extends IntegrationTestCase {
         } catch (KineticException e) {
             Assert.fail("Get bar throw exception. " + e.getMessage());
         }
+
+        try {
+            cleanEntry(bar, getClient(clientName));
+            cleanEntry(foo, getClient(clientName));
+        } catch (KineticException e) {
+            Assert.fail("Clean entry failed. " + e.getMessage());
+        }
     }
 
     @Test(dataProvider = "transportProtocolOptions")
     public void testBatchOperation_AllOperationSuccess_AbortOperation_Succeeds(
             String clientName) {
         Entry bar = getBarEntry();
+        Entry foo = getFooEntry();
+
+        try {
+            cleanEntry(bar, getClient(clientName));
+            cleanEntry(foo, getClient(clientName));
+        } catch (KineticException e) {
+            Assert.fail("Clean entry failed. " + e.getMessage());
+        }
 
         try {
             getClient(clientName).putForced(bar);
@@ -1168,8 +1387,6 @@ public class BatchOpAPITest extends IntegrationTestCase {
         } catch (KineticException e) {
             Assert.fail("Create batch operation failed. " + e.getMessage());
         }
-
-        Entry foo = getFooEntry();
 
         try {
             CallbackHandler<Entry> handler = buildAsyncCallbackHandler(new KineticTestHelpers.AsyncHandler<Entry>() {
@@ -1229,12 +1446,27 @@ public class BatchOpAPITest extends IntegrationTestCase {
         } catch (KineticException e) {
             Assert.fail("Get entry failed. " + e.getMessage());
         }
+
+        try {
+            cleanEntry(bar, getClient(clientName));
+            cleanEntry(foo, getClient(clientName));
+        } catch (KineticException e) {
+            Assert.fail("Clean entry failed. " + e.getMessage());
+        }
     }
 
     @Test(dataProvider = "transportProtocolOptions")
     public void testBatchOperation_PartiallyOperationFailed_AbortOperation_Succeeds(
             String clientName) {
         Entry bar = getBarEntry();
+        Entry foo = getFooEntry();
+
+        try {
+            cleanEntry(bar, getClient(clientName));
+            cleanEntry(foo, getClient(clientName));
+        } catch (KineticException e) {
+            Assert.fail("Clean entry failed. " + e.getMessage());
+        }
 
         try {
             getClient(clientName).putForced(bar);
@@ -1248,8 +1480,6 @@ public class BatchOpAPITest extends IntegrationTestCase {
         } catch (KineticException e) {
             Assert.fail("Create batch operation failed. " + e.getMessage());
         }
-
-        Entry foo = getFooEntry();
 
         try {
             CallbackHandler<Entry> handler = buildAsyncCallbackHandler(new KineticTestHelpers.AsyncHandler<Entry>() {
@@ -1310,12 +1540,27 @@ public class BatchOpAPITest extends IntegrationTestCase {
         } catch (KineticException e) {
             Assert.fail("Get entry failed. " + e.getMessage());
         }
+
+        try {
+            cleanEntry(bar, getClient(clientName));
+            cleanEntry(foo, getClient(clientName));
+        } catch (KineticException e) {
+            Assert.fail("Clean entry failed. " + e.getMessage());
+        }
     }
 
     @Test(dataProvider = "transportProtocolOptions")
     public void testBatchOperation_AllOperationFailed_AbortOperation_Succeeds(
             String clientName) {
         Entry bar = getBarEntry();
+        Entry foo = getFooEntry();
+
+        try {
+            cleanEntry(bar, getClient(clientName));
+            cleanEntry(foo, getClient(clientName));
+        } catch (KineticException e) {
+            Assert.fail("Clean entry failed. " + e.getMessage());
+        }
 
         try {
             getClient(clientName).putForced(bar);
@@ -1329,8 +1574,6 @@ public class BatchOpAPITest extends IntegrationTestCase {
         } catch (KineticException e) {
             Assert.fail("Create batch operation failed. " + e.getMessage());
         }
-
-        Entry foo = getFooEntry();
 
         try {
             CallbackHandler<Entry> handler = buildAsyncCallbackHandler(new KineticTestHelpers.AsyncHandler<Entry>() {
@@ -1392,12 +1635,28 @@ public class BatchOpAPITest extends IntegrationTestCase {
         } catch (KineticException e) {
             Assert.fail("Get entry failed. " + e.getMessage());
         }
+
+        try {
+            cleanEntry(bar, getClient(clientName));
+            cleanEntry(foo, getClient(clientName));
+        } catch (KineticException e) {
+            Assert.fail("Clean entry failed. " + e.getMessage());
+        }
     }
 
     @Test(dataProvider = "transportProtocolOptions")
     public void testBatchOperation_FollowedBothGetAndPutByOneClient_PutSuccess(
             String clientName) {
         Entry bar = getBarEntry();
+        Entry foo = getFooEntry();
+
+        try {
+            cleanEntry(bar, getClient(clientName));
+            cleanEntry(foo, getClient(clientName));
+        } catch (KineticException e) {
+            Assert.fail("Clean entry failed. " + e.getMessage());
+        }
+
         try {
             getClient(clientName).putForced(bar);
         } catch (KineticException e) {
@@ -1411,8 +1670,6 @@ public class BatchOpAPITest extends IntegrationTestCase {
             Assert.fail("Create batch operation throw exception. "
                     + e.getMessage());
         }
-
-        Entry foo = getFooEntry();
 
         try {
             CallbackHandler<Entry> handler = buildAsyncCallbackHandler(new KineticTestHelpers.AsyncHandler<Entry>() {
@@ -1520,12 +1777,28 @@ public class BatchOpAPITest extends IntegrationTestCase {
         } catch (KineticException e) {
             Assert.fail("Get entry failed. " + e.getMessage());
         }
+
+        try {
+            cleanEntry(bar, getClient(clientName));
+            cleanEntry(foo, getClient(clientName));
+        } catch (KineticException e) {
+            Assert.fail("Clean entry failed. " + e.getMessage());
+        }
     }
 
     @Test(dataProvider = "transportProtocolOptions")
     public void testBatchOperation_FollowedBothReadByOneClientAfterEndBatch_Success(
             String clientName) {
         Entry bar = getBarEntry();
+        Entry foo = getFooEntry();
+
+        try {
+            cleanEntry(bar, getClient(clientName));
+            cleanEntry(foo, getClient(clientName));
+        } catch (KineticException e) {
+            Assert.fail("Clean entry failed. " + e.getMessage());
+        }
+
         try {
             getClient(clientName).putForced(bar);
         } catch (KineticException e) {
@@ -1539,8 +1812,6 @@ public class BatchOpAPITest extends IntegrationTestCase {
             Assert.fail("Create batch operation throw exception. "
                     + e.getMessage());
         }
-
-        Entry foo = getFooEntry();
 
         try {
             CallbackHandler<Entry> handler = buildAsyncCallbackHandler(new KineticTestHelpers.AsyncHandler<Entry>() {
@@ -1627,12 +1898,28 @@ public class BatchOpAPITest extends IntegrationTestCase {
         } catch (KineticException e) {
             Assert.fail("Get entry failed. " + e.getMessage());
         }
+
+        try {
+            cleanEntry(bar, getClient(clientName));
+            cleanEntry(foo, getClient(clientName));
+        } catch (KineticException e) {
+            Assert.fail("Clean entry failed. " + e.getMessage());
+        }
     }
 
     @Test(dataProvider = "transportProtocolOptions")
     public void testBatchOperation_FollowedBothGetAndPutByOneClient_PutFailed(
             String clientName) {
         Entry bar = getBarEntry();
+        Entry foo = getFooEntry();
+
+        try {
+            cleanEntry(bar, getClient(clientName));
+            cleanEntry(foo, getClient(clientName));
+        } catch (KineticException e) {
+            Assert.fail("Clean entry failed. " + e.getMessage());
+        }
+
         try {
             getClient(clientName).putForced(bar);
         } catch (KineticException e) {
@@ -1646,8 +1933,6 @@ public class BatchOpAPITest extends IntegrationTestCase {
             Assert.fail("Create batch operation throw exception. "
                     + e.getMessage());
         }
-
-        Entry foo = getFooEntry();
 
         try {
             CallbackHandler<Entry> handler = buildAsyncCallbackHandler(new KineticTestHelpers.AsyncHandler<Entry>() {
@@ -1753,12 +2038,28 @@ public class BatchOpAPITest extends IntegrationTestCase {
         } catch (KineticException e) {
             Assert.fail("Get entry failed. " + e.getMessage());
         }
+
+        try {
+            cleanEntry(bar, getClient(clientName));
+            cleanEntry(foo, getClient(clientName));
+        } catch (KineticException e) {
+            Assert.fail("Clean entry failed. " + e.getMessage());
+        }
     }
 
     @Test(dataProvider = "transportProtocolOptions")
     public void testBatchOperation_FollowedBothGetAndPutByOneClient_PutAsyncAndPutSuccess(
             String clientName) {
         Entry bar = getBarEntry();
+        Entry foo = getFooEntry();
+
+        try {
+            cleanEntry(bar, getClient(clientName));
+            cleanEntry(foo, getClient(clientName));
+        } catch (KineticException e) {
+            Assert.fail("Clean entry failed. " + e.getMessage());
+        }
+
         try {
             getClient(clientName).putForced(bar);
         } catch (KineticException e) {
@@ -1772,8 +2073,6 @@ public class BatchOpAPITest extends IntegrationTestCase {
             Assert.fail("Create batch operation throw exception. "
                     + e.getMessage());
         }
-
-        Entry foo = getFooEntry();
 
         try {
             CallbackHandler<Entry> handler = buildAsyncCallbackHandler(new KineticTestHelpers.AsyncHandler<Entry>() {
@@ -1880,12 +2179,28 @@ public class BatchOpAPITest extends IntegrationTestCase {
         } catch (KineticException e) {
             Assert.fail("Get entry failed. " + e.getMessage());
         }
+
+        try {
+            cleanEntry(bar, getClient(clientName));
+            cleanEntry(foo, getClient(clientName));
+        } catch (KineticException e) {
+            Assert.fail("Clean entry failed. " + e.getMessage());
+        }
     }
 
     @Test(dataProvider = "transportProtocolOptions")
     public void testBatchOperation_FollowedBothGetAndPutByOneClient_PutAsyncFailed(
             String clientName) {
         Entry bar = getBarEntry();
+        Entry foo = getFooEntry();
+
+        try {
+            cleanEntry(bar, getClient(clientName));
+            cleanEntry(foo, getClient(clientName));
+        } catch (KineticException e) {
+            Assert.fail("Clean entry failed. " + e.getMessage());
+        }
+
         try {
             getClient(clientName).putForced(bar);
         } catch (KineticException e) {
@@ -1899,8 +2214,6 @@ public class BatchOpAPITest extends IntegrationTestCase {
             Assert.fail("Create batch operation throw exception. "
                     + e.getMessage());
         }
-
-        Entry foo = getFooEntry();
 
         try {
             CallbackHandler<Entry> handler = buildAsyncCallbackHandler(new KineticTestHelpers.AsyncHandler<Entry>() {
@@ -2010,12 +2323,28 @@ public class BatchOpAPITest extends IntegrationTestCase {
         } catch (KineticException e) {
             Assert.fail("Get entry failed. " + e.getMessage());
         }
+
+        try {
+            cleanEntry(bar, getClient(clientName));
+            cleanEntry(foo, getClient(clientName));
+        } catch (KineticException e) {
+            Assert.fail("Clean entry failed. " + e.getMessage());
+        }
     }
 
     @Test(dataProvider = "transportProtocolOptions")
     public void testBatchOperation_FollowedBothReadByTwoClientAfterBatchCommit_Success(
             String clientName) {
         Entry bar = getBarEntry();
+        Entry foo = getFooEntry();
+
+        try {
+            cleanEntry(bar, getClient(clientName));
+            cleanEntry(foo, getClient(clientName));
+        } catch (KineticException e) {
+            Assert.fail("Clean entry failed. " + e.getMessage());
+        }
+
         try {
             getClient(clientName).putForced(bar);
         } catch (KineticException e) {
@@ -2029,8 +2358,6 @@ public class BatchOpAPITest extends IntegrationTestCase {
             Assert.fail("Create batch operation throw exception. "
                     + e.getMessage());
         }
-
-        Entry foo = getFooEntry();
 
         try {
             CallbackHandler<Entry> handler = buildAsyncCallbackHandler(new KineticTestHelpers.AsyncHandler<Entry>() {
@@ -2127,12 +2454,28 @@ public class BatchOpAPITest extends IntegrationTestCase {
         } catch (KineticException e) {
             Assert.fail("Get entry failed. " + e.getMessage());
         }
+
+        try {
+            cleanEntry(bar, getClient(clientName));
+            cleanEntry(foo, getClient(clientName));
+        } catch (KineticException e) {
+            Assert.fail("Clean entry failed. " + e.getMessage());
+        }
     }
 
     @Test(dataProvider = "transportProtocolOptions")
     public void testBatchOperation_Succeeds_FollowedSingleReadByTwoClient_BeforeBatchCommit_Success(
             String clientName) {
         Entry bar = getBarEntry();
+        Entry foo = getFooEntry();
+
+        try {
+            cleanEntry(bar, getClient(clientName));
+            cleanEntry(foo, getClient(clientName));
+        } catch (KineticException e) {
+            Assert.fail("Clean entry failed. " + e.getMessage());
+        }
+
         try {
             getClient(clientName).putForced(bar);
         } catch (KineticException e) {
@@ -2146,8 +2489,6 @@ public class BatchOpAPITest extends IntegrationTestCase {
             Assert.fail("Create batch operation throw exception. "
                     + e.getMessage());
         }
-
-        Entry foo = getFooEntry();
 
         try {
             CallbackHandler<Entry> handler = buildAsyncCallbackHandler(new KineticTestHelpers.AsyncHandler<Entry>() {
@@ -2243,6 +2584,13 @@ public class BatchOpAPITest extends IntegrationTestCase {
         } catch (KineticException e) {
             Assert.fail("Get entry failed. " + e.getMessage());
         }
+
+        try {
+            cleanEntry(bar, getClient(clientName));
+            cleanEntry(foo, getClient(clientName));
+        } catch (KineticException e) {
+            Assert.fail("Clean entry failed. " + e.getMessage());
+        }
     }
 
     @Test(dataProvider = "transportProtocolOptions")
@@ -2251,8 +2599,24 @@ public class BatchOpAPITest extends IntegrationTestCase {
         Entry foo = getFooEntry();
         Entry bar = getBarEntry();
 
+        try {
+            cleanEntry(bar, getClient(clientName));
+            cleanEntry(foo, getClient(clientName));
+        } catch (KineticException e) {
+            Assert.fail("Clean entry failed. " + e.getMessage());
+        }
+
         int loopCount = 4;
         KineticClient client = getClient(clientName);
+        for (int i = 0; i < loopCount; i++) {
+            byte[] fooKey = toByteArray("foo" + i);
+            try {
+                client.deleteForced(fooKey);
+            } catch (KineticException e) {
+                Assert.fail("clean data failed. " + e.getMessage());
+            }
+        }
+
         for (int i = 0; i < loopCount; i++) {
             byte[] fooKey = toByteArray("foo" + i);
             byte[] fooValue = ByteBuffer.allocate(valueSize).array();
@@ -2333,6 +2697,22 @@ public class BatchOpAPITest extends IntegrationTestCase {
             } catch (KineticException e1) {
                 Assert.fail("Get bar throw exception. " + e1.getMessage());
             }
+
+            for (int j = 0; j < loopCount; j++) {
+                byte[] fooKeyD = toByteArray("foo" + j);
+                try {
+                    client.deleteForced(fooKeyD);
+                } catch (KineticException e) {
+                    Assert.fail("clean data failed. " + e.getMessage());
+                }
+            }
+
+            try {
+                cleanEntry(bar, getClient(clientName));
+                cleanEntry(foo, getClient(clientName));
+            } catch (KineticException e) {
+                Assert.fail("Clean entry failed. " + e.getMessage());
+            }
         }
     }
 
@@ -2344,6 +2724,14 @@ public class BatchOpAPITest extends IntegrationTestCase {
 
         int loopCount = 4;
         KineticClient client = getClient(clientName);
+
+        try {
+            cleanEntry(bar, client);
+            cleanEntry(foo, client);
+        } catch (KineticException e) {
+            Assert.fail("Clean entry failed. " + e.getMessage());
+        }
+
         for (int i = 0; i < loopCount; i++) {
             byte[] fooValue = ByteBuffer.allocate(valueSize).array();
             byte[] fooVersion = toByteArray("v" + i);
@@ -2419,6 +2807,13 @@ public class BatchOpAPITest extends IntegrationTestCase {
             } catch (KineticException e1) {
                 Assert.fail("Get bar throw exception. " + e1.getMessage());
             }
+
+            try {
+                cleanEntry(bar, client);
+                cleanEntry(foo, client);
+            } catch (KineticException e) {
+                Assert.fail("Clean entry failed. " + e.getMessage());
+            }
         }
     }
 
@@ -2430,6 +2825,23 @@ public class BatchOpAPITest extends IntegrationTestCase {
 
         int loopCount = 4;
         KineticClient client = getClient(clientName);
+
+        for (int j = 0; j < loopCount; j++) {
+            byte[] fooKeyD = toByteArray("foo" + j);
+            try {
+                client.deleteForced(fooKeyD);
+            } catch (KineticException e) {
+                Assert.fail("clean data failed. " + e.getMessage());
+            }
+        }
+
+        try {
+            cleanEntry(bar, getClient(clientName));
+            cleanEntry(foo, getClient(clientName));
+        } catch (KineticException e) {
+            Assert.fail("Clean entry failed. " + e.getMessage());
+        }
+
         for (int i = 0; i < loopCount; i++) {
             byte[] fooKey = toByteArray("foo" + i);
             byte[] fooValue = ByteBuffer.allocate(valueSize).array();
@@ -2511,6 +2923,22 @@ public class BatchOpAPITest extends IntegrationTestCase {
             } catch (KineticException e1) {
                 Assert.fail("Get bar throw exception. " + e1.getMessage());
             }
+
+            for (int j = 0; j < loopCount; j++) {
+                byte[] fooKeyD = toByteArray("foo" + j);
+                try {
+                    client.deleteForced(fooKeyD);
+                } catch (KineticException e) {
+                    Assert.fail("clean data failed. " + e.getMessage());
+                }
+            }
+
+            try {
+                cleanEntry(bar, getClient(clientName));
+                cleanEntry(foo, getClient(clientName));
+            } catch (KineticException e) {
+                Assert.fail("Clean entry failed. " + e.getMessage());
+            }
         }
     }
 
@@ -2519,6 +2947,13 @@ public class BatchOpAPITest extends IntegrationTestCase {
             String clientName) {
         Entry foo = getFooEntry();
         Entry bar = getBarEntry();
+        
+        try {
+            cleanEntry(bar, getClient(clientName));
+            cleanEntry(foo, getClient(clientName));
+        } catch (KineticException e) {
+            Assert.fail("Clean entry failed. " + e.getMessage());
+        }
 
         int loopCount = 4;
         KineticClient client = getClient(clientName);
@@ -2599,6 +3034,13 @@ public class BatchOpAPITest extends IntegrationTestCase {
             } catch (KineticException e1) {
                 Assert.fail("Get bar throw exception. " + e1.getMessage());
             }
+            
+            try {
+                cleanEntry(bar, getClient(clientName));
+                cleanEntry(foo, getClient(clientName));
+            } catch (KineticException e) {
+                Assert.fail("Clean entry failed. " + e.getMessage());
+            }
         }
     }
 
@@ -2654,6 +3096,11 @@ public class BatchOpAPITest extends IntegrationTestCase {
 
         return bar;
     }
+
+    private void cleanEntry(Entry entry, KineticClient client)
+            throws KineticException {
+        client.deleteForced(entry.getKey());
+    }
 }
 
 class BatchThread implements Runnable {
@@ -2674,6 +3121,21 @@ class BatchThread implements Runnable {
         bar.setValue(barValue);
         byte[] barVersion = toByteArray("1234");
         bar.getEntryMetadata().setVersion(barVersion);
+        
+        Entry foo = new Entry();
+        byte[] fooKey = toByteArray("foo");
+        foo.setKey(fooKey);
+        byte[] fooValue = toByteArray("foovalue");
+        foo.setValue(fooValue);
+        byte[] fooVersion = toByteArray("1234");
+        foo.getEntryMetadata().setVersion(fooVersion);
+        
+        try {
+            kineticClient.deleteForced(fooKey);
+            kineticClient.deleteForced(barKey);
+        } catch (KineticException e) {
+            Assert.fail("Clean entry failed. " + e.getMessage());
+        }
 
         try {
             kineticClient.putForced(bar);
@@ -2687,14 +3149,6 @@ class BatchThread implements Runnable {
         } catch (KineticException e1) {
             Assert.fail("Create batch throw exception. " + e1.getMessage());
         }
-
-        Entry foo = new Entry();
-        byte[] fooKey = toByteArray("foo");
-        foo.setKey(fooKey);
-        byte[] fooValue = toByteArray("foovalue");
-        foo.setValue(fooValue);
-        byte[] fooVersion = toByteArray("1234");
-        foo.getEntryMetadata().setVersion(fooVersion);
 
         CallbackHandler<Entry> handler = buildAsyncCallbackHandler(new KineticTestHelpers.AsyncHandler<Entry>() {
             @Override
@@ -2732,6 +3186,13 @@ class BatchThread implements Runnable {
             batch.commit();
         } catch (KineticException e1) {
             Assert.fail("Batch commit throw exception. " + e1.getMessage());
+        }
+        
+        try {
+            kineticClient.deleteForced(fooKey);
+            kineticClient.deleteForced(barKey);
+        } catch (KineticException e) {
+            Assert.fail("Clean entry failed. " + e.getMessage());
         }
 
         try {

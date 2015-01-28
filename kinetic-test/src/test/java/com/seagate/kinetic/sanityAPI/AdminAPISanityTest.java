@@ -48,7 +48,6 @@ import kinetic.client.EntryNotFoundException;
 import kinetic.client.KineticException;
 
 import org.testng.Assert;
-import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import com.google.protobuf.ByteString;
@@ -85,12 +84,6 @@ import com.seagate.kinetic.proto.Kinetic.Command.Status.StatusCode;
 public class AdminAPISanityTest extends IntegrationTestCase {
     private static final Logger logger = IntegrationTestLoggerFactory
             .getLogger(AdminAPISanityTest.class.getName());
-
-    @Override
-    @BeforeMethod(alwaysRun = true)
-    public void securityEraseTarget() {
-        // do nothing, so the parent won't erase the data
-    }
 
     /**
      * Test setClusterVersion API, set cluster version for simulator/drive. The
@@ -502,10 +495,9 @@ public class AdminAPISanityTest extends IntegrationTestCase {
      */
     @Test(enabled = false)
     public void test_firmwareDownload() {
-        byte[] firmware = "frimware".getBytes(Charset.forName("UTF-8"));
         try {
             getAdminClient().firmwareDownload(
-                    "123".getBytes(Charset.forName("UTF-8")), firmware);
+                    "123".getBytes(Charset.forName("UTF-8")));
         } catch (KineticException e) {
             Assert.fail("getLog throw exception: " + e.getMessage());
         }
