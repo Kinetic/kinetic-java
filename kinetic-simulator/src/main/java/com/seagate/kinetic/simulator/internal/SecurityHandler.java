@@ -99,6 +99,15 @@ public abstract class SecurityHandler {
         
         commandBuilder.getHeaderBuilder().setMessageType(MessageType.SECURITY_RESPONSE);
         
+        if (request.getIsSecureChannel() == false) {
+            commandBuilder.getStatusBuilder().setCode(
+                    StatusCode.INVALID_REQUEST);
+            commandBuilder.getStatusBuilder().setStatusMessage(
+                    "TLS channel is required for Security operation");
+
+            return;
+        }
+
         // check if only contains one security component change (ACL or ICE or Lock Pin)
         if (isSecurityMessageValid(request) == false) {
             
