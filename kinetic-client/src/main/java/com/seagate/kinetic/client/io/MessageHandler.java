@@ -132,8 +132,13 @@ public class MessageHandler implements ClientMessageService, Runnable {
 		if (this.isStatusMessageReceived == false) {
 		    
 		    if (message.getMessage().getAuthType() == AuthType.UNSOLICITEDSTATUS) {
+
+                // set cid
 		        this.client.setConnectionId(message);
 		        this.isStatusMessageReceived = true;
+
+                // notify listener
+                this.notifyListener(message);
 		        return;
 		    } else {
 		        if (this.iohandler.shouldWaitForStatusMessage()) {
@@ -227,9 +232,42 @@ public class MessageHandler implements ClientMessageService, Runnable {
 				this.asyncDelivered(seq);
 			}
 		} else {
-			logger.warning("received unknown message: " + message);
+
+            if (message.getMessage().getAuthType() == AuthType.UNSOLICITEDSTATUS) {
+
+                logger.warning("received unsolicited message: " + message);
+
+                /**
+                 * XXX chiaming 01/28/2015: The only possible behavior from the
+                 * drive is to close the current connection. So the API needs to
+                 * handle this accordingly.
+                 */
+                this.client.close();
+
+                /**
+                 * Call listener if one is set.
+                 */
+                this.notifyListener(message);
+
+            } else {
+                logger.warning("received unknown message: " + message);
+            }
 		}
 	}
+
+    private void notifyListener(KineticMessage message) {
+
+        try {
+            if (this.client.getConfiguration().getConnectionListener() != null) {
+
+                // call listener
+                this.client.getConfiguration().getConnectionListener()
+                        .onMessage(message);
+            }
+        } catch (Throwable t) {
+            logger.log(Level.WARNING, t.getMessage(), t);
+        }
+    }
 
 	public KineticMessage write(KineticMessage message) throws IOException,
 	InterruptedException {

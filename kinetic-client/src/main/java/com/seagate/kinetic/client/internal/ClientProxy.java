@@ -91,6 +91,8 @@ public class ClientProxy {
     
     private CountDownLatch cidLatch = new CountDownLatch (1);
 
+    private boolean isClosed = false;
+
     /**
      * Construct a new instance of client proxy
      *
@@ -99,7 +101,8 @@ public class ClientProxy {
      * @throws KineticException
      *             if any internal error occurred.
      */
-    public ClientProxy(ClientConfiguration config) throws KineticException {
+    public ClientProxy(ClientConfiguration config)
+            throws KineticException {
 
         // client config
         this.config = config;
@@ -664,10 +667,18 @@ public class ClientProxy {
     /**
      * close io handler and release associated resources.
      */
-    void close() {
+    public synchronized void close() {
 
-        if (this.iohandler != null) {
-            iohandler.close();
+        if (this.isClosed) {
+            return;
+        }
+
+        try {
+            if (this.iohandler != null) {
+                iohandler.close();
+            }
+        } finally {
+            this.isClosed = true;
         }
 
     }

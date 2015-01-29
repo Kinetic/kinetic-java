@@ -123,6 +123,9 @@ public class ClientConfiguration extends Properties {
     // expected wwn to connect to.
     private String expectedWwn = null;
 
+    // connection listener
+    private ConnectionListener listener = null;
+
     /**
      * Client configuration constructor.
      * 
@@ -541,6 +544,35 @@ public class ClientConfiguration extends Properties {
      */
     public String getExpectedWwn() {
         return this.expectedWwn;
+    }
+
+    /**
+     * Set connection listener to the connected Kinetic drive or simulator.
+     * <p>
+     * Upon received an unsolicitated status message, the Java runtime library
+     * calls the listener if registered.
+     * <p>
+     * The thread execution from the Java client runtime library is serialized
+     * such that each sub-sequential messages are delivered only after the
+     * previous onMessage call returned.
+     * 
+     * @param listener
+     *            connection listener to the connected service.
+     * 
+     * @see ConnectionListener
+     */
+    public void setConnectionListener(ConnectionListener listener) {
+        this.listener = listener;
+    }
+
+    /**
+     * Get the current registered connection listener.
+     * 
+     * @return the current registered connection listener. Return null if not
+     *         registered.
+     */
+    public ConnectionListener getConnectionListener() {
+        return this.listener;
     }
 
 }

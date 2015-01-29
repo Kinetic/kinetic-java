@@ -25,8 +25,13 @@ import io.netty.channel.SimpleChannelInboundHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.google.protobuf.ByteString;
 import com.seagate.kinetic.common.lib.KineticMessage;
+import com.seagate.kinetic.proto.Kinetic.Command;
 import com.seagate.kinetic.proto.Kinetic.Command.MessageType;
+import com.seagate.kinetic.proto.Kinetic.Command.Status.StatusCode;
+import com.seagate.kinetic.proto.Kinetic.Message;
+import com.seagate.kinetic.proto.Kinetic.Message.AuthType;
 import com.seagate.kinetic.simulator.internal.ConnectionInfo;
 import com.seagate.kinetic.simulator.internal.FaultInjectedCloseConnectionException;
 import com.seagate.kinetic.simulator.internal.SimulatorEngine;
@@ -85,6 +90,12 @@ public class NioMessageServiceHandler extends
 			throws Exception {
 
 		if (faultInjectCloseConnection) {
+
+            KineticMessage response = this
+                    .createUnsolicitedStatusMessageWithBuilder();
+
+            ctx.writeAndFlush(response);
+
 			throw new FaultInjectedCloseConnectionException(
 					"Fault injected for the simulator");
 		}
@@ -185,6 +196,45 @@ public class NioMessageServiceHandler extends
 
     public MessageService getMessageService() {
         return this.lcservice;
+    }
+
+    /**
+     * Create an internal message with empty builder message.
+     *
+     * @return an internal message with empty builder message
+     */
+    public static KineticMessage createUnsolicitedStatusMessageWithBuilder() {
+
+        // new instance of internal message
+        KineticMessage kineticMessage = new KineticMessage();
+
+        // new builder message
+        Message.Builder message = Message.newBuilder();
+
+        // set to im
+        kineticMessage.setMessage(message);
+
+        // set hmac auth type
+        message.setAuthType(AuthType.UNSOLICITEDSTATUS);
+
+        // create command builder
+        Command.Builder commandBuilder = Command.newBuilder();
+
+        commandBuilder.getStatusBuilder().setCode(
+                StatusCode.CONNECTION_TERMINATED);
+
+        commandBuilder.getStatusBuilder().setDetailedMessage(
+                ByteString.copyFromUtf8("Connection closed"));
+
+        // get command byte stirng
+        ByteString commandByteString = commandBuilder.build().toByteString();
+
+        message.setCommandBytes(commandByteString);
+
+        // set command
+        kineticMessage.setCommand(commandBuilder);
+
+        return kineticMessage;
     }
 
 }
