@@ -12,11 +12,11 @@ import org.testng.xml.XmlTest;
 public class ConformanceTestRunner {
     public static void main(String[] args) {
         XmlSuite suite = new XmlSuite();
-        suite.setName("SmokeSuite");
+        suite.setName("ConformanceSuite");
         suite.setParallel(XmlSuite.PARALLEL_NONE);
 
         XmlTest test = new XmlTest(suite);
-        test.setName("ConformalTest");
+        test.setName("ConformanceTest");
         List<XmlClass> classes = new ArrayList<XmlClass>();
         classes.add(new XmlClass(
                 "com.seagate.kinetic.adminAPI.KineticAdminTest"));
