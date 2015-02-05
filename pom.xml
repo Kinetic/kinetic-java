@@ -71,9 +71,6 @@
 							<version>2.6</version>
 							<configuration>
 								<check>
-									<formats>
-										<format>xml</format>
-									</formats>
 									<branchRate>70</branchRate>
 									<lineRate>70</lineRate>
 									<haltOnFailure>false</haltOnFailure>
