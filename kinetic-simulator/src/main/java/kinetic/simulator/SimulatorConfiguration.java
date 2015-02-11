@@ -20,16 +20,19 @@
 package kinetic.simulator;
 
 import java.io.File;
-import java.net.InetAddress;
-import java.security.MessageDigest;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.util.Properties;
+import java.util.UUID;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.apache.commons.codec.binary.Hex;
-
+import com.google.protobuf.ByteString;
 import com.seagate.kinetic.proto.Kinetic;
+import com.seagate.kinetic.proto.Kinetic.Command.GetLog.Configuration;
 import com.seagate.kinetic.simulator.heartbeat.HeartbeatProvider;
 import com.seagate.kinetic.simulator.heartbeat.provider.MulticastHeartbeatProvider;
+import com.seagate.kinetic.simulator.internal.SimulatorEngine;
 
 /**
  * 
@@ -243,14 +246,9 @@ public class SimulatorConfiguration extends Properties {
     private HeartbeatProvider heartbeatProvider = null;
 
     /**
-     * Serial number hash code
-     */
-    private int serialNumberHash = -1;
-
-    /**
      * Serial number as a string
      */
-    private String serialNumberString = null;
+    private String serialNumber = null;
 
     /**
      * unique world wide name for each instance of simulator.
@@ -955,72 +953,17 @@ public class SimulatorConfiguration extends Properties {
     /**
      * Get the serial number of the running instance of simulator.
      * <p>
-     * This number is to simulator a drive's serial number. The number is
-     * obtained from the hash code of the following string:
-     * <p>
-     * ip + "kinetic home" + "persist home"
+     * This number is to simulator a drive's serial number.
      * 
      * @return the serial number of the running instance of simulator
      */
     public String getSerialNumber() {
 
-        if (this.serialNumberString == null) {
-            this.calculateSerialNumber();
-        }
-
-        return "S" + String.valueOf(serialNumberHash);
-    }
-
-    private synchronized void calculateSerialNumber() {
-
-        if (this.serialNumberString != null) {
-            return;
-        }
-
-        String khome = getSimulatorHome();
-
-        // get persist home name, use port# if not set
-        String persistHome = getProperty(SimulatorConfiguration.PERSIST_HOME,
-                String.valueOf(getPort()));
-
-        // int phomeHash = Math.abs(persistHome.hashCode());
-
-        // default ip of this instance
-        String ip = "127.0.0.1";
-
-        try {
-            // get from Java API
-            ip = InetAddress.getLocalHost().getHostAddress();
-        } catch (Exception e) {
-            ;
-        }
-
-        // construct sn
-        this.serialNumberString = ip + khome + persistHome;
-
-        // calculate serial number hash code.
-        serialNumberHash = Math.abs(serialNumberString.hashCode());
-    }
-
-    /**
-     * Get world wide name of the running instance of the simulator.
-     * <p>
-     * The string is a hex of md5 obtained from the following components:
-     * <p>
-     * ip + "kinetic home" + "persist home"
-     * <p>
-     * Applications should handle MD5 collision for the name as desired if
-     * necessary.
-     * 
-     * @return world wide name of the running instance of the simulato
-     */
-    public String getWorldWideName() {
-
         if (this.worldWideName == null) {
             this.calculateWorldWideName();
         }
 
-        return this.worldWideName;
+        return this.serialNumber;
     }
 
     private synchronized void calculateWorldWideName() {
@@ -1030,25 +973,84 @@ public class SimulatorConfiguration extends Properties {
         }
 
         try {
+            // calculate kinetic home
+            String khome = SimulatorEngine.kineticHome(this);
 
-            // calculate serial number
-            this.getSerialNumber();
+            // get wwn path
+            String wwnFilePath = khome + File.separator + ".wwn";
 
-            // calculate md5
-            MessageDigest md5 = MessageDigest.getInstance("MD5");
+            // wwn file instance
+            File wwnFile = new File(wwnFilePath);
 
-            // ip + kinetic home + persist home
-            md5.update(this.serialNumberString.getBytes("UTF8"));
+            if (wwnFile.exists()) {
 
-            byte[] digest = md5.digest();
+                /**
+                 * The file exists, get wwn from the content.
+                 */
+                FileInputStream in = new FileInputStream(wwnFile);
 
-            String digestHex = Hex.encodeHexString(digest);
+                // read contents
+                Configuration conf = Configuration.parseFrom(in);
+                in.close();
 
-            this.worldWideName = digestHex;
+                // get wwn ByteString
+                ByteString wwn = conf.getWorldWideName();
+
+                // get wwn Java String type
+                this.worldWideName = wwn.toStringUtf8();
+
+                // get serial number
+                this.serialNumber = conf.getSerialNumber().toStringUtf8();
+            } else {
+                // get UUID for this instance
+                UUID uuid = UUID.randomUUID();
+
+                // wwn name
+                this.worldWideName = uuid.toString();
+
+                // calculate serial number.
+                this.serialNumber = "S" + Math.abs(worldWideName.hashCode());
+
+                /**
+                 * persist wwn/serial number.
+                 */
+                FileOutputStream out = new FileOutputStream(wwnFile);
+                Configuration.Builder cb = Configuration.newBuilder();
+
+                // set serial number
+                cb.setSerialNumber(ByteString.copyFromUtf8(this.serialNumber));
+
+                // set wwn
+                cb.setWorldWideName(ByteString.copyFromUtf8(this.worldWideName));
+
+                // persist conf.
+                cb.build().writeTo(out);
+
+                out.close();
+            }
 
         } catch (Exception e) {
-            logger.warning(e.getMessage());
+            this.worldWideName = "SIMULATOR-" + System.nanoTime();
+            this.serialNumber = "S" + Math.abs(worldWideName.hashCode());
+            logger.log(Level.WARNING, e.getMessage(), e);
+        } finally {
+            ;
         }
+
+    }
+
+    /**
+     * Get world wide name of the running instance of the simulator.
+     *
+     * @return world wide name of the running instance of the simulato
+     */
+    public String getWorldWideName() {
+
+        if (this.worldWideName == null) {
+            this.calculateWorldWideName();
+        }
+
+        return this.worldWideName;
     }
 
     /**

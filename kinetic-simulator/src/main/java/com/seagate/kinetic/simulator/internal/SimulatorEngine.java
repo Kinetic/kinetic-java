@@ -184,22 +184,19 @@ public class SimulatorEngine implements MessageService {
         // config for the current instance
         this.config = config;
 
-        // heart beat
-        if (config.getTickTime() > 0) {
-            // construct new heart beat instance
-            this.heartbeat = new Heartbeat(this);
-        }
-
-        // register to use thread pool
-        tpService.register(this);
-
-        // p2p op handler.
-        // p2pHandler = new P2POperationHandler();
-
         try {
 
             // calculate my home
             kineticHome = kineticHome(config);
+
+            // heart beat
+            if (config.getTickTime() > 0) {
+                // construct new heart beat instance
+                this.heartbeat = new Heartbeat(this);
+            }
+
+            // register to use thread pool
+            tpService.register(this);
 
             // load acl and pins
             SecurityHandler.loadACL(this);
@@ -217,7 +214,8 @@ public class SimulatorEngine implements MessageService {
             this.initHandlers();
 
             logger.info("simulator protocol version = "
-                    + SimulatorConfiguration.getProtocolVersion());
+                    + SimulatorConfiguration.getProtocolVersion() + ", wwn="
+                    + config.getWorldWideName());
 
         } catch (Exception e) {
             e.printStackTrace();

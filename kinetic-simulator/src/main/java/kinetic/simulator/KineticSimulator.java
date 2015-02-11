@@ -123,6 +123,7 @@ public class KineticSimulator {
 		KineticSimulator simulator = new KineticSimulator(serverConfig);
 
 		logger.info("Kinetic simulator started, port: "
-				+ simulator.getServerConfiguration().getPort());
+                + simulator.getServerConfiguration().getPort() + ", WWN="
+                + serverConfig.getWorldWideName());
 	}
 }

@@ -19,6 +19,8 @@
  */
 package com.seagate.kinetic.example.openstorage;
 
+import java.io.File;
+
 import kinetic.simulator.KineticSimulator;
 import kinetic.simulator.SimulatorConfiguration;
 
@@ -68,9 +70,13 @@ public class VirtualDrives {
             config.setPort(myport);
             config.setSslPort(mySslPort);
 
+            // set kinetic home for each drive
+            String kineticHome = System.getProperty("user.home")
+                    + File.separator + "kinetic" + File.separator + "instance_"
+                    + myport;
+
             // set persist store home folder for each instance
-            config.put(SimulatorConfiguration.PERSIST_HOME, "instance_"
-                    + myport);
+            config.put(SimulatorConfiguration.KINETIC_HOME, kineticHome);
 
             // start the simulator instance
             simulators[i] = new KineticSimulator(config);
