@@ -19,12 +19,7 @@
  */
 package com.seagate.kinetic;
 
-import static org.testng.AssertJUnit.assertArrayEquals;
-import org.testng.Assert;
-import org.testng.AssertJUnit;
-import com.google.common.collect.Lists;
-import com.seagate.kinetic.common.lib.KineticMessage;
-import com.seagate.kinetic.proto.Kinetic;
+import static org.testng.internal.junit.ArrayAsserts.assertArrayEquals;
 
 import java.nio.charset.Charset;
 import java.util.ArrayList;
@@ -34,6 +29,13 @@ import java.util.Comparator;
 import kinetic.client.Entry;
 import kinetic.client.KineticClient;
 import kinetic.client.KineticException;
+
+import org.testng.Assert;
+import org.testng.AssertJUnit;
+
+import com.google.common.collect.Lists;
+import com.seagate.kinetic.common.lib.KineticMessage;
+import com.seagate.kinetic.proto.Kinetic;
 
 /**
  * Kinetic test assertions utility.
@@ -104,12 +106,35 @@ public class KineticAssertions {
 	 */
 	public static void assertListOfArraysEqual(Iterable<byte[]> expected,
 			Iterable<byte[]> actual) {
-		assertListOfObjectsEqual(expected, actual, new Comparator<byte[]>() {
-			@Override
-			public int compare(byte[] o1, byte[] o2) {
-				return Arrays.equals(o1, o2) ? 0 : 1;
-			}
-		});
+
+        if (expected == null && actual == null) {
+            return;
+        }
+
+        if (expected == null) {
+            Assert.fail("Expected null but was " + actual);
+        }
+
+        if (actual == null) {
+            Assert.fail("Expected " + expected + " but was null");
+        }
+
+        ArrayList<byte[]> expectedList = Lists.newArrayList(expected);
+        ArrayList<byte[]> actualList = Lists.newArrayList(actual);
+
+        AssertJUnit.assertEquals("Expected " + expectedList + " and actual "
+                + actual + " are different sizes", expectedList.size(),
+                actualList.size());
+
+        for (int i = 0; i < expectedList.size(); i++) {
+            byte[] expectedEntry = expectedList.get(i);
+            byte[] actualEntry = actualList.get(i);
+            boolean areEqual = Arrays.equals(expectedEntry, actualEntry);
+            AssertJUnit.assertTrue(String.format(
+                    "Difference at index %d: %s != %s", i, expectedEntry,
+                    actualEntry), areEqual);
+        }
+
 	}
 
 	/**
@@ -118,15 +143,42 @@ public class KineticAssertions {
 	 */
 	public static void assertListOfEntriesEqual(Iterable<Entry> expected,
 			Iterable<Entry> actual) {
-		assertListOfObjectsEqual(expected, actual, new Comparator<Entry>() {
-			@Override
-			public int compare(Entry o1, Entry o2) {
-				return Arrays.equals(o1.getKey(), o2.getKey())
-						&& Arrays.equals(o1.getValue(), o2.getValue())
-						&& Arrays.equals(o1.getEntryMetadata().getVersion(), o2
-								.getEntryMetadata().getVersion()) ? 0 : 1;
-			}
-		});
+
+        if (expected == null && actual == null) {
+            return;
+        }
+
+        if (expected == null) {
+            Assert.fail("Expected null but was " + actual);
+        }
+
+        if (actual == null) {
+            Assert.fail("Expected " + expected + " but was null");
+        }
+
+        ArrayList<Entry> expectedList = Lists.newArrayList(expected);
+        ArrayList<Entry> actualList = Lists.newArrayList(actual);
+
+        AssertJUnit.assertEquals("Expected " + expectedList + " and actual "
+                + actual + " are different sizes", expectedList.size(),
+                actualList.size());
+
+        for (int i = 0; i < expectedList.size(); i++) {
+            Entry expectedEntry = expectedList.get(i);
+            Entry actualEntry = actualList.get(i);
+
+            boolean areEqual = Arrays.equals(expectedEntry.getKey(),
+                    actualEntry.getKey())
+                    && Arrays.equals(expectedEntry.getValue(),
+                            actualEntry.getValue())
+                    && Arrays.equals(expectedEntry.getEntryMetadata()
+                            .getVersion(), actualEntry.getEntryMetadata()
+                            .getVersion());
+
+            AssertJUnit.assertTrue(String.format(
+                    "Difference at index %d: %s != %s", i, expectedEntry,
+                    actualEntry), areEqual);
+        }
 	}
 
 	/**
