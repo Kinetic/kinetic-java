@@ -24,6 +24,7 @@ import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
 import java.net.NetworkInterface;
+import java.net.SocketException;
 import java.util.Enumeration;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -102,7 +103,7 @@ public class MulticastHeartbeatProvider implements HeartbeatProvider {
             // send heart beat
             this.mcastSocket.send(packet);
 
-            // logger.info ("sent heartbeat message: " +
+            // logger.info("sent heartbeat message: " +
             // this.heartbeatMessageStr);
         } catch (Exception e) {
             logger.log(Level.WARNING, e.getMessage(), e);
@@ -124,17 +125,14 @@ public class MulticastHeartbeatProvider implements HeartbeatProvider {
     private void doInit() {
 
         try {
-            // this host name
-            // this.thisHostIp =
-            // InetAddress.getByName(thisHostIp).getHostAddress();
-
-            // this host address
-            // this.thisHostPort = this.thisHostIp + ":" + config.getPort() +
-            // ":"
-            // + config.getSslPort();
 
             // multicast socket
             mcastSocket = new MulticastSocket();
+
+            NetworkInterface mni = findMulticastNetworkInterface();
+            if (mni != null) {
+                mcastSocket.setNetworkInterface(mni);
+            }
 
             // multicast group address
             mcastAddress = InetAddress.getByName(mcastDestination);
@@ -144,11 +142,6 @@ public class MulticastHeartbeatProvider implements HeartbeatProvider {
 
             // init heart beat message
             this.initHeartbeatMessage();
-
-            // logger.info("Heart beat initialized., my address="
-            // + this.thisHostPort + ", tick time=" + config.getTickTime()
-            // + " milli-secs, mcast Address=" + this.mcastDestination
-            // + ":" + this.mcastPort);
 
         } catch (Exception e) {
             logger.log(Level.WARNING, e.getMessage(), e);
@@ -253,6 +246,35 @@ public class MulticastHeartbeatProvider implements HeartbeatProvider {
         }
 
         return sb.toString();
+    }
+
+    /**
+     * Find a valid network interface that supports multicast.
+     * 
+     * @return a valid network interface that supports multicast. Or null if no
+     *         network interface is found or no permission to do the search.
+     */
+    public static NetworkInterface findMulticastNetworkInterface() {
+
+        NetworkInterface ni = null;
+
+        try {
+            Enumeration<NetworkInterface> nis = NetworkInterface
+                    .getNetworkInterfaces();
+
+            while (nis.hasMoreElements()) {
+                ni = nis.nextElement();
+                if (ni.supportsMulticast() && ni.isUp()) {
+                    logger.info("found interface that supports multicast: "
+                            + ni.getDisplayName());
+                    break;
+                }
+            }
+        } catch (SocketException e) {
+            logger.log(Level.WARNING, e.getMessage(), e);
+        }
+
+        return ni;
     }
 
 }
