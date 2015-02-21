@@ -23,10 +23,10 @@ import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
 import java.net.NetworkInterface;
-import java.net.SocketException;
-import java.util.Enumeration;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import com.seagate.kinetic.common.lib.NetUtil;
 
 /**
  *
@@ -79,7 +79,7 @@ public class HeartbeatListener implements Runnable {
     private void init() throws IOException {
 
         // find network interface
-        NetworkInterface ni = this.findNetworkInterface();
+        NetworkInterface ni = NetUtil.findMulticastNetworkInterface();
 
         // my multicast listening address
         mcastAddress = InetAddress.getByName(mcastDestination);
@@ -89,7 +89,7 @@ public class HeartbeatListener implements Runnable {
 
         // only set it if we are allowed to search
         if (ni != null) {
-            mcastSocket.setNetworkInterface(ni);
+            // mcastSocket.setNetworkInterface(ni);
         }
 
         // join the m group
@@ -99,28 +99,6 @@ public class HeartbeatListener implements Runnable {
         this.thread = new Thread(this);
 
         thread.start();
-    }
-
-    private NetworkInterface findNetworkInterface() {
-        NetworkInterface ni = null;
-
-        try {
-            Enumeration<NetworkInterface> nis = NetworkInterface
-                    .getNetworkInterfaces();
-
-            while (nis.hasMoreElements()) {
-                ni = nis.nextElement();
-                if (ni.supportsMulticast() && ni.isUp()) {
-                    logger.info("found interface that supports multicast: "
-                            + ni.getDisplayName());
-                    break;
-                }
-            }
-        } catch (SocketException e) {
-            logger.log(Level.WARNING, e.getMessage(), e);
-        }
-
-        return ni;
     }
 
     public void close() {

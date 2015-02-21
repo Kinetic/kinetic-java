@@ -24,7 +24,6 @@ import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
 import java.net.NetworkInterface;
-import java.net.SocketException;
 import java.util.Enumeration;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -32,6 +31,7 @@ import java.util.logging.Logger;
 import kinetic.simulator.SimulatorConfiguration;
 
 import com.google.gson.Gson;
+import com.seagate.kinetic.common.lib.NetUtil;
 import com.seagate.kinetic.heartbeat.HeartbeatMessage;
 import com.seagate.kinetic.heartbeat.KineticNetworkInterface;
 import com.seagate.kinetic.simulator.heartbeat.HeartbeatProvider;
@@ -129,7 +129,8 @@ public class MulticastHeartbeatProvider implements HeartbeatProvider {
             // multicast socket
             mcastSocket = new MulticastSocket();
 
-            NetworkInterface mni = findMulticastNetworkInterface();
+            NetworkInterface mni = NetUtil.findMulticastNetworkInterface();
+
             if (mni != null) {
                 mcastSocket.setNetworkInterface(mni);
             }
@@ -246,35 +247,6 @@ public class MulticastHeartbeatProvider implements HeartbeatProvider {
         }
 
         return sb.toString();
-    }
-
-    /**
-     * Find a valid network interface that supports multicast.
-     * 
-     * @return a valid network interface that supports multicast. Or null if no
-     *         network interface is found or no permission to do the search.
-     */
-    public static NetworkInterface findMulticastNetworkInterface() {
-
-        NetworkInterface ni = null;
-
-        try {
-            Enumeration<NetworkInterface> nis = NetworkInterface
-                    .getNetworkInterfaces();
-
-            while (nis.hasMoreElements()) {
-                ni = nis.nextElement();
-                if (ni.supportsMulticast() && ni.isUp()) {
-                    logger.info("found interface that supports multicast: "
-                            + ni.getDisplayName());
-                    break;
-                }
-            }
-        } catch (SocketException e) {
-            logger.log(Level.WARNING, e.getMessage(), e);
-        }
-
-        return ni;
     }
 
 }
