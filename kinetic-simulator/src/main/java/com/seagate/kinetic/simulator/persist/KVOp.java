@@ -68,26 +68,20 @@ public class KVOp {
    //max version size
     private static int maxVersionSize = SimulatorConfiguration.getMaxSupportedVersionSize();
     
-    //max key range size
-    //private static final int MAX_KEY_RANGE_SIZE = 1024;
-    
-   //max version size
-    //private static int MAX_VERSION_SIZE = 2048;
-    
-    static void oops(String s) throws KvException {
-        oops(Status.StatusCode.INTERNAL_ERROR, s);
+    static void handleException(String s) throws KvException {
+        handleException(Status.StatusCode.INTERNAL_ERROR, s);
     }
 
-    static void oops(Status.StatusCode status, String s) throws KvException {
+    static void handleException(Status.StatusCode status, String s) throws KvException {
         //LOG.warning("throwing exception., status code = " + status + ", msg = " +s);
         throw new KvException(status, s);
     }
 
-    static void oops(Status.StatusCode status) throws KvException {
+    static void handleException(Status.StatusCode status) throws KvException {
         throw new KvException(status, "");
     }
 
-    public static void Op(Map<Long, ACL> aclmap,
+    public static void processRequest(Map<Long, ACL> aclmap,
             Store<ByteString, ByteString, KVValue> store, KineticMessage kmreq,
             KineticMessage kmresp) {
 
@@ -160,12 +154,12 @@ public class KVOp {
                     }
                     break;
                 case PUT:
-                    
-                    // persist option
-                    persistOption = getPersistOption(requestKeyValue);
-                    
+
                     try {
                         
+                        // persist option
+                        persistOption = getPersistOption(requestKeyValue);
+
                       //check max key length
                        checkMaxKeyLenth (key.size());
                        
@@ -220,10 +214,12 @@ public class KVOp {
 
                     break;
                 case DELETE:
-                 // persist option
-                    persistOption = getPersistOption(requestKeyValue);
+
                     try {
                         
+                        // persist option
+                        persistOption = getPersistOption(requestKeyValue);
+
                         //check max key length
                         checkMaxKeyLenth (key.size());
                         
@@ -336,22 +332,22 @@ public class KVOp {
 
                     break;
                 default:
-                    oops("Unknown request");
+                    handleException("Unknown request");
                 }
 
             } catch (KVStoreNotFound e) {
-                oops(Status.StatusCode.NOT_FOUND);
+                handleException(Status.StatusCode.NOT_FOUND);
             } catch (KVStoreVersionMismatch e) {
-                oops(Status.StatusCode.VERSION_MISMATCH);
+                handleException(Status.StatusCode.VERSION_MISMATCH);
             } catch (KVStoreException e) {
-                oops(Status.StatusCode.INTERNAL_ERROR,
+                handleException(Status.StatusCode.INTERNAL_ERROR,
                         "Opps1: " + e.getMessage());
             } catch (KVSecurityException e) {
-                oops(StatusCode.NOT_AUTHORIZED, e.getMessage());
+                handleException(StatusCode.NOT_AUTHORIZED, e.getMessage());
             } catch (InvalidRequestException e) {
-                oops(StatusCode.INVALID_REQUEST, e.getMessage());
+                handleException(StatusCode.INVALID_REQUEST, e.getMessage());
             } catch (Exception e) {
-                oops(Status.StatusCode.INTERNAL_ERROR, e.getMessage());
+                handleException(Status.StatusCode.INTERNAL_ERROR, e.getMessage());
             }
 
             // respond status
@@ -401,13 +397,15 @@ public class KVOp {
      * @return persist option.
      * @throws KvException if invalid synchronization option is set in the kv parameter.
      */
-    public static PersistOption getPersistOption(KeyValue kv) throws KvException {
+    public static PersistOption getPersistOption(KeyValue kv)
+            throws InvalidRequestException {
         
         /**
-         * if not set, default is set to sync/writethrough
+         * synchronization must be set to a valid value.
          */
         if (kv.hasSynchronization() == false) {
-            return PersistOption.SYNC;
+            throw new InvalidRequestException(
+                    "Persistent synchronization option must be set to a valid value");
         }
 
         PersistOption option = PersistOption.SYNC;
@@ -417,19 +415,17 @@ public class KVOp {
          */
         Synchronization sync = kv.getSynchronization();
 
-        if (sync != null) {
-            switch (sync) {
-            case WRITETHROUGH:
-            case FLUSH:
-                option = PersistOption.SYNC;
-                break;
-            case WRITEBACK:
-                option = PersistOption.ASYNC;
-                break;
-            default:
-                throw new KvException (Status.StatusCode.INVALID_REQUEST, "Invalid persistent synchronization option: " + sync);
-            }
-
+        switch (sync) {
+        case WRITETHROUGH:
+        case FLUSH:
+            option = PersistOption.SYNC;
+            break;
+        case WRITEBACK:
+            option = PersistOption.ASYNC;
+            break;
+        default:
+            throw new InvalidRequestException(
+                    "Invalid persistent synchronization option: " + sync);
         }
 
         return option;
@@ -452,6 +448,5 @@ public class KVOp {
             throw new InvalidRequestException ("max version exceeds max allowed size " + maxVersionSize + ", request version size=" + len);
         }
     }
-    
 
 }

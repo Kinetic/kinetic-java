@@ -30,7 +30,7 @@ public class KeyValueOpHandler extends CommandHandlerBase implements
     public void processRequest(KineticMessage request, KineticMessage response)
             throws ServiceException {
 
-        KVOp.Op(engine.getAclMap(), engine.getStore(), request, response);
+        KVOp.processRequest(engine.getAclMap(), engine.getStore(), request, response);
     }
 
 }
