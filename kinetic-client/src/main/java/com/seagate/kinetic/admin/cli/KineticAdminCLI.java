@@ -44,6 +44,7 @@ import kinetic.admin.Limits;
 import kinetic.admin.Statistics;
 import kinetic.admin.Temperature;
 import kinetic.admin.Utilization;
+import kinetic.client.ClientConfiguration;
 import kinetic.client.KineticException;
 
 import com.google.protobuf.ByteString;
@@ -74,6 +75,12 @@ public class KineticAdminCLI {
     private static final int ERROR = 1;
     private static KineticAdminClient kineticAdminClient = null;
     private final Map<String, List<String>> legalArguments = new HashMap<String, List<String>>();
+
+    /**
+     * provide a way to override default request timeout at runtime.
+     */
+    private static long DEFAULT_REQUEST_TIMEOUT = Integer.getInteger(
+            ClientConfiguration.DEFAULT_TIMEOUT_PROP_NAME, 180000).longValue();
 
     public KineticAdminCLI() throws KineticException {
         String rootArg = "-help";
@@ -153,7 +160,7 @@ public class KineticAdminCLI {
     public void init(String host, String tlsPort, String clusterVersion)
             throws KineticException {
         AdminClientConfiguration adminClientConfig = new AdminClientConfiguration();
-        adminClientConfig.setRequestTimeoutMillis(180000);
+        adminClientConfig.setRequestTimeoutMillis(DEFAULT_REQUEST_TIMEOUT);
         if (host != null && !host.isEmpty()) {
             validateHost(host);
             adminClientConfig.setHost(host);
