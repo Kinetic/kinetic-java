@@ -43,8 +43,11 @@ public class ClientConfiguration extends Properties {
 
     private static final long serialVersionUID = 7330657102192607375L;
 
-    // default request timeout is set to 30000 milli seconds
-    private static final long DEFAULT_REQUEST_TIMEOUT = 30000L;
+    public static final String DEFAULT_TIMEOUT_PROP_NAME = "kinetic.request.timeout";
+
+    // default request timeout is set to 60000 milli seconds
+    private static final long DEFAULT_REQUEST_TIMEOUT = Integer.getInteger(
+            DEFAULT_TIMEOUT_PROP_NAME, 60000).longValue();
 
     /**
      * current supported kinetic protocol version on kinetic-protocol repo.
@@ -108,7 +111,7 @@ public class ClientConfiguration extends Properties {
      * <p>
      * default is set to 60000 milli seconds
      */
-    private long requestTimeout = 60000;
+    private long requestTimeout = DEFAULT_REQUEST_TIMEOUT;
 
     /**
      * client nio thread pool exit await timeout in milli secs.
@@ -383,8 +386,13 @@ public class ClientConfiguration extends Properties {
     /**
      * Set request timeout (in milli seconds) for the client instance.
      * <p>
-     * The default request timeout is set to 30000 milli seconds if not set. The
+     * The default request timeout is set to 60000 milli seconds if not set. The
      * default value is used if the specified timeout is equal or less than 0.
+     * <p>
+     * Applications also can set the default timeout with a Java System Property
+     * {@link #DEFAULT_REQUEST_TIMEOUT}
+     * <p>
+     * This API overrides the value set by the above Java System Property.
      * <p>
      * Setting a small request timeout could introduce unexpected side effects.
      * Such as timed out before a response is received.
