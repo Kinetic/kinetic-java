@@ -19,6 +19,7 @@
  */
 package com.seagate.kinetic.simulator.internal;
 
+import java.util.Arrays;
 import java.util.Map;
 import java.util.logging.Logger;
 
@@ -119,30 +120,31 @@ public class Authorizer {
             throw new KVSecurityException("permission denied. ACL is null");
         }
 
-        // chiaming: fix this - only support one domain
-        // 7/20/13 Emma modify to support domains
+        /**
+         * check if key is within the defined scope
+         */
         boolean hasRightRole = false;
-        for (Scope domain : acl.getScopeList()) {
-            long offset = domain.getOffset();
+        for (Scope scope : acl.getScopeList()) {
+            long offset = scope.getOffset();
             if (0 > offset) {
                 throw new KVSecurityException(
                         "permission denied. domain offset is invalid.");
             }
 
-            ByteString currentDomainValue = domain.getValue();
-            if (currentDomainValue.size() > key.size()) {
+            ByteString currentScopeValue = scope.getValue();
+            if (currentScopeValue.size() > key.size()) {
                 throw new KVSecurityException(
                         "permission denied. domain value size is bigger than key size.");
             }
 
             int startValueIndex = (int) offset;
-            int endValueIndex = startValueIndex + currentDomainValue.size();
-            ByteString domainValueFromKey = key.substring(startValueIndex,
+            int endValueIndex = startValueIndex + currentScopeValue.size();
+            ByteString scopeValueFromKey = key.substring(startValueIndex,
                     endValueIndex);
 
-            if (equals(currentDomainValue.toByteArray(),
-                    domainValueFromKey.toByteArray())) {
-                if (domain.getPermissionList().contains(role) == true) {
+            if (equals(currentScopeValue.toByteArray(),
+                    scopeValueFromKey.toByteArray())) {
+                if (scope.getPermissionList().contains(role) == true) {
                     hasRightRole = true;
                     break;
                 }
@@ -169,5 +171,125 @@ public class Authorizer {
         }
 
         return true;
+    }
+
+    /**
+     * Returns true if the user has the given role on the given key range.
+     * 
+     * 1. Start key and end key must be with in the same scope and has Range
+     * role for the scope. The start key and end key must have the same prefix:
+     * 
+     * The byte array value of (0, offset+scopeValue.size()) must be equal for
+     * start and end keys.
+     * 
+     * 2. See the protocol definition for ACL for boundary scenarios.
+     * 
+     * https://github.com/Seagate/kinetic-protocol/blob/master/kinetic.proto
+     * 
+     *
+     * @param aclmap
+     * @param user
+     * @param role
+     * @param startKey
+     * @return
+     * @throws KVSecurityException
+     *             for unexpected configuration problems related to security
+     *             parameters
+     */
+    public static boolean hasRangePermission(Map<Long, ACL> aclmap, long user,
+            Permission role, ByteString startKey, ByteString endKey)
+            throws KVSecurityException {
+
+        if (null == startKey || null == endKey) {
+            throw new KVSecurityException(
+                    "permission denied. start key and end key cannot be null");
+        }
+
+        // check if there is an ACL entry for the userId.
+        ACL acl = aclmap.get(user);
+
+        if (acl == null) {
+            throw new KVSecurityException("permission denied. ACL is null");
+        }
+
+        /**
+         * check if key is within the defined scope
+         */
+        boolean hasRightRole = false;
+        for (Scope scope : acl.getScopeList()) {
+            long offset = scope.getOffset();
+            if (0 > offset) {
+                throw new KVSecurityException(
+                        "permission denied. domain offset is invalid.");
+            }
+
+            ByteString currentScopeValue = scope.getValue();
+            if (currentScopeValue.size() > startKey.size()) {
+                throw new KVSecurityException(
+                        "permission denied. domain value size is bigger than key size.");
+            }
+
+            int startValueIndex = (int) offset;
+            int endValueIndex = startValueIndex + currentScopeValue.size();
+
+            // start key scope
+            ByteString scopeValueFromStartKey = startKey.substring(
+                    startValueIndex, endValueIndex);
+
+            byte[] currentScope = currentScopeValue.toByteArray();
+
+            if (equals(currentScope, scopeValueFromStartKey.toByteArray())) {
+
+                if (scope.getPermissionList().contains(role) == true) {
+
+                    /**
+                     * at this point, start key is within the permitted scope.
+                     * if no offset and vale is defined, the user has ALL range
+                     * for the current scope.
+                     */
+                    if (offset == 0 && currentScopeValue.isEmpty()) {
+                        return true;
+                    }
+
+                    /**
+                     * if endkey == "", use max value for the end key.
+                     */
+                    if (endKey.isEmpty()) {
+                        byte[] maxKey = new byte[4096];
+
+                        Arrays.fill(maxKey, (byte) 0XFF);
+                        endKey = ByteString.copyFrom(maxKey);
+                    }
+
+                    // end key scope value
+                    ByteString scopeValueFromEndKey = endKey.substring(
+                            startValueIndex, endValueIndex);
+
+                    /**
+                     * start and end key must be within the same scope and same
+                     * prefix
+                     */
+                    if (equals(currentScope, scopeValueFromEndKey.toByteArray())) {
+
+                        // start key prefix
+                        ByteString startKeyRangeScope = startKey.substring(0,
+                                endValueIndex);
+
+                        // end key prefix
+                        ByteString endKeyRangeScope = endKey.substring(0,
+                                endValueIndex);
+
+                        // compare start and end key's (prefix + scope)
+                        if (equals(startKeyRangeScope.toByteArray(),
+                                endKeyRangeScope.toByteArray())) {
+                            hasRightRole = true;
+                            break;
+                        }
+                    }
+
+                }
+            }
+        }
+        return hasRightRole;
     }
 }

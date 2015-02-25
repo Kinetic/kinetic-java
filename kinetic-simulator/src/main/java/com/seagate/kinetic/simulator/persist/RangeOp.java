@@ -90,7 +90,6 @@ public class RangeOp {
              
             try {
 
-                // XXX need to add support for multiple ranges in getKeyRange
                 Range r = request.getCommand().getBody().getRange();
 
                 k1 = r.getStartKey();

@@ -19,7 +19,6 @@
  */
 package com.seagate.kinetic.simulator.internal;
 
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import kinetic.client.KineticException;
@@ -314,12 +313,35 @@ public abstract class BackGroundOpHandler {
         
     }
     
+    /**
+     * check if user has range permission.
+     * 
+     * @param request
+     * @param engine
+     * @throws KVSecurityException
+     */
     private static void checkPermission (KineticMessage request,
             SimulatorEngine engine) throws KVSecurityException {
-        
-        // check if client has permission
-        Authorizer.checkPermission(engine.getAclMap(), request.getMessage().getHmacAuth().getIdentity(), 
-                Permission.RANGE);
+
+        ByteString startKey = request.getCommand().getBody().getRange()
+                .getStartKey();
+        ByteString endKey = request.getCommand().getBody().getRange()
+                .getEndKey();
+
+        long user = request.getMessage().getHmacAuth().getIdentity();
+
+        boolean hasPermission = Authorizer.hasRangePermission(
+                engine.getAclMap(), user,
+                Permission.RANGE, startKey, endKey);
+
+        if (hasPermission == false) {
+            throw new KVSecurityException(
+                    "no permission for the requested range: "
+                            + request.getCommand());
+        } else {
+            logger.info("range permission validate: " + request.getCommand());
+        }
+
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
@@ -341,8 +363,8 @@ public abstract class BackGroundOpHandler {
 
         try {
             kv = (KVValue) store.getNext(key);
-        } catch (Exception e) {
-            logger.log(Level.WARNING, e.getMessage(), e);
+        } catch (KVStoreException e) {
+            logger.info("no next key found for getNext");
         }
 
         return kv;
