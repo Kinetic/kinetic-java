@@ -58,12 +58,28 @@ public class HeartbeatListener implements Runnable {
 
     private Thread thread = null;
 
+    // net interface name
+    private String interfaceName = null;
+
     /**
      * Construct a heartbeat consumer with default address and port.
      *
      * @throws IOException
      */
     public HeartbeatListener() throws IOException {
+        this.init();
+    }
+
+    /**
+     * Construct a heartbeat listener with the specified network interface name.
+     * 
+     * @param netInterfaceName
+     * @throws IOException
+     */
+    public HeartbeatListener(String netInterfaceName) throws IOException {
+
+        this.interfaceName = netInterfaceName;
+
         this.init();
     }
 
@@ -78,8 +94,14 @@ public class HeartbeatListener implements Runnable {
 
     private void init() throws IOException {
 
-        // find network interface
-        NetworkInterface ni = NetUtil.findMulticastNetworkInterface();
+        // network interface
+        NetworkInterface ni = null;
+
+        if (this.interfaceName != null) {
+            ni = NetworkInterface.getByName(interfaceName);
+        } else {
+            ni = NetUtil.findMulticastNetworkInterface();
+        }
 
         // my multicast listening address
         mcastAddress = InetAddress.getByName(mcastDestination);
@@ -89,7 +111,8 @@ public class HeartbeatListener implements Runnable {
 
         // only set it if we are allowed to search
         if (ni != null) {
-            // mcastSocket.setNetworkInterface(ni);
+            logger.info("using network interface: " + ni.getDisplayName());
+            mcastSocket.setNetworkInterface(ni);
         }
 
         // join the m group
