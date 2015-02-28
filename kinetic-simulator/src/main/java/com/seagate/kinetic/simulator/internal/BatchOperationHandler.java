@@ -77,7 +77,7 @@ public class BatchOperationHandler {
             throws InvalidBatchException, InvalidRequestException {
 
         if (this.batch != null) {
-            throw new InvalidRequestException("Alread in batch mode.");
+            this.waitForBatchToFinish();
         }
 
         // init with this context
@@ -124,8 +124,10 @@ public class BatchOperationHandler {
 
     private synchronized void waitForBatchToFinish() {
 
-        long timeout = 0;
+        long totalWaitTime = 0;
         long period = 3000;
+
+        long start = System.currentTimeMillis();
 
         while (batch != null) {
 
@@ -137,14 +139,14 @@ public class BatchOperationHandler {
                     return;
                 }
 
-                timeout += period;
+                totalWaitTime = (System.currentTimeMillis() - start);
 
-                if (timeout >= MAX_TIME_OUT) {
+                if (totalWaitTime >= MAX_TIME_OUT) {
                     throw new RuntimeException(
                             "Timeout waiting for batch mode to finish");
                 } else {
                     logger.warning("waiting for batch mode to finish., total wait time ="
-                            + timeout);
+                            + totalWaitTime);
                 }
             } catch (InterruptedException e) {
                 logger.log(Level.WARNING, e.getMessage(), e);
