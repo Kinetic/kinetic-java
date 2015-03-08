@@ -11,17 +11,17 @@ public final class Kinetic {
   public interface LocalOrBuilder
       extends com.google.protobuf.MessageOrBuilder {
 
-    // optional string protocolVersion = 1 [default = "3.0.6"];
+    // optional string protocolVersion = 1 [default = "3.0.7"];
     /**
-     * <code>optional string protocolVersion = 1 [default = "3.0.6"];</code>
+     * <code>optional string protocolVersion = 1 [default = "3.0.7"];</code>
      */
     boolean hasProtocolVersion();
     /**
-     * <code>optional string protocolVersion = 1 [default = "3.0.6"];</code>
+     * <code>optional string protocolVersion = 1 [default = "3.0.7"];</code>
      */
     java.lang.String getProtocolVersion();
     /**
-     * <code>optional string protocolVersion = 1 [default = "3.0.6"];</code>
+     * <code>optional string protocolVersion = 1 [default = "3.0.7"];</code>
      */
     com.google.protobuf.ByteString
         getProtocolVersionBytes();
@@ -128,17 +128,17 @@ public final class Kinetic {
     }
 
     private int bitField0_;
-    // optional string protocolVersion = 1 [default = "3.0.6"];
+    // optional string protocolVersion = 1 [default = "3.0.7"];
     public static final int PROTOCOLVERSION_FIELD_NUMBER = 1;
     private java.lang.Object protocolVersion_;
     /**
-     * <code>optional string protocolVersion = 1 [default = "3.0.6"];</code>
+     * <code>optional string protocolVersion = 1 [default = "3.0.7"];</code>
      */
     public boolean hasProtocolVersion() {
       return ((bitField0_ & 0x00000001) == 0x00000001);
     }
     /**
-     * <code>optional string protocolVersion = 1 [default = "3.0.6"];</code>
+     * <code>optional string protocolVersion = 1 [default = "3.0.7"];</code>
      */
     public java.lang.String getProtocolVersion() {
       java.lang.Object ref = protocolVersion_;
@@ -155,7 +155,7 @@ public final class Kinetic {
       }
     }
     /**
-     * <code>optional string protocolVersion = 1 [default = "3.0.6"];</code>
+     * <code>optional string protocolVersion = 1 [default = "3.0.7"];</code>
      */
     public com.google.protobuf.ByteString
         getProtocolVersionBytes() {
@@ -172,7 +172,7 @@ public final class Kinetic {
     }
 
     private void initFields() {
-      protocolVersion_ = "3.0.6";
+      protocolVersion_ = "3.0.7";
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -324,7 +324,7 @@ public final class Kinetic {
 
       public Builder clear() {
         super.clear();
-        protocolVersion_ = "3.0.6";
+        protocolVersion_ = "3.0.7";
         bitField0_ = (bitField0_ & ~0x00000001);
         return this;
       }
@@ -406,16 +406,16 @@ public final class Kinetic {
       }
       private int bitField0_;
 
-      // optional string protocolVersion = 1 [default = "3.0.6"];
-      private java.lang.Object protocolVersion_ = "3.0.6";
+      // optional string protocolVersion = 1 [default = "3.0.7"];
+      private java.lang.Object protocolVersion_ = "3.0.7";
       /**
-       * <code>optional string protocolVersion = 1 [default = "3.0.6"];</code>
+       * <code>optional string protocolVersion = 1 [default = "3.0.7"];</code>
        */
       public boolean hasProtocolVersion() {
         return ((bitField0_ & 0x00000001) == 0x00000001);
       }
       /**
-       * <code>optional string protocolVersion = 1 [default = "3.0.6"];</code>
+       * <code>optional string protocolVersion = 1 [default = "3.0.7"];</code>
        */
       public java.lang.String getProtocolVersion() {
         java.lang.Object ref = protocolVersion_;
@@ -429,7 +429,7 @@ public final class Kinetic {
         }
       }
       /**
-       * <code>optional string protocolVersion = 1 [default = "3.0.6"];</code>
+       * <code>optional string protocolVersion = 1 [default = "3.0.7"];</code>
        */
       public com.google.protobuf.ByteString
           getProtocolVersionBytes() {
@@ -445,7 +445,7 @@ public final class Kinetic {
         }
       }
       /**
-       * <code>optional string protocolVersion = 1 [default = "3.0.6"];</code>
+       * <code>optional string protocolVersion = 1 [default = "3.0.7"];</code>
        */
       public Builder setProtocolVersion(
           java.lang.String value) {
@@ -458,7 +458,7 @@ public final class Kinetic {
         return this;
       }
       /**
-       * <code>optional string protocolVersion = 1 [default = "3.0.6"];</code>
+       * <code>optional string protocolVersion = 1 [default = "3.0.7"];</code>
        */
       public Builder clearProtocolVersion() {
         bitField0_ = (bitField0_ & ~0x00000001);
@@ -467,7 +467,7 @@ public final class Kinetic {
         return this;
       }
       /**
-       * <code>optional string protocolVersion = 1 [default = "3.0.6"];</code>
+       * <code>optional string protocolVersion = 1 [default = "3.0.7"];</code>
        */
       public Builder setProtocolVersionBytes(
           com.google.protobuf.ByteString value) {
@@ -7918,6 +7918,14 @@ public final class Kinetic {
          * </pre>
          */
         INVALID_BATCH(22, 21),
+        /**
+         * <code>DRIVE_POWER_DOWN = 22;</code>
+         *
+         * <pre>
+         * drive in power down state
+         * </pre>
+         */
+        DRIVE_POWER_DOWN(23, 22),
         ;
 
         /**
@@ -8090,6 +8098,14 @@ public final class Kinetic {
          * </pre>
          */
         public static final int INVALID_BATCH_VALUE = 21;
+        /**
+         * <code>DRIVE_POWER_DOWN = 22;</code>
+         *
+         * <pre>
+         * drive in power down state
+         * </pre>
+         */
+        public static final int DRIVE_POWER_DOWN_VALUE = 22;
 
 
         public final int getNumber() { return value; }
@@ -8119,6 +8135,7 @@ public final class Kinetic {
             case 19: return DEVICE_ALREADY_UNLOCKED;
             case 20: return CONNECTION_TERMINATED;
             case 21: return INVALID_BATCH;
+            case 22: return DRIVE_POWER_DOWN;
             default: return null;
           }
         }
@@ -11266,6 +11283,26 @@ public final class Kinetic {
        * </pre>
        */
       boolean getFirmwareDownload();
+
+      // optional bool drivePowerDown = 6;
+      /**
+       * <code>optional bool drivePowerDown = 6;</code>
+       *
+       * <pre>
+       * set to true to enter power down/saving state.
+       * set to false to resume to normal operational state.
+       * </pre>
+       */
+      boolean hasDrivePowerDown();
+      /**
+       * <code>optional bool drivePowerDown = 6;</code>
+       *
+       * <pre>
+       * set to true to enter power down/saving state.
+       * set to false to resume to normal operational state.
+       * </pre>
+       */
+      boolean getDrivePowerDown();
     }
     /**
      * Protobuf type {@code com.seagate.kinetic.proto.Command.Setup}
@@ -11332,6 +11369,11 @@ public final class Kinetic {
               case 40: {
                 bitField0_ |= 0x00000002;
                 firmwareDownload_ = input.readBool();
+                break;
+              }
+              case 48: {
+                bitField0_ |= 0x00000004;
+                drivePowerDown_ = input.readBool();
                 break;
               }
             }
@@ -11430,9 +11472,36 @@ public final class Kinetic {
         return firmwareDownload_;
       }
 
+      // optional bool drivePowerDown = 6;
+      public static final int DRIVEPOWERDOWN_FIELD_NUMBER = 6;
+      private boolean drivePowerDown_;
+      /**
+       * <code>optional bool drivePowerDown = 6;</code>
+       *
+       * <pre>
+       * set to true to enter power down/saving state.
+       * set to false to resume to normal operational state.
+       * </pre>
+       */
+      public boolean hasDrivePowerDown() {
+        return ((bitField0_ & 0x00000004) == 0x00000004);
+      }
+      /**
+       * <code>optional bool drivePowerDown = 6;</code>
+       *
+       * <pre>
+       * set to true to enter power down/saving state.
+       * set to false to resume to normal operational state.
+       * </pre>
+       */
+      public boolean getDrivePowerDown() {
+        return drivePowerDown_;
+      }
+
       private void initFields() {
         newClusterVersion_ = 0L;
         firmwareDownload_ = false;
+        drivePowerDown_ = false;
       }
       private byte memoizedIsInitialized = -1;
       public final boolean isInitialized() {
@@ -11452,6 +11521,9 @@ public final class Kinetic {
         if (((bitField0_ & 0x00000002) == 0x00000002)) {
           output.writeBool(5, firmwareDownload_);
         }
+        if (((bitField0_ & 0x00000004) == 0x00000004)) {
+          output.writeBool(6, drivePowerDown_);
+        }
         getUnknownFields().writeTo(output);
       }
 
@@ -11468,6 +11540,10 @@ public final class Kinetic {
         if (((bitField0_ & 0x00000002) == 0x00000002)) {
           size += com.google.protobuf.CodedOutputStream
             .computeBoolSize(5, firmwareDownload_);
+        }
+        if (((bitField0_ & 0x00000004) == 0x00000004)) {
+          size += com.google.protobuf.CodedOutputStream
+            .computeBoolSize(6, drivePowerDown_);
         }
         size += getUnknownFields().getSerializedSize();
         memoizedSerializedSize = size;
@@ -11595,6 +11671,8 @@ public final class Kinetic {
           bitField0_ = (bitField0_ & ~0x00000001);
           firmwareDownload_ = false;
           bitField0_ = (bitField0_ & ~0x00000002);
+          drivePowerDown_ = false;
+          bitField0_ = (bitField0_ & ~0x00000004);
           return this;
         }
 
@@ -11631,6 +11709,10 @@ public final class Kinetic {
             to_bitField0_ |= 0x00000002;
           }
           result.firmwareDownload_ = firmwareDownload_;
+          if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
+            to_bitField0_ |= 0x00000004;
+          }
+          result.drivePowerDown_ = drivePowerDown_;
           result.bitField0_ = to_bitField0_;
           onBuilt();
           return result;
@@ -11652,6 +11734,9 @@ public final class Kinetic {
           }
           if (other.hasFirmwareDownload()) {
             setFirmwareDownload(other.getFirmwareDownload());
+          }
+          if (other.hasDrivePowerDown()) {
+            setDrivePowerDown(other.getDrivePowerDown());
           }
           this.mergeUnknownFields(other.getUnknownFields());
           return this;
@@ -11790,6 +11875,59 @@ public final class Kinetic {
         public Builder clearFirmwareDownload() {
           bitField0_ = (bitField0_ & ~0x00000002);
           firmwareDownload_ = false;
+          onChanged();
+          return this;
+        }
+
+        // optional bool drivePowerDown = 6;
+        private boolean drivePowerDown_ ;
+        /**
+         * <code>optional bool drivePowerDown = 6;</code>
+         *
+         * <pre>
+         * set to true to enter power down/saving state.
+         * set to false to resume to normal operational state.
+         * </pre>
+         */
+        public boolean hasDrivePowerDown() {
+          return ((bitField0_ & 0x00000004) == 0x00000004);
+        }
+        /**
+         * <code>optional bool drivePowerDown = 6;</code>
+         *
+         * <pre>
+         * set to true to enter power down/saving state.
+         * set to false to resume to normal operational state.
+         * </pre>
+         */
+        public boolean getDrivePowerDown() {
+          return drivePowerDown_;
+        }
+        /**
+         * <code>optional bool drivePowerDown = 6;</code>
+         *
+         * <pre>
+         * set to true to enter power down/saving state.
+         * set to false to resume to normal operational state.
+         * </pre>
+         */
+        public Builder setDrivePowerDown(boolean value) {
+          bitField0_ |= 0x00000004;
+          drivePowerDown_ = value;
+          onChanged();
+          return this;
+        }
+        /**
+         * <code>optional bool drivePowerDown = 6;</code>
+         *
+         * <pre>
+         * set to true to enter power down/saving state.
+         * set to false to resume to normal operational state.
+         * </pre>
+         */
+        public Builder clearDrivePowerDown() {
+          bitField0_ = (bitField0_ & ~0x00000004);
+          drivePowerDown_ = false;
           onChanged();
           return this;
         }
@@ -30646,7 +30784,7 @@ public final class Kinetic {
     java.lang.String[] descriptorData = {
       "\n\rkinetic.proto\022\031com.seagate.kinetic.pro" +
       "to\"\'\n\005Local\022\036\n\017protocolVersion\030\001 \001(\t:\0053." +
-      "0.6\"\374\002\n\007Message\022=\n\010authType\030\004 \001(\0162+.com." +
+      "0.7\"\374\002\n\007Message\022=\n\010authType\030\004 \001(\0162+.com." +
       "seagate.kinetic.proto.Message.AuthType\022=" +
       "\n\010hmacAuth\030\005 \001(\0132+.com.seagate.kinetic.p" +
       "roto.Message.HMACauth\022;\n\007pinAuth\030\006 \001(\0132*" +
@@ -30655,7 +30793,7 @@ public final class Kinetic {
       "identity\030\001 \001(\003\022\014\n\004hmac\030\002 \001(\014\032\026\n\007PINauth\022" +
       "\013\n\003pin\030\001 \001(\014\"\\\n\010AuthType\022\036\n\021INVALID_AUTH",
       "_TYPE\020\377\377\377\377\377\377\377\377\377\001\022\014\n\010HMACAUTH\020\001\022\013\n\007PINAUT" +
-      "H\020\002\022\025\n\021UNSOLICITEDSTATUS\020\003\"\3701\n\007Command\0229" +
+      "H\020\002\022\025\n\021UNSOLICITEDSTATUS\020\003\"\2462\n\007Command\0229" +
       "\n\006header\030\001 \001(\0132).com.seagate.kinetic.pro" +
       "to.Command.Header\0225\n\004body\030\002 \001(\0132\'.com.se" +
       "agate.kinetic.proto.Command.Body\0229\n\006stat" +
@@ -30678,11 +30816,11 @@ public final class Kinetic {
       "kinetic.proto.Command.GetLog\022=\n\010security" +
       "\030\007 \001(\0132+.com.seagate.kinetic.proto.Comma" +
       "nd.Security\022>\n\005pinOp\030\010 \001(\0132/.com.seagate" +
-      ".kinetic.proto.Command.PinOperation\032\361\004\n\006" +
+      ".kinetic.proto.Command.PinOperation\032\207\005\n\006" +
       "Status\022B\n\004code\030\001 \001(\01624.com.seagate.kinet" +
       "ic.proto.Command.Status.StatusCode\022\025\n\rst" +
       "atusMessage\030\002 \001(\t\022\027\n\017detailedMessage\030\003 \001" +
-      "(\014\"\362\003\n\nStatusCode\022 \n\023INVALID_STATUS_CODE" +
+      "(\014\"\210\004\n\nStatusCode\022 \n\023INVALID_STATUS_CODE" +
       "\020\377\377\377\377\377\377\377\377\377\001\022\021\n\rNOT_ATTEMPTED\020\000\022\013\n\007SUCCES",
       "S\020\001\022\020\n\014HMAC_FAILURE\020\002\022\022\n\016NOT_AUTHORIZED\020" +
       "\003\022\023\n\017VERSION_FAILURE\020\004\022\022\n\016INTERNAL_ERROR" +
@@ -30694,128 +30832,129 @@ public final class Kinetic {
       "\023\n\017INVALID_REQUEST\020\020\022\033\n\027NESTED_OPERATION" +
       "_ERRORS\020\021\022\021\n\rDEVICE_LOCKED\020\022\022\033\n\027DEVICE_A" +
       "LREADY_UNLOCKED\020\023\022\031\n\025CONNECTION_TERMINAT",
-      "ED\020\024\022\021\n\rINVALID_BATCH\020\025\032\376\001\n\010KeyValue\022\022\n\n" +
-      "newVersion\030\002 \001(\014\022\r\n\005force\030\010 \001(\010\022\013\n\003key\030\003" +
-      " \001(\014\022\021\n\tdbVersion\030\004 \001(\014\022\013\n\003tag\030\005 \001(\014\022?\n\t" +
-      "algorithm\030\006 \001(\0162,.com.seagate.kinetic.pr" +
-      "oto.Command.Algorithm\022\024\n\014metadataOnly\030\007 " +
-      "\001(\010\022K\n\017synchronization\030\t \001(\01622.com.seaga" +
-      "te.kinetic.proto.Command.Synchronization" +
-      "\032\221\001\n\005Range\022\020\n\010startKey\030\001 \001(\014\022\016\n\006endKey\030\002" +
-      " \001(\014\022\031\n\021startKeyInclusive\030\003 \001(\010\022\027\n\017endKe" +
-      "yInclusive\030\004 \001(\010\022\023\n\013maxReturned\030\005 \001(\005\022\017\n",
-      "\007reverse\030\006 \001(\010\022\014\n\004keys\030\010 \003(\014\032<\n\005Setup\022\031\n" +
-      "\021newClusterVersion\030\001 \001(\003\022\030\n\020firmwareDown" +
-      "load\030\005 \001(\010\032\300\003\n\014P2POperation\022B\n\004peer\030\001 \001(" +
-      "\01324.com.seagate.kinetic.proto.Command.P2" +
-      "POperation.Peer\022L\n\toperation\030\002 \003(\01329.com" +
-      ".seagate.kinetic.proto.Command.P2POperat" +
-      "ion.Operation\022#\n\033allChildOperationsSucce" +
-      "eded\030\003 \001(\010\032\303\001\n\tOperation\022\013\n\003key\030\003 \001(\014\022\017\n" +
-      "\007version\030\004 \001(\014\022\016\n\006newKey\030\005 \001(\014\022\r\n\005force\030" +
-      "\006 \001(\010\0229\n\006status\030\007 \001(\0132).com.seagate.kine",
-      "tic.proto.Command.Status\022>\n\005p2pop\030\010 \001(\0132" +
-      "/.com.seagate.kinetic.proto.Command.P2PO" +
-      "peration\0323\n\004Peer\022\020\n\010hostname\030\001 \001(\t\022\014\n\004po" +
-      "rt\030\002 \001(\005\022\013\n\003tls\030\003 \001(\010\032\360\016\n\006GetLog\022=\n\005type" +
-      "s\030\001 \003(\0162..com.seagate.kinetic.proto.Comm" +
-      "and.GetLog.Type\022K\n\014utilizations\030\002 \003(\01325." +
-      "com.seagate.kinetic.proto.Command.GetLog" +
-      ".Utilization\022K\n\014temperatures\030\003 \003(\01325.com" +
-      ".seagate.kinetic.proto.Command.GetLog.Te" +
-      "mperature\022D\n\010capacity\030\004 \001(\01322.com.seagat",
-      "e.kinetic.proto.Command.GetLog.Capacity\022" +
-      "N\n\rconfiguration\030\005 \001(\01327.com.seagate.kin" +
-      "etic.proto.Command.GetLog.Configuration\022" +
-      "H\n\nstatistics\030\006 \003(\01324.com.seagate.kineti" +
-      "c.proto.Command.GetLog.Statistics\022\020\n\010mes" +
-      "sages\030\007 \001(\014\022@\n\006limits\030\010 \001(\01320.com.seagat" +
-      "e.kinetic.proto.Command.GetLog.Limits\022@\n" +
-      "\006device\030\t \001(\01320.com.seagate.kinetic.prot" +
-      "o.Command.GetLog.Device\032*\n\013Utilization\022\014" +
-      "\n\004name\030\001 \001(\t\022\r\n\005value\030\002 \001(\002\032^\n\013Temperatu",
-      "re\022\014\n\004name\030\001 \001(\t\022\017\n\007current\030\002 \001(\002\022\017\n\007min" +
-      "imum\030\003 \001(\002\022\017\n\007maximum\030\004 \001(\002\022\016\n\006target\030\005 " +
-      "\001(\002\032?\n\010Capacity\022\036\n\026nominalCapacityInByte" +
-      "s\030\004 \001(\004\022\023\n\013portionFull\030\005 \001(\002\032\266\003\n\rConfigu" +
-      "ration\022\016\n\006vendor\030\005 \001(\t\022\r\n\005model\030\006 \001(\t\022\024\n" +
-      "\014serialNumber\030\007 \001(\014\022\025\n\rworldWideName\030\016 \001" +
-      "(\014\022\017\n\007version\030\010 \001(\t\022\027\n\017compilationDate\030\014" +
-      " \001(\t\022\022\n\nsourceHash\030\r \001(\t\022\027\n\017protocolVers" +
-      "ion\030\017 \001(\t\022\037\n\027protocolCompilationDate\030\020 \001" +
-      "(\t\022\032\n\022protocolSourceHash\030\021 \001(\t\022T\n\tinterf",
-      "ace\030\t \003(\0132A.com.seagate.kinetic.proto.Co" +
-      "mmand.GetLog.Configuration.Interface\022\014\n\004" +
-      "port\030\n \001(\005\022\017\n\007tlsPort\030\013 \001(\005\032P\n\tInterface" +
-      "\022\014\n\004name\030\001 \001(\t\022\013\n\003MAC\030\002 \001(\014\022\023\n\013ipv4Addre" +
-      "ss\030\003 \001(\014\022\023\n\013ipv6Address\030\004 \001(\014\032o\n\nStatist" +
-      "ics\022C\n\013messageType\030\001 \001(\0162..com.seagate.k" +
-      "inetic.proto.Command.MessageType\022\r\n\005coun" +
-      "t\030\004 \001(\004\022\r\n\005bytes\030\005 \001(\004\032\346\002\n\006Limits\022\022\n\nmax" +
-      "KeySize\030\001 \001(\r\022\024\n\014maxValueSize\030\002 \001(\r\022\026\n\016m" +
-      "axVersionSize\030\003 \001(\r\022\022\n\nmaxTagSize\030\004 \001(\r\022",
-      "\026\n\016maxConnections\030\005 \001(\r\022\"\n\032maxOutstandin" +
-      "gReadRequests\030\006 \001(\r\022#\n\033maxOutstandingWri" +
-      "teRequests\030\007 \001(\r\022\026\n\016maxMessageSize\030\010 \001(\r" +
-      "\022\030\n\020maxKeyRangeCount\030\t \001(\r\022\030\n\020maxIdentit" +
-      "yCount\030\n \001(\r\022\022\n\nmaxPinSize\030\013 \001(\r\022!\n\031maxO" +
-      "perationCountPerBatch\030\014 \001(\r\022\"\n\032maxBatchC" +
-      "ountPerConnection\030\r \001(\r\032\026\n\006Device\022\014\n\004nam" +
-      "e\030\001 \001(\014\"\236\001\n\004Type\022\031\n\014INVALID_TYPE\020\377\377\377\377\377\377\377" +
-      "\377\377\001\022\020\n\014UTILIZATIONS\020\000\022\020\n\014TEMPERATURES\020\001\022" +
-      "\016\n\nCAPACITIES\020\002\022\021\n\rCONFIGURATION\020\003\022\016\n\nST",
-      "ATISTICS\020\004\022\014\n\010MESSAGES\020\005\022\n\n\006LIMITS\020\006\022\n\n\006" +
-      "DEVICE\020\007\032\375\005\n\010Security\022<\n\003acl\030\002 \003(\0132/.com" +
-      ".seagate.kinetic.proto.Command.Security." +
-      "ACL\022\022\n\noldLockPIN\030\003 \001(\014\022\022\n\nnewLockPIN\030\004 " +
-      "\001(\014\022\023\n\013oldErasePIN\030\005 \001(\014\022\023\n\013newErasePIN\030" +
-      "\006 \001(\014\032\340\004\n\003ACL\022\020\n\010identity\030\001 \001(\003\022\013\n\003key\030\002" +
-      " \001(\014\022T\n\rhmacAlgorithm\030\003 \001(\0162=.com.seagat" +
-      "e.kinetic.proto.Command.Security.ACL.HMA" +
-      "CAlgorithm\022D\n\005scope\030\004 \003(\01325.com.seagate." +
-      "kinetic.proto.Command.Security.ACL.Scope",
-      "\022@\n\013maxPriority\030\005 \001(\0162+.com.seagate.kine" +
-      "tic.proto.Command.Priority\032\213\001\n\005Scope\022\016\n\006" +
-      "offset\030\001 \001(\003\022\r\n\005value\030\002 \001(\014\022N\n\npermissio" +
-      "n\030\003 \003(\0162:.com.seagate.kinetic.proto.Comm" +
-      "and.Security.ACL.Permission\022\023\n\013TlsRequir" +
-      "ed\030\004 \001(\010\"B\n\rHMACAlgorithm\022#\n\026INVALID_HMA" +
-      "C_ALGORITHM\020\377\377\377\377\377\377\377\377\377\001\022\014\n\010HmacSHA1\020\001\"\211\001\n" +
-      "\nPermission\022\037\n\022INVALID_PERMISSION\020\377\377\377\377\377\377" +
-      "\377\377\377\001\022\010\n\004READ\020\000\022\t\n\005WRITE\020\001\022\n\n\006DELETE\020\002\022\t\n" +
-      "\005RANGE\020\003\022\t\n\005SETUP\020\004\022\t\n\005P2POP\020\005\022\n\n\006GETLOG",
-      "\020\007\022\014\n\010SECURITY\020\010\032\320\001\n\014PinOperation\022L\n\tpin" +
-      "OpType\030\001 \001(\01629.com.seagate.kinetic.proto" +
-      ".Command.PinOperation.PinOpType\"r\n\tPinOp" +
-      "Type\022\032\n\rINVALID_PINOP\020\377\377\377\377\377\377\377\377\377\001\022\020\n\014UNLO" +
-      "CK_PINOP\020\001\022\016\n\nLOCK_PINOP\020\002\022\017\n\013ERASE_PINO" +
-      "P\020\003\022\026\n\022SECURE_ERASE_PINOP\020\004\"c\n\017Synchroni" +
-      "zation\022$\n\027INVALID_SYNCHRONIZATION\020\377\377\377\377\377\377" +
-      "\377\377\377\001\022\020\n\014WRITETHROUGH\020\001\022\r\n\tWRITEBACK\020\002\022\t\n" +
-      "\005FLUSH\020\003\"F\n\010Priority\022\n\n\006NORMAL\020\005\022\n\n\006LOWE" +
-      "ST\020\001\022\t\n\005LOWER\020\003\022\n\n\006HIGHER\020\007\022\013\n\007HIGHEST\020\t",
-      "\"_\n\tAlgorithm\022\036\n\021INVALID_ALGORITHM\020\377\377\377\377\377" +
-      "\377\377\377\377\001\022\010\n\004SHA1\020\001\022\010\n\004SHA2\020\002\022\010\n\004SHA3\020\003\022\t\n\005C" +
-      "RC32\020\004\022\t\n\005CRC64\020\005\"\371\005\n\013MessageType\022!\n\024INV" +
-      "ALID_MESSAGE_TYPE\020\377\377\377\377\377\377\377\377\377\001\022\007\n\003GET\020\002\022\020\n" +
-      "\014GET_RESPONSE\020\001\022\007\n\003PUT\020\004\022\020\n\014PUT_RESPONSE" +
-      "\020\003\022\n\n\006DELETE\020\006\022\023\n\017DELETE_RESPONSE\020\005\022\013\n\007G" +
-      "ETNEXT\020\010\022\024\n\020GETNEXT_RESPONSE\020\007\022\017\n\013GETPRE" +
-      "VIOUS\020\n\022\030\n\024GETPREVIOUS_RESPONSE\020\t\022\017\n\013GET" +
-      "KEYRANGE\020\014\022\030\n\024GETKEYRANGE_RESPONSE\020\013\022\016\n\n" +
-      "GETVERSION\020\020\022\027\n\023GETVERSION_RESPONSE\020\017\022\t\n",
-      "\005SETUP\020\026\022\022\n\016SETUP_RESPONSE\020\025\022\n\n\006GETLOG\020\030" +
-      "\022\023\n\017GETLOG_RESPONSE\020\027\022\014\n\010SECURITY\020\032\022\025\n\021S" +
-      "ECURITY_RESPONSE\020\031\022\021\n\rPEER2PEERPUSH\020\034\022\032\n" +
-      "\026PEER2PEERPUSH_RESPONSE\020\033\022\010\n\004NOOP\020\036\022\021\n\rN" +
-      "OOP_RESPONSE\020\035\022\020\n\014FLUSHALLDATA\020 \022\031\n\025FLUS" +
-      "HALLDATA_RESPONSE\020\037\022\t\n\005PINOP\020$\022\022\n\016PINOP_" +
-      "RESPONSE\020#\022\r\n\tMEDIASCAN\020&\022\026\n\022MEDIASCAN_R" +
-      "ESPONSE\020%\022\021\n\rMEDIAOPTIMIZE\020(\022\032\n\026MEDIAOPT" +
-      "IMIZE_RESPONSE\020\'\022\017\n\013START_BATCH\020*\022\030\n\024STA" +
-      "RT_BATCH_RESPONSE\020)\022\r\n\tEND_BATCH\020,\022\026\n\022EN",
-      "D_BATCH_RESPONSE\020+\022\017\n\013ABORT_BATCH\020.\022\030\n\024A" +
-      "BORT_BATCH_RESPONSE\020-B\tB\007Kinetic"
+      "ED\020\024\022\021\n\rINVALID_BATCH\020\025\022\024\n\020DRIVE_POWER_D" +
+      "OWN\020\026\032\376\001\n\010KeyValue\022\022\n\nnewVersion\030\002 \001(\014\022\r" +
+      "\n\005force\030\010 \001(\010\022\013\n\003key\030\003 \001(\014\022\021\n\tdbVersion\030" +
+      "\004 \001(\014\022\013\n\003tag\030\005 \001(\014\022?\n\talgorithm\030\006 \001(\0162,." +
+      "com.seagate.kinetic.proto.Command.Algori" +
+      "thm\022\024\n\014metadataOnly\030\007 \001(\010\022K\n\017synchroniza" +
+      "tion\030\t \001(\01622.com.seagate.kinetic.proto.C" +
+      "ommand.Synchronization\032\221\001\n\005Range\022\020\n\010star" +
+      "tKey\030\001 \001(\014\022\016\n\006endKey\030\002 \001(\014\022\031\n\021startKeyIn" +
+      "clusive\030\003 \001(\010\022\027\n\017endKeyInclusive\030\004 \001(\010\022\023",
+      "\n\013maxReturned\030\005 \001(\005\022\017\n\007reverse\030\006 \001(\010\022\014\n\004" +
+      "keys\030\010 \003(\014\032T\n\005Setup\022\031\n\021newClusterVersion" +
+      "\030\001 \001(\003\022\030\n\020firmwareDownload\030\005 \001(\010\022\026\n\016driv" +
+      "ePowerDown\030\006 \001(\010\032\300\003\n\014P2POperation\022B\n\004pee" +
+      "r\030\001 \001(\01324.com.seagate.kinetic.proto.Comm" +
+      "and.P2POperation.Peer\022L\n\toperation\030\002 \003(\013" +
+      "29.com.seagate.kinetic.proto.Command.P2P" +
+      "Operation.Operation\022#\n\033allChildOperation" +
+      "sSucceeded\030\003 \001(\010\032\303\001\n\tOperation\022\013\n\003key\030\003 " +
+      "\001(\014\022\017\n\007version\030\004 \001(\014\022\016\n\006newKey\030\005 \001(\014\022\r\n\005",
+      "force\030\006 \001(\010\0229\n\006status\030\007 \001(\0132).com.seagat" +
+      "e.kinetic.proto.Command.Status\022>\n\005p2pop\030" +
+      "\010 \001(\0132/.com.seagate.kinetic.proto.Comman" +
+      "d.P2POperation\0323\n\004Peer\022\020\n\010hostname\030\001 \001(\t" +
+      "\022\014\n\004port\030\002 \001(\005\022\013\n\003tls\030\003 \001(\010\032\360\016\n\006GetLog\022=" +
+      "\n\005types\030\001 \003(\0162..com.seagate.kinetic.prot" +
+      "o.Command.GetLog.Type\022K\n\014utilizations\030\002 " +
+      "\003(\01325.com.seagate.kinetic.proto.Command." +
+      "GetLog.Utilization\022K\n\014temperatures\030\003 \003(\013" +
+      "25.com.seagate.kinetic.proto.Command.Get",
+      "Log.Temperature\022D\n\010capacity\030\004 \001(\01322.com." +
+      "seagate.kinetic.proto.Command.GetLog.Cap" +
+      "acity\022N\n\rconfiguration\030\005 \001(\01327.com.seaga" +
+      "te.kinetic.proto.Command.GetLog.Configur" +
+      "ation\022H\n\nstatistics\030\006 \003(\01324.com.seagate." +
+      "kinetic.proto.Command.GetLog.Statistics\022" +
+      "\020\n\010messages\030\007 \001(\014\022@\n\006limits\030\010 \001(\01320.com." +
+      "seagate.kinetic.proto.Command.GetLog.Lim" +
+      "its\022@\n\006device\030\t \001(\01320.com.seagate.kineti" +
+      "c.proto.Command.GetLog.Device\032*\n\013Utiliza",
+      "tion\022\014\n\004name\030\001 \001(\t\022\r\n\005value\030\002 \001(\002\032^\n\013Tem" +
+      "perature\022\014\n\004name\030\001 \001(\t\022\017\n\007current\030\002 \001(\002\022" +
+      "\017\n\007minimum\030\003 \001(\002\022\017\n\007maximum\030\004 \001(\002\022\016\n\006tar" +
+      "get\030\005 \001(\002\032?\n\010Capacity\022\036\n\026nominalCapacity" +
+      "InBytes\030\004 \001(\004\022\023\n\013portionFull\030\005 \001(\002\032\266\003\n\rC" +
+      "onfiguration\022\016\n\006vendor\030\005 \001(\t\022\r\n\005model\030\006 " +
+      "\001(\t\022\024\n\014serialNumber\030\007 \001(\014\022\025\n\rworldWideNa" +
+      "me\030\016 \001(\014\022\017\n\007version\030\010 \001(\t\022\027\n\017compilation" +
+      "Date\030\014 \001(\t\022\022\n\nsourceHash\030\r \001(\t\022\027\n\017protoc" +
+      "olVersion\030\017 \001(\t\022\037\n\027protocolCompilationDa",
+      "te\030\020 \001(\t\022\032\n\022protocolSourceHash\030\021 \001(\t\022T\n\t" +
+      "interface\030\t \003(\0132A.com.seagate.kinetic.pr" +
+      "oto.Command.GetLog.Configuration.Interfa" +
+      "ce\022\014\n\004port\030\n \001(\005\022\017\n\007tlsPort\030\013 \001(\005\032P\n\tInt" +
+      "erface\022\014\n\004name\030\001 \001(\t\022\013\n\003MAC\030\002 \001(\014\022\023\n\013ipv" +
+      "4Address\030\003 \001(\014\022\023\n\013ipv6Address\030\004 \001(\014\032o\n\nS" +
+      "tatistics\022C\n\013messageType\030\001 \001(\0162..com.sea" +
+      "gate.kinetic.proto.Command.MessageType\022\r" +
+      "\n\005count\030\004 \001(\004\022\r\n\005bytes\030\005 \001(\004\032\346\002\n\006Limits\022" +
+      "\022\n\nmaxKeySize\030\001 \001(\r\022\024\n\014maxValueSize\030\002 \001(",
+      "\r\022\026\n\016maxVersionSize\030\003 \001(\r\022\022\n\nmaxTagSize\030" +
+      "\004 \001(\r\022\026\n\016maxConnections\030\005 \001(\r\022\"\n\032maxOuts" +
+      "tandingReadRequests\030\006 \001(\r\022#\n\033maxOutstand" +
+      "ingWriteRequests\030\007 \001(\r\022\026\n\016maxMessageSize" +
+      "\030\010 \001(\r\022\030\n\020maxKeyRangeCount\030\t \001(\r\022\030\n\020maxI" +
+      "dentityCount\030\n \001(\r\022\022\n\nmaxPinSize\030\013 \001(\r\022!" +
+      "\n\031maxOperationCountPerBatch\030\014 \001(\r\022\"\n\032max" +
+      "BatchCountPerConnection\030\r \001(\r\032\026\n\006Device\022" +
+      "\014\n\004name\030\001 \001(\014\"\236\001\n\004Type\022\031\n\014INVALID_TYPE\020\377" +
+      "\377\377\377\377\377\377\377\377\001\022\020\n\014UTILIZATIONS\020\000\022\020\n\014TEMPERATU",
+      "RES\020\001\022\016\n\nCAPACITIES\020\002\022\021\n\rCONFIGURATION\020\003" +
+      "\022\016\n\nSTATISTICS\020\004\022\014\n\010MESSAGES\020\005\022\n\n\006LIMITS" +
+      "\020\006\022\n\n\006DEVICE\020\007\032\375\005\n\010Security\022<\n\003acl\030\002 \003(\013" +
+      "2/.com.seagate.kinetic.proto.Command.Sec" +
+      "urity.ACL\022\022\n\noldLockPIN\030\003 \001(\014\022\022\n\nnewLock" +
+      "PIN\030\004 \001(\014\022\023\n\013oldErasePIN\030\005 \001(\014\022\023\n\013newEra" +
+      "sePIN\030\006 \001(\014\032\340\004\n\003ACL\022\020\n\010identity\030\001 \001(\003\022\013\n" +
+      "\003key\030\002 \001(\014\022T\n\rhmacAlgorithm\030\003 \001(\0162=.com." +
+      "seagate.kinetic.proto.Command.Security.A" +
+      "CL.HMACAlgorithm\022D\n\005scope\030\004 \003(\01325.com.se",
+      "agate.kinetic.proto.Command.Security.ACL" +
+      ".Scope\022@\n\013maxPriority\030\005 \001(\0162+.com.seagat" +
+      "e.kinetic.proto.Command.Priority\032\213\001\n\005Sco" +
+      "pe\022\016\n\006offset\030\001 \001(\003\022\r\n\005value\030\002 \001(\014\022N\n\nper" +
+      "mission\030\003 \003(\0162:.com.seagate.kinetic.prot" +
+      "o.Command.Security.ACL.Permission\022\023\n\013Tls" +
+      "Required\030\004 \001(\010\"B\n\rHMACAlgorithm\022#\n\026INVAL" +
+      "ID_HMAC_ALGORITHM\020\377\377\377\377\377\377\377\377\377\001\022\014\n\010HmacSHA1" +
+      "\020\001\"\211\001\n\nPermission\022\037\n\022INVALID_PERMISSION\020" +
+      "\377\377\377\377\377\377\377\377\377\001\022\010\n\004READ\020\000\022\t\n\005WRITE\020\001\022\n\n\006DELET",
+      "E\020\002\022\t\n\005RANGE\020\003\022\t\n\005SETUP\020\004\022\t\n\005P2POP\020\005\022\n\n\006" +
+      "GETLOG\020\007\022\014\n\010SECURITY\020\010\032\320\001\n\014PinOperation\022" +
+      "L\n\tpinOpType\030\001 \001(\01629.com.seagate.kinetic" +
+      ".proto.Command.PinOperation.PinOpType\"r\n" +
+      "\tPinOpType\022\032\n\rINVALID_PINOP\020\377\377\377\377\377\377\377\377\377\001\022\020" +
+      "\n\014UNLOCK_PINOP\020\001\022\016\n\nLOCK_PINOP\020\002\022\017\n\013ERAS" +
+      "E_PINOP\020\003\022\026\n\022SECURE_ERASE_PINOP\020\004\"c\n\017Syn" +
+      "chronization\022$\n\027INVALID_SYNCHRONIZATION\020" +
+      "\377\377\377\377\377\377\377\377\377\001\022\020\n\014WRITETHROUGH\020\001\022\r\n\tWRITEBAC" +
+      "K\020\002\022\t\n\005FLUSH\020\003\"F\n\010Priority\022\n\n\006NORMAL\020\005\022\n",
+      "\n\006LOWEST\020\001\022\t\n\005LOWER\020\003\022\n\n\006HIGHER\020\007\022\013\n\007HIG" +
+      "HEST\020\t\"_\n\tAlgorithm\022\036\n\021INVALID_ALGORITHM" +
+      "\020\377\377\377\377\377\377\377\377\377\001\022\010\n\004SHA1\020\001\022\010\n\004SHA2\020\002\022\010\n\004SHA3\020" +
+      "\003\022\t\n\005CRC32\020\004\022\t\n\005CRC64\020\005\"\371\005\n\013MessageType\022" +
+      "!\n\024INVALID_MESSAGE_TYPE\020\377\377\377\377\377\377\377\377\377\001\022\007\n\003GE" +
+      "T\020\002\022\020\n\014GET_RESPONSE\020\001\022\007\n\003PUT\020\004\022\020\n\014PUT_RE" +
+      "SPONSE\020\003\022\n\n\006DELETE\020\006\022\023\n\017DELETE_RESPONSE\020" +
+      "\005\022\013\n\007GETNEXT\020\010\022\024\n\020GETNEXT_RESPONSE\020\007\022\017\n\013" +
+      "GETPREVIOUS\020\n\022\030\n\024GETPREVIOUS_RESPONSE\020\t\022" +
+      "\017\n\013GETKEYRANGE\020\014\022\030\n\024GETKEYRANGE_RESPONSE",
+      "\020\013\022\016\n\nGETVERSION\020\020\022\027\n\023GETVERSION_RESPONS" +
+      "E\020\017\022\t\n\005SETUP\020\026\022\022\n\016SETUP_RESPONSE\020\025\022\n\n\006GE" +
+      "TLOG\020\030\022\023\n\017GETLOG_RESPONSE\020\027\022\014\n\010SECURITY\020" +
+      "\032\022\025\n\021SECURITY_RESPONSE\020\031\022\021\n\rPEER2PEERPUS" +
+      "H\020\034\022\032\n\026PEER2PEERPUSH_RESPONSE\020\033\022\010\n\004NOOP\020" +
+      "\036\022\021\n\rNOOP_RESPONSE\020\035\022\020\n\014FLUSHALLDATA\020 \022\031" +
+      "\n\025FLUSHALLDATA_RESPONSE\020\037\022\t\n\005PINOP\020$\022\022\n\016" +
+      "PINOP_RESPONSE\020#\022\r\n\tMEDIASCAN\020&\022\026\n\022MEDIA" +
+      "SCAN_RESPONSE\020%\022\021\n\rMEDIAOPTIMIZE\020(\022\032\n\026ME" +
+      "DIAOPTIMIZE_RESPONSE\020\'\022\017\n\013START_BATCH\020*\022",
+      "\030\n\024START_BATCH_RESPONSE\020)\022\r\n\tEND_BATCH\020," +
+      "\022\026\n\022END_BATCH_RESPONSE\020+\022\017\n\013ABORT_BATCH\020" +
+      ".\022\030\n\024ABORT_BATCH_RESPONSE\020-B\tB\007Kinetic"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -30887,7 +31026,7 @@ public final class Kinetic {
           internal_static_com_seagate_kinetic_proto_Command_Setup_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_com_seagate_kinetic_proto_Command_Setup_descriptor,
-              new java.lang.String[] { "NewClusterVersion", "FirmwareDownload", });
+              new java.lang.String[] { "NewClusterVersion", "FirmwareDownload", "DrivePowerDown", });
           internal_static_com_seagate_kinetic_proto_Command_P2POperation_descriptor =
             internal_static_com_seagate_kinetic_proto_Command_descriptor.getNestedTypes().get(6);
           internal_static_com_seagate_kinetic_proto_Command_P2POperation_fieldAccessorTable = new

@@ -24,21 +24,18 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.sql.Timestamp;
-
 import java.util.Date;
 import java.util.Map;
 import java.util.logging.Logger;
 
 import com.seagate.kinetic.common.lib.KineticMessage;
 import com.seagate.kinetic.proto.Kinetic.Command;
-
 import com.seagate.kinetic.proto.Kinetic.Command.MessageType;
 import com.seagate.kinetic.proto.Kinetic.Command.Security.ACL;
 import com.seagate.kinetic.proto.Kinetic.Command.Security.ACL.Permission;
 import com.seagate.kinetic.proto.Kinetic.Command.Setup;
 import com.seagate.kinetic.proto.Kinetic.Command.Status.StatusCode;
 import com.seagate.kinetic.simulator.lib.SetupInfo;
-import com.seagate.kinetic.simulator.persist.Store;
 
 /**
  *
@@ -87,58 +84,52 @@ public abstract class SetupHandler {
     }
 
    
-    @SuppressWarnings("rawtypes")
     public static SetupInfo handleSetup(KineticMessage request,
-            KineticMessage respond, Store store,
-            String kineticHome) throws IOException, KVStoreException {
+            KineticMessage respond, SimulatorEngine engine) throws IOException,
+            KVStoreException {
+
+        String kineticHome = engine.getKineticHome();
         
         SetupInfo setupInfo = new SetupInfo();
         
         Command.Builder commandBuilder = (Command.Builder) respond.getCommand();
         
-        // persist setupInfo
-        SetupHandler.persistSetup(request.getCommand().getBody()
-                .getSetup()
-                .toByteArray(), kineticHome);
-
         // modify clusterVersion
         if (request.getCommand().getBody().getSetup()
                 .hasNewClusterVersion()) {
+
+            // persist setupInfo
+            SetupHandler.persistSetup(request.getCommand().getBody().getSetup()
+                    .toByteArray(), kineticHome);
+
             long newClusterVersion = request.getCommand()
                     .getBody().getSetup()
                     .getNewClusterVersion();
-            //if (null != newClusterVersion) {
+
                 setupInfo.setClusterVersion(newClusterVersion);
+
+            // set cluster version to engine instance (cache)
+            engine.setClusterVersion(newClusterVersion);
+
                 logger.info("the cluster version is set to: " + newClusterVersion);
-            //}
-        }
 
-        /**
-         * XXX protocol-3.0.0
-         */
-        // erase the db data
-        //if (request.getMessage().getCommand().getBody().getSetup()
-        //        .getInstantSecureErase()) {
-        //    store.reset();
-        //    logger.info("erase db finish!");
-        //}
-
-        // set pin
-        //if (request.getMessage().getCommand().getBody().getSetup().hasSetPin()) {
-        //    myPin = request.getMessage().getCommand().getBody().getSetup()
-        //            .getSetPin()
-        //            .toByteArray();
-        //    setupInfo.setPin(myPin);
-        //    logger.info("the drive pin is set: " + new String(myPin));
-        //}
-
-        // persist firmware download
-        if (request.getCommand().getBody().getSetup()
+        } else if (request.getCommand().getBody().getSetup()
                 .getFirmwareDownload()) {
             if (request.getValue() != null) {
                 byte[] firmwareDownloadValue = request.getValue();
                 persistFirmwareDownload(firmwareDownloadValue, kineticHome);
             }
+        } else if (request.getCommand().getBody().getSetup()
+                .hasDrivePowerDown()) {
+
+            // request power down state
+            boolean powerDownState = request.getCommand().getBody().getSetup()
+                    .getDrivePowerDown();
+
+            // set power down state
+            engine.setPowerDown(powerDownState);
+
+            logger.info("set device to power down state: " + powerDownState);
         }
 
         // TODO handle exception

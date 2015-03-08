@@ -317,6 +317,54 @@ public class AdminApiUsage {
     }
 
     /**
+     * Perform device power down and up example.
+     * 
+     * @throws KineticException
+     *             if any internal error occurred.
+     */
+    public void devicePowerDown() throws KineticException {
+
+        // admin client configuration
+        AdminClientConfiguration adminClientConfig = new AdminClientConfiguration();
+
+        // set cluster version
+        adminClientConfig.setClusterVersion(1);
+
+        // set user id
+        adminClientConfig.setUserId(1);
+
+        // set key
+        adminClientConfig.setKey("asdfasdf");
+
+        // construct a new instance of admin client
+        KineticAdminClient adminClient = KineticAdminClientFactory
+                .createInstance(adminClientConfig);
+
+        // power down device
+        adminClient.devicePowerDown();
+
+        try {
+            // ping device, expect to throw Kinetic exception (device power
+            // down)
+            adminClient.noop();
+        } catch (KineticException ke) {
+            // expected exception
+            ke.printStackTrace();
+        }
+
+        try {
+            // power up device
+            adminClient.devicePowerUp();
+
+            // ping the drive, expected to be OK.
+            adminClient.noop();
+        } finally {
+            adminClient.close();
+        }
+
+    }
+
+    /**
      * 
      * Kinetic Admin API usage example.
      * <p>
@@ -354,7 +402,10 @@ public class AdminApiUsage {
         // 3. get log from drive
         KineticLog kineticLog = kineticDrive.getLog();
 
-        // 4. erase all the data in the drive
+        // 4. device power down/up example
+        kineticDrive.devicePowerDown();
+
+        // 5. erase all the data in the drive
         kineticDrive.secureErase();
 
     }

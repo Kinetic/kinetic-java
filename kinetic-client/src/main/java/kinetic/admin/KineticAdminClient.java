@@ -260,4 +260,21 @@ public interface KineticAdminClient extends KineticP2pClient {
      * @throws KineticException if any internal error occurred.
      */
     public KineticMessage mediaOptimize(Range range, Priority priority) throws KineticException;
+
+    /**
+     * Sent request to device to enter power down state.
+     * 
+     * @throws KineticException
+     *             if any internal error occurred.
+     */
+    public void devicePowerDown() throws KineticException;
+
+    /**
+     * Sent request to device to resume to normal operational state.
+     * 
+     * @throws KineticException
+     *             if any internal error occurred.
+     */
+    public void devicePowerUp() throws KineticException;
+
 }

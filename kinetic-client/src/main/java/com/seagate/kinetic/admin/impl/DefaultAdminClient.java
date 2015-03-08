@@ -814,7 +814,47 @@ public class DefaultAdminClient extends DefaultKineticP2pClient implements Kinet
             throws KineticException {
         this.firmwareDownload(bytes);
     }
+
+    @Override
+    public void devicePowerDown() throws KineticException {
+        this.setDevicePowerDownState(true);
+    }
+
+    @Override
+    public void devicePowerUp() throws KineticException {
+        this.setDevicePowerDownState(false);
+    }
     
-    
-    
+    private void setDevicePowerDownState(boolean powerDown)
+            throws KineticException {
+        KineticMessage km = MessageFactory.createKineticMessageWithBuilder();
+
+        Command.Builder commandBuilder = (Command.Builder) km.getCommand();
+
+        Setup.Builder setup = commandBuilder.getBodyBuilder().getSetupBuilder();
+
+        setup.setDrivePowerDown(powerDown);
+
+        commandBuilder.getHeaderBuilder().setMessageType(MessageType.SETUP);
+
+        KineticMessage kmresp = request(km);
+
+        if (kmresp.getCommand().getHeader().getMessageType() != MessageType.SETUP_RESPONSE) {
+            throw new KineticException("received wrong message type.");
+        }
+
+        if (kmresp.getCommand().getStatus().getCode() == Status.StatusCode.NOT_AUTHORIZED) {
+
+            throw new KineticException("Authorized Exception: "
+                    + kmresp.getCommand().getStatus().getCode() + ": "
+                    + kmresp.getCommand().getStatus().getStatusMessage());
+        }
+
+        if (kmresp.getCommand().getStatus().getCode() != Status.StatusCode.SUCCESS) {
+            throw new KineticException("Internal Error: "
+                    + kmresp.getCommand().getStatus().getCode() + ": "
+                    + kmresp.getCommand().getStatus().getStatusMessage());
+        }
+    }
+
 }

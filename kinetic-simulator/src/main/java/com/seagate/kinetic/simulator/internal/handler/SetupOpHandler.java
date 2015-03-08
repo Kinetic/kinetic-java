@@ -38,13 +38,7 @@ public class SetupOpHandler extends CommandHandlerBase implements
             SetupInfo setupInfo = null;
 
             try {
-                setupInfo = SetupHandler.handleSetup(request, response,
-                        engine.getStore(), engine.getKineticHome());
-
-                if (setupInfo != null) {
-                    this.engine
-                            .setClusterVersion(setupInfo.getClusterVersion());
-                }
+                setupInfo = SetupHandler.handleSetup(request, response, engine);
 
             } catch (Exception e) {
                 throw new ServiceException(e);

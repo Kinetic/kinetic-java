@@ -213,7 +213,11 @@ public class RequestContext {
         HeaderOp.checkHeader(this.request, this.response, key,
  this.engine);
 
+        // check if devide locked
         checkDeviceLocked();
+
+        // check if device is in power down state
+        checkDevicePowerDown();
     }
 
     /**
@@ -246,6 +250,39 @@ public class RequestContext {
             throw new DeviceLockedException();
         }
 
+    }
+
+    private void checkDevicePowerDown() throws DevicePowerDownException {
+
+        /**
+         * in normal power state, simply return.
+         */
+        if (this.engine.getPowerDown() == false) {
+            return;
+        }
+
+        /**
+         * device in power down state. The only command acceptable is to power
+         * up.
+         */
+        if (this.request.getCommand().getBody().getSetup().hasDrivePowerDown()) {
+            if (this.request.getCommand().getBody().getSetup()
+                    .getDrivePowerDown() == false) {
+                return;
+            }
+        }
+
+        /**
+         * set response status code.
+         */
+        // set power down status code
+        commandBuilder.getStatusBuilder().setCode(StatusCode.DRIVE_POWER_DOWN);
+
+        // set status message
+        commandBuilder.getStatusBuilder().setStatusMessage(
+                "Device is in power down state");
+
+        throw new DevicePowerDownException();
     }
 
     /**

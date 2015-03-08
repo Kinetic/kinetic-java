@@ -166,6 +166,9 @@ public class SimulatorEngine implements MessageService {
 
     private volatile boolean deviceLocked = false;
 
+    // power down state
+    private volatile boolean powerDown = false;
+
     static {
         // add shutdown hook to clean up resources
         Runtime.getRuntime().addShutdownHook(shutdownHook);
@@ -905,6 +908,25 @@ public class SimulatorEngine implements MessageService {
      */
     public boolean getDeviceLocked() {
         return this.deviceLocked;
+    }
+
+    /**
+     * Set device power down state
+     * 
+     * @param flag
+     *            true to set device to power down state.
+     */
+    public void setPowerDown(boolean flag) {
+        this.powerDown = flag;
+    }
+
+    /**
+     * Get device power down state.
+     * 
+     * @return true if device is in power saving state. Otherwise, return false.
+     */
+    public boolean getPowerDown() {
+        return this.powerDown;
     }
 
 }
