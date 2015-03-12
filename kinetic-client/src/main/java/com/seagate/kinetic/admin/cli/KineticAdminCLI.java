@@ -17,10 +17,12 @@
  */
 package com.seagate.kinetic.admin.cli;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -68,6 +70,7 @@ public class KineticAdminCLI {
     private static final String MESSAGES = "message";
     private static final String STATISTICS = "statistic";
     private static final String LIMITS = "limits";
+    private static final int DEFAULT_PORT = 8123;
     private static final int DEFAULT_SSL_PORT = 8443;
     private static final String DEFAULT_HOST = "localhost";
     private static final long CLUSTERVERSION = 0;
@@ -140,7 +143,6 @@ public class KineticAdminCLI {
 
         rootArg = "-firmware";
         subArgs = initSubArgs();
-        subArgs.add("-pin");
         legalArguments.put(rootArg, subArgs);
 
         rootArg = "-lockdevice";
@@ -157,8 +159,8 @@ public class KineticAdminCLI {
     /*
      * init Kinetic client
      */
-    public void init(String host, String tlsPort, String clusterVersion)
-            throws KineticException {
+    public void init(String host, String useSsl, String port,
+            String clusterVersion) throws KineticException {
         AdminClientConfiguration adminClientConfig = new AdminClientConfiguration();
         adminClientConfig.setRequestTimeoutMillis(DEFAULT_REQUEST_TIMEOUT);
         if (host != null && !host.isEmpty()) {
@@ -168,11 +170,19 @@ public class KineticAdminCLI {
             adminClientConfig.setHost(DEFAULT_HOST);
         }
 
-        if (tlsPort != null && !tlsPort.isEmpty()) {
-            validatePort(tlsPort);
-            adminClientConfig.setPort(Integer.parseInt(tlsPort));
+        if (Boolean.parseBoolean(useSsl)) {
+            adminClientConfig.setUseSsl(true);
         } else {
+            adminClientConfig.setUseSsl(false);
+        }
+
+        if (port != null && !port.isEmpty()) {
+            validatePort(port);
+            adminClientConfig.setPort(Integer.parseInt(port));
+        } else if (Boolean.parseBoolean(useSsl)) {
             adminClientConfig.setPort(DEFAULT_SSL_PORT);
+        } else {
+            adminClientConfig.setPort(DEFAULT_PORT);
         }
 
         if (clusterVersion != null && !clusterVersion.isEmpty()) {
@@ -238,12 +248,23 @@ public class KineticAdminCLI {
         if (!file.exists()) {
             throw new FileNotFoundException();
         }
-
-        byte[] content = new byte[(int) file.length()];
-        FileInputStream in = new FileInputStream(file);
-        in.read(content);
+        
+        if (file.length() > Integer.MAX_VALUE){
+            throw new IOException("File is too large!");
+        }
+        
+        InputStream in = null;
+        in = new FileInputStream(file);
+        
+        ByteArrayOutputStream content = new ByteArrayOutputStream();
+        byte[] b = new byte[1024];
+        int n;
+        while ((n = in.read(b)) != -1) {
+            content.write(b, 0, n);
+        }
         in.close();
-        return content;
+        
+        return content.toByteArray();
     }
 
     public KineticLog getLog(String type) throws KineticException {
@@ -342,16 +363,11 @@ public class KineticAdminCLI {
         return kineticAdminClient.getVendorSpecificDeviceLog(nameB);
     }
 
-    public void firmwareDownload(String pin, String firmwareFile)
-            throws IOException, KineticException {
+    public void firmwareDownload(String firmwareFile) throws IOException,
+            KineticException {
         byte[] content = readFile(firmwareFile);
 
-        byte[] pinB = null;
-        if (pin != null) {
-            pinB = pin.getBytes(Charset.forName("UTF-8"));
-        }
-
-        kineticAdminClient.firmwareDownload(pinB, content);
+        kineticAdminClient.firmwareDownload(content);
     }
 
     public void lockDevice(String lockPin) throws KineticException {
@@ -378,17 +394,17 @@ public class KineticAdminCLI {
         StringBuffer sb = new StringBuffer();
         sb.append("Usage: kineticAdmin <-setclusterversion|-seterasepin|-setlockpin|-instanterase|-secureerase|-security|-getlog|-getvendorspecificdevicelog|-firmware|-lockdevice|-unlockdevice>\n");
         sb.append("kineticAdmin -h|-help\n");
-        sb.append("kineticAdmin -setclusterversion <-newclversion <newclusterversion>> [-host <ip|hostname>] [-tlsport <tlsport>] [-clversion <clusterversion>]\n");
-        sb.append("kineticAdmin -seterasepin <-olderasepin <olderasepin>> <-newerasepin <newerasepin>> [-host <ip|hostname>] [-tlsport <tlsport>] [-clversion <clusterversion>]\n");
-        sb.append("kineticAdmin -setlockpin <-oldlockpin <oldlockpin>> <-newlockpin <newlockpin>> [-host <ip|hostname>] [-tlsport <tlsport>] [-clversion <clusterversion>]\n");
-        sb.append("kineticAdmin -instanterase <-pin <erasepin>> [-host <ip|hostname>] [-tlsport <tlsport>] [-clversion <clusterversion>]\n");
-        sb.append("kineticAdmin -secureerase <-pin <erasepin>> [-host <ip|hostname>] [-tlsport <tlsport>] [-clversion <clusterversion>]\n");
-        sb.append("kineticAdmin -security <file> [-host <ip|hostname>] [-tlsport <tlsport>] [-clversion <clusterversion>]\n");
-        sb.append("kineticAdmin -getlog [-host <ip|hostname>] [-tlsport <tlsport>] [-clversion <clusterversion>] [-type <utilization|temperature|capacity|configuration|message|statistic|limits|all>]\n");
-        sb.append("kineticAdmin -getvendorspecificdevicelog <-name <vendorspecificname>> [-host <ip|hostname>] [-tlsport <tlsport>] [-clversion <clusterversion>]\n");
-        sb.append("kineticAdmin -firmware <file> [-host <ip|hostname>] [-tlsport <tlsport>] [-clversion <clusterversion>] [-pin <pin>]\n");
-        sb.append("kineticAdmin -lockdevice <-pin <lockpin>> [-host <ip|hostname>] [-tlsport <tlsport>] [-clversion <clusterversion>]\n");
-        sb.append("kineticAdmin -unlockdevice <-pin <lockpin>> [-host <ip|hostname>] [-tlsport <tlsport>] [-clversion <clusterversion>]");
+        sb.append("kineticAdmin -setclusterversion <-newclversion <newclusterversion>> [-host <ip|hostname>] [-usessl <true|false>] [-port <port>] [-clversion <clusterversion>]\n");
+        sb.append("kineticAdmin -seterasepin <-olderasepin <olderasepin>> <-newerasepin <newerasepin>> [-host <ip|hostname>] [-usessl <true|false>] [-port <port>] [-clversion <clusterversion>]\n");
+        sb.append("kineticAdmin -setlockpin <-oldlockpin <oldlockpin>> <-newlockpin <newlockpin>> [-host <ip|hostname>] [-usessl <true|false>] [-port <port>] [-clversion <clusterversion>]\n");
+        sb.append("kineticAdmin -instanterase <-pin <erasepin>> [-host <ip|hostname>] [-usessl <true|false>] [-port <port>] [-clversion <clusterversion>]\n");
+        sb.append("kineticAdmin -secureerase <-pin <erasepin>> [-host <ip|hostname>] [-usessl <true|false>] [-port <port>] [-clversion <clusterversion>]\n");
+        sb.append("kineticAdmin -security <file> [-host <ip|hostname>] [-usessl <true|false>] [-port <port>] [-clversion <clusterversion>]\n");
+        sb.append("kineticAdmin -getlog [-host <ip|hostname>] [-usessl <true|false>] [-port <port>] [-clversion <clusterversion>] [-type <utilization|temperature|capacity|configuration|message|statistic|limits|all>]\n");
+        sb.append("kineticAdmin -getvendorspecificdevicelog <-name <vendorspecificname>> [-host <ip|hostname>] [-usessl <true|false>] [-port <port>] [-clversion <clusterversion>]\n");
+        sb.append("kineticAdmin -firmware <file> [-host <ip|hostname>] [-usessl <true|false>] [-port <port>] [-clversion <clusterversion>]\n");
+        sb.append("kineticAdmin -lockdevice <-pin <lockpin>> [-host <ip|hostname>] [-usessl <true|false>] [-port <port>] [-clversion <clusterversion>]\n");
+        sb.append("kineticAdmin -unlockdevice <-pin <lockpin>> [-host <ip|hostname>] [-usessl <true|false>] [-port <port>] [-clversion <clusterversion>]");
         System.out.println(sb.toString());
     }
 
@@ -448,8 +464,10 @@ public class KineticAdminCLI {
     }
 
     public void printGetVendorSpecificDeviceLog(Device device) {
-        System.out.println("device name: " + new String(device.getName()));
-        System.out.println("device value: " + new String(device.getValue()));
+        StringBuffer sb = new StringBuffer();
+        sb.append("device name: " + new String(device.getName()) + "\n");
+        sb.append("device value: " + new String(device.getValue()));
+        System.out.println(sb);
     }
 
     public void printSuccessResult() {
@@ -558,10 +576,9 @@ public class KineticAdminCLI {
             } else if (args[0].equalsIgnoreCase("-firmware")) {
                 initAdminClient(args, kineticAdminCLI);
 
-                String pin = kineticAdminCLI.getArgValue("-pin", args);
                 String firmwareFile = kineticAdminCLI.getArgValue("-firmware",
                         args);
-                kineticAdminCLI.firmwareDownload(pin, firmwareFile);
+                kineticAdminCLI.firmwareDownload(firmwareFile);
                 kineticAdminCLI.printSuccessResult();
             } else if (args[0].equalsIgnoreCase("-lockdevice")) {
                 initAdminClient(args, kineticAdminCLI);
@@ -610,17 +627,20 @@ public class KineticAdminCLI {
         String host;
         String port;
         String clusterVersion;
+        String useSsl;
         host = kineticAdminCLI.getArgValue("-host", args);
-        port = kineticAdminCLI.getArgValue("-tlsport", args);
+        useSsl = kineticAdminCLI.getArgValue("-usessl", args);
+        port = kineticAdminCLI.getArgValue("-port", args);
         clusterVersion = kineticAdminCLI.getArgValue("-clversion", args);
-        kineticAdminCLI.init(host, port, clusterVersion);
+        kineticAdminCLI.init(host, useSsl, port, clusterVersion);
     }
 
     private List<String> initSubArgs() {
         List<String> subArgs;
         subArgs = new ArrayList<String>();
         subArgs.add("-host");
-        subArgs.add("-tlsport");
+        subArgs.add("-port");
+        subArgs.add("-usessl");
         subArgs.add("-clversion");
         return subArgs;
     }
@@ -705,10 +725,11 @@ public class KineticAdminCLI {
     private void printCapacity(KineticLog kineticLog) throws KineticException {
         Capacity capacity = kineticLog.getCapacity();
         if (capacity != null) {
-            System.out.println("NominalCapacityInBytes: "
-                    + capacity.getNominalCapacityInBytes());
-            System.out.println("PortionFull: " + capacity.getPortionFull()
-                    + "\n");
+            StringBuffer sb = new StringBuffer();
+            sb.append("NominalCapacityInBytes: "
+                    + capacity.getNominalCapacityInBytes() + "\n");
+            sb.append("PortionFull: " + capacity.getPortionFull() + "\n");
+            System.out.println(sb);
         }
     }
 
@@ -718,11 +739,13 @@ public class KineticAdminCLI {
         temps = kineticLog.getTemperature();
         if (temps != null && !temps.isEmpty()) {
             for (Temperature temp : temps) {
-                System.out.println("Name: " + temp.getName());
-                System.out.println("Max: " + temp.getMax());
-                System.out.println("Min: " + temp.getMin());
-                System.out.println("Target: " + temp.getTarget());
-                System.out.println("Current: " + temp.getCurrent() + "\n");
+                StringBuffer sb = new StringBuffer();
+                sb.append("Name: " + temp.getName() + "\n");
+                sb.append("Max: " + temp.getMax() + "\n");
+                sb.append("Min: " + temp.getMin() + "\n");
+                sb.append("Target: " + temp.getTarget() + "\n");
+                sb.append("Current: " + temp.getCurrent() + "\n");
+                System.out.println(sb);
             }
         }
     }
@@ -733,8 +756,10 @@ public class KineticAdminCLI {
         utils = kineticLog.getUtilization();
         if (utils != null && !utils.isEmpty()) {
             for (Utilization util : utils) {
-                System.out.println("Name: " + util.getName());
-                System.out.println("Utility: " + util.getUtility() + "\n");
+                StringBuffer sb = new StringBuffer();
+                sb.append("Name: " + util.getName() + "\n");
+                sb.append("Utility: " + util.getUtility() + "\n");
+                System.out.println(sb);
             }
         }
     }
@@ -744,9 +769,11 @@ public class KineticAdminCLI {
         statis = kineticLog.getStatistics();
         if (statis != null && !statis.isEmpty()) {
             for (Statistics stati : statis) {
-                System.out.println("MessageType: " + stati.getMessageType());
-                System.out.println("Count: " + stati.getCount());
-                System.out.println("Bytes: " + stati.getBytes() + "\n");
+                StringBuffer sb = new StringBuffer();
+                sb.append("MessageType: " + stati.getMessageType() + "\n");
+                sb.append("Count: " + stati.getCount() + "\n");
+                sb.append("Bytes: " + stati.getBytes() + "\n");
+                System.out.println(sb);
             }
         }
     }
@@ -762,32 +789,33 @@ public class KineticAdminCLI {
             throws KineticException {
         Configuration config = kineticLog.getConfiguration();
         if (config != null) {
-            System.out.println("CompilationDate: "
-                    + config.getCompilationDate());
-            System.out.println("Model: " + config.getModel());
-            System.out.println("Port: " + config.getPort());
-            System.out.println("TlsPort: " + config.getTlsPort());
-            System.out.println("ProtocolCompilationDate: "
-                    + config.getProtocolCompilationDate());
-            System.out.println("ProtocolSourceHash: "
-                    + config.getProtocolSourceHash());
-            System.out.println("ProtocolVersion: "
-                    + config.getProtocolVersion());
-            System.out.println("SerialNumber: " + config.getSerialNumber());
-            System.out.println("WorldWideName: " + config.getWorldWideName());
-            System.out.println("SourceHash: " + config.getSourceHash());
-            System.out.println("Vendor: " + config.getVendor());
-            System.out.println("Version: " + config.getVersion());
+            StringBuffer sb = new StringBuffer();
+            sb.append("CompilationDate: " + config.getCompilationDate() + "\n");
+            sb.append("Model: " + config.getModel() + "\n");
+            sb.append("Port: " + config.getPort() + "\n");
+            sb.append("TlsPort: " + config.getTlsPort() + "\n");
+            sb.append("ProtocolCompilationDate: "
+                    + config.getProtocolCompilationDate() + "\n");
+            sb.append("ProtocolSourceHash: " + config.getProtocolSourceHash()
+                    + "\n");
+            sb.append("ProtocolVersion: " + config.getProtocolVersion() + "\n");
+            sb.append("SerialNumber: " + config.getSerialNumber() + "\n");
+            sb.append("WorldWideName: " + config.getWorldWideName() + "\n");
+            sb.append("SourceHash: " + config.getSourceHash() + "\n");
+            sb.append("Vendor: " + config.getVendor() + "\n");
+            sb.append("Version: " + config.getVersion() + "\n");
+            System.out.println(sb);
 
             List<Interface> inets = new ArrayList<Interface>();
             inets = config.getInterfaces();
             if (inets != null && !inets.isEmpty()) {
                 for (Interface inet : inets) {
-                    System.out.println("Name: " + inet.getName());
-                    System.out.println("Mac: " + inet.getMAC());
-                    System.out.println("Ipv4Address: " + inet.getIpv4Address());
-                    System.out.println("Ipv6Address: " + inet.getIpv6Address()
-                            + "\n");
+                    StringBuffer sbIft = new StringBuffer();
+                    sbIft.append("Name: " + inet.getName() + "\n");
+                    sbIft.append("Mac: " + inet.getMAC() + "\n");
+                    sbIft.append("Ipv4Address: " + inet.getIpv4Address() + "\n");
+                    sbIft.append("Ipv6Address: " + inet.getIpv6Address() + "\n");
+                    System.out.println(sbIft);
                 }
             }
         }
@@ -796,20 +824,23 @@ public class KineticAdminCLI {
     private void printLimits(KineticLog kineticLog) throws KineticException {
         Limits limits = kineticLog.getLimits();
         if (limits != null) {
-            System.out.println("MaxConnections: " + limits.getMaxConnections());
-            System.out.println("MaxIdentityCount: "
-                    + limits.getMaxIdentityCount());
-            System.out.println("MaxKeyRangeCount: "
-                    + limits.getMaxKeyRangeCount());
-            System.out.println("MaxKeySize: " + limits.getMaxKeySize());
-            System.out.println("MaxMessageSize: " + limits.getMaxMessageSize());
-            System.out.println("MaxOutstandingReadRequests: "
-                    + limits.getMaxOutstandingReadRequests());
-            System.out.println("MaxOutstandingWriteRequests: "
-                    + limits.getMaxOutstandingWriteRequests());
-            System.out.println("MaxTagSize: " + limits.getMaxTagSize());
-            System.out.println("MaxValueSize: " + limits.getMaxValueSize());
-            System.out.println("MaxVersionSize: " + limits.getMaxVersionSize());
+            StringBuffer sb = new StringBuffer();
+            sb.append("MaxConnections: " + limits.getMaxConnections() + "\n");
+            sb.append("MaxIdentityCount: " + limits.getMaxIdentityCount()
+                    + "\n");
+            sb.append("MaxKeyRangeCount: " + limits.getMaxKeyRangeCount()
+                    + "\n");
+            sb.append("MaxKeySize: " + limits.getMaxKeySize() + "\n");
+            sb.append("MaxMessageSize: " + limits.getMaxMessageSize() + "\n");
+            sb.append("MaxOutstandingReadRequests: "
+                    + limits.getMaxOutstandingReadRequests() + "\n");
+            sb.append("MaxOutstandingWriteRequests: "
+                    + limits.getMaxOutstandingWriteRequests() + "\n");
+            sb.append("MaxTagSize: " + limits.getMaxTagSize() + "\n");
+            sb.append("MaxValueSize: " + limits.getMaxValueSize() + "\n");
+            sb.append("MaxVersionSize: " + limits.getMaxVersionSize() + "\n");
+
+            System.out.println(sb);
         }
     }
 

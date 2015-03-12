@@ -85,7 +85,7 @@ public class IntegrationTestCase {
 	@BeforeClass(alwaysRun = true)
 	public void startTestServer() throws InterruptedException,
 			KineticException, IOException, JSchException, ExecutionException {
-		createKineticClientConfugurations();
+		createKineticClientConfigurations();
 		testTarget = IntegrationTestTargetFactory.createTestTarget(true);
 		kineticClients.clear();
 		for (String clientName : kineticClientConfigutations.keySet()) {
@@ -364,7 +364,7 @@ public class IntegrationTestCase {
 		return objects;
 	}
 
-	private void createKineticClientConfugurations() throws KineticException {
+	private void createKineticClientConfigurations() throws KineticException {
 		kineticClientConfigutations.clear();
 		ClientConfiguration clientConfiguration;
 

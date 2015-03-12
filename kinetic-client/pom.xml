@@ -210,6 +210,11 @@
 			<artifactId>jetty-webapp</artifactId>
 			<version>8.1.13.v20130916</version>
 		</dependency>
+		<dependency>
+			<groupId>org.codehaus.jackson</groupId>
+			<artifactId>jackson-mapper-asl</artifactId>
+			<version>1.9.13</version>
+		</dependency>
 
 		<dependency>
 			<groupId>${project.groupId}</groupId>
