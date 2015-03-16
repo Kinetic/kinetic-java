@@ -170,19 +170,17 @@ public class KineticAdminCLI {
             adminClientConfig.setHost(DEFAULT_HOST);
         }
 
-        if (Boolean.parseBoolean(useSsl)) {
+        if (useSsl == null || useSsl.isEmpty() || Boolean.parseBoolean(useSsl)) {
             adminClientConfig.setUseSsl(true);
+            adminClientConfig.setPort(DEFAULT_SSL_PORT);
         } else {
             adminClientConfig.setUseSsl(false);
+            adminClientConfig.setPort(DEFAULT_PORT);
         }
 
         if (port != null && !port.isEmpty()) {
             validatePort(port);
             adminClientConfig.setPort(Integer.parseInt(port));
-        } else if (Boolean.parseBoolean(useSsl)) {
-            adminClientConfig.setPort(DEFAULT_SSL_PORT);
-        } else {
-            adminClientConfig.setPort(DEFAULT_PORT);
         }
 
         if (clusterVersion != null && !clusterVersion.isEmpty()) {
@@ -248,14 +246,14 @@ public class KineticAdminCLI {
         if (!file.exists()) {
             throw new FileNotFoundException();
         }
-        
-        if (file.length() > Integer.MAX_VALUE){
+
+        if (file.length() > Integer.MAX_VALUE) {
             throw new IOException("File is too large!");
         }
-        
+
         InputStream in = null;
         in = new FileInputStream(file);
-        
+
         ByteArrayOutputStream content = new ByteArrayOutputStream();
         byte[] b = new byte[1024];
         int n;
@@ -263,7 +261,7 @@ public class KineticAdminCLI {
             content.write(b, 0, n);
         }
         in.close();
-        
+
         return content.toByteArray();
     }
 
@@ -402,7 +400,7 @@ public class KineticAdminCLI {
         sb.append("kineticAdmin -security <file> [-host <ip|hostname>] [-usessl <true|false>] [-port <port>] [-clversion <clusterversion>]\n");
         sb.append("kineticAdmin -getlog [-host <ip|hostname>] [-usessl <true|false>] [-port <port>] [-clversion <clusterversion>] [-type <utilization|temperature|capacity|configuration|message|statistic|limits|all>]\n");
         sb.append("kineticAdmin -getvendorspecificdevicelog <-name <vendorspecificname>> [-host <ip|hostname>] [-usessl <true|false>] [-port <port>] [-clversion <clusterversion>]\n");
-        sb.append("kineticAdmin -firmware <file> [-host <ip|hostname>] [-usessl <true|false>] [-port <port>] [-clversion <clusterversion>]\n");
+        sb.append("kineticAdmin -firmware <file> [-host <ip|hostname>] [-port <port>] [-clversion <clusterversion>]\n");
         sb.append("kineticAdmin -lockdevice <-pin <lockpin>> [-host <ip|hostname>] [-usessl <true|false>] [-port <port>] [-clversion <clusterversion>]\n");
         sb.append("kineticAdmin -unlockdevice <-pin <lockpin>> [-host <ip|hostname>] [-usessl <true|false>] [-port <port>] [-clversion <clusterversion>]");
         System.out.println(sb.toString());
@@ -517,6 +515,7 @@ public class KineticAdminCLI {
                 kineticAdminCLI.setClusterVersion(newClusterVersion);
                 kineticAdminCLI.printSuccessResult();
             } else if (args[0].equalsIgnoreCase("-seterasepin")) {
+
                 initAdminClient(args, kineticAdminCLI);
 
                 String oldErasePin = kineticAdminCLI.getArgValue(
@@ -574,7 +573,15 @@ public class KineticAdminCLI {
                     kineticAdminCLI.printGetVendorSpecificDeviceLog(device);
                 }
             } else if (args[0].equalsIgnoreCase("-firmware")) {
-                initAdminClient(args, kineticAdminCLI);
+                String host;
+                String port;
+                String clusterVersion;
+                String useSsl = "false";
+                host = kineticAdminCLI.getArgValue("-host", args);
+                port = kineticAdminCLI.getArgValue("-port", args);
+                clusterVersion = kineticAdminCLI
+                        .getArgValue("-clversion", args);
+                kineticAdminCLI.init(host, useSsl, port, clusterVersion);
 
                 String firmwareFile = kineticAdminCLI.getArgValue("-firmware",
                         args);
