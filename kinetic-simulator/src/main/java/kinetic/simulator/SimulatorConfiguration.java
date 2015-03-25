@@ -220,12 +220,12 @@ public class SimulatorConfiguration extends Properties {
     /**
      * current simulator version.
      */
-    public static final String SIMULATOR_VERSION = "0.8.0.2-SNAPSHOT";
+    public static final String SIMULATOR_VERSION = "0.8.0.4-SNAPSHOT";
 
     /**
      * simulator source commit hash.
      */
-    public static final String SIMULATOR_SOURCE_HASH = "955392502ae15c9f59fd48a4a0b41f1450080dc8";
+    public static final String SIMULATOR_SOURCE_HASH = "4026da95012a74f137005362a419466dbcb2ae5a";
 
     /**
      * current supported protocol version defined at kinetic-protocol
@@ -238,7 +238,7 @@ public class SimulatorConfiguration extends Properties {
      * current supported protocol source commit hash value obtained from
      * kinetic-protocol repository.
      */
-    public static final String PROTOCOL_SOURCE_HASH = "f74698fba2df685cbfa9b6b9de54f1d2398f8615";
+    public static final String PROTOCOL_SOURCE_HASH = "a5e192b2a42e2919ba3bba5916de8a2435f81243";
 
     /**
      * heart beat provider.

@@ -219,6 +219,21 @@ public interface KineticClient extends GenericKineticClient {
     public Entry get(byte[] key) throws KineticException;
 
     /**
+     * Get the version of the entry associated with the specified key.
+     * 
+     * @param key
+     *            the key used to obtain the version of the matched entry.
+     * 
+     * @return the version of the Entry in the persistent store if there is a
+     *         match. Otherwise, returns null.
+     * 
+     * @throws KineticException
+     *             if any internal error occurred.
+     * 
+     */
+    public byte[] getVersion(byte[] key) throws KineticException;
+
+    /**
      * Get the <code>Entry</code> associated with the specified key
      * asynchronously.
      * <p>

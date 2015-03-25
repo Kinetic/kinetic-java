@@ -499,6 +499,34 @@ public class DefaultKineticClient implements AdvancedKineticClient {
                 endKeyInclusive);
     }
 
+    @Override
+    public byte[] getVersion(byte[] key) throws KineticException {
+
+        byte[] version = null;
+        KineticMessage request = null;
+        KineticMessage response = null;
+
+        try {
+
+            // create get request message
+            request = MessageFactory.createGetVersionRequestMessage(key);
+
+            // send request
+            response = this.client.request(request);
+
+            version = response.getCommand().getBody().getKeyValue()
+                    .getDbVersion().toByteArray();
+
+        } catch (Exception e) {
+            KineticException ke = new KineticException(e.getMessage(), e);
+            ke.setRequestMessage(request);
+            ke.setResponseMessage(response);
+            throw ke;
+        }
+
+        return version;
+    }
+
     /**
      * {@inheritDoc}
      */

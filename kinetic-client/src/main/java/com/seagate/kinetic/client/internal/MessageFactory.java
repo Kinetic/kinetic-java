@@ -406,6 +406,21 @@ public class MessageFactory {
         return kineticMessage;
     }
     
+    public static KineticMessage createGetVersionRequestMessage(byte[] key)
+            throws KineticException {
+
+        KineticMessage kineticMessage = createKineticMessageWithBuilder();
+
+        Command.Builder request = (Command.Builder) kineticMessage.getCommand();
+
+        request.getHeaderBuilder().setMessageType(MessageType.GETVERSION);
+
+        request.getBodyBuilder().getKeyValueBuilder()
+                .setKey(ByteString.copyFrom(key));
+
+        return kineticMessage;
+    }
+
     public static KineticMessage createFlushDataRequestMessage()
             throws KineticException {
 

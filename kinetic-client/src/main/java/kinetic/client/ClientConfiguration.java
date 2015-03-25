@@ -58,7 +58,7 @@ public class ClientConfiguration extends Properties {
     /**
      * current supported protocol source commit hash on kinetic-protocol repo.
      */
-    public static final String PROTOCOL_SOURCE_HASH = "f74698fba2df685cbfa9b6b9de54f1d2398f8615";
+    public static final String PROTOCOL_SOURCE_HASH = "a5e192b2a42e2919ba3bba5916de8a2435f81243";
 
     // kinetic server host
     private String host = "localhost";

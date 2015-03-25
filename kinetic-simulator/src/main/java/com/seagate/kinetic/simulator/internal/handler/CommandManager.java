@@ -75,6 +75,8 @@ public class CommandManager {
         handlerMap.put(MessageType.GETNEXT, kvHandler);
         handlerMap.put(MessageType.GETPREVIOUS, kvHandler);
 
+        handlerMap.put(MessageType.GETVERSION, kvHandler);
+
         handlerMap.put(MessageType.GETKEYRANGE, new RangeOpHandler());
 
         this.handlerMap.put(MessageType.SECURITY, new SecurityOpHandler());
