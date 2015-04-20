@@ -527,7 +527,7 @@ public interface KineticClient extends GenericKineticClient {
      * 
      * @since protocol version 3.0.6
      */
-    public BatchOperation createBatchOperation() throws KineticException;;
+    public BatchOperation createBatchOperation() throws KineticException;
 
     /**
      * Close the connection and release all resources allocated by this
