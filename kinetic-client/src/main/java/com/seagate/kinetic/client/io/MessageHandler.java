@@ -235,7 +235,12 @@ public class MessageHandler implements ClientMessageService, Runnable {
 
             if (message.getMessage().getAuthType() == AuthType.UNSOLICITEDSTATUS) {
 
-                logger.warning("received unsolicited message: " + message);
+                /**
+                 * log unsolicited status message.
+                 */
+                logger.warning("received unsolicited message: "
+                        + message.getCommand().getStatus().getCode() + ":"
+                        + message.getCommand().getStatus().getStatusMessage());
 
                 /**
                  * XXX chiaming 01/28/2015: The only possible behavior from the
