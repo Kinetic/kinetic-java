@@ -68,7 +68,7 @@ import com.seagate.kinetic.proto.Kinetic.Command.Status.StatusCode;
  * 
  */
 
-@Test(groups = { "simulator", "drive" })
+@Test(groups = { "simulator" })
 public class BatchOpAPITest extends IntegrationTestCase {
 
     private final int valueSize = 1024 * 1024;
