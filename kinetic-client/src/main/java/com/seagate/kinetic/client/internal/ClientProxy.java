@@ -481,7 +481,7 @@ public class ClientProxy {
         
         try {
 
-            finalizeHeader(kmreq);
+            // finalizeHeader(kmreq);
 
             kmresp = this.iohandler.getMessageHandler().write(kmreq);
 
@@ -538,7 +538,7 @@ public class ClientProxy {
             // Message.Builder message = (Builder) im.getMessage();
 
             // finalize and fill the required header fields for the message
-            finalizeHeader(kineticMessage);
+            // finalizeHeader(kineticMessage);
 
             // get request message to send
             // Message request = message.build();
@@ -562,7 +562,7 @@ public class ClientProxy {
     void requestNoAck(KineticMessage kmreq) throws KineticException {
 
         try {
-            finalizeHeader(kmreq);
+            // finalizeHeader(kmreq);
             this.iohandler.getMessageHandler().writeNoAck(kmreq);
         } catch (Exception e) {
 
@@ -604,7 +604,7 @@ public class ClientProxy {
      * @param message
      *            the request protocol buffer message.
      */
-    private void finalizeHeader(KineticMessage kineticMessage) {
+    public void finalizeHeader(KineticMessage kineticMessage) {
 
         Message.Builder messageBuilder = (Builder) kineticMessage.getMessage();
         

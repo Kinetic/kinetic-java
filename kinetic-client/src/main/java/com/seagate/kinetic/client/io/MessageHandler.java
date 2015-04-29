@@ -280,16 +280,25 @@ public class MessageHandler implements ClientMessageService, Runnable {
 		LinkedBlockingQueue<KineticMessage> lbq = new LinkedBlockingQueue<KineticMessage>(
 				1);
 
-		Long seq = Long.valueOf(message.getCommand().getHeader()
-				.getSequence());
-
-		this.ackmap.put(seq, lbq);
-
 		KineticMessage respond = null;
 
+        Long seq = 0L;
+
 		try {
-			// this.iohandler.write(message);
-			this.doWrite(message);
+
+            synchronized (this) {
+
+                this.client.finalizeHeader(message);
+
+                seq = Long.valueOf(message.getCommand().getHeader()
+                        .getSequence());
+
+                this.ackmap.put(seq, lbq);
+
+                // this.iohandler.write(message);
+                this.doWrite(message);
+            }
+
 			respond = lbq.poll(this.requestTimeout, TimeUnit.MILLISECONDS);
 
 			if (this.isClosed) {
@@ -302,17 +311,19 @@ public class MessageHandler implements ClientMessageService, Runnable {
 		return respond;
 	}
 
-	public void writeAsync(KineticMessage message, Object context)
+    public synchronized void writeAsync(KineticMessage message, Object context)
 			throws IOException,
 			InterruptedException {
+
+        this.client.finalizeHeader(message);
 
 		Long seq = Long.valueOf(message.getCommand().getHeader()
 				.getSequence());
 
-		synchronized (this) {
+        // synchronized (this) {
 			while (this.ackmap.size() >= this.asyncQueuedSize && this.isRunning) {
 				this.wait();
-			}
+            // }
 		}
 
 		this.ackmap.put(seq, context);
@@ -321,7 +332,11 @@ public class MessageHandler implements ClientMessageService, Runnable {
 		this.doWrite(message);
 	}
 
-    public void writeNoAck(KineticMessage message) throws IOException {
+    public synchronized void writeNoAck(KineticMessage message)
+            throws IOException {
+
+        this.client.finalizeHeader(message);
+
         this.doWrite(message);
     }
 
