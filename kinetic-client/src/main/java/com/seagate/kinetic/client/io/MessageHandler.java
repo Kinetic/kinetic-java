@@ -321,6 +321,10 @@ public class MessageHandler implements ClientMessageService, Runnable {
 		this.doWrite(message);
 	}
 
+    public void writeNoAck(KineticMessage message) throws IOException {
+        this.doWrite(message);
+    }
+
 	@SuppressWarnings("rawtypes")
 	private void invokeCallbackHandler(Object cbContext, KineticMessage response) {
 

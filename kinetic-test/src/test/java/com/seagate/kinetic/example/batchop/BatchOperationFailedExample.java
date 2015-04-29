@@ -21,10 +21,7 @@ import java.io.UnsupportedEncodingException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import kinetic.client.AsyncKineticException;
 import kinetic.client.BatchOperation;
-import kinetic.client.CallbackHandler;
-import kinetic.client.CallbackResult;
 import kinetic.client.ClientConfiguration;
 import kinetic.client.Entry;
 import kinetic.client.KineticClient;
@@ -37,7 +34,7 @@ import kinetic.client.KineticException;
  * @author chiaming
  *
  */
-public class BatchOperationFailedExample implements CallbackHandler<Entry> {
+public class BatchOperationFailedExample {
 
     private final static java.util.logging.Logger logger = Logger
             .getLogger(BatchOperationFailedExample.class.getName());
@@ -78,7 +75,7 @@ public class BatchOperationFailedExample implements CallbackHandler<Entry> {
 
             // put bar with wrong version, will fail
             bar.getEntryMetadata().setVersion("12341234".getBytes("UTF8"));
-            batch.putAsync(bar, "".getBytes(), this);
+            batch.put(bar, "".getBytes());
 
             // put foo
             Entry foo = new Entry();
@@ -86,13 +83,13 @@ public class BatchOperationFailedExample implements CallbackHandler<Entry> {
             foo.setValue("foo".getBytes("UTF8"));
             foo.getEntryMetadata().setVersion("5678".getBytes("UTF8"));
 
-            batch.putForcedAsync(foo, this);
+            batch.putForced(foo);
 
             // end/commit batch operation
             try {
                 batch.commit();
             } catch (Exception e) {
-                logger.info("received expected exception");
+                logger.info("received expected exception: " + e.getMessage());
             }
 
             Entry foo1 = client.get("foo".getBytes("UTF8"));
@@ -108,16 +105,6 @@ public class BatchOperationFailedExample implements CallbackHandler<Entry> {
         } finally {
             client.close();
         }
-    }
-
-    @Override
-    public void onSuccess(CallbackResult<Entry> result) {
-        logger.info("put callback result received ...");
-    }
-
-    @Override
-    public void onError(AsyncKineticException exception) {
-        logger.log(Level.WARNING, exception.getMessage(), exception);
     }
 
     public static void main(String[] args) throws KineticException,

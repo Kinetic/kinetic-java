@@ -27,6 +27,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.seagate.kinetic.common.lib.KineticMessage;
+import com.seagate.kinetic.proto.Kinetic.Command.MessageType;
 import com.seagate.kinetic.proto.Kinetic.Message;
 import com.seagate.kinetic.simulator.io.provider.nio.tcp.NioRequestMessageContext;
 import com.seagate.kinetic.simulator.io.provider.spi.MessageService;
@@ -190,12 +191,41 @@ public class NioQueuedRequestProcessRunner implements Runnable {
 		KineticMessage response = this.service.processRequest(context
 				.getRequestMessage());
 
-		if (logger.isLoggable(Level.FINEST)) {
-			logger.finest("writing response: "
-					+ ((Message.Builder) response.getMessage()).build());
+        if (shouldSendResponse(response)) {
+
+            if (logger.isLoggable(Level.FINEST)) {
+                logger.finest("writing response: "
+                        + ((Message.Builder) response.getMessage()).build());
+            }
+
+            context.getChannelHandlerContext().writeAndFlush(response);
+        } else {
+            logger.info("*** in no ack mode, response message is not sent ...");
 		}
 
-		context.getChannelHandlerContext().writeAndFlush(response);
 	}
+
+    /**
+     * no response is sent for batch PUT/DELETE.
+     * 
+     * @param response
+     *            response message.
+     * 
+     * @return false if batch PUT/DELETE. Otherwise return true.
+     */
+    private boolean shouldSendResponse(KineticMessage response) {
+
+        boolean flag = true;
+
+        if (response.getIsBatchMessage() == true) {
+            MessageType mt = response.getCommand().getHeader().getMessageType();
+            if (mt == MessageType.PUT_RESPONSE
+                    || mt == MessageType.DELETE_RESPONSE) {
+                flag = false;
+            }
+        }
+
+        return flag;
+    }
 
 }

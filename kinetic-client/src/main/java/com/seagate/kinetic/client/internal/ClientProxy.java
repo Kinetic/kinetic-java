@@ -559,6 +559,20 @@ public class ClientProxy {
         }
     }
 
+    void requestNoAck(KineticMessage kmreq) throws KineticException {
+
+        try {
+            finalizeHeader(kmreq);
+            this.iohandler.getMessageHandler().writeNoAck(kmreq);
+        } catch (Exception e) {
+
+            KineticException ke = new KineticException(e.getMessage());
+            ke.setRequestMessage(kmreq);
+
+            throw ke;
+        }
+    }
+
     /**
      * Check hmac based on the specified message.
      *

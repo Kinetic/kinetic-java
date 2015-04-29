@@ -172,6 +172,10 @@ public class RequestContext {
 
         // get message type for this request
         mtype = request.getCommand().getHeader().getMessageType();
+
+        if (request.getIsBatchMessage()) {
+            response.setIsBatchMessage(true);
+        }
     }
     
     /**

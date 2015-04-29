@@ -25,7 +25,9 @@ import java.util.logging.Logger;
 
 import com.google.protobuf.ByteString;
 import com.seagate.kinetic.common.lib.KineticMessage;
+import com.seagate.kinetic.proto.Kinetic.Command;
 import com.seagate.kinetic.proto.Kinetic.Command.Algorithm;
+import com.seagate.kinetic.proto.Kinetic.Command.Batch;
 import com.seagate.kinetic.proto.Kinetic.Command.KeyValue;
 import com.seagate.kinetic.proto.Kinetic.Command.MessageType;
 import com.seagate.kinetic.proto.Kinetic.Command.Status.StatusCode;
@@ -51,8 +53,6 @@ public class BatchOperationHandler {
     @SuppressWarnings("rawtypes")
     private Store store = null;
 
-    RequestContext context = null;
-
     private long cid = -1;
 
     private int batchId = -1;
@@ -61,7 +61,11 @@ public class BatchOperationHandler {
 
     private BatchOperation<ByteString, KVValue> batch = null;
 
-    private ArrayList<KineticMessage> list = new ArrayList<KineticMessage>();
+    // sequence list
+    private ArrayList<Long> sequenceList = new ArrayList<Long>();
+
+    // saved exception
+    private InvalidBatchException batchException = null;
 
     public BatchOperationHandler(SimulatorEngine engine) {
 
@@ -80,9 +84,6 @@ public class BatchOperationHandler {
             this.waitForBatchToFinish();
         }
 
-        // init with this context
-        this.context = context;
-
         // this batch op handler belongs to this connection
         this.cid = context.getRequestMessage().getCommand().getHeader()
                 .getConnectionID();
@@ -95,6 +96,12 @@ public class BatchOperationHandler {
         try {
             // create new batch instance
             batch = engine.getStore().createBatchOperation();
+
+            // clear seq list
+            sequenceList.clear();
+
+            // clear exception
+            this.batchException = null;
         } catch (KVStoreException e) {
             throw new InvalidBatchException(e);
         }
@@ -158,12 +165,14 @@ public class BatchOperationHandler {
             throws InvalidBatchException,
             NotAttemptedException, KVStoreException {
 
+        MessageType mtype = context.getMessageType();
+
         /**
          * messages will be queued or dequeued. no process until end batch is
          * received.
          */
-        if (context.getMessageType() == MessageType.START_BATCH
-                || context.getMessageType() == MessageType.ABORT_BATCH) {
+        if (mtype == MessageType.START_BATCH
+                || mtype == MessageType.ABORT_BATCH) {
             return;
         }
 
@@ -176,13 +185,18 @@ public class BatchOperationHandler {
                 this.init(context);
             }
 
+            /**
+             * put op sequence to queue
+             */
+            if (mtype == MessageType.PUT || mtype == MessageType.DELETE) {
+                this.addSequenceList(context);
+            }
+
             // check if this is a valid batch message
             checkBatch(context);
 
-            MessageType mtype = context.getMessageType();
-
             if (mtype == MessageType.END_BATCH) {
-                this.commitBatch();
+                this.commitBatch(context);
             } else if (mtype == MessageType.PUT) {
                 this.batchPut(context.getRequestMessage());
             } else if (mtype == MessageType.DELETE) {
@@ -201,6 +215,8 @@ public class BatchOperationHandler {
             context.getCommandBuilder().getStatusBuilder()
                     .setStatusMessage(nae.getMessage());
 
+            this.saveFailedRequestContext(context);
+
             close();
 
             throw nae;
@@ -214,6 +230,8 @@ public class BatchOperationHandler {
             context.getCommandBuilder().getStatusBuilder()
                     .setStatusMessage(vmismatch.getMessage());
 
+            this.saveFailedRequestContext(context);
+
             close();
 
             throw vmismatch;
@@ -225,6 +243,8 @@ public class BatchOperationHandler {
                     .setCode(StatusCode.INTERNAL_ERROR);
             context.getCommandBuilder().getStatusBuilder()
                     .setStatusMessage(kvse.getMessage());
+
+            this.saveFailedRequestContext(context);
 
             close();
 
@@ -238,8 +258,22 @@ public class BatchOperationHandler {
             context.getCommandBuilder().getStatusBuilder()
                     .setStatusMessage(e.getMessage());
 
+            this.saveFailedRequestContext(context);
+
             close();
         }
+    }
+
+    private void saveFailedRequestContext(RequestContext context) {
+        if (batchException == null) {
+            this.batchException = new InvalidBatchException();
+            this.batchException.setFailedRequestContext(context);
+        }
+    }
+
+    private void addSequenceList(RequestContext context) {
+        this.sequenceList.add(context.getRequestMessage().getCommand().getHeader()
+                .getSequence());
     }
 
     private void checkBatch(RequestContext context)
@@ -250,7 +284,53 @@ public class BatchOperationHandler {
             String msg = "batch is not started or has ended";
 
             if (context.getMessageType() == MessageType.END_BATCH) {
-                throw new InvalidBatchException(msg);
+
+                // batch had failed earlier
+                if (this.batchException != null) {
+
+                    // get saved failed status code and message
+                    StatusCode code = this.batchException
+                            .getFailedRequestContext().getResponseMessage()
+                            .getCommand().getStatus().getCode();
+
+                    String smessage = this.batchException
+                            .getFailedRequestContext().getResponseMessage()
+                            .getCommand().getStatus().getStatusMessage();
+
+                    // set failed status code
+                    context.getCommandBuilder().getStatusBuilder()
+                            .setCode(code);
+                    // set status message
+                    context.getCommandBuilder().getStatusBuilder()
+                            .setStatusMessage(smessage);
+
+                    // get failed request message sequence
+                    long failedSeq = this.batchException
+                            .getFailedRequestContext().getRequestMessage()
+                            .getCommand().getHeader().getSequence();
+
+                    // set failed request sequence
+                    context.getCommandBuilder().getBodyBuilder()
+                            .getBatchBuilder().setFailedSequence(failedSeq);
+
+                    /**
+                     * get batch construct for END_BATCH_RESPONSE message
+                     */
+                    Batch.Builder bb = context.getCommandBuilder()
+                            .getBodyBuilder().getBatchBuilder();
+
+                    /**
+                     * add sequence list to batch construct
+                     */
+                    for (Long sequence : this.sequenceList) {
+                        bb.addSequence(sequence.longValue());
+                    }
+
+                    // propagate the exception
+                    throw new InvalidBatchException(smessage);
+                } else {
+                    throw new InvalidBatchException(msg);
+                }
             } else {
                 throw new NotAttemptedException(msg);
             }
@@ -323,14 +403,30 @@ public class BatchOperationHandler {
 
         // batch put
         batch.put(key, data);
-
-        logger.info("*** batch op put entry., key = " + key);
     }
 
-    private synchronized void commitBatch() {
+    private synchronized void commitBatch(RequestContext context) {
+
         try {
-            // commit db batch
+
+            /**
+             * db commit batch
+             */
             batch.commit();
+
+            /**
+             * add sequence sequenceList to end batch response message
+             */
+            Command.Builder cb = context.getCommandBuilder();
+
+            /**
+             * add sequence list to batch construct
+             */
+            for (Long sequence : sequenceList) {
+                cb.getBodyBuilder().getBatchBuilder()
+                        .addSequence(sequence.longValue());
+            }
+
         } finally {
             this.close();
         }
@@ -346,13 +442,9 @@ public class BatchOperationHandler {
         }
 
         try {
+
             // close db batch
             batch.close();
-
-            // clear list
-            list.clear();
-
-            logger.info("*** batch op closed ");
         } catch (Exception e) {
             logger.log(Level.WARNING, e.getMessage(), e);
         } finally {
@@ -365,7 +457,7 @@ public class BatchOperationHandler {
             ByteString requestDbVersion) throws KVStoreVersionMismatch {
 
         if (mySize(storeDbVersion) != mySize(requestDbVersion)) {
-            throw new KVStoreVersionMismatch("Length mismatch");
+            throw new KVStoreVersionMismatch("Version mismatch");
         }
 
         if (mySize(storeDbVersion) == 0) {
@@ -373,7 +465,7 @@ public class BatchOperationHandler {
         }
 
         if (!storeDbVersion.equals(requestDbVersion)) {
-            throw new KVStoreVersionMismatch("Compare mismatch");
+            throw new KVStoreVersionMismatch("Version mismatch");
         }
     }
 
@@ -391,12 +483,7 @@ public class BatchOperationHandler {
 
         ByteString storeDbVersion = this.getDbVersion(key);
 
-        logger.info("*********comparing version., storeV=" + storeDbVersion
-                + "requestV=" + requestDbVersion);
-
         compareVersion(storeDbVersion, requestDbVersion);
-
-        logger.info("*********batch op version checked and passed ...");
     }
 
     @SuppressWarnings("unchecked")

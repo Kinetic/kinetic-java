@@ -576,6 +576,46 @@ public class DefaultKineticClient implements AdvancedKineticClient {
         this.client.requestAsync(km, handler);
     }
 
+    public void batchPut(Entry entry, byte[] newVersion, int batchId)
+            throws KineticException {
+
+        // construct put request message
+        KineticMessage km = MessageFactory.createPutRequestMessage(entry,
+                newVersion);
+
+        // proto builder
+        Command.Builder command = (Command.Builder) km.getCommand();
+
+        // set batch id
+        command.getHeaderBuilder().setBatchID(batchId);
+
+        // send request to the drive
+        this.client.requestNoAck(km);
+    }
+
+    public void batchPutForced(Entry entry, int batchId)
+            throws KineticException {
+        byte[] newVersion = null;
+
+        if (entry.getEntryMetadata() != null) {
+            newVersion = entry.getEntryMetadata().getVersion();
+        }
+
+        // construct put request message
+        KineticMessage km = MessageFactory.createPutRequestMessage(entry,
+                newVersion);
+
+        Command.Builder commandBuilder = (Command.Builder) km.getCommand();
+
+        // set batchId
+        commandBuilder.getHeaderBuilder().setBatchID(batchId);
+
+        // set force bit
+        commandBuilder.getBodyBuilder().getKeyValueBuilder().setForce(true);
+
+        this.client.requestNoAck(km);
+    }
+
     /**
      * {@inheritDoc}
      */
@@ -630,6 +670,19 @@ public class DefaultKineticClient implements AdvancedKineticClient {
         message.getHeaderBuilder().setBatchID(batchId);
 
         this.client.requestAsync(km, handler);
+    }
+
+    public void batchDelete(Entry entry, int batchId) throws KineticException {
+
+        KineticMessage km = MessageFactory.createDeleteRequestMessage(entry);
+
+        // proto builder
+        Command.Builder message = (Command.Builder) km.getCommand();
+
+        // set batch id
+        message.getHeaderBuilder().setBatchID(batchId);
+
+        this.client.requestNoAck(km);
     }
 
     /**
@@ -919,6 +972,20 @@ public class DefaultKineticClient implements AdvancedKineticClient {
         this.client.requestAsync(km, handler);
     }
 
+    public void batchDeleteForced(byte[] key, int batchId)
+            throws KineticException {
+
+        // create force delete request message
+        KineticMessage km = MessageFactory.createForceDeleteRequestMessage(key);
+
+        Command.Builder request = (Command.Builder) km.getCommand();
+
+        request.getHeaderBuilder().setBatchID(batchId);
+
+        // do async delete
+        this.client.requestNoAck(km);
+    }
+
     /**
      * {@inheritDoc}
      */
@@ -1065,13 +1132,13 @@ public class DefaultKineticClient implements AdvancedKineticClient {
      * @throws KineticException
      *             if any error occurred.
      */
-    void endBatchOperation(int batchId) throws KineticException {
+    void endBatchOperation(int batchId, int count) throws KineticException {
 
         KineticMessage request = null;
         KineticMessage response = null;
 
         // create get request message
-        request = MessageFactory.createEndBatchRequestMessage(batchId);
+        request = MessageFactory.createEndBatchRequestMessage(batchId, count);
 
         // send request
         response = this.client.request(request);

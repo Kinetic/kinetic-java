@@ -5655,6 +5655,35 @@ public final class Kinetic {
        * </pre>
        */
       com.seagate.kinetic.proto.Kinetic.Command.PinOperationOrBuilder getPinOpOrBuilder();
+
+      // optional .com.seagate.kinetic.proto.Command.Batch batch = 9;
+      /**
+       * <code>optional .com.seagate.kinetic.proto.Command.Batch batch = 9;</code>
+       *
+       * <pre>
+       * batch operation
+       * This is included in the END_BATCH and END_BATCH_RESPONSE.
+       * </pre>
+       */
+      boolean hasBatch();
+      /**
+       * <code>optional .com.seagate.kinetic.proto.Command.Batch batch = 9;</code>
+       *
+       * <pre>
+       * batch operation
+       * This is included in the END_BATCH and END_BATCH_RESPONSE.
+       * </pre>
+       */
+      com.seagate.kinetic.proto.Kinetic.Command.Batch getBatch();
+      /**
+       * <code>optional .com.seagate.kinetic.proto.Command.Batch batch = 9;</code>
+       *
+       * <pre>
+       * batch operation
+       * This is included in the END_BATCH and END_BATCH_RESPONSE.
+       * </pre>
+       */
+      com.seagate.kinetic.proto.Kinetic.Command.BatchOrBuilder getBatchOrBuilder();
     }
     /**
      * Protobuf type {@code com.seagate.kinetic.proto.Command.Body}
@@ -5800,6 +5829,19 @@ public final class Kinetic {
                   pinOp_ = subBuilder.buildPartial();
                 }
                 bitField0_ |= 0x00000040;
+                break;
+              }
+              case 74: {
+                com.seagate.kinetic.proto.Kinetic.Command.Batch.Builder subBuilder = null;
+                if (((bitField0_ & 0x00000080) == 0x00000080)) {
+                  subBuilder = batch_.toBuilder();
+                }
+                batch_ = input.readMessage(com.seagate.kinetic.proto.Kinetic.Command.Batch.PARSER, extensionRegistry);
+                if (subBuilder != null) {
+                  subBuilder.mergeFrom(batch_);
+                  batch_ = subBuilder.buildPartial();
+                }
+                bitField0_ |= 0x00000080;
                 break;
               }
             }
@@ -6080,6 +6122,43 @@ public final class Kinetic {
         return pinOp_;
       }
 
+      // optional .com.seagate.kinetic.proto.Command.Batch batch = 9;
+      public static final int BATCH_FIELD_NUMBER = 9;
+      private com.seagate.kinetic.proto.Kinetic.Command.Batch batch_;
+      /**
+       * <code>optional .com.seagate.kinetic.proto.Command.Batch batch = 9;</code>
+       *
+       * <pre>
+       * batch operation
+       * This is included in the END_BATCH and END_BATCH_RESPONSE.
+       * </pre>
+       */
+      public boolean hasBatch() {
+        return ((bitField0_ & 0x00000080) == 0x00000080);
+      }
+      /**
+       * <code>optional .com.seagate.kinetic.proto.Command.Batch batch = 9;</code>
+       *
+       * <pre>
+       * batch operation
+       * This is included in the END_BATCH and END_BATCH_RESPONSE.
+       * </pre>
+       */
+      public com.seagate.kinetic.proto.Kinetic.Command.Batch getBatch() {
+        return batch_;
+      }
+      /**
+       * <code>optional .com.seagate.kinetic.proto.Command.Batch batch = 9;</code>
+       *
+       * <pre>
+       * batch operation
+       * This is included in the END_BATCH and END_BATCH_RESPONSE.
+       * </pre>
+       */
+      public com.seagate.kinetic.proto.Kinetic.Command.BatchOrBuilder getBatchOrBuilder() {
+        return batch_;
+      }
+
       private void initFields() {
         keyValue_ = com.seagate.kinetic.proto.Kinetic.Command.KeyValue.getDefaultInstance();
         range_ = com.seagate.kinetic.proto.Kinetic.Command.Range.getDefaultInstance();
@@ -6088,6 +6167,7 @@ public final class Kinetic {
         getLog_ = com.seagate.kinetic.proto.Kinetic.Command.GetLog.getDefaultInstance();
         security_ = com.seagate.kinetic.proto.Kinetic.Command.Security.getDefaultInstance();
         pinOp_ = com.seagate.kinetic.proto.Kinetic.Command.PinOperation.getDefaultInstance();
+        batch_ = com.seagate.kinetic.proto.Kinetic.Command.Batch.getDefaultInstance();
       }
       private byte memoizedIsInitialized = -1;
       public final boolean isInitialized() {
@@ -6121,6 +6201,9 @@ public final class Kinetic {
         }
         if (((bitField0_ & 0x00000040) == 0x00000040)) {
           output.writeMessage(8, pinOp_);
+        }
+        if (((bitField0_ & 0x00000080) == 0x00000080)) {
+          output.writeMessage(9, batch_);
         }
         getUnknownFields().writeTo(output);
       }
@@ -6158,6 +6241,10 @@ public final class Kinetic {
         if (((bitField0_ & 0x00000040) == 0x00000040)) {
           size += com.google.protobuf.CodedOutputStream
             .computeMessageSize(8, pinOp_);
+        }
+        if (((bitField0_ & 0x00000080) == 0x00000080)) {
+          size += com.google.protobuf.CodedOutputStream
+            .computeMessageSize(9, batch_);
         }
         size += getUnknownFields().getSerializedSize();
         memoizedSerializedSize = size;
@@ -6278,6 +6365,7 @@ public final class Kinetic {
             getGetLogFieldBuilder();
             getSecurityFieldBuilder();
             getPinOpFieldBuilder();
+            getBatchFieldBuilder();
           }
         }
         private static Builder create() {
@@ -6328,6 +6416,12 @@ public final class Kinetic {
             pinOpBuilder_.clear();
           }
           bitField0_ = (bitField0_ & ~0x00000040);
+          if (batchBuilder_ == null) {
+            batch_ = com.seagate.kinetic.proto.Kinetic.Command.Batch.getDefaultInstance();
+          } else {
+            batchBuilder_.clear();
+          }
+          bitField0_ = (bitField0_ & ~0x00000080);
           return this;
         }
 
@@ -6412,6 +6506,14 @@ public final class Kinetic {
           } else {
             result.pinOp_ = pinOpBuilder_.build();
           }
+          if (((from_bitField0_ & 0x00000080) == 0x00000080)) {
+            to_bitField0_ |= 0x00000080;
+          }
+          if (batchBuilder_ == null) {
+            result.batch_ = batch_;
+          } else {
+            result.batch_ = batchBuilder_.build();
+          }
           result.bitField0_ = to_bitField0_;
           onBuilt();
           return result;
@@ -6448,6 +6550,9 @@ public final class Kinetic {
           }
           if (other.hasPinOp()) {
             mergePinOp(other.getPinOp());
+          }
+          if (other.hasBatch()) {
+            mergeBatch(other.getBatch());
           }
           this.mergeUnknownFields(other.getUnknownFields());
           return this;
@@ -7547,6 +7652,168 @@ public final class Kinetic {
           return pinOpBuilder_;
         }
 
+        // optional .com.seagate.kinetic.proto.Command.Batch batch = 9;
+        private com.seagate.kinetic.proto.Kinetic.Command.Batch batch_ = com.seagate.kinetic.proto.Kinetic.Command.Batch.getDefaultInstance();
+        private com.google.protobuf.SingleFieldBuilder<
+            com.seagate.kinetic.proto.Kinetic.Command.Batch, com.seagate.kinetic.proto.Kinetic.Command.Batch.Builder, com.seagate.kinetic.proto.Kinetic.Command.BatchOrBuilder> batchBuilder_;
+        /**
+         * <code>optional .com.seagate.kinetic.proto.Command.Batch batch = 9;</code>
+         *
+         * <pre>
+         * batch operation
+         * This is included in the END_BATCH and END_BATCH_RESPONSE.
+         * </pre>
+         */
+        public boolean hasBatch() {
+          return ((bitField0_ & 0x00000080) == 0x00000080);
+        }
+        /**
+         * <code>optional .com.seagate.kinetic.proto.Command.Batch batch = 9;</code>
+         *
+         * <pre>
+         * batch operation
+         * This is included in the END_BATCH and END_BATCH_RESPONSE.
+         * </pre>
+         */
+        public com.seagate.kinetic.proto.Kinetic.Command.Batch getBatch() {
+          if (batchBuilder_ == null) {
+            return batch_;
+          } else {
+            return batchBuilder_.getMessage();
+          }
+        }
+        /**
+         * <code>optional .com.seagate.kinetic.proto.Command.Batch batch = 9;</code>
+         *
+         * <pre>
+         * batch operation
+         * This is included in the END_BATCH and END_BATCH_RESPONSE.
+         * </pre>
+         */
+        public Builder setBatch(com.seagate.kinetic.proto.Kinetic.Command.Batch value) {
+          if (batchBuilder_ == null) {
+            if (value == null) {
+              throw new NullPointerException();
+            }
+            batch_ = value;
+            onChanged();
+          } else {
+            batchBuilder_.setMessage(value);
+          }
+          bitField0_ |= 0x00000080;
+          return this;
+        }
+        /**
+         * <code>optional .com.seagate.kinetic.proto.Command.Batch batch = 9;</code>
+         *
+         * <pre>
+         * batch operation
+         * This is included in the END_BATCH and END_BATCH_RESPONSE.
+         * </pre>
+         */
+        public Builder setBatch(
+            com.seagate.kinetic.proto.Kinetic.Command.Batch.Builder builderForValue) {
+          if (batchBuilder_ == null) {
+            batch_ = builderForValue.build();
+            onChanged();
+          } else {
+            batchBuilder_.setMessage(builderForValue.build());
+          }
+          bitField0_ |= 0x00000080;
+          return this;
+        }
+        /**
+         * <code>optional .com.seagate.kinetic.proto.Command.Batch batch = 9;</code>
+         *
+         * <pre>
+         * batch operation
+         * This is included in the END_BATCH and END_BATCH_RESPONSE.
+         * </pre>
+         */
+        public Builder mergeBatch(com.seagate.kinetic.proto.Kinetic.Command.Batch value) {
+          if (batchBuilder_ == null) {
+            if (((bitField0_ & 0x00000080) == 0x00000080) &&
+                batch_ != com.seagate.kinetic.proto.Kinetic.Command.Batch.getDefaultInstance()) {
+              batch_ =
+                com.seagate.kinetic.proto.Kinetic.Command.Batch.newBuilder(batch_).mergeFrom(value).buildPartial();
+            } else {
+              batch_ = value;
+            }
+            onChanged();
+          } else {
+            batchBuilder_.mergeFrom(value);
+          }
+          bitField0_ |= 0x00000080;
+          return this;
+        }
+        /**
+         * <code>optional .com.seagate.kinetic.proto.Command.Batch batch = 9;</code>
+         *
+         * <pre>
+         * batch operation
+         * This is included in the END_BATCH and END_BATCH_RESPONSE.
+         * </pre>
+         */
+        public Builder clearBatch() {
+          if (batchBuilder_ == null) {
+            batch_ = com.seagate.kinetic.proto.Kinetic.Command.Batch.getDefaultInstance();
+            onChanged();
+          } else {
+            batchBuilder_.clear();
+          }
+          bitField0_ = (bitField0_ & ~0x00000080);
+          return this;
+        }
+        /**
+         * <code>optional .com.seagate.kinetic.proto.Command.Batch batch = 9;</code>
+         *
+         * <pre>
+         * batch operation
+         * This is included in the END_BATCH and END_BATCH_RESPONSE.
+         * </pre>
+         */
+        public com.seagate.kinetic.proto.Kinetic.Command.Batch.Builder getBatchBuilder() {
+          bitField0_ |= 0x00000080;
+          onChanged();
+          return getBatchFieldBuilder().getBuilder();
+        }
+        /**
+         * <code>optional .com.seagate.kinetic.proto.Command.Batch batch = 9;</code>
+         *
+         * <pre>
+         * batch operation
+         * This is included in the END_BATCH and END_BATCH_RESPONSE.
+         * </pre>
+         */
+        public com.seagate.kinetic.proto.Kinetic.Command.BatchOrBuilder getBatchOrBuilder() {
+          if (batchBuilder_ != null) {
+            return batchBuilder_.getMessageOrBuilder();
+          } else {
+            return batch_;
+          }
+        }
+        /**
+         * <code>optional .com.seagate.kinetic.proto.Command.Batch batch = 9;</code>
+         *
+         * <pre>
+         * batch operation
+         * This is included in the END_BATCH and END_BATCH_RESPONSE.
+         * </pre>
+         */
+        private com.google.protobuf.SingleFieldBuilder<
+            com.seagate.kinetic.proto.Kinetic.Command.Batch, com.seagate.kinetic.proto.Kinetic.Command.Batch.Builder, com.seagate.kinetic.proto.Kinetic.Command.BatchOrBuilder> 
+            getBatchFieldBuilder() {
+          if (batchBuilder_ == null) {
+            batchBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+                com.seagate.kinetic.proto.Kinetic.Command.Batch, com.seagate.kinetic.proto.Kinetic.Command.Batch.Builder, com.seagate.kinetic.proto.Kinetic.Command.BatchOrBuilder>(
+                    batch_,
+                    getParentForChildren(),
+                    isClean());
+            batch_ = null;
+          }
+          return batchBuilder_;
+        }
+
         // @@protoc_insertion_point(builder_scope:com.seagate.kinetic.proto.Command.Body)
       }
 
@@ -7556,6 +7823,829 @@ public final class Kinetic {
       }
 
       // @@protoc_insertion_point(class_scope:com.seagate.kinetic.proto.Command.Body)
+    }
+
+    public interface BatchOrBuilder
+        extends com.google.protobuf.MessageOrBuilder {
+
+      // optional int32 count = 1;
+      /**
+       * <code>optional int32 count = 1;</code>
+       *
+       * <pre>
+       * set by the client library in END_BATCH request message.
+       * the total number of operations in the batch
+       * </pre>
+       */
+      boolean hasCount();
+      /**
+       * <code>optional int32 count = 1;</code>
+       *
+       * <pre>
+       * set by the client library in END_BATCH request message.
+       * the total number of operations in the batch
+       * </pre>
+       */
+      int getCount();
+
+      // repeated int64 sequence = 2 [packed = true];
+      /**
+       * <code>repeated int64 sequence = 2 [packed = true];</code>
+       *
+       * <pre>
+       * set by the drive in END_BATCH_RESPONSE message.
+       * If a batch is committed successfully, all sequence Ids of those
+       * commands (PUT/DELETE) performed in the batch are
+       * added in the END_BATCH_RESPONSE message.
+       * </pre>
+       */
+      java.util.List<java.lang.Long> getSequenceList();
+      /**
+       * <code>repeated int64 sequence = 2 [packed = true];</code>
+       *
+       * <pre>
+       * set by the drive in END_BATCH_RESPONSE message.
+       * If a batch is committed successfully, all sequence Ids of those
+       * commands (PUT/DELETE) performed in the batch are
+       * added in the END_BATCH_RESPONSE message.
+       * </pre>
+       */
+      int getSequenceCount();
+      /**
+       * <code>repeated int64 sequence = 2 [packed = true];</code>
+       *
+       * <pre>
+       * set by the drive in END_BATCH_RESPONSE message.
+       * If a batch is committed successfully, all sequence Ids of those
+       * commands (PUT/DELETE) performed in the batch are
+       * added in the END_BATCH_RESPONSE message.
+       * </pre>
+       */
+      long getSequence(int index);
+
+      // optional int64 failedSequence = 3;
+      /**
+       * <code>optional int64 failedSequence = 3;</code>
+       *
+       * <pre>
+       * This field is set by the drive if a batch commit failed.
+       * The first failed operation sequence in the batch is set as value.
+       * </pre>
+       */
+      boolean hasFailedSequence();
+      /**
+       * <code>optional int64 failedSequence = 3;</code>
+       *
+       * <pre>
+       * This field is set by the drive if a batch commit failed.
+       * The first failed operation sequence in the batch is set as value.
+       * </pre>
+       */
+      long getFailedSequence();
+    }
+    /**
+     * Protobuf type {@code com.seagate.kinetic.proto.Command.Batch}
+     *
+     * <pre>
+     * This is included in the END_BATCH and END_BATCH_RESPONSE.
+     * </pre>
+     */
+    public static final class Batch extends
+        com.google.protobuf.GeneratedMessage
+        implements BatchOrBuilder {
+      // Use Batch.newBuilder() to construct.
+      private Batch(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+        super(builder);
+        this.unknownFields = builder.getUnknownFields();
+      }
+      private Batch(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
+
+      private static final Batch defaultInstance;
+      public static Batch getDefaultInstance() {
+        return defaultInstance;
+      }
+
+      public Batch getDefaultInstanceForType() {
+        return defaultInstance;
+      }
+
+      private final com.google.protobuf.UnknownFieldSet unknownFields;
+      @java.lang.Override
+      public final com.google.protobuf.UnknownFieldSet
+          getUnknownFields() {
+        return this.unknownFields;
+      }
+      private Batch(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        initFields();
+        int mutable_bitField0_ = 0;
+        com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+            com.google.protobuf.UnknownFieldSet.newBuilder();
+        try {
+          boolean done = false;
+          while (!done) {
+            int tag = input.readTag();
+            switch (tag) {
+              case 0:
+                done = true;
+                break;
+              default: {
+                if (!parseUnknownField(input, unknownFields,
+                                       extensionRegistry, tag)) {
+                  done = true;
+                }
+                break;
+              }
+              case 8: {
+                bitField0_ |= 0x00000001;
+                count_ = input.readInt32();
+                break;
+              }
+              case 16: {
+                if (!((mutable_bitField0_ & 0x00000002) == 0x00000002)) {
+                  sequence_ = new java.util.ArrayList<java.lang.Long>();
+                  mutable_bitField0_ |= 0x00000002;
+                }
+                sequence_.add(input.readInt64());
+                break;
+              }
+              case 18: {
+                int length = input.readRawVarint32();
+                int limit = input.pushLimit(length);
+                if (!((mutable_bitField0_ & 0x00000002) == 0x00000002) && input.getBytesUntilLimit() > 0) {
+                  sequence_ = new java.util.ArrayList<java.lang.Long>();
+                  mutable_bitField0_ |= 0x00000002;
+                }
+                while (input.getBytesUntilLimit() > 0) {
+                  sequence_.add(input.readInt64());
+                }
+                input.popLimit(limit);
+                break;
+              }
+              case 24: {
+                bitField0_ |= 0x00000002;
+                failedSequence_ = input.readInt64();
+                break;
+              }
+            }
+          }
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          throw e.setUnfinishedMessage(this);
+        } catch (java.io.IOException e) {
+          throw new com.google.protobuf.InvalidProtocolBufferException(
+              e.getMessage()).setUnfinishedMessage(this);
+        } finally {
+          if (((mutable_bitField0_ & 0x00000002) == 0x00000002)) {
+            sequence_ = java.util.Collections.unmodifiableList(sequence_);
+          }
+          this.unknownFields = unknownFields.build();
+          makeExtensionsImmutable();
+        }
+      }
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return com.seagate.kinetic.proto.Kinetic.internal_static_com_seagate_kinetic_proto_Command_Batch_descriptor;
+      }
+
+      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return com.seagate.kinetic.proto.Kinetic.internal_static_com_seagate_kinetic_proto_Command_Batch_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                com.seagate.kinetic.proto.Kinetic.Command.Batch.class, com.seagate.kinetic.proto.Kinetic.Command.Batch.Builder.class);
+      }
+
+      public static com.google.protobuf.Parser<Batch> PARSER =
+          new com.google.protobuf.AbstractParser<Batch>() {
+        public Batch parsePartialFrom(
+            com.google.protobuf.CodedInputStream input,
+            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+            throws com.google.protobuf.InvalidProtocolBufferException {
+          return new Batch(input, extensionRegistry);
+        }
+      };
+
+      @java.lang.Override
+      public com.google.protobuf.Parser<Batch> getParserForType() {
+        return PARSER;
+      }
+
+      private int bitField0_;
+      // optional int32 count = 1;
+      public static final int COUNT_FIELD_NUMBER = 1;
+      private int count_;
+      /**
+       * <code>optional int32 count = 1;</code>
+       *
+       * <pre>
+       * set by the client library in END_BATCH request message.
+       * the total number of operations in the batch
+       * </pre>
+       */
+      public boolean hasCount() {
+        return ((bitField0_ & 0x00000001) == 0x00000001);
+      }
+      /**
+       * <code>optional int32 count = 1;</code>
+       *
+       * <pre>
+       * set by the client library in END_BATCH request message.
+       * the total number of operations in the batch
+       * </pre>
+       */
+      public int getCount() {
+        return count_;
+      }
+
+      // repeated int64 sequence = 2 [packed = true];
+      public static final int SEQUENCE_FIELD_NUMBER = 2;
+      private java.util.List<java.lang.Long> sequence_;
+      /**
+       * <code>repeated int64 sequence = 2 [packed = true];</code>
+       *
+       * <pre>
+       * set by the drive in END_BATCH_RESPONSE message.
+       * If a batch is committed successfully, all sequence Ids of those
+       * commands (PUT/DELETE) performed in the batch are
+       * added in the END_BATCH_RESPONSE message.
+       * </pre>
+       */
+      public java.util.List<java.lang.Long>
+          getSequenceList() {
+        return sequence_;
+      }
+      /**
+       * <code>repeated int64 sequence = 2 [packed = true];</code>
+       *
+       * <pre>
+       * set by the drive in END_BATCH_RESPONSE message.
+       * If a batch is committed successfully, all sequence Ids of those
+       * commands (PUT/DELETE) performed in the batch are
+       * added in the END_BATCH_RESPONSE message.
+       * </pre>
+       */
+      public int getSequenceCount() {
+        return sequence_.size();
+      }
+      /**
+       * <code>repeated int64 sequence = 2 [packed = true];</code>
+       *
+       * <pre>
+       * set by the drive in END_BATCH_RESPONSE message.
+       * If a batch is committed successfully, all sequence Ids of those
+       * commands (PUT/DELETE) performed in the batch are
+       * added in the END_BATCH_RESPONSE message.
+       * </pre>
+       */
+      public long getSequence(int index) {
+        return sequence_.get(index);
+      }
+      private int sequenceMemoizedSerializedSize = -1;
+
+      // optional int64 failedSequence = 3;
+      public static final int FAILEDSEQUENCE_FIELD_NUMBER = 3;
+      private long failedSequence_;
+      /**
+       * <code>optional int64 failedSequence = 3;</code>
+       *
+       * <pre>
+       * This field is set by the drive if a batch commit failed.
+       * The first failed operation sequence in the batch is set as value.
+       * </pre>
+       */
+      public boolean hasFailedSequence() {
+        return ((bitField0_ & 0x00000002) == 0x00000002);
+      }
+      /**
+       * <code>optional int64 failedSequence = 3;</code>
+       *
+       * <pre>
+       * This field is set by the drive if a batch commit failed.
+       * The first failed operation sequence in the batch is set as value.
+       * </pre>
+       */
+      public long getFailedSequence() {
+        return failedSequence_;
+      }
+
+      private void initFields() {
+        count_ = 0;
+        sequence_ = java.util.Collections.emptyList();
+        failedSequence_ = 0L;
+      }
+      private byte memoizedIsInitialized = -1;
+      public final boolean isInitialized() {
+        byte isInitialized = memoizedIsInitialized;
+        if (isInitialized != -1) return isInitialized == 1;
+
+        memoizedIsInitialized = 1;
+        return true;
+      }
+
+      public void writeTo(com.google.protobuf.CodedOutputStream output)
+                          throws java.io.IOException {
+        getSerializedSize();
+        if (((bitField0_ & 0x00000001) == 0x00000001)) {
+          output.writeInt32(1, count_);
+        }
+        if (getSequenceList().size() > 0) {
+          output.writeRawVarint32(18);
+          output.writeRawVarint32(sequenceMemoizedSerializedSize);
+        }
+        for (int i = 0; i < sequence_.size(); i++) {
+          output.writeInt64NoTag(sequence_.get(i));
+        }
+        if (((bitField0_ & 0x00000002) == 0x00000002)) {
+          output.writeInt64(3, failedSequence_);
+        }
+        getUnknownFields().writeTo(output);
+      }
+
+      private int memoizedSerializedSize = -1;
+      public int getSerializedSize() {
+        int size = memoizedSerializedSize;
+        if (size != -1) return size;
+
+        size = 0;
+        if (((bitField0_ & 0x00000001) == 0x00000001)) {
+          size += com.google.protobuf.CodedOutputStream
+            .computeInt32Size(1, count_);
+        }
+        {
+          int dataSize = 0;
+          for (int i = 0; i < sequence_.size(); i++) {
+            dataSize += com.google.protobuf.CodedOutputStream
+              .computeInt64SizeNoTag(sequence_.get(i));
+          }
+          size += dataSize;
+          if (!getSequenceList().isEmpty()) {
+            size += 1;
+            size += com.google.protobuf.CodedOutputStream
+                .computeInt32SizeNoTag(dataSize);
+          }
+          sequenceMemoizedSerializedSize = dataSize;
+        }
+        if (((bitField0_ & 0x00000002) == 0x00000002)) {
+          size += com.google.protobuf.CodedOutputStream
+            .computeInt64Size(3, failedSequence_);
+        }
+        size += getUnknownFields().getSerializedSize();
+        memoizedSerializedSize = size;
+        return size;
+      }
+
+      private static final long serialVersionUID = 0L;
+      @java.lang.Override
+      protected java.lang.Object writeReplace()
+          throws java.io.ObjectStreamException {
+        return super.writeReplace();
+      }
+
+      public static com.seagate.kinetic.proto.Kinetic.Command.Batch parseFrom(
+          com.google.protobuf.ByteString data)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data);
+      }
+      public static com.seagate.kinetic.proto.Kinetic.Command.Batch parseFrom(
+          com.google.protobuf.ByteString data,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data, extensionRegistry);
+      }
+      public static com.seagate.kinetic.proto.Kinetic.Command.Batch parseFrom(byte[] data)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data);
+      }
+      public static com.seagate.kinetic.proto.Kinetic.Command.Batch parseFrom(
+          byte[] data,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data, extensionRegistry);
+      }
+      public static com.seagate.kinetic.proto.Kinetic.Command.Batch parseFrom(java.io.InputStream input)
+          throws java.io.IOException {
+        return PARSER.parseFrom(input);
+      }
+      public static com.seagate.kinetic.proto.Kinetic.Command.Batch parseFrom(
+          java.io.InputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        return PARSER.parseFrom(input, extensionRegistry);
+      }
+      public static com.seagate.kinetic.proto.Kinetic.Command.Batch parseDelimitedFrom(java.io.InputStream input)
+          throws java.io.IOException {
+        return PARSER.parseDelimitedFrom(input);
+      }
+      public static com.seagate.kinetic.proto.Kinetic.Command.Batch parseDelimitedFrom(
+          java.io.InputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        return PARSER.parseDelimitedFrom(input, extensionRegistry);
+      }
+      public static com.seagate.kinetic.proto.Kinetic.Command.Batch parseFrom(
+          com.google.protobuf.CodedInputStream input)
+          throws java.io.IOException {
+        return PARSER.parseFrom(input);
+      }
+      public static com.seagate.kinetic.proto.Kinetic.Command.Batch parseFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        return PARSER.parseFrom(input, extensionRegistry);
+      }
+
+      public static Builder newBuilder() { return Builder.create(); }
+      public Builder newBuilderForType() { return newBuilder(); }
+      public static Builder newBuilder(com.seagate.kinetic.proto.Kinetic.Command.Batch prototype) {
+        return newBuilder().mergeFrom(prototype);
+      }
+      public Builder toBuilder() { return newBuilder(this); }
+
+      @java.lang.Override
+      protected Builder newBuilderForType(
+          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+        Builder builder = new Builder(parent);
+        return builder;
+      }
+      /**
+       * Protobuf type {@code com.seagate.kinetic.proto.Command.Batch}
+       *
+       * <pre>
+       * This is included in the END_BATCH and END_BATCH_RESPONSE.
+       * </pre>
+       */
+      public static final class Builder extends
+          com.google.protobuf.GeneratedMessage.Builder<Builder>
+         implements com.seagate.kinetic.proto.Kinetic.Command.BatchOrBuilder {
+        public static final com.google.protobuf.Descriptors.Descriptor
+            getDescriptor() {
+          return com.seagate.kinetic.proto.Kinetic.internal_static_com_seagate_kinetic_proto_Command_Batch_descriptor;
+        }
+
+        protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+            internalGetFieldAccessorTable() {
+          return com.seagate.kinetic.proto.Kinetic.internal_static_com_seagate_kinetic_proto_Command_Batch_fieldAccessorTable
+              .ensureFieldAccessorsInitialized(
+                  com.seagate.kinetic.proto.Kinetic.Command.Batch.class, com.seagate.kinetic.proto.Kinetic.Command.Batch.Builder.class);
+        }
+
+        // Construct using com.seagate.kinetic.proto.Kinetic.Command.Batch.newBuilder()
+        private Builder() {
+          maybeForceBuilderInitialization();
+        }
+
+        private Builder(
+            com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+          super(parent);
+          maybeForceBuilderInitialization();
+        }
+        private void maybeForceBuilderInitialization() {
+          if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+          }
+        }
+        private static Builder create() {
+          return new Builder();
+        }
+
+        public Builder clear() {
+          super.clear();
+          count_ = 0;
+          bitField0_ = (bitField0_ & ~0x00000001);
+          sequence_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000002);
+          failedSequence_ = 0L;
+          bitField0_ = (bitField0_ & ~0x00000004);
+          return this;
+        }
+
+        public Builder clone() {
+          return create().mergeFrom(buildPartial());
+        }
+
+        public com.google.protobuf.Descriptors.Descriptor
+            getDescriptorForType() {
+          return com.seagate.kinetic.proto.Kinetic.internal_static_com_seagate_kinetic_proto_Command_Batch_descriptor;
+        }
+
+        public com.seagate.kinetic.proto.Kinetic.Command.Batch getDefaultInstanceForType() {
+          return com.seagate.kinetic.proto.Kinetic.Command.Batch.getDefaultInstance();
+        }
+
+        public com.seagate.kinetic.proto.Kinetic.Command.Batch build() {
+          com.seagate.kinetic.proto.Kinetic.Command.Batch result = buildPartial();
+          if (!result.isInitialized()) {
+            throw newUninitializedMessageException(result);
+          }
+          return result;
+        }
+
+        public com.seagate.kinetic.proto.Kinetic.Command.Batch buildPartial() {
+          com.seagate.kinetic.proto.Kinetic.Command.Batch result = new com.seagate.kinetic.proto.Kinetic.Command.Batch(this);
+          int from_bitField0_ = bitField0_;
+          int to_bitField0_ = 0;
+          if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+            to_bitField0_ |= 0x00000001;
+          }
+          result.count_ = count_;
+          if (((bitField0_ & 0x00000002) == 0x00000002)) {
+            sequence_ = java.util.Collections.unmodifiableList(sequence_);
+            bitField0_ = (bitField0_ & ~0x00000002);
+          }
+          result.sequence_ = sequence_;
+          if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
+            to_bitField0_ |= 0x00000002;
+          }
+          result.failedSequence_ = failedSequence_;
+          result.bitField0_ = to_bitField0_;
+          onBuilt();
+          return result;
+        }
+
+        public Builder mergeFrom(com.google.protobuf.Message other) {
+          if (other instanceof com.seagate.kinetic.proto.Kinetic.Command.Batch) {
+            return mergeFrom((com.seagate.kinetic.proto.Kinetic.Command.Batch)other);
+          } else {
+            super.mergeFrom(other);
+            return this;
+          }
+        }
+
+        public Builder mergeFrom(com.seagate.kinetic.proto.Kinetic.Command.Batch other) {
+          if (other == com.seagate.kinetic.proto.Kinetic.Command.Batch.getDefaultInstance()) return this;
+          if (other.hasCount()) {
+            setCount(other.getCount());
+          }
+          if (!other.sequence_.isEmpty()) {
+            if (sequence_.isEmpty()) {
+              sequence_ = other.sequence_;
+              bitField0_ = (bitField0_ & ~0x00000002);
+            } else {
+              ensureSequenceIsMutable();
+              sequence_.addAll(other.sequence_);
+            }
+            onChanged();
+          }
+          if (other.hasFailedSequence()) {
+            setFailedSequence(other.getFailedSequence());
+          }
+          this.mergeUnknownFields(other.getUnknownFields());
+          return this;
+        }
+
+        public final boolean isInitialized() {
+          return true;
+        }
+
+        public Builder mergeFrom(
+            com.google.protobuf.CodedInputStream input,
+            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+            throws java.io.IOException {
+          com.seagate.kinetic.proto.Kinetic.Command.Batch parsedMessage = null;
+          try {
+            parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+          } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+            parsedMessage = (com.seagate.kinetic.proto.Kinetic.Command.Batch) e.getUnfinishedMessage();
+            throw e;
+          } finally {
+            if (parsedMessage != null) {
+              mergeFrom(parsedMessage);
+            }
+          }
+          return this;
+        }
+        private int bitField0_;
+
+        // optional int32 count = 1;
+        private int count_ ;
+        /**
+         * <code>optional int32 count = 1;</code>
+         *
+         * <pre>
+         * set by the client library in END_BATCH request message.
+         * the total number of operations in the batch
+         * </pre>
+         */
+        public boolean hasCount() {
+          return ((bitField0_ & 0x00000001) == 0x00000001);
+        }
+        /**
+         * <code>optional int32 count = 1;</code>
+         *
+         * <pre>
+         * set by the client library in END_BATCH request message.
+         * the total number of operations in the batch
+         * </pre>
+         */
+        public int getCount() {
+          return count_;
+        }
+        /**
+         * <code>optional int32 count = 1;</code>
+         *
+         * <pre>
+         * set by the client library in END_BATCH request message.
+         * the total number of operations in the batch
+         * </pre>
+         */
+        public Builder setCount(int value) {
+          bitField0_ |= 0x00000001;
+          count_ = value;
+          onChanged();
+          return this;
+        }
+        /**
+         * <code>optional int32 count = 1;</code>
+         *
+         * <pre>
+         * set by the client library in END_BATCH request message.
+         * the total number of operations in the batch
+         * </pre>
+         */
+        public Builder clearCount() {
+          bitField0_ = (bitField0_ & ~0x00000001);
+          count_ = 0;
+          onChanged();
+          return this;
+        }
+
+        // repeated int64 sequence = 2 [packed = true];
+        private java.util.List<java.lang.Long> sequence_ = java.util.Collections.emptyList();
+        private void ensureSequenceIsMutable() {
+          if (!((bitField0_ & 0x00000002) == 0x00000002)) {
+            sequence_ = new java.util.ArrayList<java.lang.Long>(sequence_);
+            bitField0_ |= 0x00000002;
+           }
+        }
+        /**
+         * <code>repeated int64 sequence = 2 [packed = true];</code>
+         *
+         * <pre>
+         * set by the drive in END_BATCH_RESPONSE message.
+         * If a batch is committed successfully, all sequence Ids of those
+         * commands (PUT/DELETE) performed in the batch are
+         * added in the END_BATCH_RESPONSE message.
+         * </pre>
+         */
+        public java.util.List<java.lang.Long>
+            getSequenceList() {
+          return java.util.Collections.unmodifiableList(sequence_);
+        }
+        /**
+         * <code>repeated int64 sequence = 2 [packed = true];</code>
+         *
+         * <pre>
+         * set by the drive in END_BATCH_RESPONSE message.
+         * If a batch is committed successfully, all sequence Ids of those
+         * commands (PUT/DELETE) performed in the batch are
+         * added in the END_BATCH_RESPONSE message.
+         * </pre>
+         */
+        public int getSequenceCount() {
+          return sequence_.size();
+        }
+        /**
+         * <code>repeated int64 sequence = 2 [packed = true];</code>
+         *
+         * <pre>
+         * set by the drive in END_BATCH_RESPONSE message.
+         * If a batch is committed successfully, all sequence Ids of those
+         * commands (PUT/DELETE) performed in the batch are
+         * added in the END_BATCH_RESPONSE message.
+         * </pre>
+         */
+        public long getSequence(int index) {
+          return sequence_.get(index);
+        }
+        /**
+         * <code>repeated int64 sequence = 2 [packed = true];</code>
+         *
+         * <pre>
+         * set by the drive in END_BATCH_RESPONSE message.
+         * If a batch is committed successfully, all sequence Ids of those
+         * commands (PUT/DELETE) performed in the batch are
+         * added in the END_BATCH_RESPONSE message.
+         * </pre>
+         */
+        public Builder setSequence(
+            int index, long value) {
+          ensureSequenceIsMutable();
+          sequence_.set(index, value);
+          onChanged();
+          return this;
+        }
+        /**
+         * <code>repeated int64 sequence = 2 [packed = true];</code>
+         *
+         * <pre>
+         * set by the drive in END_BATCH_RESPONSE message.
+         * If a batch is committed successfully, all sequence Ids of those
+         * commands (PUT/DELETE) performed in the batch are
+         * added in the END_BATCH_RESPONSE message.
+         * </pre>
+         */
+        public Builder addSequence(long value) {
+          ensureSequenceIsMutable();
+          sequence_.add(value);
+          onChanged();
+          return this;
+        }
+        /**
+         * <code>repeated int64 sequence = 2 [packed = true];</code>
+         *
+         * <pre>
+         * set by the drive in END_BATCH_RESPONSE message.
+         * If a batch is committed successfully, all sequence Ids of those
+         * commands (PUT/DELETE) performed in the batch are
+         * added in the END_BATCH_RESPONSE message.
+         * </pre>
+         */
+        public Builder addAllSequence(
+            java.lang.Iterable<? extends java.lang.Long> values) {
+          ensureSequenceIsMutable();
+          super.addAll(values, sequence_);
+          onChanged();
+          return this;
+        }
+        /**
+         * <code>repeated int64 sequence = 2 [packed = true];</code>
+         *
+         * <pre>
+         * set by the drive in END_BATCH_RESPONSE message.
+         * If a batch is committed successfully, all sequence Ids of those
+         * commands (PUT/DELETE) performed in the batch are
+         * added in the END_BATCH_RESPONSE message.
+         * </pre>
+         */
+        public Builder clearSequence() {
+          sequence_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000002);
+          onChanged();
+          return this;
+        }
+
+        // optional int64 failedSequence = 3;
+        private long failedSequence_ ;
+        /**
+         * <code>optional int64 failedSequence = 3;</code>
+         *
+         * <pre>
+         * This field is set by the drive if a batch commit failed.
+         * The first failed operation sequence in the batch is set as value.
+         * </pre>
+         */
+        public boolean hasFailedSequence() {
+          return ((bitField0_ & 0x00000004) == 0x00000004);
+        }
+        /**
+         * <code>optional int64 failedSequence = 3;</code>
+         *
+         * <pre>
+         * This field is set by the drive if a batch commit failed.
+         * The first failed operation sequence in the batch is set as value.
+         * </pre>
+         */
+        public long getFailedSequence() {
+          return failedSequence_;
+        }
+        /**
+         * <code>optional int64 failedSequence = 3;</code>
+         *
+         * <pre>
+         * This field is set by the drive if a batch commit failed.
+         * The first failed operation sequence in the batch is set as value.
+         * </pre>
+         */
+        public Builder setFailedSequence(long value) {
+          bitField0_ |= 0x00000004;
+          failedSequence_ = value;
+          onChanged();
+          return this;
+        }
+        /**
+         * <code>optional int64 failedSequence = 3;</code>
+         *
+         * <pre>
+         * This field is set by the drive if a batch commit failed.
+         * The first failed operation sequence in the batch is set as value.
+         * </pre>
+         */
+        public Builder clearFailedSequence() {
+          bitField0_ = (bitField0_ & ~0x00000004);
+          failedSequence_ = 0L;
+          onChanged();
+          return this;
+        }
+
+        // @@protoc_insertion_point(builder_scope:com.seagate.kinetic.proto.Command.Batch)
+      }
+
+      static {
+        defaultInstance = new Batch(true);
+        defaultInstance.initFields();
+      }
+
+      // @@protoc_insertion_point(class_scope:com.seagate.kinetic.proto.Command.Batch)
     }
 
     public interface StatusOrBuilder
@@ -30536,6 +31626,11 @@ public final class Kinetic {
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_com_seagate_kinetic_proto_Command_Body_fieldAccessorTable;
   private static com.google.protobuf.Descriptors.Descriptor
+    internal_static_com_seagate_kinetic_proto_Command_Batch_descriptor;
+  private static
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_com_seagate_kinetic_proto_Command_Batch_fieldAccessorTable;
+  private static com.google.protobuf.Descriptors.Descriptor
     internal_static_com_seagate_kinetic_proto_Command_Status_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
@@ -30655,7 +31750,7 @@ public final class Kinetic {
       "identity\030\001 \001(\003\022\014\n\004hmac\030\002 \001(\014\032\026\n\007PINauth\022" +
       "\013\n\003pin\030\001 \001(\014\"\\\n\010AuthType\022\036\n\021INVALID_AUTH",
       "_TYPE\020\377\377\377\377\377\377\377\377\377\001\022\014\n\010HMACAUTH\020\001\022\013\n\007PINAUT" +
-      "H\020\002\022\025\n\021UNSOLICITEDSTATUS\020\003\"\3701\n\007Command\0229" +
+      "H\020\002\022\025\n\021UNSOLICITEDSTATUS\020\003\"\3672\n\007Command\0229" +
       "\n\006header\030\001 \001(\0132).com.seagate.kinetic.pro" +
       "to.Command.Header\0225\n\004body\030\002 \001(\0132\'.com.se" +
       "agate.kinetic.proto.Command.Body\0229\n\006stat" +
@@ -30667,7 +31762,7 @@ public final class Kinetic {
       "mand.MessageType\022\017\n\007timeout\030\t \001(\003\022\021\n\tear" +
       "lyExit\030\n \001(\010\022=\n\010priority\030\014 \001(\0162+.com.sea" +
       "gate.kinetic.proto.Command.Priority\022\022\n\nT" +
-      "imeQuanta\030\r \001(\003\022\017\n\007batchID\030\016 \001(\r\032\270\003\n\004Bod" +
+      "imeQuanta\030\r \001(\003\022\017\n\007batchID\030\016 \001(\r\032\361\003\n\004Bod" +
       "y\022=\n\010keyValue\030\001 \001(\0132+.com.seagate.kineti" +
       "c.proto.Command.KeyValue\0227\n\005range\030\002 \001(\0132" +
       "(.com.seagate.kinetic.proto.Command.Rang" +
@@ -30678,144 +31773,147 @@ public final class Kinetic {
       "kinetic.proto.Command.GetLog\022=\n\010security" +
       "\030\007 \001(\0132+.com.seagate.kinetic.proto.Comma" +
       "nd.Security\022>\n\005pinOp\030\010 \001(\0132/.com.seagate" +
-      ".kinetic.proto.Command.PinOperation\032\361\004\n\006" +
-      "Status\022B\n\004code\030\001 \001(\01624.com.seagate.kinet" +
-      "ic.proto.Command.Status.StatusCode\022\025\n\rst" +
-      "atusMessage\030\002 \001(\t\022\027\n\017detailedMessage\030\003 \001" +
-      "(\014\"\362\003\n\nStatusCode\022 \n\023INVALID_STATUS_CODE" +
-      "\020\377\377\377\377\377\377\377\377\377\001\022\021\n\rNOT_ATTEMPTED\020\000\022\013\n\007SUCCES",
-      "S\020\001\022\020\n\014HMAC_FAILURE\020\002\022\022\n\016NOT_AUTHORIZED\020" +
-      "\003\022\023\n\017VERSION_FAILURE\020\004\022\022\n\016INTERNAL_ERROR" +
-      "\020\005\022\023\n\017HEADER_REQUIRED\020\006\022\r\n\tNOT_FOUND\020\007\022\024" +
-      "\n\020VERSION_MISMATCH\020\010\022\020\n\014SERVICE_BUSY\020\t\022\013" +
-      "\n\007EXPIRED\020\n\022\016\n\nDATA_ERROR\020\013\022\023\n\017PERM_DATA" +
-      "_ERROR\020\014\022\033\n\027REMOTE_CONNECTION_ERROR\020\r\022\014\n" +
-      "\010NO_SPACE\020\016\022\032\n\026NO_SUCH_HMAC_ALGORITHM\020\017\022" +
-      "\023\n\017INVALID_REQUEST\020\020\022\033\n\027NESTED_OPERATION" +
-      "_ERRORS\020\021\022\021\n\rDEVICE_LOCKED\020\022\022\033\n\027DEVICE_A" +
-      "LREADY_UNLOCKED\020\023\022\031\n\025CONNECTION_TERMINAT",
-      "ED\020\024\022\021\n\rINVALID_BATCH\020\025\032\376\001\n\010KeyValue\022\022\n\n" +
-      "newVersion\030\002 \001(\014\022\r\n\005force\030\010 \001(\010\022\013\n\003key\030\003" +
-      " \001(\014\022\021\n\tdbVersion\030\004 \001(\014\022\013\n\003tag\030\005 \001(\014\022?\n\t" +
-      "algorithm\030\006 \001(\0162,.com.seagate.kinetic.pr" +
-      "oto.Command.Algorithm\022\024\n\014metadataOnly\030\007 " +
-      "\001(\010\022K\n\017synchronization\030\t \001(\01622.com.seaga" +
-      "te.kinetic.proto.Command.Synchronization" +
-      "\032\221\001\n\005Range\022\020\n\010startKey\030\001 \001(\014\022\016\n\006endKey\030\002" +
-      " \001(\014\022\031\n\021startKeyInclusive\030\003 \001(\010\022\027\n\017endKe" +
-      "yInclusive\030\004 \001(\010\022\023\n\013maxReturned\030\005 \001(\005\022\017\n",
-      "\007reverse\030\006 \001(\010\022\014\n\004keys\030\010 \003(\014\032<\n\005Setup\022\031\n" +
-      "\021newClusterVersion\030\001 \001(\003\022\030\n\020firmwareDown" +
-      "load\030\005 \001(\010\032\300\003\n\014P2POperation\022B\n\004peer\030\001 \001(" +
-      "\01324.com.seagate.kinetic.proto.Command.P2" +
-      "POperation.Peer\022L\n\toperation\030\002 \003(\01329.com" +
-      ".seagate.kinetic.proto.Command.P2POperat" +
-      "ion.Operation\022#\n\033allChildOperationsSucce" +
-      "eded\030\003 \001(\010\032\303\001\n\tOperation\022\013\n\003key\030\003 \001(\014\022\017\n" +
-      "\007version\030\004 \001(\014\022\016\n\006newKey\030\005 \001(\014\022\r\n\005force\030" +
-      "\006 \001(\010\0229\n\006status\030\007 \001(\0132).com.seagate.kine",
-      "tic.proto.Command.Status\022>\n\005p2pop\030\010 \001(\0132" +
-      "/.com.seagate.kinetic.proto.Command.P2PO" +
-      "peration\0323\n\004Peer\022\020\n\010hostname\030\001 \001(\t\022\014\n\004po" +
-      "rt\030\002 \001(\005\022\013\n\003tls\030\003 \001(\010\032\360\016\n\006GetLog\022=\n\005type" +
-      "s\030\001 \003(\0162..com.seagate.kinetic.proto.Comm" +
-      "and.GetLog.Type\022K\n\014utilizations\030\002 \003(\01325." +
-      "com.seagate.kinetic.proto.Command.GetLog" +
-      ".Utilization\022K\n\014temperatures\030\003 \003(\01325.com" +
-      ".seagate.kinetic.proto.Command.GetLog.Te" +
-      "mperature\022D\n\010capacity\030\004 \001(\01322.com.seagat",
-      "e.kinetic.proto.Command.GetLog.Capacity\022" +
-      "N\n\rconfiguration\030\005 \001(\01327.com.seagate.kin" +
-      "etic.proto.Command.GetLog.Configuration\022" +
-      "H\n\nstatistics\030\006 \003(\01324.com.seagate.kineti" +
-      "c.proto.Command.GetLog.Statistics\022\020\n\010mes" +
-      "sages\030\007 \001(\014\022@\n\006limits\030\010 \001(\01320.com.seagat" +
-      "e.kinetic.proto.Command.GetLog.Limits\022@\n" +
-      "\006device\030\t \001(\01320.com.seagate.kinetic.prot" +
-      "o.Command.GetLog.Device\032*\n\013Utilization\022\014" +
-      "\n\004name\030\001 \001(\t\022\r\n\005value\030\002 \001(\002\032^\n\013Temperatu",
-      "re\022\014\n\004name\030\001 \001(\t\022\017\n\007current\030\002 \001(\002\022\017\n\007min" +
-      "imum\030\003 \001(\002\022\017\n\007maximum\030\004 \001(\002\022\016\n\006target\030\005 " +
-      "\001(\002\032?\n\010Capacity\022\036\n\026nominalCapacityInByte" +
-      "s\030\004 \001(\004\022\023\n\013portionFull\030\005 \001(\002\032\266\003\n\rConfigu" +
-      "ration\022\016\n\006vendor\030\005 \001(\t\022\r\n\005model\030\006 \001(\t\022\024\n" +
-      "\014serialNumber\030\007 \001(\014\022\025\n\rworldWideName\030\016 \001" +
-      "(\014\022\017\n\007version\030\010 \001(\t\022\027\n\017compilationDate\030\014" +
-      " \001(\t\022\022\n\nsourceHash\030\r \001(\t\022\027\n\017protocolVers" +
-      "ion\030\017 \001(\t\022\037\n\027protocolCompilationDate\030\020 \001" +
-      "(\t\022\032\n\022protocolSourceHash\030\021 \001(\t\022T\n\tinterf",
-      "ace\030\t \003(\0132A.com.seagate.kinetic.proto.Co" +
-      "mmand.GetLog.Configuration.Interface\022\014\n\004" +
-      "port\030\n \001(\005\022\017\n\007tlsPort\030\013 \001(\005\032P\n\tInterface" +
-      "\022\014\n\004name\030\001 \001(\t\022\013\n\003MAC\030\002 \001(\014\022\023\n\013ipv4Addre" +
-      "ss\030\003 \001(\014\022\023\n\013ipv6Address\030\004 \001(\014\032o\n\nStatist" +
-      "ics\022C\n\013messageType\030\001 \001(\0162..com.seagate.k" +
-      "inetic.proto.Command.MessageType\022\r\n\005coun" +
-      "t\030\004 \001(\004\022\r\n\005bytes\030\005 \001(\004\032\346\002\n\006Limits\022\022\n\nmax" +
-      "KeySize\030\001 \001(\r\022\024\n\014maxValueSize\030\002 \001(\r\022\026\n\016m" +
-      "axVersionSize\030\003 \001(\r\022\022\n\nmaxTagSize\030\004 \001(\r\022",
-      "\026\n\016maxConnections\030\005 \001(\r\022\"\n\032maxOutstandin" +
-      "gReadRequests\030\006 \001(\r\022#\n\033maxOutstandingWri" +
-      "teRequests\030\007 \001(\r\022\026\n\016maxMessageSize\030\010 \001(\r" +
-      "\022\030\n\020maxKeyRangeCount\030\t \001(\r\022\030\n\020maxIdentit" +
-      "yCount\030\n \001(\r\022\022\n\nmaxPinSize\030\013 \001(\r\022!\n\031maxO" +
-      "perationCountPerBatch\030\014 \001(\r\022\"\n\032maxBatchC" +
-      "ountPerConnection\030\r \001(\r\032\026\n\006Device\022\014\n\004nam" +
-      "e\030\001 \001(\014\"\236\001\n\004Type\022\031\n\014INVALID_TYPE\020\377\377\377\377\377\377\377" +
-      "\377\377\001\022\020\n\014UTILIZATIONS\020\000\022\020\n\014TEMPERATURES\020\001\022" +
-      "\016\n\nCAPACITIES\020\002\022\021\n\rCONFIGURATION\020\003\022\016\n\nST",
-      "ATISTICS\020\004\022\014\n\010MESSAGES\020\005\022\n\n\006LIMITS\020\006\022\n\n\006" +
-      "DEVICE\020\007\032\375\005\n\010Security\022<\n\003acl\030\002 \003(\0132/.com" +
+      ".kinetic.proto.Command.PinOperation\0227\n\005b" +
+      "atch\030\t \001(\0132(.com.seagate.kinetic.proto.C" +
+      "ommand.Batch\032D\n\005Batch\022\r\n\005count\030\001 \001(\005\022\024\n\010" +
+      "sequence\030\002 \003(\003B\002\020\001\022\026\n\016failedSequence\030\003 \001" +
+      "(\003\032\361\004\n\006Status\022B\n\004code\030\001 \001(\01624.com.seagat" +
+      "e.kinetic.proto.Command.Status.StatusCod",
+      "e\022\025\n\rstatusMessage\030\002 \001(\t\022\027\n\017detailedMess" +
+      "age\030\003 \001(\014\"\362\003\n\nStatusCode\022 \n\023INVALID_STAT" +
+      "US_CODE\020\377\377\377\377\377\377\377\377\377\001\022\021\n\rNOT_ATTEMPTED\020\000\022\013\n" +
+      "\007SUCCESS\020\001\022\020\n\014HMAC_FAILURE\020\002\022\022\n\016NOT_AUTH" +
+      "ORIZED\020\003\022\023\n\017VERSION_FAILURE\020\004\022\022\n\016INTERNA" +
+      "L_ERROR\020\005\022\023\n\017HEADER_REQUIRED\020\006\022\r\n\tNOT_FO" +
+      "UND\020\007\022\024\n\020VERSION_MISMATCH\020\010\022\020\n\014SERVICE_B" +
+      "USY\020\t\022\013\n\007EXPIRED\020\n\022\016\n\nDATA_ERROR\020\013\022\023\n\017PE" +
+      "RM_DATA_ERROR\020\014\022\033\n\027REMOTE_CONNECTION_ERR" +
+      "OR\020\r\022\014\n\010NO_SPACE\020\016\022\032\n\026NO_SUCH_HMAC_ALGOR",
+      "ITHM\020\017\022\023\n\017INVALID_REQUEST\020\020\022\033\n\027NESTED_OP" +
+      "ERATION_ERRORS\020\021\022\021\n\rDEVICE_LOCKED\020\022\022\033\n\027D" +
+      "EVICE_ALREADY_UNLOCKED\020\023\022\031\n\025CONNECTION_T" +
+      "ERMINATED\020\024\022\021\n\rINVALID_BATCH\020\025\032\376\001\n\010KeyVa" +
+      "lue\022\022\n\nnewVersion\030\002 \001(\014\022\r\n\005force\030\010 \001(\010\022\013" +
+      "\n\003key\030\003 \001(\014\022\021\n\tdbVersion\030\004 \001(\014\022\013\n\003tag\030\005 " +
+      "\001(\014\022?\n\talgorithm\030\006 \001(\0162,.com.seagate.kin" +
+      "etic.proto.Command.Algorithm\022\024\n\014metadata" +
+      "Only\030\007 \001(\010\022K\n\017synchronization\030\t \001(\01622.co" +
+      "m.seagate.kinetic.proto.Command.Synchron",
+      "ization\032\221\001\n\005Range\022\020\n\010startKey\030\001 \001(\014\022\016\n\006e" +
+      "ndKey\030\002 \001(\014\022\031\n\021startKeyInclusive\030\003 \001(\010\022\027" +
+      "\n\017endKeyInclusive\030\004 \001(\010\022\023\n\013maxReturned\030\005" +
+      " \001(\005\022\017\n\007reverse\030\006 \001(\010\022\014\n\004keys\030\010 \003(\014\032<\n\005S" +
+      "etup\022\031\n\021newClusterVersion\030\001 \001(\003\022\030\n\020firmw" +
+      "areDownload\030\005 \001(\010\032\300\003\n\014P2POperation\022B\n\004pe" +
+      "er\030\001 \001(\01324.com.seagate.kinetic.proto.Com" +
+      "mand.P2POperation.Peer\022L\n\toperation\030\002 \003(" +
+      "\01329.com.seagate.kinetic.proto.Command.P2" +
+      "POperation.Operation\022#\n\033allChildOperatio",
+      "nsSucceeded\030\003 \001(\010\032\303\001\n\tOperation\022\013\n\003key\030\003" +
+      " \001(\014\022\017\n\007version\030\004 \001(\014\022\016\n\006newKey\030\005 \001(\014\022\r\n" +
+      "\005force\030\006 \001(\010\0229\n\006status\030\007 \001(\0132).com.seaga" +
+      "te.kinetic.proto.Command.Status\022>\n\005p2pop" +
+      "\030\010 \001(\0132/.com.seagate.kinetic.proto.Comma" +
+      "nd.P2POperation\0323\n\004Peer\022\020\n\010hostname\030\001 \001(" +
+      "\t\022\014\n\004port\030\002 \001(\005\022\013\n\003tls\030\003 \001(\010\032\360\016\n\006GetLog\022" +
+      "=\n\005types\030\001 \003(\0162..com.seagate.kinetic.pro" +
+      "to.Command.GetLog.Type\022K\n\014utilizations\030\002" +
+      " \003(\01325.com.seagate.kinetic.proto.Command",
+      ".GetLog.Utilization\022K\n\014temperatures\030\003 \003(" +
+      "\01325.com.seagate.kinetic.proto.Command.Ge" +
+      "tLog.Temperature\022D\n\010capacity\030\004 \001(\01322.com" +
+      ".seagate.kinetic.proto.Command.GetLog.Ca" +
+      "pacity\022N\n\rconfiguration\030\005 \001(\01327.com.seag" +
+      "ate.kinetic.proto.Command.GetLog.Configu" +
+      "ration\022H\n\nstatistics\030\006 \003(\01324.com.seagate" +
+      ".kinetic.proto.Command.GetLog.Statistics" +
+      "\022\020\n\010messages\030\007 \001(\014\022@\n\006limits\030\010 \001(\01320.com" +
+      ".seagate.kinetic.proto.Command.GetLog.Li",
+      "mits\022@\n\006device\030\t \001(\01320.com.seagate.kinet" +
+      "ic.proto.Command.GetLog.Device\032*\n\013Utiliz" +
+      "ation\022\014\n\004name\030\001 \001(\t\022\r\n\005value\030\002 \001(\002\032^\n\013Te" +
+      "mperature\022\014\n\004name\030\001 \001(\t\022\017\n\007current\030\002 \001(\002" +
+      "\022\017\n\007minimum\030\003 \001(\002\022\017\n\007maximum\030\004 \001(\002\022\016\n\006ta" +
+      "rget\030\005 \001(\002\032?\n\010Capacity\022\036\n\026nominalCapacit" +
+      "yInBytes\030\004 \001(\004\022\023\n\013portionFull\030\005 \001(\002\032\266\003\n\r" +
+      "Configuration\022\016\n\006vendor\030\005 \001(\t\022\r\n\005model\030\006" +
+      " \001(\t\022\024\n\014serialNumber\030\007 \001(\014\022\025\n\rworldWideN" +
+      "ame\030\016 \001(\014\022\017\n\007version\030\010 \001(\t\022\027\n\017compilatio",
+      "nDate\030\014 \001(\t\022\022\n\nsourceHash\030\r \001(\t\022\027\n\017proto" +
+      "colVersion\030\017 \001(\t\022\037\n\027protocolCompilationD" +
+      "ate\030\020 \001(\t\022\032\n\022protocolSourceHash\030\021 \001(\t\022T\n" +
+      "\tinterface\030\t \003(\0132A.com.seagate.kinetic.p" +
+      "roto.Command.GetLog.Configuration.Interf" +
+      "ace\022\014\n\004port\030\n \001(\005\022\017\n\007tlsPort\030\013 \001(\005\032P\n\tIn" +
+      "terface\022\014\n\004name\030\001 \001(\t\022\013\n\003MAC\030\002 \001(\014\022\023\n\013ip" +
+      "v4Address\030\003 \001(\014\022\023\n\013ipv6Address\030\004 \001(\014\032o\n\n" +
+      "Statistics\022C\n\013messageType\030\001 \001(\0162..com.se" +
+      "agate.kinetic.proto.Command.MessageType\022",
+      "\r\n\005count\030\004 \001(\004\022\r\n\005bytes\030\005 \001(\004\032\346\002\n\006Limits" +
+      "\022\022\n\nmaxKeySize\030\001 \001(\r\022\024\n\014maxValueSize\030\002 \001" +
+      "(\r\022\026\n\016maxVersionSize\030\003 \001(\r\022\022\n\nmaxTagSize" +
+      "\030\004 \001(\r\022\026\n\016maxConnections\030\005 \001(\r\022\"\n\032maxOut" +
+      "standingReadRequests\030\006 \001(\r\022#\n\033maxOutstan" +
+      "dingWriteRequests\030\007 \001(\r\022\026\n\016maxMessageSiz" +
+      "e\030\010 \001(\r\022\030\n\020maxKeyRangeCount\030\t \001(\r\022\030\n\020max" +
+      "IdentityCount\030\n \001(\r\022\022\n\nmaxPinSize\030\013 \001(\r\022" +
+      "!\n\031maxOperationCountPerBatch\030\014 \001(\r\022\"\n\032ma" +
+      "xBatchCountPerConnection\030\r \001(\r\032\026\n\006Device",
+      "\022\014\n\004name\030\001 \001(\014\"\236\001\n\004Type\022\031\n\014INVALID_TYPE\020" +
+      "\377\377\377\377\377\377\377\377\377\001\022\020\n\014UTILIZATIONS\020\000\022\020\n\014TEMPERAT" +
+      "URES\020\001\022\016\n\nCAPACITIES\020\002\022\021\n\rCONFIGURATION\020" +
+      "\003\022\016\n\nSTATISTICS\020\004\022\014\n\010MESSAGES\020\005\022\n\n\006LIMIT" +
+      "S\020\006\022\n\n\006DEVICE\020\007\032\375\005\n\010Security\022<\n\003acl\030\002 \003(" +
+      "\0132/.com.seagate.kinetic.proto.Command.Se" +
+      "curity.ACL\022\022\n\noldLockPIN\030\003 \001(\014\022\022\n\nnewLoc" +
+      "kPIN\030\004 \001(\014\022\023\n\013oldErasePIN\030\005 \001(\014\022\023\n\013newEr" +
+      "asePIN\030\006 \001(\014\032\340\004\n\003ACL\022\020\n\010identity\030\001 \001(\003\022\013" +
+      "\n\003key\030\002 \001(\014\022T\n\rhmacAlgorithm\030\003 \001(\0162=.com",
       ".seagate.kinetic.proto.Command.Security." +
-      "ACL\022\022\n\noldLockPIN\030\003 \001(\014\022\022\n\nnewLockPIN\030\004 " +
-      "\001(\014\022\023\n\013oldErasePIN\030\005 \001(\014\022\023\n\013newErasePIN\030" +
-      "\006 \001(\014\032\340\004\n\003ACL\022\020\n\010identity\030\001 \001(\003\022\013\n\003key\030\002" +
-      " \001(\014\022T\n\rhmacAlgorithm\030\003 \001(\0162=.com.seagat" +
-      "e.kinetic.proto.Command.Security.ACL.HMA" +
-      "CAlgorithm\022D\n\005scope\030\004 \003(\01325.com.seagate." +
-      "kinetic.proto.Command.Security.ACL.Scope",
-      "\022@\n\013maxPriority\030\005 \001(\0162+.com.seagate.kine" +
-      "tic.proto.Command.Priority\032\213\001\n\005Scope\022\016\n\006" +
-      "offset\030\001 \001(\003\022\r\n\005value\030\002 \001(\014\022N\n\npermissio" +
-      "n\030\003 \003(\0162:.com.seagate.kinetic.proto.Comm" +
-      "and.Security.ACL.Permission\022\023\n\013TlsRequir" +
-      "ed\030\004 \001(\010\"B\n\rHMACAlgorithm\022#\n\026INVALID_HMA" +
-      "C_ALGORITHM\020\377\377\377\377\377\377\377\377\377\001\022\014\n\010HmacSHA1\020\001\"\211\001\n" +
-      "\nPermission\022\037\n\022INVALID_PERMISSION\020\377\377\377\377\377\377" +
-      "\377\377\377\001\022\010\n\004READ\020\000\022\t\n\005WRITE\020\001\022\n\n\006DELETE\020\002\022\t\n" +
-      "\005RANGE\020\003\022\t\n\005SETUP\020\004\022\t\n\005P2POP\020\005\022\n\n\006GETLOG",
-      "\020\007\022\014\n\010SECURITY\020\010\032\320\001\n\014PinOperation\022L\n\tpin" +
-      "OpType\030\001 \001(\01629.com.seagate.kinetic.proto" +
-      ".Command.PinOperation.PinOpType\"r\n\tPinOp" +
-      "Type\022\032\n\rINVALID_PINOP\020\377\377\377\377\377\377\377\377\377\001\022\020\n\014UNLO" +
-      "CK_PINOP\020\001\022\016\n\nLOCK_PINOP\020\002\022\017\n\013ERASE_PINO" +
-      "P\020\003\022\026\n\022SECURE_ERASE_PINOP\020\004\"c\n\017Synchroni" +
-      "zation\022$\n\027INVALID_SYNCHRONIZATION\020\377\377\377\377\377\377" +
-      "\377\377\377\001\022\020\n\014WRITETHROUGH\020\001\022\r\n\tWRITEBACK\020\002\022\t\n" +
-      "\005FLUSH\020\003\"F\n\010Priority\022\n\n\006NORMAL\020\005\022\n\n\006LOWE" +
-      "ST\020\001\022\t\n\005LOWER\020\003\022\n\n\006HIGHER\020\007\022\013\n\007HIGHEST\020\t",
-      "\"_\n\tAlgorithm\022\036\n\021INVALID_ALGORITHM\020\377\377\377\377\377" +
-      "\377\377\377\377\001\022\010\n\004SHA1\020\001\022\010\n\004SHA2\020\002\022\010\n\004SHA3\020\003\022\t\n\005C" +
-      "RC32\020\004\022\t\n\005CRC64\020\005\"\371\005\n\013MessageType\022!\n\024INV" +
-      "ALID_MESSAGE_TYPE\020\377\377\377\377\377\377\377\377\377\001\022\007\n\003GET\020\002\022\020\n" +
-      "\014GET_RESPONSE\020\001\022\007\n\003PUT\020\004\022\020\n\014PUT_RESPONSE" +
-      "\020\003\022\n\n\006DELETE\020\006\022\023\n\017DELETE_RESPONSE\020\005\022\013\n\007G" +
-      "ETNEXT\020\010\022\024\n\020GETNEXT_RESPONSE\020\007\022\017\n\013GETPRE" +
-      "VIOUS\020\n\022\030\n\024GETPREVIOUS_RESPONSE\020\t\022\017\n\013GET" +
-      "KEYRANGE\020\014\022\030\n\024GETKEYRANGE_RESPONSE\020\013\022\016\n\n" +
-      "GETVERSION\020\020\022\027\n\023GETVERSION_RESPONSE\020\017\022\t\n",
-      "\005SETUP\020\026\022\022\n\016SETUP_RESPONSE\020\025\022\n\n\006GETLOG\020\030" +
-      "\022\023\n\017GETLOG_RESPONSE\020\027\022\014\n\010SECURITY\020\032\022\025\n\021S" +
-      "ECURITY_RESPONSE\020\031\022\021\n\rPEER2PEERPUSH\020\034\022\032\n" +
-      "\026PEER2PEERPUSH_RESPONSE\020\033\022\010\n\004NOOP\020\036\022\021\n\rN" +
-      "OOP_RESPONSE\020\035\022\020\n\014FLUSHALLDATA\020 \022\031\n\025FLUS" +
-      "HALLDATA_RESPONSE\020\037\022\t\n\005PINOP\020$\022\022\n\016PINOP_" +
-      "RESPONSE\020#\022\r\n\tMEDIASCAN\020&\022\026\n\022MEDIASCAN_R" +
-      "ESPONSE\020%\022\021\n\rMEDIAOPTIMIZE\020(\022\032\n\026MEDIAOPT" +
-      "IMIZE_RESPONSE\020\'\022\017\n\013START_BATCH\020*\022\030\n\024STA" +
-      "RT_BATCH_RESPONSE\020)\022\r\n\tEND_BATCH\020,\022\026\n\022EN",
-      "D_BATCH_RESPONSE\020+\022\017\n\013ABORT_BATCH\020.\022\030\n\024A" +
-      "BORT_BATCH_RESPONSE\020-B\tB\007Kinetic"
+      "ACL.HMACAlgorithm\022D\n\005scope\030\004 \003(\01325.com.s" +
+      "eagate.kinetic.proto.Command.Security.AC" +
+      "L.Scope\022@\n\013maxPriority\030\005 \001(\0162+.com.seaga" +
+      "te.kinetic.proto.Command.Priority\032\213\001\n\005Sc" +
+      "ope\022\016\n\006offset\030\001 \001(\003\022\r\n\005value\030\002 \001(\014\022N\n\npe" +
+      "rmission\030\003 \003(\0162:.com.seagate.kinetic.pro" +
+      "to.Command.Security.ACL.Permission\022\023\n\013Tl" +
+      "sRequired\030\004 \001(\010\"B\n\rHMACAlgorithm\022#\n\026INVA" +
+      "LID_HMAC_ALGORITHM\020\377\377\377\377\377\377\377\377\377\001\022\014\n\010HmacSHA",
+      "1\020\001\"\211\001\n\nPermission\022\037\n\022INVALID_PERMISSION" +
+      "\020\377\377\377\377\377\377\377\377\377\001\022\010\n\004READ\020\000\022\t\n\005WRITE\020\001\022\n\n\006DELE" +
+      "TE\020\002\022\t\n\005RANGE\020\003\022\t\n\005SETUP\020\004\022\t\n\005P2POP\020\005\022\n\n" +
+      "\006GETLOG\020\007\022\014\n\010SECURITY\020\010\032\320\001\n\014PinOperation" +
+      "\022L\n\tpinOpType\030\001 \001(\01629.com.seagate.kineti" +
+      "c.proto.Command.PinOperation.PinOpType\"r" +
+      "\n\tPinOpType\022\032\n\rINVALID_PINOP\020\377\377\377\377\377\377\377\377\377\001\022" +
+      "\020\n\014UNLOCK_PINOP\020\001\022\016\n\nLOCK_PINOP\020\002\022\017\n\013ERA" +
+      "SE_PINOP\020\003\022\026\n\022SECURE_ERASE_PINOP\020\004\"c\n\017Sy" +
+      "nchronization\022$\n\027INVALID_SYNCHRONIZATION",
+      "\020\377\377\377\377\377\377\377\377\377\001\022\020\n\014WRITETHROUGH\020\001\022\r\n\tWRITEBA" +
+      "CK\020\002\022\t\n\005FLUSH\020\003\"F\n\010Priority\022\n\n\006NORMAL\020\005\022" +
+      "\n\n\006LOWEST\020\001\022\t\n\005LOWER\020\003\022\n\n\006HIGHER\020\007\022\013\n\007HI" +
+      "GHEST\020\t\"_\n\tAlgorithm\022\036\n\021INVALID_ALGORITH" +
+      "M\020\377\377\377\377\377\377\377\377\377\001\022\010\n\004SHA1\020\001\022\010\n\004SHA2\020\002\022\010\n\004SHA3" +
+      "\020\003\022\t\n\005CRC32\020\004\022\t\n\005CRC64\020\005\"\371\005\n\013MessageType" +
+      "\022!\n\024INVALID_MESSAGE_TYPE\020\377\377\377\377\377\377\377\377\377\001\022\007\n\003G" +
+      "ET\020\002\022\020\n\014GET_RESPONSE\020\001\022\007\n\003PUT\020\004\022\020\n\014PUT_R" +
+      "ESPONSE\020\003\022\n\n\006DELETE\020\006\022\023\n\017DELETE_RESPONSE" +
+      "\020\005\022\013\n\007GETNEXT\020\010\022\024\n\020GETNEXT_RESPONSE\020\007\022\017\n",
+      "\013GETPREVIOUS\020\n\022\030\n\024GETPREVIOUS_RESPONSE\020\t" +
+      "\022\017\n\013GETKEYRANGE\020\014\022\030\n\024GETKEYRANGE_RESPONS" +
+      "E\020\013\022\016\n\nGETVERSION\020\020\022\027\n\023GETVERSION_RESPON" +
+      "SE\020\017\022\t\n\005SETUP\020\026\022\022\n\016SETUP_RESPONSE\020\025\022\n\n\006G" +
+      "ETLOG\020\030\022\023\n\017GETLOG_RESPONSE\020\027\022\014\n\010SECURITY" +
+      "\020\032\022\025\n\021SECURITY_RESPONSE\020\031\022\021\n\rPEER2PEERPU" +
+      "SH\020\034\022\032\n\026PEER2PEERPUSH_RESPONSE\020\033\022\010\n\004NOOP" +
+      "\020\036\022\021\n\rNOOP_RESPONSE\020\035\022\020\n\014FLUSHALLDATA\020 \022" +
+      "\031\n\025FLUSHALLDATA_RESPONSE\020\037\022\t\n\005PINOP\020$\022\022\n" +
+      "\016PINOP_RESPONSE\020#\022\r\n\tMEDIASCAN\020&\022\026\n\022MEDI",
+      "ASCAN_RESPONSE\020%\022\021\n\rMEDIAOPTIMIZE\020(\022\032\n\026M" +
+      "EDIAOPTIMIZE_RESPONSE\020\'\022\017\n\013START_BATCH\020*" +
+      "\022\030\n\024START_BATCH_RESPONSE\020)\022\r\n\tEND_BATCH\020" +
+      ",\022\026\n\022END_BATCH_RESPONSE\020+\022\017\n\013ABORT_BATCH" +
+      "\020.\022\030\n\024ABORT_BATCH_RESPONSE\020-B\tB\007Kinetic"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -30863,33 +31961,39 @@ public final class Kinetic {
           internal_static_com_seagate_kinetic_proto_Command_Body_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_com_seagate_kinetic_proto_Command_Body_descriptor,
-              new java.lang.String[] { "KeyValue", "Range", "Setup", "P2POperation", "GetLog", "Security", "PinOp", });
-          internal_static_com_seagate_kinetic_proto_Command_Status_descriptor =
+              new java.lang.String[] { "KeyValue", "Range", "Setup", "P2POperation", "GetLog", "Security", "PinOp", "Batch", });
+          internal_static_com_seagate_kinetic_proto_Command_Batch_descriptor =
             internal_static_com_seagate_kinetic_proto_Command_descriptor.getNestedTypes().get(2);
+          internal_static_com_seagate_kinetic_proto_Command_Batch_fieldAccessorTable = new
+            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+              internal_static_com_seagate_kinetic_proto_Command_Batch_descriptor,
+              new java.lang.String[] { "Count", "Sequence", "FailedSequence", });
+          internal_static_com_seagate_kinetic_proto_Command_Status_descriptor =
+            internal_static_com_seagate_kinetic_proto_Command_descriptor.getNestedTypes().get(3);
           internal_static_com_seagate_kinetic_proto_Command_Status_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_com_seagate_kinetic_proto_Command_Status_descriptor,
               new java.lang.String[] { "Code", "StatusMessage", "DetailedMessage", });
           internal_static_com_seagate_kinetic_proto_Command_KeyValue_descriptor =
-            internal_static_com_seagate_kinetic_proto_Command_descriptor.getNestedTypes().get(3);
+            internal_static_com_seagate_kinetic_proto_Command_descriptor.getNestedTypes().get(4);
           internal_static_com_seagate_kinetic_proto_Command_KeyValue_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_com_seagate_kinetic_proto_Command_KeyValue_descriptor,
               new java.lang.String[] { "NewVersion", "Force", "Key", "DbVersion", "Tag", "Algorithm", "MetadataOnly", "Synchronization", });
           internal_static_com_seagate_kinetic_proto_Command_Range_descriptor =
-            internal_static_com_seagate_kinetic_proto_Command_descriptor.getNestedTypes().get(4);
+            internal_static_com_seagate_kinetic_proto_Command_descriptor.getNestedTypes().get(5);
           internal_static_com_seagate_kinetic_proto_Command_Range_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_com_seagate_kinetic_proto_Command_Range_descriptor,
               new java.lang.String[] { "StartKey", "EndKey", "StartKeyInclusive", "EndKeyInclusive", "MaxReturned", "Reverse", "Keys", });
           internal_static_com_seagate_kinetic_proto_Command_Setup_descriptor =
-            internal_static_com_seagate_kinetic_proto_Command_descriptor.getNestedTypes().get(5);
+            internal_static_com_seagate_kinetic_proto_Command_descriptor.getNestedTypes().get(6);
           internal_static_com_seagate_kinetic_proto_Command_Setup_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_com_seagate_kinetic_proto_Command_Setup_descriptor,
               new java.lang.String[] { "NewClusterVersion", "FirmwareDownload", });
           internal_static_com_seagate_kinetic_proto_Command_P2POperation_descriptor =
-            internal_static_com_seagate_kinetic_proto_Command_descriptor.getNestedTypes().get(6);
+            internal_static_com_seagate_kinetic_proto_Command_descriptor.getNestedTypes().get(7);
           internal_static_com_seagate_kinetic_proto_Command_P2POperation_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_com_seagate_kinetic_proto_Command_P2POperation_descriptor,
@@ -30907,7 +32011,7 @@ public final class Kinetic {
               internal_static_com_seagate_kinetic_proto_Command_P2POperation_Peer_descriptor,
               new java.lang.String[] { "Hostname", "Port", "Tls", });
           internal_static_com_seagate_kinetic_proto_Command_GetLog_descriptor =
-            internal_static_com_seagate_kinetic_proto_Command_descriptor.getNestedTypes().get(7);
+            internal_static_com_seagate_kinetic_proto_Command_descriptor.getNestedTypes().get(8);
           internal_static_com_seagate_kinetic_proto_Command_GetLog_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_com_seagate_kinetic_proto_Command_GetLog_descriptor,
@@ -30961,7 +32065,7 @@ public final class Kinetic {
               internal_static_com_seagate_kinetic_proto_Command_GetLog_Device_descriptor,
               new java.lang.String[] { "Name", });
           internal_static_com_seagate_kinetic_proto_Command_Security_descriptor =
-            internal_static_com_seagate_kinetic_proto_Command_descriptor.getNestedTypes().get(8);
+            internal_static_com_seagate_kinetic_proto_Command_descriptor.getNestedTypes().get(9);
           internal_static_com_seagate_kinetic_proto_Command_Security_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_com_seagate_kinetic_proto_Command_Security_descriptor,
@@ -30979,7 +32083,7 @@ public final class Kinetic {
               internal_static_com_seagate_kinetic_proto_Command_Security_ACL_Scope_descriptor,
               new java.lang.String[] { "Offset", "Value", "Permission", "TlsRequired", });
           internal_static_com_seagate_kinetic_proto_Command_PinOperation_descriptor =
-            internal_static_com_seagate_kinetic_proto_Command_descriptor.getNestedTypes().get(9);
+            internal_static_com_seagate_kinetic_proto_Command_descriptor.getNestedTypes().get(10);
           internal_static_com_seagate_kinetic_proto_Command_PinOperation_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_com_seagate_kinetic_proto_Command_PinOperation_descriptor,

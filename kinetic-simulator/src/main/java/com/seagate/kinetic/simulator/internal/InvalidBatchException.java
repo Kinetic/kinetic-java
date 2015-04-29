@@ -23,6 +23,8 @@ public class InvalidBatchException extends Exception {
 
     private static final long serialVersionUID = 1559241680833563288L;
 
+    private RequestContext failedRequestContext = null;
+
     public InvalidBatchException() {
         // TODO Auto-generated constructor stub
     }
@@ -46,6 +48,14 @@ public class InvalidBatchException extends Exception {
             boolean enableSuppression, boolean writableStackTrace) {
         super(message, cause, enableSuppression, writableStackTrace);
         // TODO Auto-generated constructor stub
+    }
+
+    public void setFailedRequestContext(RequestContext rc) {
+        this.failedRequestContext = rc;
+    }
+
+    public RequestContext getFailedRequestContext() {
+        return this.failedRequestContext;
     }
 
 }

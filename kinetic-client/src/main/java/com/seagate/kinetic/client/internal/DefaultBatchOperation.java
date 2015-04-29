@@ -35,6 +35,9 @@ public class DefaultBatchOperation implements BatchOperation {
 
     private int batchId = -1;
 
+    // operation count
+    private int count = 0;
+
     private DefaultKineticClient client = null;
 
     public DefaultBatchOperation(DefaultKineticClient client)
@@ -52,6 +55,7 @@ public class DefaultBatchOperation implements BatchOperation {
             CallbackHandler<Entry> handler) throws KineticException {
 
         this.client.batchPutAsync(entry, newVersion, handler, batchId);
+        this.count++;
     }
 
     @Override
@@ -59,6 +63,7 @@ public class DefaultBatchOperation implements BatchOperation {
             throws KineticException {
 
         this.client.batchPutForcedAsync(entry, handler, batchId);
+        this.count++;
     }
 
     @Override
@@ -66,6 +71,7 @@ public class DefaultBatchOperation implements BatchOperation {
             throws KineticException {
 
         this.client.batchDeleteAsync(entry, handler, batchId);
+        this.count++;
     }
 
     @Override
@@ -73,12 +79,13 @@ public class DefaultBatchOperation implements BatchOperation {
             throws KineticException {
 
         this.client.batchDeleteForcedAsync(key, handler, batchId);
+        this.count++;
     }
 
     @Override
     public void commit() throws KineticException {
 
-        this.client.endBatchOperation(batchId);
+        this.client.endBatchOperation(batchId, count);
     }
 
     private synchronized static int nextBatchId() {
@@ -88,6 +95,43 @@ public class DefaultBatchOperation implements BatchOperation {
     @Override
     public void abort() throws KineticException {
         this.client.abortBatchOperation(batchId);
+    }
+
+    @Override
+    public void put(Entry entry, byte[] newVersion) throws KineticException {
+        // batch forced put
+        this.client.batchPut(entry, newVersion, batchId);
+
+        // increase count
+        this.count++;
+    }
+
+    @Override
+    public void putForced(Entry entry) throws KineticException {
+        // batch forced put no ack
+        this.client.batchPutForced(entry, batchId);
+
+        // increase count
+        this.count++;
+    }
+
+    @Override
+    public void delete(Entry entry) throws KineticException {
+        // batch delete no ack
+        this.client.batchDelete(entry, batchId);
+
+        // increase count
+        this.count++;
+    }
+
+    @Override
+    public void deleteForced(byte[] key) throws KineticException {
+
+        // batch forced delete no ack
+        this.client.batchDeleteForced(key, batchId);
+
+        // increase count
+        this.count++;
     }
 
 }

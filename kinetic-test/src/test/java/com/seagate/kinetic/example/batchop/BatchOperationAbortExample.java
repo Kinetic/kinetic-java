@@ -18,13 +18,9 @@
 package com.seagate.kinetic.example.batchop;
 
 import java.io.UnsupportedEncodingException;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import kinetic.client.AsyncKineticException;
 import kinetic.client.BatchOperation;
-import kinetic.client.CallbackHandler;
-import kinetic.client.CallbackResult;
 import kinetic.client.ClientConfiguration;
 import kinetic.client.Entry;
 import kinetic.client.KineticClient;
@@ -37,7 +33,7 @@ import kinetic.client.KineticException;
  * @author chiaming
  *
  */
-public class BatchOperationAbortExample implements CallbackHandler<Entry> {
+public class BatchOperationAbortExample {
 
     private final static java.util.logging.Logger logger = Logger
             .getLogger(BatchOperationAbortExample.class.getName());
@@ -81,11 +77,10 @@ public class BatchOperationAbortExample implements CallbackHandler<Entry> {
         foo.setValue("foo".getBytes("UTF8"));
         foo.getEntryMetadata().setVersion("5678".getBytes("UTF8"));
 
-        batch.putForcedAsync(foo, this);
+        batch.putForced(foo);
 
         // delete bar
-        DeleteCbHandler dhandler = new DeleteCbHandler();
-        batch.deleteAsync(bar, dhandler);
+        batch.delete(bar);
 
         // end/commit batch operation
         batch.abort();
@@ -114,16 +109,6 @@ public class BatchOperationAbortExample implements CallbackHandler<Entry> {
 
         // close kinetic client
         client.close();
-    }
-
-    @Override
-    public void onSuccess(CallbackResult<Entry> result) {
-        logger.info("put callback result received ...");
-    }
-
-    @Override
-    public void onError(AsyncKineticException exception) {
-        logger.log(Level.WARNING, exception.getMessage(), exception);
     }
 
     public static void main(String[] args) throws KineticException,

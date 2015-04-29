@@ -447,7 +447,8 @@ public class MessageFactory {
         return kineticMessage;
     }
 
-    public static KineticMessage createEndBatchRequestMessage(int batchId)
+    public static KineticMessage createEndBatchRequestMessage(int batchId,
+            int count)
             throws KineticException {
 
         KineticMessage kineticMessage = createKineticMessageWithBuilder();
@@ -457,6 +458,8 @@ public class MessageFactory {
         request.getHeaderBuilder().setMessageType(MessageType.END_BATCH);
 
         request.getHeaderBuilder().setBatchID(batchId);
+
+        request.getBodyBuilder().getBatchBuilder().setCount(count);
 
         return kineticMessage;
     }
