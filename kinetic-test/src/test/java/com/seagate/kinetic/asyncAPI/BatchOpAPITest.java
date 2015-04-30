@@ -19,7 +19,6 @@
  */
 package com.seagate.kinetic.asyncAPI;
 
-import static com.seagate.kinetic.KineticTestHelpers.buildAsyncCallbackHandler;
 import static com.seagate.kinetic.KineticTestHelpers.toByteArray;
 import static org.testng.AssertJUnit.assertNull;
 import static org.testng.AssertJUnit.assertTrue;
@@ -30,10 +29,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import kinetic.client.AsyncKineticException;
 import kinetic.client.BatchOperation;
-import kinetic.client.CallbackHandler;
-import kinetic.client.CallbackResult;
 import kinetic.client.ClientConfiguration;
 import kinetic.client.Entry;
 import kinetic.client.KineticClient;
@@ -44,7 +40,6 @@ import org.testng.Assert;
 import org.testng.annotations.Test;
 
 import com.seagate.kinetic.IntegrationTestCase;
-import com.seagate.kinetic.KineticTestHelpers;
 import com.seagate.kinetic.proto.Kinetic.Command.Status.StatusCode;
 
 /**
@@ -93,18 +88,8 @@ public class BatchOpAPITest extends IntegrationTestCase {
         }
 
         try {
-            CallbackHandler<Entry> handler = buildAsyncCallbackHandler(new KineticTestHelpers.AsyncHandler<Entry>() {
-                @Override
-                public void onSuccess(CallbackResult<Entry> result) {
-                }
-
-                @Override
-                public void onError(AsyncKineticException e) {
-                }
-            });
-
-            batch.putForcedAsync(foo, handler);
-            batch.putForcedAsync(bar, handler);
+            batch.putForced(foo);
+            batch.putForced(bar);
         } catch (KineticException e) {
             Assert.fail("Put async throw exception: " + e.getMessage());
         }
@@ -170,18 +155,8 @@ public class BatchOpAPITest extends IntegrationTestCase {
         }
 
         try {
-            CallbackHandler<Entry> handler = buildAsyncCallbackHandler(new KineticTestHelpers.AsyncHandler<Entry>() {
-                @Override
-                public void onSuccess(CallbackResult<Entry> result) {
-                }
-
-                @Override
-                public void onError(AsyncKineticException e) {
-                }
-            });
-
-            batch.putAsync(foo, newVersion, handler);
-            batch.putAsync(bar, newVersion, handler);
+            batch.put(foo, newVersion);
+            batch.put(bar, newVersion);
         } catch (KineticException e) {
             Assert.fail("Put async throw exception: " + e.getMessage());
         }
@@ -248,22 +223,10 @@ public class BatchOpAPITest extends IntegrationTestCase {
         }
 
         try {
-            CallbackHandler<Entry> handler = buildAsyncCallbackHandler(new KineticTestHelpers.AsyncHandler<Entry>() {
-                @Override
-                public void onSuccess(CallbackResult<Entry> result) {
-                }
-
-                @Override
-                public void onError(AsyncKineticException e) {
-                    assertTrue(e.getResponseMessage().getCommand().getStatus()
-                            .getCode().equals(StatusCode.NOT_ATTEMPTED));
-                }
-            });
-
-            batch.putAsync(foo, newVersion, handler);
+            batch.put(foo, newVersion);
 
             bar.getEntryMetadata().setVersion(newVersion);
-            batch.putAsync(bar, newVersion, handler);
+            batch.put(bar, newVersion);
         } catch (KineticException e) {
             Assert.fail("Put async throw exception: " + e.getMessage());
         }
@@ -324,17 +287,8 @@ public class BatchOpAPITest extends IntegrationTestCase {
         }
 
         try {
-            CallbackHandler<Entry> handler = buildAsyncCallbackHandler(new KineticTestHelpers.AsyncHandler<Entry>() {
-                @Override
-                public void onSuccess(CallbackResult<Entry> result) {
-                }
-
-                @Override
-                public void onError(AsyncKineticException e) {
-                }
-            });
-            batch.putForcedAsync(bar, handler);
-            batch.putAsync(foo, newVersion, handler);
+            batch.putForced(bar);
+            batch.put(foo, newVersion);
         } catch (KineticException e) {
             Assert.fail("Put async throw exception: " + e.getMessage());
         }
@@ -400,22 +354,10 @@ public class BatchOpAPITest extends IntegrationTestCase {
         }
 
         try {
-            CallbackHandler<Entry> handler = buildAsyncCallbackHandler(new KineticTestHelpers.AsyncHandler<Entry>() {
-                @Override
-                public void onSuccess(CallbackResult<Entry> result) {
-                }
-
-                @Override
-                public void onError(AsyncKineticException e) {
-                    assertTrue(e.getResponseMessage().getCommand().getStatus()
-                            .getCode().equals(StatusCode.NOT_ATTEMPTED));
-                }
-            });
-
-            batch.putForcedAsync(foo, handler);
+            batch.putForced(foo);
 
             bar.getEntryMetadata().setVersion(newVersion);
-            batch.putAsync(bar, newVersion, handler);
+            batch.put(bar, newVersion);
         } catch (KineticException e) {
             Assert.fail("Put async throw exception: " + e.getMessage());
         }
@@ -480,18 +422,8 @@ public class BatchOpAPITest extends IntegrationTestCase {
         }
 
         try {
-            CallbackHandler<Boolean> dhandler = buildAsyncCallbackHandler(new KineticTestHelpers.AsyncHandler<Boolean>() {
-                @Override
-                public void onSuccess(CallbackResult<Boolean> result) {
-                }
-
-                @Override
-                public void onError(AsyncKineticException e) {
-                }
-            });
-
-            batch.deleteAsync(bar, dhandler);
-            batch.deleteAsync(foo, dhandler);
+            batch.delete(bar);
+            batch.delete(foo);
         } catch (KineticException e) {
             Assert.fail("Delete async operation throw exception: "
                     + e.getMessage());
@@ -556,22 +488,10 @@ public class BatchOpAPITest extends IntegrationTestCase {
         }
 
         try {
-            CallbackHandler<Boolean> dhandler = buildAsyncCallbackHandler(new KineticTestHelpers.AsyncHandler<Boolean>() {
-                @Override
-                public void onSuccess(CallbackResult<Boolean> result) {
-                }
-
-                @Override
-                public void onError(AsyncKineticException e) {
-                    assertTrue(e.getResponseMessage().getCommand().getStatus()
-                            .getCode().equals(StatusCode.NOT_ATTEMPTED));
-                }
-            });
-
             bar.getEntryMetadata().setVersion(toByteArray("NoMatchDbVersion"));
-            batch.deleteAsync(bar, dhandler);
+            batch.delete(bar);
 
-            batch.deleteAsync(foo, dhandler);
+            batch.delete(foo);
         } catch (KineticException e) {
             Assert.fail("Delete async operation throw exception: "
                     + e.getMessage());
@@ -643,19 +563,9 @@ public class BatchOpAPITest extends IntegrationTestCase {
         }
 
         try {
-            CallbackHandler<Boolean> dhandler = buildAsyncCallbackHandler(new KineticTestHelpers.AsyncHandler<Boolean>() {
-                @Override
-                public void onSuccess(CallbackResult<Boolean> result) {
-                }
 
-                @Override
-                public void onError(AsyncKineticException e) {
-
-                }
-            });
-
-            batch.deleteForcedAsync(bar.getKey(), dhandler);
-            batch.deleteForcedAsync(foo.getKey(), dhandler);
+            batch.deleteForced(bar.getKey());
+            batch.deleteForced(foo.getKey());
         } catch (KineticException e) {
             Assert.fail("Delete async operation throw exception: "
                     + e.getMessage());
@@ -720,19 +630,8 @@ public class BatchOpAPITest extends IntegrationTestCase {
         }
 
         try {
-            CallbackHandler<Boolean> dhandler = buildAsyncCallbackHandler(new KineticTestHelpers.AsyncHandler<Boolean>() {
-                @Override
-                public void onSuccess(CallbackResult<Boolean> result) {
-                }
-
-                @Override
-                public void onError(AsyncKineticException e) {
-
-                }
-            });
-
-            batch.deleteAsync(bar, dhandler);
-            batch.deleteForcedAsync(foo.getKey(), dhandler);
+            batch.delete(bar);
+            batch.deleteForced(foo.getKey());
         } catch (KineticException e) {
             Assert.fail("Delete async operation throw exception: "
                     + e.getMessage());
@@ -797,22 +696,10 @@ public class BatchOpAPITest extends IntegrationTestCase {
         }
 
         try {
-            CallbackHandler<Boolean> dhandler = buildAsyncCallbackHandler(new KineticTestHelpers.AsyncHandler<Boolean>() {
-                @Override
-                public void onSuccess(CallbackResult<Boolean> result) {
-                }
-
-                @Override
-                public void onError(AsyncKineticException e) {
-                    assertTrue(e.getResponseMessage().getCommand().getStatus()
-                            .getCode().equals(StatusCode.NOT_ATTEMPTED));
-                }
-            });
-
-            batch.deleteForcedAsync(bar.getKey(), dhandler);
+            batch.deleteForced(bar.getKey());
 
             foo.getEntryMetadata().setVersion(toByteArray("NoMatchDBVersion"));
-            batch.deleteAsync(foo, dhandler);
+            batch.delete(foo);
         } catch (KineticException e) {
             Assert.fail("Delete async operation throw exception: "
                     + e.getMessage());
@@ -885,38 +772,14 @@ public class BatchOpAPITest extends IntegrationTestCase {
         byte[] newVersion = toByteArray("5678");
 
         try {
-            CallbackHandler<Entry> handler = buildAsyncCallbackHandler(new KineticTestHelpers.AsyncHandler<Entry>() {
-                @Override
-                public void onSuccess(CallbackResult<Entry> result) {
-                }
-
-                @Override
-                public void onError(AsyncKineticException e) {
-                    assertTrue(e.getResponseMessage().getCommand().getStatus()
-                            .getCode().equals(StatusCode.NOT_ATTEMPTED));
-                }
-            });
-
-            batch.putForcedAsync(foo, handler);
-            batch.putAsync(foo, newVersion, handler);
+            batch.putForced(foo);
+            batch.put(foo, newVersion);
         } catch (KineticException e) {
             Assert.fail("Put entry throw exception. " + e.getMessage());
         }
 
         try {
-            CallbackHandler<Boolean> dhandler = buildAsyncCallbackHandler(new KineticTestHelpers.AsyncHandler<Boolean>() {
-                @Override
-                public void onSuccess(CallbackResult<Boolean> result) {
-                }
-
-                @Override
-                public void onError(AsyncKineticException e) {
-                    assertTrue(e.getResponseMessage().getCommand().getStatus()
-                            .getCode().equals(StatusCode.NOT_ATTEMPTED));
-                }
-            });
-
-            batch.deleteAsync(bar, dhandler);
+            batch.delete(bar);
         } catch (KineticException e) {
             Assert.fail("Delete async throw exception. " + e.getMessage());
         }
@@ -991,33 +854,13 @@ public class BatchOpAPITest extends IntegrationTestCase {
         }
 
         try {
-            CallbackHandler<Entry> handler = buildAsyncCallbackHandler(new KineticTestHelpers.AsyncHandler<Entry>() {
-                @Override
-                public void onSuccess(CallbackResult<Entry> result) {
-                }
-
-                @Override
-                public void onError(AsyncKineticException e) {
-                }
-            });
-
-            batch.putAsync(foo, newVersion, handler);
+            batch.put(foo, newVersion);
         } catch (KineticException e) {
             Assert.fail("Put entry throw exception. " + e.getMessage());
         }
 
         try {
-            CallbackHandler<Boolean> dhandler = buildAsyncCallbackHandler(new KineticTestHelpers.AsyncHandler<Boolean>() {
-                @Override
-                public void onSuccess(CallbackResult<Boolean> result) {
-                }
-
-                @Override
-                public void onError(AsyncKineticException e) {
-                }
-            });
-
-            batch.deleteAsync(bar, dhandler);
+            batch.delete(bar);
         } catch (KineticException e) {
             Assert.fail("Delete async throw exception. " + e.getMessage());
         }
@@ -1085,37 +928,15 @@ public class BatchOpAPITest extends IntegrationTestCase {
         }
 
         try {
-            CallbackHandler<Entry> handler = buildAsyncCallbackHandler(new KineticTestHelpers.AsyncHandler<Entry>() {
-                @Override
-                public void onSuccess(CallbackResult<Entry> result) {
-                }
-
-                @Override
-                public void onError(AsyncKineticException e) {
-                    assertTrue(e.getResponseMessage().getCommand().getStatus()
-                            .getCode().equals(StatusCode.NOT_ATTEMPTED));
-                }
-            });
-
-            batch.putForcedAsync(foo, handler);
-            batch.putAsync(foo, newVersion, handler);
+            batch.putForced(foo);
+            batch.put(foo, newVersion);
         } catch (KineticException e) {
             Assert.fail("Put entry throw exception. " + e.getMessage());
         }
 
         try {
-            CallbackHandler<Boolean> dhandler = buildAsyncCallbackHandler(new KineticTestHelpers.AsyncHandler<Boolean>() {
-                @Override
-                public void onSuccess(CallbackResult<Boolean> result) {
-                }
-
-                @Override
-                public void onError(AsyncKineticException e) {
-                }
-            });
-
-            batch.deleteAsync(bar, dhandler);
-            batch.deleteForcedAsync(foo.getKey(), dhandler);
+            batch.delete(bar);
+            batch.deleteForced(foo.getKey());
         } catch (KineticException e) {
             Assert.fail("Delete async throw exception. " + e.getMessage());
         }
@@ -1181,41 +1002,18 @@ public class BatchOpAPITest extends IntegrationTestCase {
         }
 
         try {
-            CallbackHandler<Entry> handler = buildAsyncCallbackHandler(new KineticTestHelpers.AsyncHandler<Entry>() {
-                @Override
-                public void onSuccess(CallbackResult<Entry> result) {
-                }
-
-                @Override
-                public void onError(AsyncKineticException e) {
-                    assertTrue(e.getResponseMessage().getCommand().getStatus()
-                            .getCode().equals(StatusCode.NOT_ATTEMPTED));
-                }
-            });
-
-            batch.putForcedAsync(foo, handler);
+            batch.putForced(foo);
             foo.getEntryMetadata().setVersion(toByteArray("NoMatchDbVersion"));
-            batch.putAsync(foo, newVersion, handler);
+            batch.put(foo, newVersion);
 
         } catch (KineticException e) {
             Assert.fail("Put async throw exception. " + e.getMessage());
         }
 
         try {
-            CallbackHandler<Boolean> dhandler = buildAsyncCallbackHandler(new KineticTestHelpers.AsyncHandler<Boolean>() {
-                @Override
-                public void onSuccess(CallbackResult<Boolean> result) {
-                }
-
-                @Override
-                public void onError(AsyncKineticException e) {
-                    assertTrue(e.getResponseMessage().getCommand().getStatus()
-                            .getCode().equals(StatusCode.NOT_ATTEMPTED));
-                }
-            });
             bar.getEntryMetadata().setVersion(toByteArray("NoMatchDbVersion"));
-            batch.deleteAsync(bar, dhandler);
-            batch.deleteForcedAsync(foo.getKey(), dhandler);
+            batch.delete(bar);
+            batch.deleteForced(foo.getKey());
         } catch (KineticException e) {
             Assert.fail("Delete async throw exception. " + e.getMessage());
         }
@@ -1285,43 +1083,19 @@ public class BatchOpAPITest extends IntegrationTestCase {
         }
 
         try {
-            CallbackHandler<Entry> handler = buildAsyncCallbackHandler(new KineticTestHelpers.AsyncHandler<Entry>() {
-                @Override
-                public void onSuccess(CallbackResult<Entry> result) {
-                }
-
-                @Override
-                public void onError(AsyncKineticException e) {
-                    assertTrue(e.getResponseMessage().getCommand().getStatus()
-                            .getCode().equals(StatusCode.NOT_ATTEMPTED));
-                }
-            });
-
             foo.getEntryMetadata().setVersion(toByteArray("NoMatchDbVersion"));
-            batch.putAsync(foo, newVersion, handler);
+            batch.put(foo, newVersion);
 
         } catch (KineticException e) {
             Assert.fail("Put entry throw exception. " + e.getMessage());
         }
 
         try {
-            CallbackHandler<Boolean> dhandler = buildAsyncCallbackHandler(new KineticTestHelpers.AsyncHandler<Boolean>() {
-                @Override
-                public void onSuccess(CallbackResult<Boolean> result) {
-                }
-
-                @Override
-                public void onError(AsyncKineticException e) {
-                    assertTrue(e.getResponseMessage().getCommand().getStatus()
-                            .getCode().equals(StatusCode.NOT_ATTEMPTED));
-                }
-            });
-
             bar.getEntryMetadata().setVersion(toByteArray("NoMatchDbVersion"));
-            batch.deleteAsync(bar, dhandler);
+            batch.delete(bar);
 
             foo.getEntryMetadata().setVersion(toByteArray("NoMatchDbVersion"));
-            batch.deleteAsync(foo, dhandler);
+            batch.delete(foo);
         } catch (KineticException e) {
             Assert.fail("Delete async throw exception. " + e.getMessage());
         }
@@ -1389,33 +1163,13 @@ public class BatchOpAPITest extends IntegrationTestCase {
         }
 
         try {
-            CallbackHandler<Entry> handler = buildAsyncCallbackHandler(new KineticTestHelpers.AsyncHandler<Entry>() {
-                @Override
-                public void onSuccess(CallbackResult<Entry> result) {
-                }
-
-                @Override
-                public void onError(AsyncKineticException e) {
-                }
-            });
-
-            batch.putForcedAsync(foo, handler);
+            batch.putForced(foo);
         } catch (KineticException e) {
             Assert.fail("Put operation throw exception. " + e.getMessage());
         }
 
         try {
-            CallbackHandler<Boolean> dhandler = buildAsyncCallbackHandler(new KineticTestHelpers.AsyncHandler<Boolean>() {
-                @Override
-                public void onSuccess(CallbackResult<Boolean> result) {
-                }
-
-                @Override
-                public void onError(AsyncKineticException e) {
-                }
-            });
-
-            batch.deleteAsync(bar, dhandler);
+            batch.delete(bar);
         } catch (KineticException e) {
             Assert.fail("Delete operation throw exception. " + e.getMessage());
         }
@@ -1482,34 +1236,14 @@ public class BatchOpAPITest extends IntegrationTestCase {
         }
 
         try {
-            CallbackHandler<Entry> handler = buildAsyncCallbackHandler(new KineticTestHelpers.AsyncHandler<Entry>() {
-                @Override
-                public void onSuccess(CallbackResult<Entry> result) {
-                }
-
-                @Override
-                public void onError(AsyncKineticException e) {
-                }
-            });
-
-            batch.putForcedAsync(foo, handler);
+            batch.putForced(foo);
         } catch (KineticException e) {
             Assert.fail("Put operation throw exception. " + e.getMessage());
         }
 
         try {
-            CallbackHandler<Boolean> dhandler = buildAsyncCallbackHandler(new KineticTestHelpers.AsyncHandler<Boolean>() {
-                @Override
-                public void onSuccess(CallbackResult<Boolean> result) {
-                }
-
-                @Override
-                public void onError(AsyncKineticException e) {
-                }
-            });
-
             bar.getEntryMetadata().setVersion(toByteArray("NoMatchDbVersion"));
-            batch.deleteAsync(bar, dhandler);
+            batch.delete(bar);
         } catch (KineticException e) {
             Assert.fail("Delete operation throw exception. " + e.getMessage());
         }
@@ -1576,35 +1310,15 @@ public class BatchOpAPITest extends IntegrationTestCase {
         }
 
         try {
-            CallbackHandler<Entry> handler = buildAsyncCallbackHandler(new KineticTestHelpers.AsyncHandler<Entry>() {
-                @Override
-                public void onSuccess(CallbackResult<Entry> result) {
-                }
-
-                @Override
-                public void onError(AsyncKineticException e) {
-                }
-            });
-
             byte[] newVersion = toByteArray("5678");
-            batch.putAsync(foo, newVersion, handler);
+            batch.put(foo, newVersion);
         } catch (KineticException e) {
             Assert.fail("Put operation throw exception. " + e.getMessage());
         }
 
         try {
-            CallbackHandler<Boolean> dhandler = buildAsyncCallbackHandler(new KineticTestHelpers.AsyncHandler<Boolean>() {
-                @Override
-                public void onSuccess(CallbackResult<Boolean> result) {
-                }
-
-                @Override
-                public void onError(AsyncKineticException e) {
-                }
-            });
-
             bar.getEntryMetadata().setVersion(toByteArray("NoMatchDbVersion"));
-            batch.deleteAsync(bar, dhandler);
+            batch.delete(bar);
         } catch (KineticException e) {
             Assert.fail("Delete operation throw exception. " + e.getMessage());
         }
@@ -1672,32 +1386,13 @@ public class BatchOpAPITest extends IntegrationTestCase {
         }
 
         try {
-            CallbackHandler<Entry> handler = buildAsyncCallbackHandler(new KineticTestHelpers.AsyncHandler<Entry>() {
-                @Override
-                public void onSuccess(CallbackResult<Entry> result) {
-                }
-
-                @Override
-                public void onError(AsyncKineticException e) {
-                }
-            });
-
-            batch.putForcedAsync(foo, handler);
+            batch.putForced(foo);
         } catch (KineticException e) {
             Assert.fail("Put async throw exception. " + e.getMessage());
         }
 
         try {
-            CallbackHandler<Boolean> dhandler = buildAsyncCallbackHandler(new KineticTestHelpers.AsyncHandler<Boolean>() {
-                @Override
-                public void onSuccess(CallbackResult<Boolean> result) {
-                }
-
-                @Override
-                public void onError(AsyncKineticException e) {
-                }
-            });
-            batch.deleteAsync(bar, dhandler);
+            batch.delete(bar);
         } catch (KineticException e) {
             Assert.fail("Delete async throw exception. " + e.getMessage());
         }
@@ -1814,32 +1509,13 @@ public class BatchOpAPITest extends IntegrationTestCase {
         }
 
         try {
-            CallbackHandler<Entry> handler = buildAsyncCallbackHandler(new KineticTestHelpers.AsyncHandler<Entry>() {
-                @Override
-                public void onSuccess(CallbackResult<Entry> result) {
-                }
-
-                @Override
-                public void onError(AsyncKineticException e) {
-                }
-            });
-
-            batch.putForcedAsync(foo, handler);
+            batch.putForced(foo);
         } catch (KineticException e) {
             Assert.fail("Put async throw exception. " + e.getMessage());
         }
 
         try {
-            CallbackHandler<Boolean> dhandler = buildAsyncCallbackHandler(new KineticTestHelpers.AsyncHandler<Boolean>() {
-                @Override
-                public void onSuccess(CallbackResult<Boolean> result) {
-                }
-
-                @Override
-                public void onError(AsyncKineticException e) {
-                }
-            });
-            batch.deleteAsync(bar, dhandler);
+            batch.delete(bar);
         } catch (KineticException e) {
             Assert.fail("Delete async throw exception. " + e.getMessage());
         }
@@ -1935,32 +1611,13 @@ public class BatchOpAPITest extends IntegrationTestCase {
         }
 
         try {
-            CallbackHandler<Entry> handler = buildAsyncCallbackHandler(new KineticTestHelpers.AsyncHandler<Entry>() {
-                @Override
-                public void onSuccess(CallbackResult<Entry> result) {
-                }
-
-                @Override
-                public void onError(AsyncKineticException e) {
-                }
-            });
-
-            batch.putForcedAsync(foo, handler);
+            batch.putForced(foo);
         } catch (KineticException e) {
             Assert.fail("Put async throw exception. " + e.getMessage());
         }
 
         try {
-            CallbackHandler<Boolean> dhandler = buildAsyncCallbackHandler(new KineticTestHelpers.AsyncHandler<Boolean>() {
-                @Override
-                public void onSuccess(CallbackResult<Boolean> result) {
-                }
-
-                @Override
-                public void onError(AsyncKineticException e) {
-                }
-            });
-            batch.deleteAsync(bar, dhandler);
+            batch.delete(bar);
         } catch (KineticException e) {
             Assert.fail("Delete async throw exception. " + e.getMessage());
         }
@@ -2075,35 +1732,16 @@ public class BatchOpAPITest extends IntegrationTestCase {
         }
 
         try {
-            CallbackHandler<Entry> handler = buildAsyncCallbackHandler(new KineticTestHelpers.AsyncHandler<Entry>() {
-                @Override
-                public void onSuccess(CallbackResult<Entry> result) {
-                }
-
-                @Override
-                public void onError(AsyncKineticException e) {
-                }
-            });
-
             foo.getEntryMetadata().setVersion(toByteArray("1111"));
             foo.setValue(toByteArray("newfoovalue"));
             byte[] newVersion = toByteArray("3333");
-            batch.putAsync(foo, newVersion, handler);
+            batch.put(foo, newVersion);
         } catch (KineticException e) {
             Assert.fail("Put async throw exception. " + e.getMessage());
         }
 
         try {
-            CallbackHandler<Boolean> dhandler = buildAsyncCallbackHandler(new KineticTestHelpers.AsyncHandler<Boolean>() {
-                @Override
-                public void onSuccess(CallbackResult<Boolean> result) {
-                }
-
-                @Override
-                public void onError(AsyncKineticException e) {
-                }
-            });
-            batch.deleteAsync(bar, dhandler);
+            batch.delete(bar);
         } catch (KineticException e) {
             Assert.fail("Delete async throw exception. " + e.getMessage());
         }
@@ -2216,32 +1854,13 @@ public class BatchOpAPITest extends IntegrationTestCase {
         }
 
         try {
-            CallbackHandler<Entry> handler = buildAsyncCallbackHandler(new KineticTestHelpers.AsyncHandler<Entry>() {
-                @Override
-                public void onSuccess(CallbackResult<Entry> result) {
-                }
-
-                @Override
-                public void onError(AsyncKineticException e) {
-                }
-            });
-
-            batch.putAsync(foo, toByteArray("2222"), handler);
+            batch.put(foo, toByteArray("2222"));
         } catch (KineticException e) {
             Assert.fail("Put async throw exception. " + e.getMessage());
         }
 
         try {
-            CallbackHandler<Boolean> dhandler = buildAsyncCallbackHandler(new KineticTestHelpers.AsyncHandler<Boolean>() {
-                @Override
-                public void onSuccess(CallbackResult<Boolean> result) {
-                }
-
-                @Override
-                public void onError(AsyncKineticException e) {
-                }
-            });
-            batch.deleteAsync(bar, dhandler);
+            batch.delete(bar);
         } catch (KineticException e) {
             Assert.fail("Delete async throw exception. " + e.getMessage());
         }
@@ -2360,32 +1979,13 @@ public class BatchOpAPITest extends IntegrationTestCase {
         }
 
         try {
-            CallbackHandler<Entry> handler = buildAsyncCallbackHandler(new KineticTestHelpers.AsyncHandler<Entry>() {
-                @Override
-                public void onSuccess(CallbackResult<Entry> result) {
-                }
-
-                @Override
-                public void onError(AsyncKineticException e) {
-                }
-            });
-
-            batch.putForcedAsync(foo, handler);
+            batch.putForced(foo);
         } catch (KineticException e) {
             Assert.fail("Put async throw exception. " + e.getMessage());
         }
 
         try {
-            CallbackHandler<Boolean> dhandler = buildAsyncCallbackHandler(new KineticTestHelpers.AsyncHandler<Boolean>() {
-                @Override
-                public void onSuccess(CallbackResult<Boolean> result) {
-                }
-
-                @Override
-                public void onError(AsyncKineticException e) {
-                }
-            });
-            batch.deleteAsync(bar, dhandler);
+            batch.delete(bar);
         } catch (KineticException e) {
             Assert.fail("Delete async throw exception. " + e.getMessage());
         }
@@ -2491,32 +2091,13 @@ public class BatchOpAPITest extends IntegrationTestCase {
         }
 
         try {
-            CallbackHandler<Entry> handler = buildAsyncCallbackHandler(new KineticTestHelpers.AsyncHandler<Entry>() {
-                @Override
-                public void onSuccess(CallbackResult<Entry> result) {
-                }
-
-                @Override
-                public void onError(AsyncKineticException e) {
-                }
-            });
-
-            batch.putForcedAsync(foo, handler);
+            batch.putForced(foo);
         } catch (KineticException e) {
             Assert.fail("Put async throw exception. " + e.getMessage());
         }
 
         try {
-            CallbackHandler<Boolean> dhandler = buildAsyncCallbackHandler(new KineticTestHelpers.AsyncHandler<Boolean>() {
-                @Override
-                public void onSuccess(CallbackResult<Boolean> result) {
-                }
-
-                @Override
-                public void onError(AsyncKineticException e) {
-                }
-            });
-            batch.deleteAsync(bar, dhandler);
+            batch.delete(bar);
         } catch (KineticException e) {
             Assert.fail("Delete async throw exception. " + e.getMessage());
         }
@@ -2641,35 +2222,15 @@ public class BatchOpAPITest extends IntegrationTestCase {
                 Assert.fail("Create batch operation failed. " + e.getMessage());
             }
 
-            CallbackHandler<Entry> handler = buildAsyncCallbackHandler(new KineticTestHelpers.AsyncHandler<Entry>() {
-                @Override
-                public void onSuccess(CallbackResult<Entry> result) {
-                }
-
-                @Override
-                public void onError(AsyncKineticException e) {
-                }
-            });
-
             try {
-                batch.putForcedAsync(foo, handler);
+                batch.putForced(foo);
             } catch (KineticException e1) {
                 Assert.fail("Put async batch op throw exception. "
                         + e1.getMessage());
             }
 
-            CallbackHandler<Boolean> dhandler = buildAsyncCallbackHandler(new KineticTestHelpers.AsyncHandler<Boolean>() {
-                @Override
-                public void onSuccess(CallbackResult<Boolean> result) {
-                }
-
-                @Override
-                public void onError(AsyncKineticException e) {
-                }
-            });
-
             try {
-                batch.deleteAsync(bar, dhandler);
+                batch.delete(bar);
             } catch (KineticException e1) {
                 Assert.fail("Delete async batch op throw exception. "
                         + e1.getMessage());
@@ -2751,35 +2312,15 @@ public class BatchOpAPITest extends IntegrationTestCase {
                 Assert.fail("Create batch operation failed. " + e.getMessage());
             }
 
-            CallbackHandler<Entry> handler = buildAsyncCallbackHandler(new KineticTestHelpers.AsyncHandler<Entry>() {
-                @Override
-                public void onSuccess(CallbackResult<Entry> result) {
-                }
-
-                @Override
-                public void onError(AsyncKineticException e) {
-                }
-            });
-
             try {
-                batch.putForcedAsync(foo, handler);
+                batch.putForced(foo);
             } catch (KineticException e1) {
                 Assert.fail("Put async batch op throw exception. "
                         + e1.getMessage());
             }
 
-            CallbackHandler<Boolean> dhandler = buildAsyncCallbackHandler(new KineticTestHelpers.AsyncHandler<Boolean>() {
-                @Override
-                public void onSuccess(CallbackResult<Boolean> result) {
-                }
-
-                @Override
-                public void onError(AsyncKineticException e) {
-                }
-            });
-
             try {
-                batch.deleteAsync(bar, dhandler);
+                batch.delete(bar);
             } catch (KineticException e1) {
                 Assert.fail("Delete async batch op throw exception. "
                         + e1.getMessage());
@@ -2866,35 +2407,15 @@ public class BatchOpAPITest extends IntegrationTestCase {
                 Assert.fail("Create batch operation failed. " + e.getMessage());
             }
 
-            CallbackHandler<Entry> handler = buildAsyncCallbackHandler(new KineticTestHelpers.AsyncHandler<Entry>() {
-                @Override
-                public void onSuccess(CallbackResult<Entry> result) {
-                }
-
-                @Override
-                public void onError(AsyncKineticException e) {
-                }
-            });
-
             try {
-                batch.putForcedAsync(foo, handler);
+                batch.putForced(foo);
             } catch (KineticException e1) {
                 Assert.fail("Put async batch op throw exception. "
                         + e1.getMessage());
             }
 
-            CallbackHandler<Boolean> dhandler = buildAsyncCallbackHandler(new KineticTestHelpers.AsyncHandler<Boolean>() {
-                @Override
-                public void onSuccess(CallbackResult<Boolean> result) {
-                }
-
-                @Override
-                public void onError(AsyncKineticException e) {
-                }
-            });
-
             try {
-                batch.deleteAsync(bar, dhandler);
+                batch.delete(bar);
             } catch (KineticException e1) {
                 Assert.fail("Delete async batch op throw exception. "
                         + e1.getMessage());
@@ -2947,7 +2468,7 @@ public class BatchOpAPITest extends IntegrationTestCase {
             String clientName) {
         Entry foo = getFooEntry();
         Entry bar = getBarEntry();
-        
+
         try {
             cleanEntry(bar, getClient(clientName));
             cleanEntry(foo, getClient(clientName));
@@ -2976,35 +2497,15 @@ public class BatchOpAPITest extends IntegrationTestCase {
                 Assert.fail("Create batch operation failed. " + e.getMessage());
             }
 
-            CallbackHandler<Entry> handler = buildAsyncCallbackHandler(new KineticTestHelpers.AsyncHandler<Entry>() {
-                @Override
-                public void onSuccess(CallbackResult<Entry> result) {
-                }
-
-                @Override
-                public void onError(AsyncKineticException e) {
-                }
-            });
-
             try {
-                batch.putForcedAsync(foo, handler);
+                batch.putForced(foo);
             } catch (KineticException e1) {
                 Assert.fail("Put async batch op throw exception. "
                         + e1.getMessage());
             }
 
-            CallbackHandler<Boolean> dhandler = buildAsyncCallbackHandler(new KineticTestHelpers.AsyncHandler<Boolean>() {
-                @Override
-                public void onSuccess(CallbackResult<Boolean> result) {
-                }
-
-                @Override
-                public void onError(AsyncKineticException e) {
-                }
-            });
-
             try {
-                batch.deleteAsync(bar, dhandler);
+                batch.delete(bar);
             } catch (KineticException e1) {
                 Assert.fail("Delete async batch op throw exception. "
                         + e1.getMessage());
@@ -3034,7 +2535,7 @@ public class BatchOpAPITest extends IntegrationTestCase {
             } catch (KineticException e1) {
                 Assert.fail("Get bar throw exception. " + e1.getMessage());
             }
-            
+
             try {
                 cleanEntry(bar, getClient(clientName));
                 cleanEntry(foo, getClient(clientName));
@@ -3121,7 +2622,7 @@ class BatchThread implements Runnable {
         bar.setValue(barValue);
         byte[] barVersion = toByteArray("1234");
         bar.getEntryMetadata().setVersion(barVersion);
-        
+
         Entry foo = new Entry();
         byte[] fooKey = toByteArray("foo");
         foo.setKey(fooKey);
@@ -3129,7 +2630,7 @@ class BatchThread implements Runnable {
         foo.setValue(fooValue);
         byte[] fooVersion = toByteArray("1234");
         foo.getEntryMetadata().setVersion(fooVersion);
-        
+
         try {
             kineticClient.deleteForced(fooKey);
             kineticClient.deleteForced(barKey);
@@ -3150,34 +2651,14 @@ class BatchThread implements Runnable {
             Assert.fail("Create batch throw exception. " + e1.getMessage());
         }
 
-        CallbackHandler<Entry> handler = buildAsyncCallbackHandler(new KineticTestHelpers.AsyncHandler<Entry>() {
-            @Override
-            public void onSuccess(CallbackResult<Entry> result) {
-            }
-
-            @Override
-            public void onError(AsyncKineticException e) {
-            }
-        });
-
         try {
-            batch.putForcedAsync(foo, handler);
+            batch.putForced(foo);
         } catch (KineticException e1) {
             Assert.fail("Put entry failed. " + e1.getMessage());
         }
 
-        CallbackHandler<Boolean> dhandler = buildAsyncCallbackHandler(new KineticTestHelpers.AsyncHandler<Boolean>() {
-            @Override
-            public void onSuccess(CallbackResult<Boolean> result) {
-            }
-
-            @Override
-            public void onError(AsyncKineticException e) {
-            }
-        });
-
         try {
-            batch.deleteForcedAsync(bar.getKey(), dhandler);
+            batch.deleteForced(bar.getKey());
         } catch (KineticException e1) {
             Assert.fail("Delete entry failed. " + e1.getMessage());
         }
@@ -3187,7 +2668,7 @@ class BatchThread implements Runnable {
         } catch (KineticException e1) {
             Assert.fail("Batch commit throw exception. " + e1.getMessage());
         }
-        
+
         try {
             kineticClient.deleteForced(fooKey);
             kineticClient.deleteForced(barKey);
