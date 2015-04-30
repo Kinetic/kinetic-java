@@ -50,7 +50,6 @@ public class DefaultBatchOperation implements BatchOperation {
         this.client.startBatchOperation(batchId);
     }
 
-    @Override
     public void putAsync(Entry entry, byte[] newVersion,
             CallbackHandler<Entry> handler) throws KineticException {
 
@@ -58,7 +57,6 @@ public class DefaultBatchOperation implements BatchOperation {
         this.count++;
     }
 
-    @Override
     public void putForcedAsync(Entry entry, CallbackHandler<Entry> handler)
             throws KineticException {
 
@@ -66,7 +64,7 @@ public class DefaultBatchOperation implements BatchOperation {
         this.count++;
     }
 
-    @Override
+
     public void deleteAsync(Entry entry, CallbackHandler<Boolean> handler)
             throws KineticException {
 
@@ -74,7 +72,6 @@ public class DefaultBatchOperation implements BatchOperation {
         this.count++;
     }
 
-    @Override
     public void deleteForcedAsync(byte[] key, CallbackHandler<Boolean> handler)
             throws KineticException {
 
