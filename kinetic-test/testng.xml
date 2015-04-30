@@ -12,7 +12,7 @@
 			<class name="com.seagate.kinetic.adminAPI.KineticAdminTest" />
 			<class name="com.seagate.kinetic.advancedAPI.AdvancedAPITest" />
 			<class name="com.seagate.kinetic.asyncAPI.KineticAsyncAPITest" />
-			<class name="com.seagate.kinetic.asyncAPI.BatchOpAPITest" />
+			<class name="com.seagate.kinetic.batchOp.BatchOpAPITest" />
 			<class name="com.seagate.kinetic.basicAPI.KineticBasicAPITest" />
 			<class name="com.seagate.kinetic.boundary.AdvancedAPIBoundaryTest" />
 			<class name="com.seagate.kinetic.boundary.KineticBoundaryTest" />
