@@ -26,8 +26,13 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
+import com.google.protobuf.ByteString;
 import com.seagate.kinetic.common.lib.KineticMessage;
+import com.seagate.kinetic.proto.Kinetic.Command;
 import com.seagate.kinetic.proto.Kinetic.Command.MessageType;
+import com.seagate.kinetic.proto.Kinetic.Command.Status.StatusCode;
+import com.seagate.kinetic.proto.Kinetic.Message;
+import com.seagate.kinetic.proto.Kinetic.Message.AuthType;
 import com.seagate.kinetic.simulator.internal.InvalidBatchException;
 import com.seagate.kinetic.simulator.internal.KVStoreException;
 
@@ -143,7 +148,23 @@ public class NioBatchOpPreProcessor {
             // there is a batch ID not known at this point
             // the only allowed message type is start message.
             if (mtype != MessageType.START_BATCH) {
+
                 request.setIsInvalidBatchMessage(true);
+
+                /**
+                 * received unknown batch id. closing the connection to prevent
+                 * further corruption.
+                 */
+                String msg = "Received unknown batch Id: "
+                        + request.getCommand().getHeader().getBatchID();
+
+                KineticMessage km = createUnsolicitedStatusMessage(
+                        StatusCode.INVALID_REQUEST, msg);
+
+                ctx.writeAndFlush(km);
+
+                throw new RuntimeException(msg);
+
             }
         }
 
@@ -217,5 +238,43 @@ public class NioBatchOpPreProcessor {
         if (batchQueue == null) {
             logger.warning("No batch Id found, key=" + key);
         }
+    }
+
+    /**
+     * Create an internal message with empty builder message.
+     *
+     * @return an internal message with empty builder message
+     */
+    private static KineticMessage createUnsolicitedStatusMessage(
+            StatusCode sc, String sm) {
+
+        // new instance of internal message
+        KineticMessage kineticMessage = new KineticMessage();
+
+        // new builder message
+        Message.Builder message = Message.newBuilder();
+
+        // set to im
+        kineticMessage.setMessage(message);
+
+        // set hmac auth type
+        message.setAuthType(AuthType.UNSOLICITEDSTATUS);
+
+        // create command builder
+        Command.Builder commandBuilder = Command.newBuilder();
+
+        commandBuilder.getStatusBuilder().setCode(sc);
+
+        commandBuilder.getStatusBuilder().setStatusMessage(sm);
+
+        // get command byte stirng
+        ByteString commandByteString = commandBuilder.build().toByteString();
+
+        message.setCommandBytes(commandByteString);
+
+        // set command
+        kineticMessage.setCommand(commandBuilder);
+
+        return kineticMessage;
     }
 }
