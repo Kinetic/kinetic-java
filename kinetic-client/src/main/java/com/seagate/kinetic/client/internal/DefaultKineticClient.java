@@ -27,6 +27,7 @@ import kinetic.client.ClientConfiguration;
 import kinetic.client.Entry;
 import kinetic.client.EntryMetadata;
 import kinetic.client.EntryNotFoundException;
+import kinetic.client.BatchAbortedException;
 import kinetic.client.KineticException;
 import kinetic.client.advanced.AdvancedKineticClient;
 import kinetic.client.advanced.PersistOption;
@@ -1137,14 +1138,54 @@ public class DefaultKineticClient implements AdvancedKineticClient {
         KineticMessage request = null;
         KineticMessage response = null;
 
-        // create get request message
+        // create request message
         request = MessageFactory.createEndBatchRequestMessage(batchId, count);
+        try {
+            // send request
+            response = this.client.request(request);
+            // check response
+            MessageFactory.checkReply(request, response);
+        } catch (KineticException ke) {
+            this.handleBatchException(ke);
+        }
+    }
 
-        // send request
-        response = this.client.request(request);
+    private void handleBatchException(KineticException ke)
+            throws KineticException {
 
-        // check response
-        MessageFactory.checkReply(request, response);
+        if (ke.getResponseMessage() != null) {
+
+            BatchAbortedException bae = null;
+
+            String msg = ke.getResponseMessage().getCommand().getStatus()
+                    .getStatusMessage();
+
+            bae = new BatchAbortedException(msg);
+
+            List<Long> slist = ke.getResponseMessage().getCommand().getBody()
+                    .getBatch().getSequenceList();
+
+            long fs = ke.getResponseMessage().getCommand().getBody().getBatch()
+                    .getFailedSequence();
+            int index = -1;
+            for (int i = 0; i < slist.size(); i++) {
+                if (slist.get(i) == fs) {
+                    index = i;
+                    break;
+                }
+            }
+
+            bae.setFailedOperationIndex(index);
+
+            bae.setRequestMessage(ke.getRequestMessage());
+            bae.setResponseMessage(ke.getResponseMessage());
+
+            // set index
+            throw bae;
+
+        } else {
+            throw ke;
+        }
     }
 
     void abortBatchOperation(int batchId) throws KineticException {

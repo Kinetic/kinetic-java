@@ -90,9 +90,14 @@ public interface BatchOperation {
      * <p>
      * When this call returned successfully, all the commands performed in the
      * current batch are executed and committed to store successfully.
-     * Otherwise, no commands in this batch were committed to the persistent
-     * store.
      * 
+     * @throws KineticException
+     *             if any internal error occurred. The batch may or may not be
+     *             committed. If committed, all commands are committed.
+     *             Otherwise, no messages are committed.
+     * @throws BatchAbortedException
+     *             the commit failed. No messages within the batch were
+     *             committed to the store.
      */
     public void commit() throws KineticException;
 

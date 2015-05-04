@@ -24,9 +24,12 @@ import java.util.logging.Logger;
 import kinetic.client.BatchOperation;
 import kinetic.client.ClientConfiguration;
 import kinetic.client.Entry;
+import kinetic.client.BatchAbortedException;
 import kinetic.client.KineticClient;
 import kinetic.client.KineticClientFactory;
 import kinetic.client.KineticException;
+
+import com.seagate.kinetic.proto.Kinetic.Command.Status;
 
 /**
  * Kinetic client batch operation usage example.
@@ -73,10 +76,6 @@ public class BatchOperationFailedExample {
             // start batch a new batch operation
             BatchOperation batch = client.createBatchOperation();
 
-            // put bar with wrong version, will fail
-            bar.getEntryMetadata().setVersion("12341234".getBytes("UTF8"));
-            batch.put(bar, "".getBytes());
-
             // put foo
             Entry foo = new Entry();
             foo.setKey("foo".getBytes("UTF8"));
@@ -85,11 +84,21 @@ public class BatchOperationFailedExample {
 
             batch.putForced(foo);
 
+            // put bar with wrong version, will fail
+            bar.getEntryMetadata().setVersion("12341234".getBytes("UTF8"));
+            batch.put(bar, "".getBytes());
+
             // end/commit batch operation
             try {
                 batch.commit();
-            } catch (Exception e) {
-                logger.info("received expected exception: " + e.getMessage());
+            } catch (BatchAbortedException e) {
+                // get status
+                Status status = e.getResponseMessage().getCommand().getStatus();
+
+                int index = e.getFiledOperationIndex();
+
+                logger.info("received expected exception: " + status.getCode()
+                        + ":" + status.getStatusMessage() + ", index=" + index);
             }
 
             Entry foo1 = client.get("foo".getBytes("UTF8"));
