@@ -47,6 +47,10 @@ public abstract class LimitsUtil {
         
         limits.setMaxIdentityCount(config.getMaxIdentityCount());
 
+        limits.setMaxBatchCountPerConnection(config.getMaxOutstandingBatches());
+
+        limits.setMaxOperationCountPerBatch(config.getMaxCommandsPerBatch());
+
         return limits.build();
     }
 }
