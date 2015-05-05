@@ -26,6 +26,8 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
+import kinetic.simulator.SimulatorConfiguration;
+
 import com.google.protobuf.ByteString;
 import com.seagate.kinetic.common.lib.KineticMessage;
 import com.seagate.kinetic.proto.Kinetic.Command;
@@ -94,6 +96,22 @@ public class NioBatchOpPreProcessor {
             ChannelHandlerContext ctx,
             KineticMessage request) {
 
+        // check outstanding batches
+        if (batchMap.size() == SimulatorConfiguration
+                .getMaxOutstandingBatches()) {
+
+            /**
+             * Exceeded max outstanding batches, closing the connection.
+             */
+            String msg = "Exceed max outstanding batches., max allowed: "
+                    + SimulatorConfiguration.getMaxOutstandingBatches()
+                    + ", batch Id: "
+                    + request.getCommand().getHeader().getBatchID();
+
+            // send unsolicitated msg and close connection
+            handleInvalidBatch(ctx, StatusCode.INVALID_REQUEST, msg);
+        }
+
         String key = request.getCommand().getHeader().getConnectionID() + SEP
                 + request.getCommand().getHeader().getBatchID();
 
@@ -135,6 +153,22 @@ public class NioBatchOpPreProcessor {
 
             if (mtype == MessageType.PUT || mtype == MessageType.DELETE) {
 
+                // check counts limits
+                if (batchQueue.size() == SimulatorConfiguration
+                        .getMaxCommandsPerBatch()) {
+
+                    /**
+                     * Exceed max commands per batch, closing the connection.
+                     */
+                    String msg = "Exceed max commands per batch., max allowed: "
+                            + SimulatorConfiguration.getMaxCommandsPerBatch()
+                            + ", batch Id: "
+                            + request.getCommand().getHeader().getBatchID();
+
+                    // send unsolicitated msg and close connection
+                    handleInvalidBatch(ctx, StatusCode.INVALID_REQUEST, msg);
+                }
+
                 // is added to batch queue
                 flag = true;
 
@@ -158,17 +192,37 @@ public class NioBatchOpPreProcessor {
                 String msg = "Received unknown batch Id: "
                         + request.getCommand().getHeader().getBatchID();
 
-                KineticMessage km = createUnsolicitedStatusMessage(
-                        StatusCode.INVALID_REQUEST, msg);
-
-                ctx.writeAndFlush(km);
-
-                throw new RuntimeException(msg);
-
+                handleInvalidBatch(ctx, StatusCode.INVALID_REQUEST, msg);
             }
         }
 
         return flag;
+    }
+
+    /**
+     * Send an unsolicitated message and close the connection.
+     * 
+     * @param ctx
+     *            current channel context
+     * @param sc
+     *            status code set in the message
+     * @param msg
+     *            status message set in the message
+     */
+    private static void handleInvalidBatch(ChannelHandlerContext ctx,
+            StatusCode sc,
+            String msg) {
+
+        // create message
+        KineticMessage km = createUnsolicitedStatusMessage(
+                StatusCode.INVALID_REQUEST, msg);
+
+        // send to client
+        ctx.writeAndFlush(km);
+
+        // this will close the current connection
+        throw new RuntimeException(msg);
+
     }
 
     private static synchronized void processBatchQueue(

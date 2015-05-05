@@ -1058,7 +1058,7 @@ public class SimulatorConfiguration extends Properties {
      * 
      * @return maximum number of commands per batch request.
      */
-    public int getMaxCommandsPerBatch() {
+    public static int getMaxCommandsPerBatch() {
         return maxCommandsPerBatch;
     }
 
@@ -1067,7 +1067,7 @@ public class SimulatorConfiguration extends Properties {
      * 
      * @return maximum number of outstanding batch requests per device.
      */
-    public int getMaxOutstandingBatches() {
+    public static int getMaxOutstandingBatches() {
         return maxOutstandingBatches;
     }
 
