@@ -30,8 +30,10 @@ import com.seagate.kinetic.proto.Kinetic.Command.Algorithm;
 import com.seagate.kinetic.proto.Kinetic.Command.Batch;
 import com.seagate.kinetic.proto.Kinetic.Command.KeyValue;
 import com.seagate.kinetic.proto.Kinetic.Command.MessageType;
+import com.seagate.kinetic.proto.Kinetic.Command.Security.ACL.Permission;
 import com.seagate.kinetic.proto.Kinetic.Command.Status.StatusCode;
 import com.seagate.kinetic.simulator.persist.BatchOperation;
+import com.seagate.kinetic.simulator.persist.KVOp;
 import com.seagate.kinetic.simulator.persist.KVValue;
 import com.seagate.kinetic.simulator.persist.Store;
 
@@ -162,8 +164,8 @@ public class BatchOperationHandler {
     }
 
     public synchronized void handleRequest(RequestContext context)
-            throws InvalidBatchException,
-            NotAttemptedException, KVStoreException {
+            throws InvalidBatchException, NotAttemptedException,
+            KVStoreException, InvalidRequestException, KVSecurityException {
 
         MessageType mtype = context.getMessageType();
 
@@ -220,6 +222,36 @@ public class BatchOperationHandler {
             close();
 
             throw nae;
+        } catch (InvalidRequestException ire) {
+
+            logger.log(Level.WARNING, ire.getMessage(), ire);
+
+            // set status code and message
+            context.getCommandBuilder().getStatusBuilder()
+                    .setCode(StatusCode.INVALID_REQUEST);
+            context.getCommandBuilder().getStatusBuilder()
+                    .setStatusMessage(ire.getMessage());
+
+            this.saveFailedRequestContext(context);
+
+            close();
+
+            throw ire;
+        } catch (KVSecurityException kse) {
+
+            logger.log(Level.WARNING, kse.getMessage(), kse);
+
+            // set status code and message
+            context.getCommandBuilder().getStatusBuilder()
+                    .setCode(StatusCode.NOT_AUTHORIZED);
+            context.getCommandBuilder().getStatusBuilder()
+                    .setStatusMessage(kse.getMessage());
+
+            this.saveFailedRequestContext(context);
+
+            close();
+
+            throw kse;
         } catch (KVStoreVersionMismatch vmismatch) {
 
             logger.log(Level.WARNING, vmismatch.getMessage(), vmismatch);
@@ -355,7 +387,10 @@ public class BatchOperationHandler {
 
     }
 
-    private void batchDelete(KineticMessage km) throws KVStoreException {
+    private void batchDelete(KineticMessage km) throws KVStoreException,
+            InvalidRequestException, KVSecurityException {
+
+        KVOp.checkWrite(engine.getAclMap(), km, Permission.DELETE);
 
         // proto request KV
         KeyValue requestKeyValue = km.getCommand().getBody().getKeyValue();
@@ -370,7 +405,10 @@ public class BatchOperationHandler {
         batch.delete(key);
     }
 
-    private void batchPut(KineticMessage km) throws KVStoreException {
+    private void batchPut(KineticMessage km) throws KVStoreException,
+            InvalidRequestException, KVSecurityException {
+
+        KVOp.checkWrite(engine.getAclMap(), km, Permission.WRITE);
 
         ByteString key = km.getCommand().getBody().getKeyValue().getKey();
 

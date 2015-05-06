@@ -161,24 +161,7 @@ public class KVOp {
                         // persist option
                         persistOption = getPersistOption(requestKeyValue);
 
-                      //check max key length
-                       checkMaxKeyLenth (key.size());
-                       
-                       //check max version size
-                       ByteString bs = requestKeyValue.getNewVersion();
-                       checkMaxVersionLength (bs);
-
-                        if (isSupportedValueSize(kmreq) == false) {
-                            throw new InvalidRequestException (
-                                    "value size exceeded max supported size. Supported size: "
-                                            + maxValueSize + ", received size="
-                                            + kmreq.getValue().length
-                                            + " (in bytes)");
-                        }
-
-                        Authorizer.checkPermission(aclmap, kmreq.getMessage()
-                                .getHmacAuth().getIdentity(), Permission.WRITE,
-                                key);
+                        checkWrite(aclmap, kmreq, Permission.WRITE);
 
                         ByteString valueByteString = null;
                         if (kmreq.getValue() != null) {
@@ -221,16 +204,7 @@ public class KVOp {
                         // persist option
                         persistOption = getPersistOption(requestKeyValue);
 
-                        //check max key length
-                        checkMaxKeyLenth (key.size());
-                        
-                        //check max version size
-                        ByteString bs = requestKeyValue.getDbVersion();
-                        checkMaxVersionLength (bs);
-                        
-                        Authorizer.checkPermission(aclmap, kmreq.getMessage()
-                                .getHmacAuth().getIdentity(), Permission.DELETE,
-                                key);
+                        checkWrite(aclmap, kmreq, Permission.DELETE);
 
                         if (requestKeyValue.getForce()) {
                             store.deleteForced(key, persistOption);
@@ -374,7 +348,7 @@ public class KVOp {
      *
      * @return true if less than max allowed size. Otherwise, returned false.
      */
-    public static boolean isSupportedValueSize(KineticMessage km) {
+    private static boolean isSupportedValueSize(KineticMessage km) {
         boolean supported = false;
 
         byte[] value = km.getValue();
@@ -432,13 +406,15 @@ public class KVOp {
         return option;
     }
     
-    private static void checkMaxKeyLenth (int len) throws InvalidRequestException {
+    private static void checkMaxKeyLenth(int len)
+            throws InvalidRequestException {
         if (len > maxKeySize) {
             throw new InvalidRequestException ("key length exceeds max size, size=" + maxKeySize + ", request size=" + len);
         }
     }
     
-    private static void checkMaxVersionLength (ByteString bs) throws InvalidRequestException {
+    private static void checkMaxVersionLength(ByteString bs)
+            throws InvalidRequestException {
    
         int len = 0;
         if (bs != null) {
@@ -448,6 +424,47 @@ public class KVOp {
         if ( len > maxVersionSize) {
             throw new InvalidRequestException ("max version exceeds max allowed size " + maxVersionSize + ", request version size=" + len);
         }
+    }
+
+    /**
+     * Check if request has write privilege, key length, version length.
+     * 
+     * @param aclmap
+     *            acl map for this instance
+     * @param kmreq
+     *            request message
+     * @param role
+     *            role to access
+     * @throws InvalidRequestException
+     * @throws KVSecurityException
+     */
+    public static void checkWrite(Map<Long, ACL> aclmap, KineticMessage kmreq,
+            Permission role)
+            throws InvalidRequestException,
+            KVSecurityException {
+
+        KeyValue requestKeyValue = kmreq.getCommand().getBody().getKeyValue();
+
+        ByteString key = requestKeyValue.getKey();
+
+        // check max key length
+        checkMaxKeyLenth(key.size());
+
+        // check max version size
+        ByteString bs = requestKeyValue.getNewVersion();
+
+        checkMaxVersionLength(bs);
+
+        if (isSupportedValueSize(kmreq) == false) {
+            throw new InvalidRequestException(
+                    "value size exceeded max supported size. Supported size: "
+                            + maxValueSize + ", received size="
+                            + kmreq.getValue().length + " (in bytes)");
+        }
+
+        // check permission
+        Authorizer.checkPermission(aclmap, kmreq.getMessage().getHmacAuth()
+                .getIdentity(), role, key);
     }
 
 }
