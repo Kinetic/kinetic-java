@@ -2598,8 +2598,8 @@ public class BatchOpAPITest extends IntegrationTestCase {
         } catch (BatchAbortedException e) {
             assertTrue(e.getResponseMessage().getCommand().getStatus()
                     .getCode().equals(StatusCode.INVALID_BATCH));
-            System.out.println(e.getFiledOperationIndex());
-            assertTrue(e.getFiledOperationIndex() == 0);
+            System.out.println(e.getFailedOperationIndex());
+            assertTrue(e.getFailedOperationIndex() == 0);
 
         } catch (KineticException e) {
             Assert.fail("received unexpected exception: " + e.getMessage());
@@ -2660,7 +2660,7 @@ public class BatchOpAPITest extends IntegrationTestCase {
         } catch (BatchAbortedException e) {
             assertTrue(e.getResponseMessage().getCommand().getStatus()
                     .getCode().equals(StatusCode.INVALID_BATCH));
-            assertTrue(e.getFiledOperationIndex() == 0);
+            assertTrue(e.getFailedOperationIndex() == 0);
 
         } catch (KineticException e) {
             Assert.fail("received unexpected exception: " + e.getMessage());
@@ -2694,7 +2694,7 @@ public class BatchOpAPITest extends IntegrationTestCase {
         } catch (BatchAbortedException e) {
             assertTrue(e.getResponseMessage().getCommand().getStatus()
                     .getCode().equals(StatusCode.INVALID_BATCH));
-            assertTrue(e.getFiledOperationIndex() == 0);
+            assertTrue(e.getFailedOperationIndex() == 0);
 
         } catch (KineticException e) {
             Assert.fail("received unexpected exception: " + e.getMessage());
@@ -2733,7 +2733,7 @@ public class BatchOpAPITest extends IntegrationTestCase {
         } catch (BatchAbortedException e) {
             assertTrue(e.getResponseMessage().getCommand().getStatus()
                     .getCode().equals(StatusCode.INVALID_BATCH));
-            assertTrue(e.getFiledOperationIndex() == 0);
+            assertTrue(e.getFailedOperationIndex() == 0);
 
         } catch (KineticException e) {
             Assert.fail("received unexpected exception: " + e.getMessage());
@@ -2783,7 +2783,7 @@ public class BatchOpAPITest extends IntegrationTestCase {
         } catch (BatchAbortedException e) {
             assertTrue(e.getResponseMessage().getCommand().getStatus()
                     .getCode().equals(StatusCode.INVALID_BATCH));
-            assertTrue(e.getFiledOperationIndex() == 0);
+            assertTrue(e.getFailedOperationIndex() == 0);
 
         } catch (KineticException e) {
             Assert.fail("received unexpected exception: " + e.getMessage());

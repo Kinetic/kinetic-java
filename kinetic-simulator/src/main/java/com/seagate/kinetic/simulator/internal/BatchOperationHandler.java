@@ -20,6 +20,8 @@
 package com.seagate.kinetic.simulator.internal;
 
 import java.util.ArrayList;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -63,6 +65,9 @@ public class BatchOperationHandler {
 
     private BatchOperation<ByteString, KVValue> batch = null;
 
+    //
+    private Map<ByteString, ByteString> map = new ConcurrentHashMap<ByteString, ByteString>();
+
     // sequence list
     private ArrayList<Long> sequenceList = new ArrayList<Long>();
 
@@ -101,6 +106,9 @@ public class BatchOperationHandler {
 
             // clear seq list
             sequenceList.clear();
+
+            // clear version map
+            map.clear();
 
             // clear exception
             this.batchException = null;
@@ -399,10 +407,13 @@ public class BatchOperationHandler {
 
         // check version if required
         if (requestKeyValue.getForce() == false) {
-            checkVersion(requestKeyValue);
+            checkVersion(km);
         }
 
         batch.delete(key);
+
+        // delete entry from map.
+        map.remove(key);
     }
 
     private void batchPut(KineticMessage km) throws KVStoreException,
@@ -426,7 +437,7 @@ public class BatchOperationHandler {
 
         // check version if required
         if (requestKeyValue.getForce() == false) {
-            checkVersion(requestKeyValue);
+            checkVersion(km);
         }
 
         // construct store KV
@@ -441,6 +452,9 @@ public class BatchOperationHandler {
 
         // batch put
         batch.put(key, data);
+
+        // put to batch map for version comparison
+        map.put(requestKeyValue.getKey(), requestKeyValue.getNewVersion());
     }
 
     private synchronized void commitBatch(RequestContext context) {
@@ -513,7 +527,9 @@ public class BatchOperationHandler {
         return s.size();
     }
 
-    private void checkVersion(KeyValue requestKeyValue) throws KVStoreException {
+    private void checkVersion(KineticMessage km) throws KVStoreException {
+
+        KeyValue requestKeyValue = km.getCommand().getBody().getKeyValue();
 
         ByteString requestDbVersion = requestKeyValue.getDbVersion();
 
@@ -521,7 +537,14 @@ public class BatchOperationHandler {
 
         ByteString storeDbVersion = this.getDbVersion(key);
 
+        // compare version with store
         compareVersion(storeDbVersion, requestDbVersion);
+
+        // compare version with batch map
+        ByteString mapVersion = this.map.get(key);
+        if (mapVersion != null) {
+            compareVersion(mapVersion, requestDbVersion);
+        }
     }
 
     @SuppressWarnings("unchecked")

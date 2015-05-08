@@ -21,10 +21,10 @@ import java.io.UnsupportedEncodingException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import kinetic.client.BatchAbortedException;
 import kinetic.client.BatchOperation;
 import kinetic.client.ClientConfiguration;
 import kinetic.client.Entry;
-import kinetic.client.BatchAbortedException;
 import kinetic.client.KineticClient;
 import kinetic.client.KineticClientFactory;
 import kinetic.client.KineticException;
@@ -95,7 +95,7 @@ public class BatchOperationFailedExample {
                 // get status
                 Status status = e.getResponseMessage().getCommand().getStatus();
 
-                int index = e.getFiledOperationIndex();
+                int index = e.getFailedOperationIndex();
 
                 logger.info("received expected exception: " + status.getCode()
                         + ":" + status.getStatusMessage() + ", index=" + index);

@@ -67,7 +67,7 @@ public class BatchAbortedException extends KineticException {
      * @return the failed command index number starting with 0 for the first
      *         command
      */
-    public int getFiledOperationIndex() {
+    public int getFailedOperationIndex() {
         return index;
     }
 
