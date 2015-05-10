@@ -20,8 +20,6 @@
 package com.seagate.kinetic.simulator.internal;
 
 import java.util.ArrayList;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -66,7 +64,8 @@ public class BatchOperationHandler {
     private BatchOperation<ByteString, KVValue> batch = null;
 
     //
-    private Map<ByteString, ByteString> map = new ConcurrentHashMap<ByteString, ByteString>();
+    // private Map<ByteString, ByteString> map = new
+    // ConcurrentHashMap<ByteString, ByteString>();
 
     // sequence list
     private ArrayList<Long> sequenceList = new ArrayList<Long>();
@@ -108,7 +107,7 @@ public class BatchOperationHandler {
             sequenceList.clear();
 
             // clear version map
-            map.clear();
+            // map.clear();
 
             // clear exception
             this.batchException = null;
@@ -413,7 +412,7 @@ public class BatchOperationHandler {
         batch.delete(key);
 
         // delete entry from map.
-        map.remove(key);
+        // map.remove(key);
     }
 
     private void batchPut(KineticMessage km) throws KVStoreException,
@@ -454,7 +453,7 @@ public class BatchOperationHandler {
         batch.put(key, data);
 
         // put to batch map for version comparison
-        map.put(requestKeyValue.getKey(), requestKeyValue.getNewVersion());
+        // map.put(requestKeyValue.getKey(), requestKeyValue.getNewVersion());
     }
 
     private synchronized void commitBatch(RequestContext context) {
@@ -541,10 +540,10 @@ public class BatchOperationHandler {
         compareVersion(storeDbVersion, requestDbVersion);
 
         // compare version with batch map
-        ByteString mapVersion = this.map.get(key);
-        if (mapVersion != null) {
-            compareVersion(mapVersion, requestDbVersion);
-        }
+        // ByteString mapVersion = this.map.get(key);
+        // if (mapVersion != null) {
+        // compareVersion(mapVersion, requestDbVersion);
+        // }
     }
 
     @SuppressWarnings("unchecked")
