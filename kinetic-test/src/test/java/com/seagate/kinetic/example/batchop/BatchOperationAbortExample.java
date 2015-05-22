@@ -18,7 +18,6 @@
 package com.seagate.kinetic.example.batchop;
 
 import java.io.UnsupportedEncodingException;
-import java.util.logging.Logger;
 
 import kinetic.client.BatchOperation;
 import kinetic.client.ClientConfiguration;
@@ -29,14 +28,14 @@ import kinetic.client.KineticException;
 
 /**
  * Kinetic client batch operation usage example.
+ * <p>
+ * This example shows how to use the batch operation API to abort a batch
+ * operation.
  * 
  * @author chiaming
- *
+ * @see BatchOperation#abort()
  */
 public class BatchOperationAbortExample {
-
-    private final static java.util.logging.Logger logger = Logger
-            .getLogger(BatchOperationAbortExample.class.getName());
 
     public void run(String host, int port) throws KineticException,
             UnsupportedEncodingException {
@@ -66,8 +65,6 @@ public class BatchOperationAbortExample {
         // clean up before batch op
         client.deleteForced("foo".getBytes("UTF8"));
 
-        logger.info("*** starting batch operation ...");
-
         // start batch a new batch operation
         BatchOperation batch = client.createBatchOperation();
 
@@ -85,8 +82,6 @@ public class BatchOperationAbortExample {
         // end/commit batch operation
         batch.abort();
 
-        logger.info("*** batch op aborted ...");
-
         // start verifying result
 
         // get foo, expect to find it
@@ -97,15 +92,13 @@ public class BatchOperationAbortExample {
             throw new RuntimeException("Does not expect to find foo");
         }
 
-        logger.info("Expect entry foo to be null!");
-
         // get entry, expect to be found
         Entry bar1 = client.get(bar.getKey());
         if (bar1 == null) {
             throw new RuntimeException("error: cannot find bar entry.");
         }
 
-        logger.info("Expected entry bar to be existed!");
+        System.out.println("Verification passed.");
 
         // close kinetic client
         client.close();

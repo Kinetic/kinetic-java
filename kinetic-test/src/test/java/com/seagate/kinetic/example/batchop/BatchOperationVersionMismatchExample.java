@@ -19,6 +19,7 @@ package com.seagate.kinetic.example.batchop;
 
 import java.io.UnsupportedEncodingException;
 
+import kinetic.client.BatchAbortedException;
 import kinetic.client.BatchOperation;
 import kinetic.client.ClientConfiguration;
 import kinetic.client.Entry;
@@ -29,13 +30,12 @@ import kinetic.client.KineticException;
 /**
  * Kinetic client batch operation usage example.
  * <p>
- * This example shows how to use the batch operation API to commit a batch
- * operation.
- * 
+ * This example shows a version mismatch example that caused a batch commit to
+ * fail.
+ * <p>
  * @author chiaming
- *
  */
-public class BatchOperationExample {
+public class BatchOperationVersionMismatchExample {
 
     public void run(String host, int port) throws KineticException,
             UnsupportedEncodingException {
@@ -60,51 +60,43 @@ public class BatchOperationExample {
 
         client.putForced(bar);
 
-        // delete foo if existed
-        client.deleteForced("foo".getBytes("UTF8"));
+        try {
+            // start batch a new batch operation
+            BatchOperation batch = client.createBatchOperation();
 
-        // start batch a new batch operation
-        BatchOperation batch = client.createBatchOperation();
+            // put foo
+            Entry foo = new Entry();
+            foo.setKey("foo".getBytes("UTF8"));
+            foo.setValue("foo".getBytes("UTF8"));
 
-        // put foo
-        Entry foo = new Entry();
-        foo.setKey("foo".getBytes("UTF8"));
-        foo.setValue("foo".getBytes("UTF8"));
+            // put foo
+            batch.putForced(foo);
 
-        batch.put(foo, "5678".getBytes("UTF8"));
+            // set bar entry with wrong version
+            bar.getEntryMetadata().setVersion("4321".getBytes("UTF8"));
 
-        // delete bar
-        batch.delete(bar);
+            // put bar in batch, this will cause the commit to fail
+            batch.put(bar, "1".getBytes());
 
-        // end/commit batch operation
-        batch.commit();
+            // end/commit batch operation
+            batch.commit();
 
-        // start verifying result
+            throw new RuntimeException("Expected exception was not received");
 
-        // get foo, expect to find it
-        Entry foo1 = client.get(foo.getKey());
-
-        // cannot be null
-        if (foo1 == null) {
-            throw new RuntimeException("Expect to find foo but not found");
+        } catch (BatchAbortedException abe) {
+            System.out.println("Received expected exception, reason:  "
+                    + abe.getMessage());
+            System.out.println("Verification passed.");
+        } finally {
+            // close kinetic client
+            client.close();
         }
-
-        // get entry, expect to be not found
-        Entry bar1 = client.get(bar.getKey());
-        if (bar1 != null) {
-            throw new RuntimeException("error: found deleted entry.");
-        }
-
-        System.out.println("Verification passed.");
-
-        // close kinetic client
-        client.close();
     }
 
     public static void main(String[] args) throws KineticException,
             InterruptedException, UnsupportedEncodingException {
 
-        BatchOperationExample batch = new BatchOperationExample();
+        BatchOperationVersionMismatchExample batch = new BatchOperationVersionMismatchExample();
 
         batch.run("localhost", 8123);
     }
