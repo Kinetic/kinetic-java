@@ -20,7 +20,6 @@ package com.seagate.kinetic.client.io.provider.nio.ssl;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.EventLoopGroup;
-import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
 
 import java.io.IOException;
@@ -30,6 +29,7 @@ import java.util.logging.Logger;
 import kinetic.client.ClientConfiguration;
 import kinetic.client.KineticException;
 
+import com.seagate.kinetic.client.io.provider.nio.tcp.NioWorkerGroup;
 import com.seagate.kinetic.client.io.provider.spi.ClientMessageService;
 import com.seagate.kinetic.client.io.provider.spi.ClientTransportProvider;
 import com.seagate.kinetic.common.lib.KineticMessage;
@@ -75,7 +75,7 @@ public class SslNioTransportProvider implements ClientTransportProvider {
 		this.host = this.config.getHost();
 
 		try {
-			workerGroup = new NioEventLoopGroup();
+            workerGroup = NioWorkerGroup.getWorkerGroup();
 
 			sslChannelInitializer = new SslChannelInitializer(this.mservice);
 
@@ -111,10 +111,8 @@ public class SslNioTransportProvider implements ClientTransportProvider {
 			}
 
 			// release resources
-			workerGroup.shutdownGracefully();
-
-			workerGroup.terminationFuture().await(
-					this.config.getThreadPoolAwaitTimeout());
+            // release resources
+            NioWorkerGroup.close();
 
 		} catch (Exception e) {
 
