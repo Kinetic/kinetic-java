@@ -60,6 +60,10 @@ public class HeartbeatCollector extends HeartbeatListener {
     public HeartbeatCollector() throws IOException {
         super();
     }
+
+    public HeartbeatCollector(String netInterfaceName) throws IOException {
+        super(netInterfaceName);
+    }
     
     @Override
     public void onMessage(byte[] data) {

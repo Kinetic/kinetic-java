@@ -52,8 +52,15 @@ public class RestHeartbeatService {
         if (args.length >0) {
             port = Integer.parseInt(args[0]);
         }
+
+        HeartbeatCollector hbc = null;
+
+        if (args.length > 1) {
+            hbc = new HeartbeatCollector(args[1]);
+        } else {
+            hbc = new HeartbeatCollector();
+        }
         
-        HeartbeatCollector hbc = new HeartbeatCollector();
         HeartbeatHandler handler = new HeartbeatHandler (hbc);
         
         Server server = new Server(port);
