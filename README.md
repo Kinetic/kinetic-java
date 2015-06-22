@@ -77,10 +77,10 @@ Admin command line Usage
 
 2, start simulator
    Windows:  cd "Kinetic-Folder"/bin
-             kineticsimulator.bat
+             startSimulator.bat
              
    Linux:    cd "Kinetic-Folder"/bin
-             ./kineticsimulator.sh
+             sh startSimulator.sh
    
 3, run admin cli
    Windows:  cd "Kinetic-Folder"/bin
