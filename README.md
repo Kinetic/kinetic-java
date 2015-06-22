@@ -61,19 +61,18 @@ Getting Started With Simulator
             where "Version" above is the build version number.  Such as 0.8.0.1 .
    
    or Start with script (If configuration tcp_port, tls_port and Kinetic_home, use script -help):
-       Windows: 
 
-            ```
-            cd "Kinetic-Folder"\bin
-            startSimulator.bat
-            ```
-            
-       Linux & Mac:
-       
-            ```
-            cd "Kinetic-Folder"/bin
-            sh startSimulator.sh
-            ```
+  Windows: 
+```
+  cd "Kinetic-Folder"\bin
+  startSimulator.bat
+```
+
+  Linux & Mac:
+```
+  cd "Kinetic-Folder"/bin
+  sh startSimulator.sh
+```
 
 Admin command line Usage
 ==============================
@@ -84,19 +83,18 @@ Admin command line Usage
 2, start simulator as described in the above section.
    
 3, run admin cli
+
    Windows:
-   
-        ```
-        cd "Kinetic-Folder"/bin
-        kineticadmin -help
-        ```     
+```
+   cd "Kinetic-Folder"/bin
+   kineticadmin -help
+```     
    
    Linux:
-   
-        ```
-        cd "Kinetic-Folder"/bin
-        ./kineticadmin.sh -help
-        ```
+```
+   cd "Kinetic-Folder"/bin
+   ./kineticadmin.sh -help
+```
 
 Erasing all data in the Simulator
 =================================
