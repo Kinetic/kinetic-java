@@ -33,7 +33,7 @@ public class BatchStressTest extends IntegrationTestCase {
 	private static final int TEST_RUN_TIME_IN_MINUTE = 1;
 	private static final int MAX_BATCH_COUNT = 1;
 
-	@Test(dataProvider = "transportProtocolOptions")
+	@Test(dataProvider = "transportProtocolOptions", enabled = false)
 	public void testBatchOperation_WithPureBatchPutUsingSingleThread(
 			String clientName) {
 		AdvancedKineticClient client = getClient(clientName);
@@ -57,7 +57,7 @@ public class BatchStressTest extends IntegrationTestCase {
 		}
 	}
 
-	@Test(dataProvider = "transportProtocolOptions")
+	@Test(dataProvider = "transportProtocolOptions", enabled = false)
 	public void testUuidFileStore_WithPurePutUsingSingleThread(String clientName) {
 		AdvancedKineticClient client = getClient(clientName);
 		BatchTestThread thread = new PurePutThread("ST_PP", client);
@@ -80,7 +80,7 @@ public class BatchStressTest extends IntegrationTestCase {
 		}
 	}
 
-	@Test(dataProvider = "transportProtocolOptions")
+	@Test(dataProvider = "transportProtocolOptions", enabled = false)
 	public void testBatchOperation_WithBatchPutAndDeleteUsingSingleThread(
 			String clientName) {
 		AdvancedKineticClient client = getClient(clientName);
@@ -104,7 +104,7 @@ public class BatchStressTest extends IntegrationTestCase {
 		}
 	}
 
-	@Test(dataProvider = "transportProtocolOptions")
+	@Test(dataProvider = "transportProtocolOptions", enabled = false)
 	public void testBatchOperation_WithBatchPutAndGetUsingSingleThread(
 			String clientName) {
 		AdvancedKineticClient client = getClient(clientName);
@@ -128,7 +128,7 @@ public class BatchStressTest extends IntegrationTestCase {
 		}
 	}
 
-	@Test(dataProvider = "transportProtocolOptions")
+	@Test(dataProvider = "transportProtocolOptions", enabled = false)
 	public void testBatchOperation_WithPutAndBatchDeleteUsingSingleThread(
 			String clientName) {
 		AdvancedKineticClient client = getClient(clientName);
@@ -152,7 +152,7 @@ public class BatchStressTest extends IntegrationTestCase {
 		}
 	}
 
-	@Test(dataProvider = "transportProtocolOptions")
+	@Test(dataProvider = "transportProtocolOptions", enabled = false)
 	public void testBatchOperation_WithPureBatchPutUsingMultipleThreads(
 			String clientName) {
 		try {
@@ -190,7 +190,7 @@ public class BatchStressTest extends IntegrationTestCase {
 		}
 	}
 
-	@Test(dataProvider = "transportProtocolOptions")
+	@Test(dataProvider = "transportProtocolOptions", enabled = false)
 	public void testUuidFileStore_WithPurePutUsingMultipleThreads(
 			String clientName) {
 		try {
@@ -227,7 +227,7 @@ public class BatchStressTest extends IntegrationTestCase {
 		}
 	}
 
-	@Test(dataProvider = "transportProtocolOptions")
+	@Test(dataProvider = "transportProtocolOptions", enabled = false)
 	public void testBatchOperation_WithBatchPutAndDeleteUsingMultipleThreads(
 			String clientName) {
 		try {
@@ -265,7 +265,7 @@ public class BatchStressTest extends IntegrationTestCase {
 		}
 	}
 
-	@Test(dataProvider = "transportProtocolOptions")
+	@Test(dataProvider = "transportProtocolOptions", enabled = false)
 	public void testBatchOperation_WithBatchPutAndGetUsingMultipleThreads(
 			String clientName) {
 		try {
@@ -303,7 +303,7 @@ public class BatchStressTest extends IntegrationTestCase {
 		}
 	}
 
-	@Test(dataProvider = "transportProtocolOptions")
+	@Test(dataProvider = "transportProtocolOptions", enabled = false)
 	public void testBatchOperation_WithPutAndBatchDeleteUsingMultipleThreads(
 			String clientName) {
 		try {

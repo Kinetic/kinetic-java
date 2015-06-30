@@ -34,7 +34,7 @@ public class BatchPerformanceTest extends IntegrationTestCase {
 	private static final int MAX_BATCH_COUNT = 5;
 	private static final int REPORT_PERIOD_IN_SECONDS = 10;
 
-	@Test(dataProvider = "transportProtocolOptions")
+	@Test(dataProvider = "transportProtocolOptions", enabled = false)
 	public void testBatchPerformance_WithPureBatchPutUsingMultipleThreads(
 			String clientName) {
 		long start, end;
@@ -86,7 +86,7 @@ public class BatchPerformanceTest extends IntegrationTestCase {
 		}
 	}
 
-	@Test(dataProvider = "transportProtocolOptions")
+	@Test(dataProvider = "transportProtocolOptions", enabled = false)
 	public void testUuidFileStorePerformance_WithPurePutUsingMultipleThreads(
 			String clientName) {
 		long start, end;
