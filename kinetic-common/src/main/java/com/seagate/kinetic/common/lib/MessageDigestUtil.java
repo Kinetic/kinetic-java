@@ -125,9 +125,9 @@ public class MessageDigestUtil {
     }
 
     /**
-     * Get SHA2 instance.
+     * Get CRC32 instance.
      * 
-     * @return SHA2 instance.
+     * @return CRC32 instance.
      */
     public static KineticTagCalc getCrc32Instance() {
 
@@ -148,6 +148,30 @@ public class MessageDigestUtil {
         return crc32;
     }
 
+    /**
+     * Get CRC32C instance.
+     * 
+     * @return CRC32C instance.
+     */
+    public static KineticTagCalc getCrc32cInstance() {
+
+        // check if constructed
+        if (crc32 != null) {
+            return crc32;
+        }
+
+        // sync
+        synchronized (MessageDigestUtil.class) {
+
+            // check if already constructed
+            if (crc32 == null) {
+                crc32 = new Crc32cTagCalc();
+            }
+        }
+
+        return crc32;
+    }
+
 
     public static KineticTagCalc getInstance(Algorithm algo) {
 
@@ -158,6 +182,7 @@ public class MessageDigestUtil {
             return getSha2Instance();
         case CRC32:
             return getCrc32Instance();
+            // return getCrc32cInstance();
         default:
             throw new java.lang.UnsupportedOperationException(
                     "unsupported algorithm., name = " + algo.name());
