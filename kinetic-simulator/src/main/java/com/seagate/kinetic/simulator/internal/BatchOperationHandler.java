@@ -274,6 +274,23 @@ public class BatchOperationHandler {
             close();
 
             throw vmismatch;
+        } catch (KVStoreNotFound kvsne) {
+
+            logger.log(Level.WARNING, StatusCode.NOT_FOUND.toString(), kvsne);
+
+            // set status code
+            context.getCommandBuilder().getStatusBuilder()
+                    .setCode(StatusCode.NOT_FOUND);
+
+            // set status message
+            context.getCommandBuilder().getStatusBuilder()
+                        .setStatusMessage("key not found");
+
+            this.saveFailedRequestContext(context);
+
+            close();
+
+            throw kvsne;
         } catch (KVStoreException kvse) {
 
             logger.log(Level.WARNING, kvse.getMessage(), kvse);
@@ -409,10 +426,8 @@ public class BatchOperationHandler {
             checkVersion(km);
         }
 
+        // batch delete entry
         batch.delete(key);
-
-        // delete entry from map.
-        // map.remove(key);
     }
 
     private void batchPut(KineticMessage km) throws KVStoreException,
@@ -436,7 +451,7 @@ public class BatchOperationHandler {
 
         // check version if required
         if (requestKeyValue.getForce() == false) {
-            checkVersion(km);
+            batchPutCheckVersion(km);
         }
 
         // construct store KV
@@ -451,9 +466,6 @@ public class BatchOperationHandler {
 
         // batch put
         batch.put(key, data);
-
-        // put to batch map for version comparison
-        // map.put(requestKeyValue.getKey(), requestKeyValue.getNewVersion());
     }
 
     private synchronized void commitBatch(RequestContext context) {
@@ -526,6 +538,43 @@ public class BatchOperationHandler {
         return s.size();
     }
 
+    private void batchPutCheckVersion(KineticMessage km)
+            throws KVStoreException {
+
+        KeyValue requestKeyValue = km.getCommand().getBody().getKeyValue();
+
+        ByteString requestDbVersion = requestKeyValue.getDbVersion();
+
+        ByteString key = requestKeyValue.getKey();
+
+        ByteString storeDbVersion = null;
+
+        try {
+            storeDbVersion = this.getDbVersion(key);
+        } catch (KVStoreException kvne) {
+
+            /**
+             * check if new entry
+             */
+            if (kvne instanceof KVStoreNotFound) {
+
+                if (requestDbVersion == null
+                        || requestDbVersion == ByteString.EMPTY) {
+                    /**
+                     * new entry to put in store.
+                     */
+                    return;
+                }
+            }
+
+            // db error, re-throw exception
+            throw kvne;
+        }
+
+        // compare request version with store version
+        compareVersion(storeDbVersion, requestDbVersion);
+    }
+
     private void checkVersion(KineticMessage km) throws KVStoreException {
 
         KeyValue requestKeyValue = km.getCommand().getBody().getKeyValue();
@@ -538,26 +587,16 @@ public class BatchOperationHandler {
 
         // compare version with store
         compareVersion(storeDbVersion, requestDbVersion);
-
-        // compare version with batch map
-        // ByteString mapVersion = this.map.get(key);
-        // if (mapVersion != null) {
-        // compareVersion(mapVersion, requestDbVersion);
-        // }
     }
 
     @SuppressWarnings("unchecked")
-    private ByteString getDbVersion(ByteString key) {
+    private ByteString getDbVersion(ByteString key) throws KVStoreException {
 
         KVValue storeKv = null;
         ByteString storeDbVersion = null;
 
-        try {
-            storeKv = (KVValue) store.get(key);
-            storeDbVersion = storeKv.getVersion();
-        } catch (Exception e) {
-            ;
-        }
+        storeKv = (KVValue) store.get(key);
+        storeDbVersion = storeKv.getVersion();
 
         return storeDbVersion;
     }
