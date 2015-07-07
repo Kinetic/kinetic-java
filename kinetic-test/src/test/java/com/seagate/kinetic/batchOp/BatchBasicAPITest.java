@@ -24,6 +24,7 @@ import static org.testng.AssertJUnit.assertNull;
 import static org.testng.AssertJUnit.assertTrue;
 
 import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
 import java.util.Arrays;
 
 import kinetic.client.BatchAbortedException;
@@ -2624,6 +2625,177 @@ public class BatchBasicAPITest extends IntegrationTestCase {
 		}
 	}
 
+	@Test(dataProvider = "transportProtocolOptions")
+	public void testBatchOperation_DeleteEntryWithoutVersionSettingNotExistInDB_ThrowException(
+			String clientName) {
+		Entry bar = getBarEntryWithoutVersionSetting();
+
+		try {
+			cleanEntry(bar, getClient(clientName));
+		} catch (KineticException e) {
+			Assert.fail("Clean entry failed. " + e.getMessage());
+		}
+
+		BatchOperation batch = null;
+		try {
+			batch = getClient(clientName).createBatchOperation();
+		} catch (KineticException e) {
+			Assert.fail("Create batch operation failed. " + e.getMessage());
+		}
+
+		try {
+			batch.delete(bar);
+		} catch (KineticException e) {
+			Assert.fail("Put async throw exception: " + e.getMessage());
+		}
+
+		try {
+			batch.commit();
+			Assert.fail("Should throw exception, but not throw exception");
+		} catch (KineticException e) {
+			assertTrue(e.getResponseMessage().getCommand().getStatus()
+					.getCode().equals(StatusCode.INVALID_BATCH));
+		}
+
+		// get bar, expect to find it
+		Entry barGet = null;
+		try {
+			barGet = getClient(clientName).get(bar.getKey());
+			assertNull(barGet);
+		} catch (KineticException e) {
+			Assert.fail("Get entry bar throw exception: " + e.getMessage());
+		}
+	}
+
+	@Test(dataProvider = "transportProtocolOptions")
+	public void testBatchOperation_DeleteEntryWithVersionSettingNotExistInDB_ThrowException(
+			String clientName) {
+		Entry bar = getBarEntry();
+
+		try {
+			cleanEntry(bar, getClient(clientName));
+		} catch (KineticException e) {
+			Assert.fail("Clean entry failed. " + e.getMessage());
+		}
+
+		BatchOperation batch = null;
+		try {
+			batch = getClient(clientName).createBatchOperation();
+		} catch (KineticException e) {
+			Assert.fail("Create batch operation failed. " + e.getMessage());
+		}
+
+		try {
+			batch.delete(bar);
+		} catch (KineticException e) {
+			Assert.fail("Put async throw exception: " + e.getMessage());
+		}
+
+		try {
+			batch.commit();
+			Assert.fail("Should throw exception, but not throw exception");
+		} catch (KineticException e) {
+			assertTrue(e.getResponseMessage().getCommand().getStatus()
+					.getCode().equals(StatusCode.INVALID_BATCH));
+		}
+
+		// get bar, expect to find it
+		Entry barGet = null;
+		try {
+			barGet = getClient(clientName).get(bar.getKey());
+			assertNull(barGet);
+		} catch (KineticException e) {
+			Assert.fail("Get entry bar throw exception: " + e.getMessage());
+		}
+	}
+
+	@Test(dataProvider = "transportProtocolOptions")
+	public void testBatchOperation_PutEntryWithoutVersionSettingNotExistInDB_Success(
+			String clientName) {
+		Entry bar = getBarEntryWithoutVersionSetting();
+		byte[] newVersion = "1".getBytes(Charset.forName("UTF-8"));
+
+		try {
+			cleanEntry(bar, getClient(clientName));
+		} catch (KineticException e) {
+			Assert.fail("Clean entry failed. " + e.getMessage());
+		}
+
+		BatchOperation batch = null;
+		try {
+			batch = getClient(clientName).createBatchOperation();
+		} catch (KineticException e) {
+			Assert.fail("Create batch operation failed. " + e.getMessage());
+		}
+
+		try {
+			batch.put(bar, newVersion);
+		} catch (KineticException e) {
+			Assert.fail("Put throw exception: " + e.getMessage());
+		}
+
+		try {
+			batch.commit();
+		} catch (KineticException e) {
+			Assert.fail("Batch commit throw exception: " + e.getMessage());
+		}
+
+		// get bar, expect to find it
+		Entry barGet = null;
+		try {
+			barGet = getClient(clientName).get(bar.getKey());
+			assertTrue(Arrays.equals(barGet.getKey(), bar.getKey()));
+			assertTrue(Arrays.equals(barGet.getEntryMetadata().getVersion(),
+					newVersion));
+			assertTrue(Arrays.equals(barGet.getValue(), bar.getValue()));
+		} catch (KineticException e) {
+			Assert.fail("Get entry bar throw exception: " + e.getMessage());
+		}
+	}
+
+	@Test(dataProvider = "transportProtocolOptions")
+	public void testBatchOperation_PutEntryWithVersionSettingNotExistInDB_ThrowException(
+			String clientName) {
+		Entry bar = getBarEntry();
+		byte[] newVersion = "1".getBytes(Charset.forName("UTF-8"));
+
+		try {
+			cleanEntry(bar, getClient(clientName));
+		} catch (KineticException e) {
+			Assert.fail("Clean entry failed. " + e.getMessage());
+		}
+
+		BatchOperation batch = null;
+		try {
+			batch = getClient(clientName).createBatchOperation();
+		} catch (KineticException e) {
+			Assert.fail("Create batch operation failed. " + e.getMessage());
+		}
+
+		try {
+			batch.put(bar, newVersion);
+		} catch (KineticException e) {
+			Assert.fail("Put async throw exception: " + e.getMessage());
+		}
+
+		try {
+			batch.commit();
+			Assert.fail("Should throw exception, but not throw exception");
+		} catch (KineticException e) {
+			assertTrue(e.getResponseMessage().getCommand().getStatus()
+					.getCode().equals(StatusCode.INVALID_BATCH));
+		}
+
+		// get bar, expect to find it
+		Entry barGet = null;
+		try {
+			barGet = getClient(clientName).get(bar.getKey());
+			assertNull(barGet);
+		} catch (KineticException e) {
+			Assert.fail("Get entry bar throw exception: " + e.getMessage());
+		}
+	}
+
 	private Entry getFooEntry() {
 		Entry foo = new Entry();
 		byte[] fooKey = toByteArray("foo");
@@ -2644,6 +2816,16 @@ public class BatchBasicAPITest extends IntegrationTestCase {
 		bar.setValue(barValue);
 		byte[] barVersion = toByteArray("1234");
 		bar.getEntryMetadata().setVersion(barVersion);
+
+		return bar;
+	}
+
+	private Entry getBarEntryWithoutVersionSetting() {
+		Entry bar = new Entry();
+		byte[] barKey = toByteArray("bar");
+		bar.setKey(barKey);
+		byte[] barValue = toByteArray("barvalue");
+		bar.setValue(barValue);
 
 		return bar;
 	}
