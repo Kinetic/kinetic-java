@@ -19,7 +19,6 @@
  */
 package com.seagate.kinetic.simulator.utility;
 
-import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -68,10 +67,7 @@ class UtilizationGenerator {
 	}
 
 	private static float generateValue() {
-		float utility = random.nextFloat();
-		DecimalFormat df = new DecimalFormat("########.00");
-		double remainValue = Double.parseDouble(df.format(utility));
-		return (float) remainValue;
-
+	    float utility = (float)random.nextInt(101) / 100;
+		return utility;
 	}
 }
