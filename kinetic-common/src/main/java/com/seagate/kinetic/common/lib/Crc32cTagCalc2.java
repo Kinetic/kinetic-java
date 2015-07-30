@@ -17,13 +17,9 @@
  */
 package com.seagate.kinetic.common.lib;
 
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
-import io.netty.handler.codec.compression.Snappy;
-
-import java.nio.ByteBuffer;
 import java.util.logging.Logger;
 
+import com.google.cloud.Crc32c;
 import com.google.protobuf.ByteString;
 
 /**
@@ -32,39 +28,33 @@ import com.google.protobuf.ByteString;
  * @author chiaming
  *
  */
-public class Crc32cTagCalc implements KineticTagCalc {
+public class Crc32cTagCalc2 implements KineticTagCalc {
 
-    private final static Logger logger = Logger.getLogger(Crc32cTagCalc.class
+    private final static Logger logger = Logger.getLogger(Crc32cTagCalc2.class
             .getName());
 
     // crc32c algo
     private static String myName = "CRC32c";
 
-    public Crc32cTagCalc() {
-        logger.info(myName + " checksum isntance instantiated ...");
+    private Crc32c crc32c = new Crc32c();
+
+    public Crc32cTagCalc2() {
+        logger.info(myName + " checksum instance instantiated ...");
     }
 
     @Override
-    public ByteString calculateTag(byte[] value) {
+    public synchronized ByteString calculateTag(byte[] value) {
 
         try {
             
-            // netty io bytebuf
-            ByteBuf bb = Unpooled.wrappedBuffer(value);
-            
             // calculate crc32c checksum
-            int cval = Snappy.calculateChecksum(bb);
-
-            logger.info("****** cval = " + cval);
-
-            // convert to byte[]
-            byte[] checkSum = ByteBuffer.allocate(4).putInt(cval).array();
+            this.crc32c.update(value, 0, value.length);
+            byte[] checkSum = this.crc32c.getValueAsBytes();
 
             // convert to bytestring and return
             return ByteString.copyFrom(checkSum);
-
         } finally {
-            ;
+            this.crc32c.reset();
         }
     }
 

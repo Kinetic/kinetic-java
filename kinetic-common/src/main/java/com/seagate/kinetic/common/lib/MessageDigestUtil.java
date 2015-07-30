@@ -165,7 +165,7 @@ public class MessageDigestUtil {
 
             // check if already constructed
             if (crc32 == null) {
-                crc32 = new Crc32cTagCalc();
+                crc32 = new Crc32cTagCalc2();
             }
         }
 
@@ -181,8 +181,7 @@ public class MessageDigestUtil {
         case SHA2:
             return getSha2Instance();
         case CRC32:
-            return getCrc32Instance();
-            // return getCrc32cInstance();
+            return getCrc32cInstance();
         default:
             throw new java.lang.UnsupportedOperationException(
                     "unsupported algorithm., name = " + algo.name());
