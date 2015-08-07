@@ -409,9 +409,12 @@ public class ClientConfiguration extends Properties {
     public void setRequestTimeoutMillis(long millis) {
 
         if (millis <= 0) {
+
             logger.warning("Specified timeout value "
                     + millis
-                    + " is not supported. Using default request timeout (30 seconds)");
+                    + " is not supported. Using default request timeout: "
+                    + DEFAULT_REQUEST_TIMEOUT + "(milli seconds)");
+
             millis = DEFAULT_REQUEST_TIMEOUT;
         } else if (millis < DEFAULT_REQUEST_TIMEOUT) {
             logger.warning("request timeout set to "
