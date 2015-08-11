@@ -43,6 +43,7 @@ import com.seagate.kinetic.client.internal.async.GetMetadataAsyncCallbackHandler
 import com.seagate.kinetic.client.internal.async.PutAsyncCallbackHandler;
 import com.seagate.kinetic.client.io.provider.spi.ClientMessageService;
 import com.seagate.kinetic.common.lib.KineticMessage;
+import com.seagate.kinetic.common.lib.ProtocolMessageUtil;
 import com.seagate.kinetic.proto.Kinetic.Command.MessageType;
 import com.seagate.kinetic.proto.Kinetic.Message.AuthType;
 
@@ -255,7 +256,8 @@ public class MessageHandler implements ClientMessageService, Runnable {
                 this.notifyListener(message);
 
             } else {
-                logger.warning("received unknown message: " + message);
+                logger.warning("message cannot be delivered., please verify request timeout set in the configurtion., message="
+                        + ProtocolMessageUtil.toString(message));
             }
 		}
 	}
