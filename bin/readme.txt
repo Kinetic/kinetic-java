@@ -18,6 +18,12 @@ Kinetic Simulator/Admin Command Line Interface (CLI).
    Linux & Mac:
             cd <Kinetic-Folder>/bin
             sh startSimulator.sh
+
+3.1 To start multiple simulators:
+
+   Linux & Mac:
+            cd <Kinetic-Folder>/bin
+	    sh startMultiSimulators.sh [#instances start_tcp_port start_ssl_port]
             
 4. To run Kinetic admin CLI:
 
@@ -333,6 +339,7 @@ Usage of Kinetic Admin API script
 12. unlock device
     Similar as lockdevice. Please see #11.
          
+
 Usage of proto scripts
 ===========================
 1. Sync protocol file from Kinetic-Protocol github repo [https://github.com/Seagate/Kinetic-Protocol.git] to local.
@@ -343,3 +350,5 @@ Usage of proto scripts
    
 2. Build protocol file locally, including compile kinetic.proto, kineticDb.proto, kineticIo.proto.
    $sh buildProto.sh
+
+
