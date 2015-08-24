@@ -22,6 +22,9 @@ package com.seagate.kinetic.simulator.client.p2p;
 import static org.testng.AssertJUnit.assertFalse;
 import static org.testng.AssertJUnit.assertTrue;
 import static org.testng.internal.junit.ArrayAsserts.assertArrayEquals;
+
+import java.util.logging.Logger;
+
 import kinetic.admin.KineticAdminClient;
 import kinetic.admin.KineticAdminClientFactory;
 import kinetic.client.Entry;
@@ -51,6 +54,9 @@ import com.seagate.kinetic.proto.Kinetic.Command.Status.StatusCode;
  */
 @Test(groups = { "simulator" })
 public class PeerToPeerOperationTest extends IntegrationTestCase {
+
+    Logger logger = Logger.getLogger(PeerToPeerOperationTest.class.getName());
+
     private AbstractIntegrationTestTarget secondaryTestTarget;
     private KineticP2pClient secondaryClient;
 
@@ -96,6 +102,8 @@ public class PeerToPeerOperationTest extends IntegrationTestCase {
         Entry peerEntry = secondaryClient.get(key);
 
         assertArrayEquals(value, peerEntry.getValue());
+
+        logger.info("validated peer to peer works over plain TCP ...");
     }
 
     @Test(dataProvider = "transportProtocolOptions")
@@ -121,6 +129,8 @@ public class PeerToPeerOperationTest extends IntegrationTestCase {
         Entry peerEntry = secondaryClient.get(key);
 
         assertArrayEquals(value, peerEntry.getValue());
+
+        logger.info("validated peer to peer works over SSL ...");
     }
 
     @Test(dataProvider = "transportProtocolOptions")
@@ -151,6 +161,9 @@ public class PeerToPeerOperationTest extends IntegrationTestCase {
         assertTrue("expect version mis-match status code",
                 StatusCode.VERSION_MISMATCH == p2pResp.getOperationList()
                         .get(0).getStatusCode());
+
+        logger.info("received expect version mis-match status code: "
+                + StatusCode.VERSION_MISMATCH);
     }
 
     @Test(dataProvider = "transportProtocolOptions")
@@ -171,6 +184,7 @@ public class PeerToPeerOperationTest extends IntegrationTestCase {
             AssertJUnit.fail("Should have thrown KineticException");
         } catch (KineticException e) {
             // expected exception should be caught here.
+            logger.info("caught expected exception: " + e.getMessage());
             ;
         }
     }

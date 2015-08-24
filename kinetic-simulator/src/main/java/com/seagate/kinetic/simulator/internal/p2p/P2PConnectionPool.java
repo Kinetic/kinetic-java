@@ -19,8 +19,6 @@
  */
 package com.seagate.kinetic.simulator.internal.p2p;
 
-import java.util.HashMap;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import kinetic.client.ClientConfiguration;
@@ -29,7 +27,6 @@ import kinetic.client.KineticClientFactory;
 import kinetic.client.KineticException;
 
 import com.seagate.kinetic.common.lib.KineticMessage;
-
 import com.seagate.kinetic.proto.Kinetic.Command.P2POperation.Peer;
 
 /**
@@ -43,9 +40,6 @@ public class P2PConnectionPool {
 
     private final static Logger logger = Logger
             .getLogger(P2PConnectionPool.class.getName());
-
-    // client map
-    private final HashMap<String, KineticClient> clientMap = new HashMap<String, KineticClient>();
 
     public P2PConnectionPool() {
         ;
@@ -76,32 +70,8 @@ public class P2PConnectionPool {
     private synchronized KineticClient getFromCacheOrCreate(KineticMessage request)
             throws KineticException {
 
-        // peer info
-        Peer peer = request.getCommand().getBody().getP2POperation().getPeer();
-
-        // user id
-        long uid = request.getMessage().getHmacAuth().getIdentity();
-
-        // map key
-        String key = uid + ":" + peer.getHostname() + ":" + peer.getPort()
-                + ":" + peer.getTls();
-
-        // get from pool
-        KineticClient client = this.clientMap.get(key);
-
-        if (client == null) {
-            // create client instance
-            client = this.createClient(request);
-
-            // add to pool
-            this.clientMap.put(key, client);
-
-            logger.info("created and put client instance to pool, key=" + key);
-        } else {
-            logger.info("got client instance from pool, key=" + key);
-        }
-
-        return client;
+        // create client
+        return this.createClient(request);
     }
 
     /**
@@ -129,8 +99,14 @@ public class P2PConnectionPool {
         config.setPort(peer.getPort());
         config.setUseSsl(peer.getTls());
 
+        logger.info("creating p2p client: " + peer.getHostname() + ":"
+                + peer.getPort());
+
         // create a new instance
         KineticClient client = KineticClientFactory.createInstance(config);
+
+        logger.info("created p2p client: " + peer.getHostname() + ":"
+                + peer.getPort());
 
         return client;
     }
@@ -139,15 +115,6 @@ public class P2PConnectionPool {
      * close the pool.
      */
     public void close() {
-
-        for (KineticClient client : clientMap.values()) {
-            try {
-                client.close();
-            } catch (Exception e) {
-                logger.log(Level.WARNING, e.getMessage(), e);
-            }
-        }
-
-        this.clientMap.clear();
+        ;
     }
 }

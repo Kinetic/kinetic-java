@@ -476,14 +476,12 @@ public class SimulatorEngine implements MessageService {
                     StatusCode.INVALID_REQUEST);
             }
 
-            if (context.getCommandBuilder().getStatusBuilder()
-                    .hasStatusMessage() == false) {
-                context.getCommandBuilder().getStatusBuilder()
-                        .setStatusMessage(
-                        e.getMessage());
-            }
+            // set status message
+            context.getCommandBuilder()
+                    .getStatusBuilder()
+                    .setStatusMessage(
+                            e.getClass().getName() + ":" + e.getMessage());
 
-            logger.log(Level.WARNING, e.getMessage(), e);
         } finally {
 
             try {

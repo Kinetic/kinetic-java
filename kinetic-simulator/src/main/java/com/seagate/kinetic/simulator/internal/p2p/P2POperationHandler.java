@@ -94,178 +94,181 @@ public class P2POperationHandler {
             Store<ByteString, ByteString, KVValue> store,
             KineticMessage request, KineticMessage response) {
 
-        Command.Builder commandBuilder = (Command.Builder) response
-                .getCommand();
-
         // get client instance
         KineticClient client = this.getClient(request, response);
 
-        /**
-         * perform p2p Ops if connected to peer. Otherwise,
-         * REMOTE_CONNECTION_ERROR code was set in the status code and return
-         * back to the client.
-         */
-        if (client != null) {
+        try {
+            Command.Builder commandBuilder = (Command.Builder) response
+                    .getCommand();
 
-            // get p2p operation list
-            P2POperation p2pOp = request.getCommand().getBody()
-                    .getP2POperation();
-            List<Operation> opList = p2pOp.getOperationList();
+            /**
+             * perform p2p Ops if connected to peer. Otherwise,
+             * REMOTE_CONNECTION_ERROR code was set in the status code and
+             * return back to the client.
+             */
+            if (client != null) {
 
-            // response operation builder
-            P2POperation.Builder respP2POpBuilder = commandBuilder
-                    .getBodyBuilder().getP2POperationBuilder();
+                // get p2p operation list
+                P2POperation p2pOp = request.getCommand().getBody()
+                        .getP2POperation();
+                List<Operation> opList = p2pOp.getOperationList();
 
-            // set default value to true.
-            // this will set to false when exception occurred
-            respP2POpBuilder.setAllChildOperationsSucceeded(true);
+                // response operation builder
+                P2POperation.Builder respP2POpBuilder = commandBuilder
+                        .getBodyBuilder().getP2POperationBuilder();
 
-            // loop through the list
-            for (Operation operation : opList) {
+                // set default value to true.
+                // this will set to false when exception occurred
+                respP2POpBuilder.setAllChildOperationsSucceeded(true);
 
-                // response op builder
-                Operation.Builder respOpBuilder = Operation
-                        .newBuilder(operation);
+                // loop through the list
+                for (Operation operation : opList) {
 
-                try {
+                    // response op builder
+                    Operation.Builder respOpBuilder = Operation
+                            .newBuilder(operation);
 
-                    // get entry from store
-                    KVValue kvvalue = store.get(operation.getKey());
+                    try {
 
-                    if (kvvalue == null) {
-                        throw new KVStoreNotFound();
-                    }
+                        // get entry from store
+                        KVValue kvvalue = store.get(operation.getKey());
 
-                    // construct entry to be pushed to peer
-                    Entry entry = new Entry();
-
-                    // set key
-                    if (operation.hasNewKey()) {
-                        // use new key
-                        entry.setKey(operation.getNewKey().toByteArray());
-                    } else {
-                        // use the same key as stored
-                        entry.setKey(kvvalue.getKeyOf().toByteArray());
-                    }
-
-                    // set value
-                    entry.setValue(kvvalue.getData().toByteArray());
-
-                    // set version, if any
-                    if (kvvalue.hasVersion()) {
-                        entry.getEntryMetadata().setVersion(
-                                kvvalue.getVersion().toByteArray());
-                    }
-
-                    // set tag
-                    if (kvvalue.hasTag()) {
-                        entry.getEntryMetadata().setTag(
-                                kvvalue.getTag().toByteArray());
-                    }
-
-                    if (operation.getForce()) {
-                        // forced put ignore version
-                        client.putForced(entry);
-                    } else {
-                        // if there is a version specified in op, use versioned
-                        // put
-                        if (operation.hasVersion()) {
-
-                            // set db version
-                            entry.getEntryMetadata().setVersion(
-                                    operation.getVersion().toByteArray());
-
-                            // use store version as new version
-                            // do versioned put
-                            client.put(entry, kvvalue.getVersion()
-                                    .toByteArray());
-                        } else {
-                            // do forced put
-                            client.putForced(entry);
+                        if (kvvalue == null) {
+                            throw new KVStoreNotFound();
                         }
-                    }
 
-                    // set success status
-                    respOpBuilder.getStatusBuilder()
-                            .setCode(StatusCode.SUCCESS);
-                } catch (KVStoreNotFound kvne) {
+                        // construct entry to be pushed to peer
+                        Entry entry = new Entry();
 
-                    logger.warning("cannot find entry from the specified key in request message...");
+                        // set key
+                        if (operation.hasNewKey()) {
+                            // use new key
+                            entry.setKey(operation.getNewKey().toByteArray());
+                        } else {
+                            // use the same key as stored
+                            entry.setKey(kvvalue.getKeyOf().toByteArray());
+                        }
 
-                    // set overall status
-                    respP2POpBuilder.setAllChildOperationsSucceeded(false);
+                        // set value
+                        entry.setValue(kvvalue.getData().toByteArray());
 
-                    /**
-                     * The (command) response code is set to OK even if
-                     * exception occurred. The application can examine each of
-                     * the operation status in the p2p response.
-                     */
-                    // set overall status code
-                    // commandBuilder.getStatusBuilder().setCode(
-                    // StatusCode.NOT_FOUND);
+                        // set version, if any
+                        if (kvvalue.hasVersion()) {
+                            entry.getEntryMetadata().setVersion(
+                                    kvvalue.getVersion().toByteArray());
+                        }
 
-                    // set overall status message
-                    // commandBuilder.getStatusBuilder().setStatusMessage(
-                    // "cannot find the specified key");
+                        // set tag
+                        if (kvvalue.hasTag()) {
+                            entry.getEntryMetadata().setTag(
+                                    kvvalue.getTag().toByteArray());
+                        }
 
-                    // set individual status code
-                    respOpBuilder.getStatusBuilder().setCode(
-                            StatusCode.NOT_FOUND);
+                        if (operation.getForce()) {
+                            // forced put ignore version
+                            client.putForced(entry);
+                        } else {
+                            // if there is a version specified in op, use
+                            // versioned put
+                            if (operation.hasVersion()) {
 
-                    // set individual status message
-                    respOpBuilder.getStatusBuilder().setStatusMessage(
-                            "cannot find the specified key");
+                                // set db version
+                                entry.getEntryMetadata().setVersion(
+                                        operation.getVersion().toByteArray());
 
-                } catch (KineticException ke) {
+                                // use store version as new version
+                                // do versioned put
+                                client.put(entry, kvvalue.getVersion()
+                                        .toByteArray());
+                            } else {
+                                // do forced put
+                                client.putForced(entry);
+                            }
+                        }
 
-                    /**
-                     * errors occurred from remote peer
-                     */
+                        // set success status
+                        respOpBuilder.getStatusBuilder().setCode(
+                                StatusCode.SUCCESS);
+                    } catch (KVStoreNotFound kvne) {
 
-                    logger.warning(ke.getLocalizedMessage());
+                        logger.warning("cannot find entry from the specified key in request message...");
 
-                    // set overall status
-                    respP2POpBuilder.setAllChildOperationsSucceeded(false);
+                        // set overall status
+                        respP2POpBuilder.setAllChildOperationsSucceeded(false);
 
-                    /**
-                     * The (command) response code is set to OK even if
-                     * exception occurred. The application can examine each of
-                     * the operation status in the p2p response.
-                     */
+                        /**
+                         * The (command) response code is set to OK even if
+                         * exception occurred. The application can examine each
+                         * of the operation status in the p2p response.
+                         */
 
-                    // set individual status code
-                    respOpBuilder.getStatusBuilder().setCode(
-                            ke.getResponseMessage().getCommand().getStatus()
-                                    .getCode());
+                        // set individual status code
+                        respOpBuilder.getStatusBuilder().setCode(
+                                StatusCode.NOT_FOUND);
 
-                    // set individual status message
-                    respOpBuilder.getStatusBuilder().setStatusMessage(
-                            ke.getResponseMessage().getCommand().getStatus()
-                                    .getStatusMessage());
-
-                } catch (Exception e) {
-
-                    logger.log(Level.WARNING, e.getMessage(), e);
-
-                    // set p2p overall status
-                    respP2POpBuilder.setAllChildOperationsSucceeded(false);
-
-                    // set individual status code
-                    respOpBuilder.getStatusBuilder().setCode(
-                            StatusCode.INTERNAL_ERROR);
-
-                    // set individual status message
-                    if (e.getMessage() != null) {
+                        // set individual status message
                         respOpBuilder.getStatusBuilder().setStatusMessage(
-                                e.getMessage());
+                                "cannot find the specified key");
+
+                    } catch (KineticException ke) {
+
+                        /**
+                         * errors occurred from remote peer
+                         */
+
+                        logger.warning(ke.getLocalizedMessage());
+
+                        // set overall status
+                        respP2POpBuilder.setAllChildOperationsSucceeded(false);
+
+                        /**
+                         * The (command) response code is set to OK even if
+                         * exception occurred. The application can examine each
+                         * of the operation status in the p2p response.
+                         */
+
+                        // set individual status code
+                        respOpBuilder.getStatusBuilder().setCode(
+                                ke.getResponseMessage().getCommand()
+                                        .getStatus().getCode());
+
+                        // set individual status message
+                        String sm = ke.getResponseMessage().getCommand()
+                                .getStatus().getStatusMessage();
+
+                        if (sm != null) {
+                            respOpBuilder.getStatusBuilder().setStatusMessage(
+                                    sm);
+                        }
+
+                    } catch (Exception e) {
+
+                        logger.log(Level.WARNING, e.getMessage(), e);
+
+                        // set p2p overall status
+                        respP2POpBuilder.setAllChildOperationsSucceeded(false);
+
+                        // set individual status code
+                        respOpBuilder.getStatusBuilder().setCode(
+                                StatusCode.INTERNAL_ERROR);
+
+                        // set individual status message
+                        if (e.getMessage() != null) {
+                            respOpBuilder.getStatusBuilder().setStatusMessage(
+                                    e.getMessage());
+                        }
+                    } finally {
+                        // add response operation
+                        respP2POpBuilder.addOperation(respOpBuilder.build());
                     }
                 }
-
-                // add response operation
-                respP2POpBuilder.addOperation(respOpBuilder.build());
             }
+
+        } finally {
+            this.close(client);
         }
     }
+
 
     /**
      * Get peer instance.
@@ -304,6 +307,19 @@ public class P2POperationHandler {
         }
 
         return client;
+    }
+
+    private void close(KineticClient client) {
+
+        if (client == null) {
+            return;
+        }
+
+        try {
+            client.close();
+        } catch (Exception e) {
+            logger.warning(e.getMessage());
+        }
     }
 
     /**
