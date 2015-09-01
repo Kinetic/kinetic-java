@@ -60,7 +60,7 @@
 				<configuration>
 					<archive>
 						<manifest>
-							<mainClass>kinetic.simulator.KineticSimulator</mainClass>
+							<mainClass>com.seagate.kinetic.simulator.internal.SimulatorRunner</mainClass>
 						</manifest>
 					</archive>
 					<descriptorRefs>
