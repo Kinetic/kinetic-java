@@ -17,20 +17,20 @@
  */
 
 /**
- * Kinetic Java Client API.
+ * Kinetic Advanced Java Client API.
  * <p>
- * A Kinetic application uses the Java API provided in this package to interface with
- * Kinetic services/servers.</P>
+ * A Kinetic application uses the Advanced Java API provided in this package to interface with
+ * Kinetic services with a rich set of options to perform operations such as PUT, GET, DELETE.
+ * The advanced client also provides API for asynchronous K/V operations.</P>
  * <p>
- * The boot-strap API for using the Kinetic client library is
- * <code>KineticClientFactory.createInstance(ClientConfiguration)</code>.</P>
+ * The boot-strap API for using the Advanced Kinetic client library is
+ * <code>AdvancedKineticClientFactory.createInstance(ClientConfiguration)</code>.</P>
  * <p>
  * Kinetic applications construct a new instance of <code>ClientConfiguration</code>
  * and set the appropriate configurations (such as server host/port) to the
  * configuration instance. Applications then invoke the static createInstance
- * method <code>KineticClientFactory.createInstance(ClientConfiguration)</code> to obtain a new
- * instance of KineticClient.</p>
+ * method <code>AdvancedKineticClientFactory.createInstance(ClientConfiguration)</code> to obtain a new
+ * instance of AdvancedKineticClient.</p>
  *
  */
-package kinetic.client;
-
+package kinetic.client.advanced;

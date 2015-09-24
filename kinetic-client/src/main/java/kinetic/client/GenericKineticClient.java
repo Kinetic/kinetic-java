@@ -66,9 +66,7 @@ public interface GenericKineticClient {
 			throws KineticException;
 
 	/**
-	 * Generic kinetic asynchronous request operation. This is a variation of
-	 * the {@link #request(com.seagate.kinetic.proto.Kinetic.Message.Builder)}
-	 * API.
+	 * Generic kinetic asynchronous request operation.
 	 * <p>
 	 *
 	 * @param requestMessage

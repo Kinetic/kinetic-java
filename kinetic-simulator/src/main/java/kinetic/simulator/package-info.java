@@ -17,20 +17,14 @@
  */
 
 /**
- * Kinetic Java Client API.
+ * Kinetic Simulator API. 
  * <p>
- * A Kinetic application uses the Java API provided in this package to interface with
- * Kinetic services/servers.</P>
+ * The simulator provides API to start and shutdown an instance of a simulator.  
+ * Applications may start as many instances of simulators as desired to simulate a 
+ * cluster of Kinetic devices.</P>
  * <p>
- * The boot-strap API for using the Kinetic client library is
- * <code>KineticClientFactory.createInstance(ClientConfiguration)</code>.</P>
- * <p>
- * Kinetic applications construct a new instance of <code>ClientConfiguration</code>
- * and set the appropriate configurations (such as server host/port) to the
- * configuration instance. Applications then invoke the static createInstance
- * method <code>KineticClientFactory.createInstance(ClientConfiguration)</code> to obtain a new
- * instance of KineticClient.</p>
- *
+ * A simulator can be instantiated with the provided constructor with an instance of <code>SimulatorConfiguration</code> 
+ * as its argument.</P>
+ * 
  */
-package kinetic.client;
-
+package kinetic.simulator;

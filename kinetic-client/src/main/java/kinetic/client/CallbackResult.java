@@ -27,7 +27,7 @@ import com.seagate.kinetic.common.lib.KineticMessage;
  * calls the {@link CallbackHandler#onSuccess(CallbackResult)} for each
  * successful asynchronous operation.
  * <p>
- * The Param Type <T> matches the corresponding return type for its synchronous
+ * The Param Type matches the corresponding return type for its synchronous
  * API variation. For example, a {@link KineticClient#putForced(Entry)} operation
  * would have a CallbackResult of type {@link Entry}.
  *
@@ -54,7 +54,7 @@ public interface CallbackResult<T> {
 	/**
 	 * Get callback result.
 	 * <p>
-	 * The Param Type <T> matches the corresponding return type for its
+	 * The Param Type matches the corresponding return type for its
 	 * synchronous API variation. For example, a
 	 * {@link KineticClient#putForced(Entry)} operation would have a
 	 * CallbackResult of type {@link Entry}.

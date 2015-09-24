@@ -24,7 +24,7 @@ package kinetic.admin;
  * A Limits contains maxKeySize, maxValueSize, maxVersionSize, maxTagSize,
  * maxConnections, maxOutstandingReadRequests, maxOutstandingWriteRequests,
  * maxMessageSize.
- * <p>
+ * </p>
  * 
  * @see KineticLog
  * @see KineticLogType
@@ -70,10 +70,10 @@ public class Limits {
     }
 
     /**
-     * Set the max key size field content of the limits.
+     * Set the max allowed key size.
      * 
-     * @param key
-     *            the content to be set to the max key size field.
+     * @param maxKeySize
+     *            the max allowed key size.
      */
     public void setMaxKeySize(int maxKeySize) {
         this.maxKeySize = maxKeySize;
@@ -89,29 +89,29 @@ public class Limits {
     }
 
     /**
-     * Set the max value size field content of the limits.
+     * Set the max allowed value size.
      * 
-     * @param key
-     *            the content to be set to the max value size field.
+     * @param maxValueSize
+     *            the max allowed value size.
      */
     public void setMaxValueSize(int maxValueSize) {
         this.maxValueSize = maxValueSize;
     }
 
     /**
-     * Get the value of max version size.
+     * Get max allowed version size.
      * 
-     * @return the content of the max version size field.
+     * @return max allowed version size.
      */
     public int getMaxVersionSize() {
         return maxVersionSize;
     }
 
     /**
-     * Set the max version size field content of the limits.
+     * Set the max allowed version size.
      * 
-     * @param key
-     *            the content to be set to the max version size field.
+     * @param maxVersionSize
+     *            the max allowed version size.
      */
     public void setMaxVersionSize(int maxVersionSize) {
         this.maxVersionSize = maxVersionSize;
@@ -127,29 +127,29 @@ public class Limits {
     }
 
     /**
-     * Set the max tag size field content of the limits.
+     * Set the max tag size.
      * 
-     * @param key
-     *            the content to be set to the max tag field.
+     * @param maxTagSize
+     *            the max tag size
      */
     public void setMaxTagSize(int maxTagSize) {
         this.maxTagSize = maxTagSize;
     }
 
     /**
-     * Get the value of max connections.
+     * Get max allowed concurrent connections.
      * 
-     * @return the content of the max connections field.
+     * @return max allowed concurrent connections
      */
     public int getMaxConnections() {
         return maxConnections;
     }
 
     /**
-     * Set the max connections field content of the limits.
+     * Set max allowed concurrent connections
      * 
-     * @param key
-     *            the content to be set to the max connections field.
+     * @param maxConnections
+     *            the max allowed concurrent connections
      */
     public void setMaxConnections(int maxConnections) {
         this.maxConnections = maxConnections;
@@ -165,69 +165,67 @@ public class Limits {
     }
 
     /**
-     * Set the max out standing read requests field content of the limits.
+     * Set the max allowed out standing read requests.
      * 
-     * @param key
-     *            the content to be set to the max out standing read requests
-     *            field.
+     * @param maxOutstandingReadRequests
+     *            the max allowed out standing read requests
      */
     public void setMaxOutstandingReadRequests(int maxOutstandingReadRequests) {
         this.maxOutstandingReadRequests = maxOutstandingReadRequests;
     }
 
     /**
-     * Get the value of max out standing write requests.
+     * Get max allowed out-standing write requests.
      * 
-     * @return the content of the max out standing write requests field.
+     * @return tmax allowed out-standing write requests.
      */
     public int getMaxOutstandingWriteRequests() {
         return maxOutstandingWriteRequests;
     }
 
     /**
-     * Set the max out standing write requests field content of the limits.
+     * Set max allowed out-standing write requests
      * 
-     * @param key
-     *            the content to be set to the max out standing write requests
-     *            field.
+     * @param maxOutstandingWriteRequests
+     *            max allowed out-standing write requests
      */
     public void setMaxOutstandingWriteRequests(int maxOutstandingWriteRequests) {
         this.maxOutstandingWriteRequests = maxOutstandingWriteRequests;
     }
 
     /**
-     * Get the value of max message size.
+     * Get max allowed message size.
      * 
-     * @return the content of the max message size.
+     * @return max allowed message size
      */
     public int getMaxMessageSize() {
         return maxMessageSize;
     }
 
     /**
-     * Set the max message size field content of the limits.
+     * Set the max allowed message size.
      * 
-     * @param key
-     *            the content to be set to the max message size field.
+     * @param maxMessageSize
+     *            tthe max allowed message size
      */
     public void setMaxMessageSize(int maxMessageSize) {
         this.maxMessageSize = maxMessageSize;
     }
     
     /**
-     * Get the value of max key range size.
+     * Get max allowed number of keys can be returned from getKeyRange.
      * 
-     * @return the content of the max key range size.
+     * @return max allowed number of keys can be returned from getKeyRange.
      */
     public int getMaxKeyRangeCount() {
         return maxKeyRangeCount;
     }
 
     /**
-     * Set the max key range size field content of the limits.
+     * Set max allowed number of keys can be returned from getKeyRange.
      * 
-     * @param key
-     *            the content to be set to the max key range size field.
+     * @param maxKeyRangeCount
+     *            max allowed number of keys can be returned from getKeyRange.
      */
     public void setMaxKeyRangeCount(int maxKeyRangeCount) {
         this.maxKeyRangeCount = maxKeyRangeCount;

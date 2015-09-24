@@ -526,6 +526,8 @@ public interface KineticClient extends GenericKineticClient {
      * @return a new instance of <code>BatchOperation</code> object.
      * 
      * @since protocol version 3.0.6
+     * 
+     * @throws KineticException if any internal error occurred.
      */
     public BatchOperation createBatchOperation() throws KineticException;
 

@@ -234,8 +234,8 @@ public interface KineticAdminClient extends KineticP2pClient {
     /**
      * Set cluster version with the specified version.
      * 
-     * @param newClusterVersion
-     * @throws KineticException
+     * @param newClusterVersion new cluster version to be set.
+     * @throws KineticException if any internal error occurred
      */
     public void setClusterVersion (long newClusterVersion) throws KineticException;
     

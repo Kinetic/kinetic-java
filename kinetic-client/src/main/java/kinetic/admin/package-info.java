@@ -17,20 +17,20 @@
  */
 
 /**
- * Kinetic Java Client API.
+ * Kinetic Java Admin API.
  * <p>
- * A Kinetic application uses the Java API provided in this package to interface with
- * Kinetic services/servers.</P>
+ * A Kinetic admin user uses the Java Admin API provided in this package to configure, 
+ * setup, and monitor Kinetic devices.</P>
  * <p>
- * The boot-strap API for using the Kinetic client library is
- * <code>KineticClientFactory.createInstance(ClientConfiguration)</code>.</P>
+ * The boot-strap API for using the Kinetic admin client library is
+ * <code>KineticAdminClientFactory.createInstance(AdminClientConfiguration)</code>.</P>
  * <p>
- * Kinetic applications construct a new instance of <code>ClientConfiguration</code>
+ * Kinetic admin applications construct a new instance of <code>AdminClientConfiguration</code>
  * and set the appropriate configurations (such as server host/port) to the
  * configuration instance. Applications then invoke the static createInstance
- * method <code>KineticClientFactory.createInstance(ClientConfiguration)</code> to obtain a new
- * instance of KineticClient.</p>
+ * method <code>KineticAdminClientFactory.createInstance(AdminClientConfiguration)</code> to obtain a new
+ * instance of KineticAdminClient.</p>
  *
  */
-package kinetic.client;
+package kinetic.admin;
 

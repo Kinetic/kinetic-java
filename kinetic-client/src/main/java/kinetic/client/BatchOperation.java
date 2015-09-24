@@ -5,7 +5,7 @@ package kinetic.client;
  * Kinetic client batch operation interface.
  * <p>
  * 
- * @auther James Hughes
+ * @author James Hughes
  * @author chiaming
  *
  */

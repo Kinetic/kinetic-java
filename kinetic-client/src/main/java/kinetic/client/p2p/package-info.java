@@ -17,20 +17,19 @@
  */
 
 /**
- * Kinetic Java Client API.
+ * Kinetic Peer to Peer Operations API. 
  * <p>
- * A Kinetic application uses the Java API provided in this package to interface with
- * Kinetic services/servers.</P>
+ * A Kinetic application uses the peer to peer API provided in this package to interface with
+ * Kinetic services for peer to peer operations.</P>
  * <p>
- * The boot-strap API for using the Kinetic client library is
- * <code>KineticClientFactory.createInstance(ClientConfiguration)</code>.</P>
+ * The boot-strap API for using the peer to peer client library is
+ * <code>KineticP2PClientFactory.createInstance(ClientConfiguration)</code>.</P>
  * <p>
  * Kinetic applications construct a new instance of <code>ClientConfiguration</code>
  * and set the appropriate configurations (such as server host/port) to the
  * configuration instance. Applications then invoke the static createInstance
- * method <code>KineticClientFactory.createInstance(ClientConfiguration)</code> to obtain a new
- * instance of KineticClient.</p>
+ * method <code>KineticP2PClientFactory.createInstance(ClientConfiguration)</code> to obtain a new
+ * instance of KineticP2pClient.</p>
  *
  */
-package kinetic.client;
-
+package kinetic.client.p2p;
