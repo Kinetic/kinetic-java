@@ -68,6 +68,9 @@ public class MemoryStore implements Store<ByteString, ByteString, KVValue> {
 
     // server config
     private SimulatorConfiguration config = null;
+    
+    // persist folder
+    private String persistFolder = null;
 
     /**
      * default constructor
@@ -348,7 +351,7 @@ public class MemoryStore implements Store<ByteString, ByteString, KVValue> {
         }
 
         // persist home
-        String persistFolder = kineticHome
+        persistFolder = kineticHome
                 + File.separator
                 + config.getProperty(SimulatorConfiguration.PERSIST_HOME,
                         "memory");
@@ -418,6 +421,11 @@ public class MemoryStore implements Store<ByteString, ByteString, KVValue> {
             throws KVStoreException {
         // no op
         ;
+    }
+    
+    @Override
+    public String getPersistStorePath() throws KVStoreException {
+        return this.persistFolder;
     }
 
 }
