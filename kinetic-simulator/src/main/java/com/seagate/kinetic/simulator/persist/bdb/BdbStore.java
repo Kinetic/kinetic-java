@@ -33,7 +33,7 @@ import com.seagate.kinetic.simulator.persist.PersistOption;
 import com.seagate.kinetic.simulator.persist.Store;
 
 /**
- * implement store
+ * Implement Kinetic Store interface.
  *
  * XXX chiaming 12/24/2013: support PersistOption
  *
@@ -161,6 +161,11 @@ public class BdbStore implements Store<ByteString, ByteString, KVValue> {
             throws KVStoreException {
         // TODO Auto-generated method stub
         logger.warning("method is not implemented for bdb");
+    }
+    
+    @Override
+    public String getPersistStorePath() throws KVStoreException {
+        return this.kvStore.getPersistStorePath();
     }
 
 }

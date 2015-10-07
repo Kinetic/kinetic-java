@@ -59,6 +59,8 @@ public class KyotoCabinet implements Store<ByteString, ByteString, KVValue> {
             .getLogger(KyotoCabinet.class.getName());
 
     private DB db = null;
+    
+    private String persistFolder = null;
 
     public KyotoCabinet() {
         ;
@@ -81,7 +83,7 @@ public class KyotoCabinet implements Store<ByteString, ByteString, KVValue> {
                     + ", created=" + created);
         }
 
-        String persistFolder = kineticHome
+        persistFolder = kineticHome
                 + File.separator
                 + config.getProperty(SimulatorConfiguration.PERSIST_HOME,
                         "kyoto");
@@ -494,6 +496,11 @@ public class KyotoCabinet implements Store<ByteString, ByteString, KVValue> {
     public void compactRange(ByteString startKey, ByteString endKey)
             throws KVStoreException {
         logger.warning("method is not yet implemented.");
+    }
+    
+    @Override
+    public String getPersistStorePath() throws KVStoreException {
+        return this.persistFolder;
     }
 
 }

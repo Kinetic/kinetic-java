@@ -80,6 +80,8 @@ public class LevelDbStore implements Store<ByteString, ByteString, KVValue> {
     // async write option
     private static final WriteOptions asyncWriteOption = new WriteOptions()
             .sync(false);
+    
+    private String persistFolder = null;
 
     // default no-arg constructor
     public LevelDbStore() {
@@ -105,14 +107,15 @@ public class LevelDbStore implements Store<ByteString, ByteString, KVValue> {
                     + ", created=" + created);
         }
 
-        String persistFolder = kineticHome
+        // calculate persist folder
+        persistFolder = kineticHome
                 + File.separator
                 + config.getProperty(SimulatorConfiguration.PERSIST_HOME,
                         "leveldb");
 
         File f = new File(persistFolder);
 
-        logger.info("Database exists: " + f.exists() + ", name="
+        logger.info("Database exists: " + f.exists() + ", persist folder ="
                 + persistFolder);
 
         if (f.exists() == false) {
@@ -778,6 +781,11 @@ public class LevelDbStore implements Store<ByteString, ByteString, KVValue> {
         } catch (Exception e) {
             throw new KVStoreException(e.getMessage());
         }
+    }
+
+	@Override
+    public String getPersistStorePath() throws KVStoreException {
+        return this.persistFolder;
     }
 
 }

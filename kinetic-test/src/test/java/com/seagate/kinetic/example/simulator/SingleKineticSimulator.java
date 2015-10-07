@@ -35,15 +35,30 @@ import kinetic.simulator.SimulatorConfiguration;
  */
 public class SingleKineticSimulator {
 
-	public static void main(String[] args) {
-		SimulatorConfiguration config = new SimulatorConfiguration();
-		KineticSimulator simulator = new KineticSimulator(config);
+    public static void main(String[] args) {
 
-		System.out.println("Example simulator started on port="
-				+ simulator.getServerConfiguration().getPort()
-				+ ", SSL/TLS port="
-				+ simulator.getServerConfiguration().getSslPort());
-	}
+        SimulatorConfiguration serverConfig = new SimulatorConfiguration();
 
+        int port = 8123;
+
+        if (args.length > 0) {
+            port = Integer.parseInt(args[0]);
+        }
+
+        serverConfig.setPort(port);
+
+        if (args.length > 1) {
+            serverConfig.setProperty(SimulatorConfiguration.KINETIC_HOME, args[1]);
+        }
+
+        if (args.length > 2) {
+            serverConfig.setSslPort(Integer.parseInt(args[2]));
+        }
+
+        KineticSimulator simulator = new KineticSimulator(serverConfig);
+
+        System.out.println("Example simulator started on port=" + simulator.getServerConfiguration().getPort()
+                + ", SSL/TLS port=" + simulator.getServerConfiguration().getSslPort());
+    }
 
 }

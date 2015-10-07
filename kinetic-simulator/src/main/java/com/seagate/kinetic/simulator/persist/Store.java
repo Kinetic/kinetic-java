@@ -29,10 +29,13 @@ import com.seagate.kinetic.simulator.internal.KVStoreException;
 
 /**
  *
- * DB Application (Raw) Interface.
- *
+ * Kinetic persist store (Raw) Interface.
+ * 
+ * @see StoreFactory 
+ * 
  * @author James Hughes.
  * @author Chenchong Li
+ * @author Chiaming Yang
  */
 public interface Store<K, O, V> {
 
@@ -257,4 +260,13 @@ public interface Store<K, O, V> {
      *            if null then compaction ends at the last key
      */
     public void compactRange(K startKey, K endKey) throws KVStoreException;
+    
+    /**
+     * Get the absolute path of the persist store.
+     * 
+     * @return the absolute path of the persist store
+     * 
+     * @throws KVStoreException if any internal error occurred.
+     */
+    public String getPersistStorePath() throws KVStoreException;
 }

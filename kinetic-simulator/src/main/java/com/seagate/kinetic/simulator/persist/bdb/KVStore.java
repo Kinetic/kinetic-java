@@ -61,6 +61,8 @@ public final class KVStore {
 	private Database myDatabase = null;
 	private final DatabaseConfig dbConfig = new DatabaseConfig();
 	private String kineticDbName = null;
+	
+	private String persistFolder = null;
 
 	static DatabaseEntry dbe(String s) {
 		ByteString bs = ByteString.copyFromUtf8(s);
@@ -98,7 +100,7 @@ public final class KVStore {
 					+ ", created=" + created);
 		}
 
-		String persistFolder = kineticHome
+		persistFolder = kineticHome
 				+ File.separator
 				+ config.getProperty(SimulatorConfiguration.PERSIST_HOME, "bdb");
 
@@ -353,5 +355,16 @@ public final class KVStore {
 			throw new KVStoreException("DB internal exception");
 		}
 	}
+	
+    /**
+     * Get persist store path.
+     * 
+     * @return persist store path.
+     * @throws KVStoreException
+     *             if any internal error occurred.
+     */
+    public String getPersistStorePath() throws KVStoreException {
+        return this.persistFolder;
+    }
 
 }

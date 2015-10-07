@@ -904,5 +904,24 @@ public class SimulatorEngine implements MessageService {
     public boolean getDeviceLocked() {
         return this.deviceLocked;
     }
+    
+    /**
+     * Get the absolute path of the persist store.
+     * 
+     * @return the absolute path of the persist store
+     * 
+     */
+    public String getPersistStorePath() {
+
+        String path = "/";
+
+        try {
+            path = this.store.getPersistStorePath();
+        } catch (KVStoreException e) {
+            logger.log(Level.WARNING, e.getMessage(), e);
+        }
+
+        return path;
+    }
 
 }

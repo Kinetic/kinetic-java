@@ -108,7 +108,7 @@ public class GetLogHandler {
 
             switch (type) {
             case CAPACITIES:
-                Capacity capacity = CapacityUtil.getCapacity();
+                Capacity capacity = CapacityUtil.getCapacity(engine);
                 getLog.setCapacity(capacity);
                 break;
             case UTILIZATIONS:

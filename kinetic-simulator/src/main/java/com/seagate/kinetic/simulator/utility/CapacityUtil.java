@@ -24,6 +24,7 @@ import java.io.File;
 import java.util.logging.Logger;
 
 import com.seagate.kinetic.proto.Kinetic.Command.GetLog.Capacity;
+import com.seagate.kinetic.simulator.internal.SimulatorEngine;
 
 /**
  *
@@ -42,12 +43,15 @@ public abstract class CapacityUtil {
 
     //private static long MB = 1000000;
 
-    public static Capacity getCapacity() {
+    public static Capacity getCapacity(SimulatorEngine engine) {
 
         Capacity capacity = null;
 
         try {
-            File file = new File("/");
+            // get store path
+            String storePath = engine.getPersistStorePath();
+        	
+            File file = new File(storePath);
 
             long total = file.getTotalSpace();
 
