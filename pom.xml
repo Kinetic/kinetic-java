@@ -5,8 +5,8 @@
 	<packaging>pom</packaging>
 	<version>0.8.0.5-SNAPSHOT</version>
 	<name>Kinetic</name>
-	<description>Seagate kinetic open source storage platform</description>
-	<url>https://github.com/Seagate/kinetic-java</url>
+	<description>Kinetic open source storage platform</description>
+	<url>https://github.com/Kinetic/kinetic-java</url>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<maven.test.excludes />
@@ -20,16 +20,16 @@
 
 	<licenses>
 		<license>
-			<name>GPL2.0/LGPL2.1</name>
-			<url>https://github.com/Seagate/kinetic-java/tree/master/LICENSES</url>
+			<name>Mozilla Public License</name>
+			<url>https://github.com/Kinetic/kinetic-java/tree/master/LICENSES</url>
 			<distribution>repo</distribution>
 		</license>
 	</licenses>
 
 	<scm>
-		<developerConnection>scm:git:git@github.com:Seagate/kinetic-java.git</developerConnection>
-		<connection>scm:git:git@github.com:Seagate/kinetic-java.git</connection>
-		<url>https://github.com/Seagate/kinetic-java</url>
+		<developerConnection>scm:git:git@github.com:Kinetic/kinetic-java.git</developerConnection>
+		<connection>scm:git:git@github.com:Kinetic/kinetic-java.git</connection>
+		<url>https://github.com/Kinetic/kinetic-java</url>
 	</scm>
 
 	<developers>
