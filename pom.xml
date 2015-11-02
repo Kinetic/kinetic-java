@@ -3,7 +3,7 @@
 	<groupId>com.seagate.kinetic</groupId>
 	<artifactId>kinetic-java</artifactId>
 	<packaging>pom</packaging>
-	<version>0.8.0.5-SNAPSHOT</version>
+	<version>0.8.0.5</version>
 	<name>Kinetic</name>
 	<description>Kinetic open source storage platform</description>
 	<url>https://github.com/Kinetic/kinetic-java</url>
