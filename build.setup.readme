@@ -1,6 +1,6 @@
 Prerequisite to build kinetic-java projects.
 
-The kinetic.proto file is hosted on https://github.com/Seagate/kinetic-protocol.git. 
+The kinetic.proto file is hosted on https://github.com/Kinetic/kinetic-protocol.git. 
 
 The kinetic.proto file is required to be down-loaded to your local development environment and compiled into Java files 
 if you like to change the Kinetic protocol.  
@@ -17,7 +17,7 @@ https://code.google.com/p/protobuf/
 
 https://developers.google.com/protocol-buffers/docs/javatutorial
 
-2. Obtain a copy of kinetic.proto from https://github.com/Seagate/kinetic-protocol.git repository.  
+2. Obtain a copy of kinetic.proto from https://github.com/Kinetic/kinetic-protocol.git repository.  
 
 "syncProtoFromRepo.sh" script is provided to facilitate the work:
 

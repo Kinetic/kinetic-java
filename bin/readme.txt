@@ -342,7 +342,7 @@ Usage of Kinetic Admin API script
 
 Usage of proto scripts
 ===========================
-1. Sync protocol file from Kinetic-Protocol github repo [https://github.com/Seagate/Kinetic-Protocol.git] to local.
+1. Sync protocol file from Kinetic-Protocol github repo [https://github.com/Kinetic/Kinetic-Protocol.git] to local.
    $sh syncProtoFromRepo.sh  to get the latest version.
    $sh syncProtoFromRepo.sh $commitHash to get the commit hash version. 
    For example,

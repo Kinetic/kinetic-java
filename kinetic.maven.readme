@@ -2,7 +2,7 @@ Maven command line for kinetic
 ==================================
 
 NOTE: please verify all the required "Suggested Development Environments" are satisfied as stated at the link (README.md):
-https://github.com/Seagate/kinetic-java 
+https://github.com/Kinetic/kinetic-java 
 
 NOTE: Please also verify that JAVA_HOME is defined in your development environment:
 http://maven.apache.org/download.cgi

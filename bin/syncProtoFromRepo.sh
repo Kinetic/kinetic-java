@@ -3,7 +3,7 @@ BASE_DIR=`dirname "$0"`/..
 BASE_DIR=`cd "$BASE_DIR"; pwd`
 #echo "BASE_DIR=$BASE_DIR"
 
-PROTO_REPO_URL=https://github.com/Seagate/Kinetic-Protocol.git
+PROTO_REPO_URL=https://github.com/Kinetic/Kinetic-Protocol.git
 PROTO_FILE=$BASE_DIR/kinetic-common/src/main/java/com/seagate/kinetic/proto/kinetic.proto
 CLONE_DIR=$BASE_DIR/bin/Kinetic-Protocol
 PROTO_RELEASE_VERSION=3.0.5
