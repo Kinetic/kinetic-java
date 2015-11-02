@@ -31,10 +31,10 @@ kinetic-java provides the Java API and Simulator for the Kinetic Open Storage Pl
 [https://developers.seagate.com/display/KV/Kinetic+Open+Storage+Documentation+Wiki] (https://developers.seagate.com/display/KV/Kinetic+Open+Storage+Documentation+Wiki)  
  
 Client bootstrap class: 
-[https://github.com/Seagate/kinetic-java/blob/master/kinetic-client/src/main/java/kinetic/client/KineticClientFactory.java] (https://github.com/Seagate/kinetic-java/blob/master/kinetic-client/src/main/java/kinetic/client/KineticClientFactory.java)
+[https://github.com/Kinetic/kinetic-java/blob/master/kinetic-client/src/main/java/kinetic/client/KineticClientFactory.java] (https://github.com/Kinetic/kinetic-java/blob/master/kinetic-client/src/main/java/kinetic/client/KineticClientFactory.java)
 
 Simulator bootstrap class:
-[https://github.com/Seagate/kinetic-java/blob/master/kinetic-simulator/src/main/java/kinetic/simulator/KineticSimulator.java](https://github.com/Seagate/kinetic-java/blob/master/kinetic-simulator/src/main/java/kinetic/simulator/KineticSimulator.java)
+[https://github.com/Kinetic/kinetic-java/blob/master/kinetic-simulator/src/main/java/kinetic/simulator/KineticSimulator.java](https://github.com/Kinetic/kinetic-java/blob/master/kinetic-simulator/src/main/java/kinetic/simulator/KineticSimulator.java)
 
 Getting Started With Kinetic drives
 ===================================
@@ -45,7 +45,7 @@ Getting Started With Kinetic drives
 
 Getting Started With Development
 ================================
-1. Clone the code: `git clone https://github.com/Seagate/kinetic-java.git`
+1. Clone the code: `git clone https://github.com/Kinetic/kinetic-java.git`
 1. Build the runtime jar files as stated in Getting Started with Simulator below
 1. Run the integration tests against the Java Simulator: `mvn test -DargLine="-Xmx500M"`
 1. Run the integration tests but exclude specific files: `mvn test -Dmaven.test.excludes="**/File.java,**/OtherFile.java"
@@ -113,7 +113,7 @@ Examples are located at the following directory.
 
 Kinetic Javadoc location
 =================================
-To browse Javadoc: [http://seagate.github.io/kinetic-java/] (http://seagate.github.io/kinetic-java/)
+To browse Javadoc: [http://kinetic.github.io/kinetic-java/] (http://kinetic.github.io/kinetic-java/)
 
 To generate Javadoc:
 
@@ -125,7 +125,7 @@ To generate Javadoc:
 
 Latest Kinetic release, protocol dependency, and runtime dependencies on maven central
 =================================
-* kinetic-releases: [https://github.com/Seagate/kinetic-java/releases] (https://github.com/Seagate/kinetic-java/releases)
+* kinetic-releases: [https://github.com/Kinetic/kinetic-java/releases] (https://github.com/Kinetic/kinetic-java/releases)
 
 Run smoke test against simulator or kinetic drive
 ==================================
