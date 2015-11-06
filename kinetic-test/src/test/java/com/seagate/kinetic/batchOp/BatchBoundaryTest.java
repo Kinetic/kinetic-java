@@ -226,6 +226,12 @@ public class BatchBoundaryTest extends IntegrationTestCase {
 			}
 		} catch (KineticException e) {
 			assertTrue(e.getMessage() != null);
+		} finally {
+		    try {
+                kineticClient.close();
+            } catch (KineticException e) {
+                ;
+            }
 		}
 	}
 
@@ -243,8 +249,8 @@ public class BatchBoundaryTest extends IntegrationTestCase {
 	@Test(dataProvider = "transportProtocolOptions", enabled = true, priority = 2)
 	public void testBatchOperation_OperationExceedTheMaxinumNumPerBatch_ThrowException(
 			String clientName) {
-		KineticClient kineticClient = creatClient(clientName);
-		assertTrue(kineticClient != null);
+		//KineticClient kineticClient = creatClient(clientName);
+		//assertTrue(kineticClient != null);
 
 		BatchOperation batch = null;
 		try {

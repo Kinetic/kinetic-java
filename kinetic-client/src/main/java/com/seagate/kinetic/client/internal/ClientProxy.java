@@ -480,9 +480,11 @@ public class ClientProxy {
         
         try {
 
-            // finalizeHeader(kmreq);
-
-            kmresp = this.iohandler.getMessageHandler().write(kmreq);
+            // require to obtain lock to prevent possible dead-lock
+        	// such as if connection close is triggered from remote.
+        	synchronized (this) {
+        		kmresp = this.iohandler.getMessageHandler().write(kmreq);
+        	}
 
             // check if we do received a response
             if (kmresp == null) {
@@ -533,14 +535,6 @@ public class ClientProxy {
             throws KineticException {
 
         try {
-
-            // Message.Builder message = (Builder) im.getMessage();
-
-            // finalize and fill the required header fields for the message
-            // finalizeHeader(kineticMessage);
-
-            // get request message to send
-            // Message request = message.build();
 
             // create context message for the async operation
             CallbackContext<T> context = new CallbackContext<T>(handler);
