@@ -103,8 +103,7 @@ public class MessageHandler implements ClientMessageService, Runnable {
 		this.asyncQueuedSize = this.client.getConfiguration()
 				.getAsyncQueueSize();
 
-		this.requestTimeout = this.client.getConfiguration()
-				.getRequestTimeoutMillis();
+		this.requestTimeout = this.client.getConfiguration().getRequestTimeoutMillis();
 	}
 	
 
@@ -300,11 +299,12 @@ public class MessageHandler implements ClientMessageService, Runnable {
                 this.doWrite(message);
             }
 
-			respond = lbq.poll(this.requestTimeout, TimeUnit.MILLISECONDS);
-
-			if (this.isClosed) {
+            if (this.isClosed) {
 				throw new IOException("Connection is closed.");
+			} else {
+				respond = lbq.poll(this.requestTimeout, TimeUnit.MILLISECONDS);
 			}
+			
 		} finally {
 			this.ackmap.remove(seq);
 		}
