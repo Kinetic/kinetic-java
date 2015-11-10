@@ -37,8 +37,8 @@ public class BatchBoundaryTest extends IntegrationTestCase {
 	private final int MAX_VALUE_SIZE = 1024 * 1024;
 	private final int MAX_KEY_SIZE = 4096;
 	private final int MAX_VERSION_SIZE = 2048;
-	private final int MAX_BATCH_OP_NUM = 15;
-	private final int MAX_BATCH_PER_CONNECTION_NUM = 5;
+	private final int MAX_BATCH_OP_NUM = 5;
+	private final int MAX_BATCH_PER_CONNECTION_NUM = 15;
 
 	@Test(dataProvider = "transportProtocolOptions")
 	public void testBatchOperation_PutAndDeleteForced_PutExceedMaximumKeySizeFailed(
@@ -206,7 +206,7 @@ public class BatchBoundaryTest extends IntegrationTestCase {
 	}
 
 	@Test(dataProvider = "transportProtocolOptions", enabled = true, priority = 1)
-	public void testBatchOperation_BatchCountExceedTheMaxinumNum_ThrowException(
+	public void testBatchOperation_BatchCountExceedTheMaximumNum_ThrowException(
 			String clientName) {
 		KineticClient kineticClient = creatClient(clientName);
 		assertTrue(kineticClient != null);
@@ -219,13 +219,19 @@ public class BatchBoundaryTest extends IntegrationTestCase {
 			Assert.fail("delete entry failed. " + e1.getMessage());
 		}
 
-		BatchOperation batch[] = new BatchOperation[MAX_BATCH_PER_CONNECTION_NUM + 1];
+		BatchOperation batch[] = new BatchOperation[MAX_BATCH_OP_NUM + 1];
 		try {
-			for (int i = 0; i < MAX_BATCH_PER_CONNECTION_NUM + 1; i++) {
+			for (int i = 0; i < MAX_BATCH_OP_NUM + 1; i++) {
 				batch[i] = kineticClient.createBatchOperation();
 			}
 		} catch (KineticException e) {
 			assertTrue(e.getMessage() != null);
+		} finally {
+		    try {
+                kineticClient.close();
+            } catch (KineticException e) {
+                ;
+            }
 		}
 	}
 
@@ -243,15 +249,103 @@ public class BatchBoundaryTest extends IntegrationTestCase {
 	@Test(dataProvider = "transportProtocolOptions", enabled = true, priority = 2)
 	public void testBatchOperation_OperationExceedTheMaxinumNumPerBatch_ThrowException(
 			String clientName) {
+		//KineticClient kineticClient = creatClient(clientName);
+		//assertTrue(kineticClient != null);
+
+		BatchOperation batch = null;
+		try {
+			batch = getClient(clientName).createBatchOperation();
+		} catch (KineticException e) {
+			Assert.fail("Create batch operation throw exception. "
+					+ e.getMessage());
+		}
+
+		try {
+			for (int j = 0; j < MAX_BATCH_PER_CONNECTION_NUM + 1; j++) {
+				batch.putForced(new Entry(toByteArray("foo" + j),
+						toByteArray("value" + j)));
+			}
+
+		} catch (KineticException e) {
+			Assert.fail("Put entry throw exception. " + e.getMessage());
+		}
+
+		try {
+			batch.commit();
+		} catch (KineticException e) {
+			assertTrue(e.getMessage() != null);
+		}
+	}
+
+	@Test(dataProvider = "transportProtocolOptions", enabled = true, priority = 2)
+	public void testBatchOperation_BatchQueueCheck_Success(String clientName) {
 		KineticClient kineticClient = creatClient(clientName);
 		assertTrue(kineticClient != null);
 
+		BatchOperation batch[] = new BatchOperation[MAX_BATCH_OP_NUM + 1];
 		try {
 			for (int i = 0; i < MAX_BATCH_OP_NUM + 1; i++) {
-				kineticClient.deleteForced(toByteArray("foo" + i));
+				batch[i] = kineticClient.createBatchOperation();
 			}
 		} catch (KineticException e) {
-			Assert.fail("Clean entry failed. " + e.getMessage());
+			assertTrue(e.getMessage() != null);
+			try {
+				kineticClient.close();
+			} catch (KineticException e1) {
+				Assert.fail("client close throw exception: " + e1.getMessage());
+			}
+		}
+
+		BatchOperation batchSecond = null;
+		KineticClient kineticClientSecond = creatClient(clientName);
+		try {
+			batchSecond = kineticClientSecond.createBatchOperation();
+		} catch (KineticException e) {
+			Assert.fail("Create batch operation throw exception. "
+					+ e.getMessage());
+		}
+
+		try {
+			for (int j = 0; j < MAX_BATCH_PER_CONNECTION_NUM; j++) {
+				batchSecond.putForced(new Entry(toByteArray("foo" + j),
+						toByteArray("value" + j)));
+			}
+
+		} catch (KineticException e) {
+			Assert.fail("Put entry throw exception. " + e.getMessage());
+		}
+
+		try {
+			batchSecond.commit();
+		} catch (KineticException e) {
+			Assert.fail("Second batch operation failed. " + e.getMessage());
+		}
+	}
+
+	@Test(dataProvider = "transportProtocolOptions", enabled = true, priority = 2)
+	public void testBatchOperation_BatchQueueCheck_ThrowException(
+			String clientName) {
+		KineticClient kineticClient = creatClient(clientName);
+		assertTrue(kineticClient != null);
+
+		BatchOperation batch[] = new BatchOperation[MAX_BATCH_OP_NUM + 1];
+		try {
+			for (int i = 0; i < MAX_BATCH_OP_NUM + 1; i++) {
+				batch[i] = kineticClient.createBatchOperation();
+			}
+		} catch (KineticException e) {
+			assertTrue(e.getMessage() != null);
+			try {
+				kineticClient.createBatchOperation();
+			} catch (KineticException e1) {
+				assertTrue(e1.getMessage() != null);
+				try {
+					kineticClient.close();
+				} catch (KineticException e2) {
+					Assert.fail("client close throw exception: "
+							+ e2.getMessage());
+				}
+			}
 		}
 	}
 

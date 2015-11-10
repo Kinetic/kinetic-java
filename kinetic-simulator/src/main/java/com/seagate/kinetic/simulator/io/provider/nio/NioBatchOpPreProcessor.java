@@ -20,6 +20,7 @@ import io.netty.channel.ChannelHandlerContext;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
@@ -327,5 +328,25 @@ public class NioBatchOpPreProcessor {
         kineticMessage.setCommand(commandBuilder);
 
         return kineticMessage;
+    }
+    
+    /**
+     * remove batches from this connection.
+     * 
+     * @param km kinetic message.
+     */
+    public static void cleanUpConnection (long cid) {
+        
+        // connection id
+        String keyPrefix = String.valueOf(cid);
+        // batch keys
+        Set <String> keys = batchMap.keySet();
+        
+        // remove matched connection ids
+        for (String key: keys) {    
+            if (key.startsWith(keyPrefix)) {
+                batchMap.remove(key);
+            }
+        }
     }
 }

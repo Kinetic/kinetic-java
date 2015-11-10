@@ -186,6 +186,9 @@ public class NioMessageServiceHandler extends
         // remove connection info of the channel handler context from conn info
         // map
         ConnectionInfo info = SimulatorEngine.removeConnectionInfo(ctx);
+        
+        // remove batches in batch queue
+        NioBatchOpPreProcessor.cleanUpConnection(info.getConnectionId());
 
         logger.info("connection info is removed, id=" + info.getConnectionId()
                 + ", is secure channel=" + this.isSecureChannel);
