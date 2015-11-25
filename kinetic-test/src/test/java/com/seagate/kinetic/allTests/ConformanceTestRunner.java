@@ -50,6 +50,10 @@ public class ConformanceTestRunner {
                 "com.seagate.kinetic.concurrent.KineticClientConcurrentTest"));
         classes.add(new XmlClass(
                 "com.seagate.kinetic.concurrent.KineticPutConcurrentTest"));
+        classes.add(new XmlClass(
+                "com.seagate.kinetic.batchOp.BatchBasicAPITest"));
+        classes.add(new XmlClass(
+                "com.seagate.kinetic.batchOp.BatchBoundaryTest"));
         test.setXmlClasses(classes);
 
         List<XmlSuite> suites = new ArrayList<XmlSuite>();

@@ -3079,7 +3079,7 @@ public class KineticBoundaryTest extends IntegrationTestCase {
      * @throws KineticException
      *             if any internal error occurred.
      */
-    @Test(dataProvider = "transportProtocolOptions")
+    @Test(dataProvider = "transportProtocolOptions", enabled = false)
     public void testGetKeyRange_ReturnsFirstNKeysWithRangeRole(String clientName)
             throws KineticException {
         List<Entry> listEntry = new ArrayList<Entry>();
@@ -3158,7 +3158,7 @@ public class KineticBoundaryTest extends IntegrationTestCase {
      * @throws KineticException
      *             if any internal error occurred.
      */
-    @Test(dataProvider = "transportProtocolOptions")
+    @Test(dataProvider = "transportProtocolOptions", enabled = false)
     public void testGetKeyRangeReversed_ReturnsLastNKeysWithRangeRole(
             String clientName) throws KineticException {
         List<Entry> listEntry = new ArrayList<Entry>();
