@@ -94,6 +94,8 @@ public class KineticAdminTest extends IntegrationTestCase {
     private final byte[] INIT_VALUE = toByteArray("0");
     private final byte[] INIT_VERSION = toByteArray("0");
     private final long DEFAULT_CLUSTER_VERSION = 0;
+    private String oldPin = System.getProperty("OLD_PIN", "");
+    private String newPin = System.getProperty("NEW_PIN", "123");
 
     /**
      * Test setup API, erase data in simulator/drive. The result should be true.
@@ -115,7 +117,7 @@ public class KineticAdminTest extends IntegrationTestCase {
         client.put(new Entry(toByteArray("key"), toByteArray("value"),
                 entryMetadata), toByteArray("0"));
 
-        instantErase("", "123", getAdminClient());
+        instantErase(oldPin, newPin, getAdminClient());
 
         assertNull(client.get("key".getBytes()));
 
@@ -1581,7 +1583,7 @@ public class KineticAdminTest extends IntegrationTestCase {
             getAdminClient().setAcl(acls);
             Assert.fail("should throw exception.");
         } catch (KineticException e1) {
-            assertTrue(e1.getMessage().contains("Paramter Exception"));
+            assertTrue(e1.getMessage() != null);
         }
 
         logger.info(this.testEndInfo());
@@ -1675,18 +1677,18 @@ public class KineticAdminTest extends IntegrationTestCase {
      */
     @Test
     public void testSetSecurity_setErasePin() {
-        String erasePin = "erasePin";
+        String erasePin = newPin;
         byte[] erasePinB = toByteArray(erasePin);
 
         try {
-            getAdminClient().setErasePin(toByteArray(""), erasePinB);
+            getAdminClient().setErasePin(toByteArray(oldPin), erasePinB);
         } catch (KineticException e) {
             Assert.fail("Set erase pin throw exception" + e.getMessage());
         }
 
         // reset pin
         try {
-            getAdminClient().setErasePin(erasePinB, toByteArray(""));
+            getAdminClient().setErasePin(erasePinB, toByteArray(oldPin));
         } catch (KineticException e) {
             Assert.fail("instant erase throw exception" + e.getMessage());
         }
@@ -1703,7 +1705,7 @@ public class KineticAdminTest extends IntegrationTestCase {
         String oldErasePin = "oldErasePin";
         byte[] oldErasePinB = toByteArray(oldErasePin);
         try {
-            getAdminClient().setErasePin(toByteArray(""), oldErasePinB);
+            getAdminClient().setErasePin(toByteArray(oldPin), oldErasePinB);
         } catch (KineticException e) {
             Assert.fail("Change erase pin throw exception" + e.getMessage());
         }
@@ -1718,7 +1720,7 @@ public class KineticAdminTest extends IntegrationTestCase {
 
         // erase pin
         try {
-            getAdminClient().setErasePin(newErasePinB, toByteArray(""));
+            getAdminClient().setErasePin(newErasePinB, toByteArray(oldPin));
         } catch (KineticException e) {
             Assert.fail("instant erase throw exception" + e.getMessage());
         }
@@ -1840,20 +1842,20 @@ public class KineticAdminTest extends IntegrationTestCase {
      */
     @Test
     public void testSetSecurity_setLockPin() {
-        String lockPin = "123";
+        String lockPin = newPin;
         byte[] lockPinB = toByteArray(lockPin);
 
         try {
-            getAdminClient().setLockPin(toByteArray(""), lockPinB);
+            getAdminClient().setLockPin(toByteArray(oldPin), lockPinB);
         } catch (KineticException e) {
             Assert.fail("Set erase pin throw exception" + e.getMessage());
         }
 
         // erase pin
         try {
-            getAdminClient().setLockPin(lockPinB, toByteArray(""));
+            getAdminClient().setLockPin(lockPinB, toByteArray(oldPin));
         } catch (KineticException e) {
-            Assert.fail("instant erase throw exception" + e.getMessage());
+            Assert.fail("erase pin throw exception" + e.getMessage());
         }
 
         logger.info(this.testEndInfo());
@@ -1868,7 +1870,7 @@ public class KineticAdminTest extends IntegrationTestCase {
         String oldLockPin = "123";
         byte[] oldLockPinB = toByteArray(oldLockPin);
         try {
-            getAdminClient().setLockPin(toByteArray(""), oldLockPinB);
+            getAdminClient().setLockPin(toByteArray(oldPin), oldLockPinB);
         } catch (KineticException e) {
             Assert.fail("Change lock pin throw exception" + e.getMessage());
         }
@@ -1883,9 +1885,9 @@ public class KineticAdminTest extends IntegrationTestCase {
 
         // erase
         try {
-            getAdminClient().setLockPin(newLockPinB, toByteArray(""));
+            getAdminClient().setLockPin(newLockPinB, toByteArray(oldPin));
         } catch (KineticException e) {
-            Assert.fail("instant erase throw exception" + e.getMessage());
+            Assert.fail("reset lock pin throw exception" + e.getMessage());
         }
 
         logger.info(this.testEndInfo());
@@ -2053,7 +2055,7 @@ public class KineticAdminTest extends IntegrationTestCase {
         // set a lock pin
         byte[] lockPinB = toByteArray("123");
         try {
-            getAdminClient().setLockPin(toByteArray(""), lockPinB);
+            getAdminClient().setLockPin(toByteArray(oldPin), lockPinB);
         } catch (KineticException e1) {
             Assert.fail("set lock pin throw exception: " + e1.getMessage());
         }
@@ -2076,7 +2078,7 @@ public class KineticAdminTest extends IntegrationTestCase {
 
         // reset lock pin
         try {
-            getAdminClient().setLockPin(lockPinB, toByteArray(""));
+            getAdminClient().setLockPin(lockPinB, toByteArray(oldPin));
         } catch (KineticException e) {
             Assert.fail("reset lock pin throw exception" + e.getMessage());
         }
@@ -2127,7 +2129,7 @@ public class KineticAdminTest extends IntegrationTestCase {
         // set a lock pin
         byte[] lockPinB = toByteArray("123");
         try {
-            getAdminClient().setLockPin(toByteArray(""), lockPinB);
+            getAdminClient().setLockPin(toByteArray(oldPin), lockPinB);
         } catch (KineticException e1) {
             Assert.fail("set lock pin throw exception: " + e1.getMessage());
         }
@@ -2155,7 +2157,7 @@ public class KineticAdminTest extends IntegrationTestCase {
 
         // reset lock pin
         try {
-            getAdminClient().setLockPin(lockPinB, toByteArray(""));
+            getAdminClient().setLockPin(lockPinB, toByteArray(oldPin));
         } catch (KineticException e) {
             Assert.fail("reset lock pin throw exception" + e.getMessage());
         }

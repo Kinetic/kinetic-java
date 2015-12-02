@@ -8,6 +8,7 @@ PORT=8123
 SSL_PORT=8443
 HOME=`cd ~; pwd`
 USE_SSL=false
+ISE=false
 
 JAVA=""
 if [ "$JAVA_HOME" != "" ]; then
@@ -41,11 +42,12 @@ printUsage(){
    echo "            -tlsport              ssl connection port, defalt is 8443"
    echo "            -home                 drive or simulator home, default is user home path"
    echo "            -ssl                  true or false, default is false, run test without ssl connecttion"
+   echo "            -ise                  true or false, default is false, use ise or not before test"
 }
 
 
 if [ $# -eq 0 ]; then
-   exec "$JAVA" -classpath "$CLASSPATH" -Dkinetic.io.in=true -Dkinetic.io.out=true -DRUN_NIO_TEST=true -DRUN_SSL_TEST=${USE_SSL} -DRUN_AGAINST_EXTERNAL=true -DKINETIC_HOST=$HOST com.seagate.kinetic.allTests.ConformanceTestRunner
+   exec "$JAVA" -classpath "$CLASSPATH" -Dkinetic.io.in=true -Dkinetic.io.out=true -DRUN_NIO_TEST=true -DRUN_SSL_TEST=${USE_SSL} -DRUN_AGAINST_EXTERNAL=true -DKINETIC_HOST=$HOST -DISE=$ISE com.seagate.kinetic.allTests.ConformanceTestRunner
    exit 0
 fi
 
@@ -82,6 +84,11 @@ do
       USE_SSL=$2
       shift
       ;;
+    -ise)
+      echo "Print ssl \"$2\""
+      ISE=$2
+      shift
+      ;;
     -usesocketlog)
       echo "Print usesocketlog \"$2\""
       USE_SOCKET_LOG=$2
@@ -112,6 +119,6 @@ do
    shift
 done
 
-exec "$JAVA" -classpath "$CLASSPATH" -Dkinetic.io.in=true -Dkinetic.io.out=true -DRUN_NIO_TEST=true -DRUN_SSL_TEST=${USE_SSL} -DRUN_AGAINST_EXTERNAL=true -DKINETIC_HOST=$HOST -DKINETIC_PORT=$PORT -DKINETIC_SSL_PORT=$SSL_PORT  -DKINETIC_HOME=$HOME com.seagate.kinetic.allTests.ConformanceTestRunner
+exec "$JAVA" -classpath "$CLASSPATH" -Dkinetic.io.in=true -Dkinetic.io.out=true -DRUN_NIO_TEST=true -DRUN_SSL_TEST=${USE_SSL} -DRUN_AGAINST_EXTERNAL=true -DKINETIC_HOST=$HOST -DKINETIC_PORT=$PORT -DKINETIC_SSL_PORT=$SSL_PORT  -DKINETIC_HOME=$HOME -DISE=$ISE com.seagate.kinetic.allTests.ConformanceTestRunner
 
 exit 0

@@ -2448,9 +2448,7 @@ public class AdvancedAPITest extends IntegrationTestCase {
         final CountDownLatch putSignal = new CountDownLatch(keys.size());
         final CountDownLatch getKeyRangeSignal = new CountDownLatch(1);
 
-        for (byte[] key : keys) {
-            getClient(clientName).deleteForced(key);
-        }
+        cleanData(toByteArray("00"), toByteArray("14"), getClient(clientName));
 
         for (byte[] key : keys) {
             CallbackHandler<Entry> handler = buildSuccessOnlyCallbackHandler(new SuccessAsyncHandler<Entry>() {
@@ -2492,9 +2490,7 @@ public class AdvancedAPITest extends IntegrationTestCase {
                     keyRangeList.get(i));
         }
 
-        for (byte[] key : keys) {
-            getClient(clientName).deleteForced(key);
-        }
+        cleanData(toByteArray("00"), toByteArray("14"), getClient(clientName));
 
         logger.info(this.testEndInfo());
 
@@ -2523,9 +2519,7 @@ public class AdvancedAPITest extends IntegrationTestCase {
                 toByteArray("11"), toByteArray("12"), toByteArray("13"),
                 toByteArray("14"));
 
-        for (byte[] key : keys) {
-            getClient(clientName).deleteForced(key);
-        }
+        cleanData(toByteArray("00"), toByteArray("14"), getClient(clientName));
 
         byte[] newVersion = int32(0);
         final List<Entry> putList = new ArrayList<Entry>();
@@ -2573,9 +2567,7 @@ public class AdvancedAPITest extends IntegrationTestCase {
                     keyRangeList.get(i));
         }
 
-        for (byte[] key : keys) {
-            getClient(clientName).deleteForced(key);
-        }
+        cleanData(toByteArray("00"), toByteArray("14"), getClient(clientName));
 
         logger.info(this.testEndInfo());
     }
@@ -2603,9 +2595,7 @@ public class AdvancedAPITest extends IntegrationTestCase {
                 toByteArray("11"), toByteArray("12"), toByteArray("13"),
                 toByteArray("14"));
 
-        for (byte[] key : keys) {
-            getClient(clientName).deleteForced(key);
-        }
+        cleanData(toByteArray("00"), toByteArray("14"), getClient(clientName));
 
         byte[] newVersion = int32(0);
         final List<Entry> putList = new ArrayList<Entry>();
@@ -2653,9 +2643,7 @@ public class AdvancedAPITest extends IntegrationTestCase {
                     keyRangeList.get(i));
         }
 
-        for (byte[] key : keys) {
-            getClient(clientName).deleteForced(key);
-        }
+        cleanData(toByteArray("00"), toByteArray("14"), getClient(clientName));
 
         logger.info(this.testEndInfo());
     }
@@ -2683,9 +2671,7 @@ public class AdvancedAPITest extends IntegrationTestCase {
                 toByteArray("11"), toByteArray("12"), toByteArray("13"),
                 toByteArray("14"));
 
-        for (byte[] key : keys) {
-            getClient(clientName).deleteForced(key);
-        }
+        cleanData(toByteArray("00"), toByteArray("14"), getClient(clientName));
 
         byte[] newVersion = int32(0);
         final List<Entry> putList = new ArrayList<Entry>();
@@ -2733,9 +2719,7 @@ public class AdvancedAPITest extends IntegrationTestCase {
                     keyRangeList.get(i));
         }
 
-        for (byte[] key : keys) {
-            getClient(clientName).deleteForced(key);
-        }
+        cleanData(toByteArray("00"), toByteArray("14"), getClient(clientName));
 
         logger.info(this.testEndInfo());
     }

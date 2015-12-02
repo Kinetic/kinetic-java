@@ -31,6 +31,7 @@ import kinetic.admin.Role;
 import kinetic.client.AsyncKineticException;
 import kinetic.client.CallbackHandler;
 import kinetic.client.CallbackResult;
+import kinetic.client.Entry;
 import kinetic.client.KineticClient;
 import kinetic.client.KineticException;
 
@@ -108,30 +109,114 @@ public class KineticTestHelpers {
             }
         };
     }
-    
-    public static void instantErase(String oldErasePin, String newErasePin, KineticAdminClient client)
-            throws KineticException {
+
+    public static void instantErase(String oldErasePin, String newErasePin,
+            KineticAdminClient client) throws KineticException {
 
         byte[] oldErasePinB = toByteArray(oldErasePin);
         byte[] newErasePinB = toByteArray(newErasePin);
         client.setErasePin(oldErasePinB, newErasePinB);
         client.instantErase(newErasePinB);
     }
-    
+
     public static void cleanData(int keyCount, KineticClient client)
             throws KineticException {
-        for (int i = 0; i < keyCount; i++) {
-            byte[] key = toByteArray("key" + i);
-            client.deleteForced(key);
+        int keySize = keyCount - 1;
+        boolean flag = true;
+        byte[] keyB = toByteArray("key0");
+        while (flag) {
+            client.deleteForced(keyB);
+
+            Entry enN = client.getNext(keyB);
+
+            if (enN == null) {
+                flag = false;
+            } else if (new String(enN.getKey(), Charset.forName("UTF-8"))
+                    .equals("key" + keySize)) {
+                flag = false;
+                client.deleteForced(enN.getKey());
+            } else {
+                keyB = enN.getKey();
+            }
         }
     }
-    
+
+    public static void cleanData(byte[] startKey, byte[] endKey,
+            KineticClient client) throws KineticException {
+        boolean flag = true;
+        while (flag) {
+            client.deleteForced(startKey);
+
+            Entry enN = client.getNext(startKey);
+
+            if (enN == null) {
+                flag = false;
+            } else if (new String(enN.getKey(), Charset.forName("UTF-8"))
+                    .equals(new String(endKey, Charset.forName("UTF-8")))) {
+                flag = false;
+                client.deleteForced(enN.getKey());
+            } else {
+                startKey = enN.getKey();
+            }
+        }
+    }
+
+    public static void cleanNextData(byte[] key, KineticClient client)
+            throws KineticException {
+        boolean flag = true;
+        while (flag) {
+            Entry enN = client.getNext(key);
+            if (enN == null) {
+                flag = false;
+                client.deleteForced(key);
+            } else {
+                client.deleteForced(key);
+                key = enN.getKey();
+            }
+        }
+    }
+
+    public static void cleanPreviousData(byte[] key, KineticClient client)
+            throws KineticException {
+        boolean flag = true;
+        while (flag) {
+            Entry enN = client.getPrevious(key);
+
+            if (enN == null) {
+                flag = false;
+                client.deleteForced(key);
+            } else {
+                client.deleteForced(key);
+                key = enN.getKey();
+            }
+        }
+    }
+
     public static void cleanKVGenData(int keyCount, KineticClient client)
             throws KineticException {
-        KVGenerator kvGen = new KVGenerator(); 
+        KVGenerator kvGen = new KVGenerator();
+        String lastKey = "";
         for (int i = 0; i < keyCount; i++) {
-            byte[] key = toByteArray(kvGen.getNextKey());
-            client.deleteForced(key);
+            lastKey = kvGen.getNextKey();
+        }
+
+        boolean flag = true;
+        KVGenerator kvGen1 = new KVGenerator();
+        byte[] keyB = toByteArray(kvGen1.getNextKey());
+        while (flag) {
+            client.deleteForced(keyB);
+
+            Entry enN = client.getNext(keyB);
+
+            if (enN == null) {
+                flag = false;
+            } else if (new String(enN.getKey(), Charset.forName("UTF-8"))
+                    .equals(lastKey)) {
+                flag = false;
+                client.deleteForced(enN.getKey());
+            } else {
+                keyB = enN.getKey();
+            }
         }
     }
 

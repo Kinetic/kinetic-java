@@ -16,16 +16,13 @@
  */
 package com.seagate.kinetic.boundary;
 
-import static org.testng.AssertJUnit.assertArrayEquals;
-import static org.testng.AssertJUnit.assertEquals;
-import static org.testng.AssertJUnit.assertTrue;
-import static org.testng.AssertJUnit.assertNull;
-
-import org.testng.annotations.Test;
-import org.testng.Assert;
-
+import static com.seagate.kinetic.KineticTestHelpers.cleanData;
 import static com.seagate.kinetic.KineticTestHelpers.int32;
 import static com.seagate.kinetic.KineticTestHelpers.toByteArray;
+import static org.testng.AssertJUnit.assertEquals;
+import static org.testng.AssertJUnit.assertNull;
+import static org.testng.AssertJUnit.assertTrue;
+import static org.testng.internal.junit.ArrayAsserts.assertArrayEquals;
 
 import java.util.Arrays;
 import java.util.List;
@@ -33,9 +30,11 @@ import java.util.logging.Logger;
 
 import kinetic.client.Entry;
 import kinetic.client.EntryMetadata;
-import kinetic.client.KineticClient;
 import kinetic.client.KineticException;
 import kinetic.client.advanced.AdvancedKineticClient;
+
+import org.testng.Assert;
+import org.testng.annotations.Test;
 
 import com.google.common.collect.Lists;
 import com.seagate.kinetic.IntegrationTestCase;
@@ -78,7 +77,7 @@ public class AdvancedAPIBoundaryTest extends IntegrationTestCase {
         EntryMetadata entryMetadata1 = new EntryMetadata();
         Entry versioned1 = new Entry(key1, value1, entryMetadata1);
 
-        cleanKeys(getClient(clientName));
+        cleanData(key0, key1, getClient(clientName));
 
         getClient(clientName).put(versioned0, newVersion0);
         getClient(clientName).put(versioned1, newVersion1);
@@ -91,7 +90,7 @@ public class AdvancedAPIBoundaryTest extends IntegrationTestCase {
             assertNull(e.getMessage());
         }
 
-        cleanKeys(getClient(clientName));
+        cleanData(key0, key1, getClient(clientName));
 
         logger.info(this.testEndInfo());
     }
@@ -119,7 +118,7 @@ public class AdvancedAPIBoundaryTest extends IntegrationTestCase {
         EntryMetadata entryMetadata1 = new EntryMetadata();
         Entry versioned1 = new Entry(key1, value1, entryMetadata1);
 
-        cleanKeys(getClient(clientName));
+        cleanData(key0, key1, getClient(clientName));
 
         getClient(clientName).put(versioned0, newVersion0);
         getClient(clientName).put(versioned1, newVersion1);
@@ -132,7 +131,7 @@ public class AdvancedAPIBoundaryTest extends IntegrationTestCase {
             assertNull(e.getMessage());
         }
 
-        cleanKeys(getClient(clientName));
+        cleanData(key0, key1, getClient(clientName));
 
         logger.info(this.testEndInfo());
     }
@@ -160,20 +159,21 @@ public class AdvancedAPIBoundaryTest extends IntegrationTestCase {
         byte[] value2 = toByteArray("value007");
         Entry entry2 = new Entry(key2, value2);
 
-        cleanKeys(getClient(clientName));
+        byte[] startKey = toByteArray("key00");
+        byte[] endKey = toByteArray("key002");
+
+        cleanData(startKey, endKey, getClient(clientName));
+        cleanData(key0, key2, getClient(clientName));
 
         getClient(clientName).put(entry0, null);
         getClient(clientName).put(entry1, null);
         getClient(clientName).put(entry2, null);
 
-        byte[] startKey = toByteArray("key00");
-        byte[] endKey = toByteArray("key002");
-
         List<byte[]> keys = getClient(clientName).getKeyRangeReversed(startKey,
                 true, endKey, true, 10);
         assertEquals(0, keys.size());
 
-        cleanKeys(getClient(clientName));
+        cleanData(key0, key2, getClient(clientName));
 
         logger.info(this.testEndInfo());
     }
@@ -201,20 +201,21 @@ public class AdvancedAPIBoundaryTest extends IntegrationTestCase {
         byte[] value2 = toByteArray("value007");
         Entry entry2 = new Entry(key2, value2);
 
-        cleanKeys(getClient(clientName));
+        byte[] startKey = toByteArray("key00");
+        byte[] endKey = toByteArray("key002");
+
+        cleanData(startKey, endKey, getClient(clientName));
+        cleanData(key0, key2, getClient(clientName));
 
         getClient(clientName).put(entry0, null);
         getClient(clientName).put(entry1, null);
         getClient(clientName).put(entry2, null);
 
-        byte[] startKey = toByteArray("key00");
-        byte[] endKey = toByteArray("key002");
-
         List<byte[]> keys = getClient(clientName).getKeyRangeReversed(startKey,
                 false, endKey, false, 10);
         assertEquals(0, keys.size());
 
-        cleanKeys(getClient(clientName));
+        cleanData(key0, key2, getClient(clientName));
 
         logger.info(this.testEndInfo());
     }
@@ -242,20 +243,21 @@ public class AdvancedAPIBoundaryTest extends IntegrationTestCase {
         byte[] value2 = toByteArray("value007");
         Entry entry2 = new Entry(key2, value2);
 
-        cleanKeys(getClient(clientName));
+        byte[] startKey = toByteArray("key00");
+        byte[] endKey = toByteArray("key002");
+
+        cleanData(startKey, endKey, getClient(clientName));
+        cleanData(key0, key2, getClient(clientName));
 
         getClient(clientName).put(entry0, null);
         getClient(clientName).put(entry1, null);
         getClient(clientName).put(entry2, null);
 
-        byte[] startKey = toByteArray("key00");
-        byte[] endKey = toByteArray("key002");
-
         List<byte[]> keys = getClient(clientName).getKeyRangeReversed(startKey,
                 true, endKey, false, 10);
         assertEquals(0, keys.size());
 
-        cleanKeys(getClient(clientName));
+        cleanData(key0, key2, getClient(clientName));
 
         logger.info(this.testEndInfo());
     }
@@ -283,20 +285,21 @@ public class AdvancedAPIBoundaryTest extends IntegrationTestCase {
         byte[] value2 = toByteArray("value007");
         Entry entry2 = new Entry(key2, value2);
 
-        cleanKeys(getClient(clientName));
+        byte[] startKey = toByteArray("key00");
+        byte[] endKey = toByteArray("key002");
+
+        cleanData(startKey, endKey, getClient(clientName));
+        cleanData(key0, key2, getClient(clientName));
 
         getClient(clientName).put(entry0, null);
         getClient(clientName).put(entry1, null);
         getClient(clientName).put(entry2, null);
 
-        byte[] startKey = toByteArray("key00");
-        byte[] endKey = toByteArray("key002");
-
         List<byte[]> keys = getClient(clientName).getKeyRangeReversed(startKey,
                 false, endKey, true, 10);
         assertEquals(0, keys.size());
 
-        cleanKeys(getClient(clientName));
+        cleanData(key0, key2, getClient(clientName));
 
         logger.info(this.testEndInfo());
     }
@@ -324,20 +327,20 @@ public class AdvancedAPIBoundaryTest extends IntegrationTestCase {
         byte[] value2 = toByteArray("value007");
         Entry entry2 = new Entry(key2, value2);
 
-        cleanKeys(getClient(clientName));
+        byte[] startKey = toByteArray("key00");
+        byte[] endKey = key0;
+
+        cleanData(startKey, key2, getClient(clientName));
 
         getClient(clientName).put(entry0, null);
         getClient(clientName).put(entry1, null);
         getClient(clientName).put(entry2, null);
 
-        byte[] startKey = toByteArray("key00");
-        byte[] endKey = key0;
-
         List<byte[]> keys = getClient(clientName).getKeyRangeReversed(startKey,
                 false, endKey, false, 10);
         assertEquals(0, keys.size());
 
-        cleanKeys(getClient(clientName));
+        cleanData(startKey, key2, getClient(clientName));
 
         logger.info(this.testEndInfo());
     }
@@ -365,20 +368,20 @@ public class AdvancedAPIBoundaryTest extends IntegrationTestCase {
         byte[] value2 = toByteArray("value007");
         Entry entry2 = new Entry(key2, value2);
 
-        cleanKeys(getClient(clientName));
+        byte[] startKey = toByteArray("key00");
+        byte[] endKey = key0;
+
+        cleanData(startKey, key2, getClient(clientName));
 
         getClient(clientName).put(entry0, null);
         getClient(clientName).put(entry1, null);
         getClient(clientName).put(entry2, null);
 
-        byte[] startKey = toByteArray("key00");
-        byte[] endKey = key0;
-
         List<byte[]> keys = getClient(clientName).getKeyRangeReversed(startKey,
                 true, endKey, false, 10);
         assertEquals(0, keys.size());
 
-        cleanKeys(getClient(clientName));
+        cleanData(startKey, key2, getClient(clientName));
 
         logger.info(this.testEndInfo());
     }
@@ -407,21 +410,21 @@ public class AdvancedAPIBoundaryTest extends IntegrationTestCase {
         byte[] value2 = toByteArray("value007");
         Entry entry2 = new Entry(key2, value2);
 
-        cleanKeys(getClient(clientName));
+        byte[] startKey = toByteArray("key00");
+        byte[] endKey = key0;
+
+        cleanData(startKey, key2, getClient(clientName));
 
         getClient(clientName).put(entry0, null);
         getClient(clientName).put(entry1, null);
         getClient(clientName).put(entry2, null);
-
-        byte[] startKey = toByteArray("key00");
-        byte[] endKey = key0;
 
         List<byte[]> keys = getClient(clientName).getKeyRangeReversed(startKey,
                 false, endKey, true, 10);
         assertEquals(1, keys.size());
         assertArrayEquals(key0, keys.get(0));
 
-        cleanKeys(getClient(clientName));
+        cleanData(startKey, key2, getClient(clientName));
 
         logger.info(this.testEndInfo());
     }
@@ -449,21 +452,21 @@ public class AdvancedAPIBoundaryTest extends IntegrationTestCase {
         byte[] value2 = toByteArray("value007");
         Entry entry2 = new Entry(key2, value2);
 
-        cleanKeys(getClient(clientName));
+        byte[] startKey = toByteArray("key00");
+        byte[] endKey = key0;
+
+        cleanData(startKey, key2, getClient(clientName));
 
         getClient(clientName).put(entry0, null);
         getClient(clientName).put(entry1, null);
         getClient(clientName).put(entry2, null);
-
-        byte[] startKey = toByteArray("key00");
-        byte[] endKey = key0;
 
         List<byte[]> keys = getClient(clientName).getKeyRangeReversed(startKey,
                 true, endKey, true, 10);
         assertEquals(1, keys.size());
         assertArrayEquals(key0, keys.get(0));
 
-        cleanKeys(getClient(clientName));
+        cleanData(startKey, key2, getClient(clientName));
 
         logger.info(this.testEndInfo());
     }
@@ -492,21 +495,21 @@ public class AdvancedAPIBoundaryTest extends IntegrationTestCase {
         byte[] value2 = toByteArray("value007");
         Entry entry2 = new Entry(key2, value2);
 
-        cleanKeys(getClient(clientName));
+        byte[] startKey = toByteArray("key00");
+        byte[] endKey = key1;
+
+        cleanData(startKey, key2, getClient(clientName));
 
         getClient(clientName).put(entry0, null);
         getClient(clientName).put(entry1, null);
         getClient(clientName).put(entry2, null);
-
-        byte[] startKey = toByteArray("key00");
-        byte[] endKey = key1;
 
         List<byte[]> keys = getClient(clientName).getKeyRangeReversed(startKey,
                 false, endKey, false, 10);
         assertEquals(1, keys.size());
         assertArrayEquals(key0, keys.get(0));
 
-        cleanKeys(getClient(clientName));
+        cleanData(startKey, key2, getClient(clientName));
 
         logger.info(this.testEndInfo());
     }
@@ -535,21 +538,21 @@ public class AdvancedAPIBoundaryTest extends IntegrationTestCase {
         byte[] value2 = toByteArray("value007");
         Entry entry2 = new Entry(key2, value2);
 
-        cleanKeys(getClient(clientName));
+        byte[] startKey = toByteArray("key00");
+        byte[] endKey = key1;
+
+        cleanData(startKey, key2, getClient(clientName));
 
         getClient(clientName).put(entry0, null);
         getClient(clientName).put(entry1, null);
         getClient(clientName).put(entry2, null);
-
-        byte[] startKey = toByteArray("key00");
-        byte[] endKey = key1;
 
         List<byte[]> keys = getClient(clientName).getKeyRangeReversed(startKey,
                 true, endKey, false, 10);
         assertEquals(1, keys.size());
         assertArrayEquals(key0, keys.get(0));
 
-        cleanKeys(getClient(clientName));
+        cleanData(startKey, key2, getClient(clientName));
 
         logger.info(this.testEndInfo());
     }
@@ -578,14 +581,14 @@ public class AdvancedAPIBoundaryTest extends IntegrationTestCase {
         byte[] value2 = toByteArray("value007");
         Entry entry2 = new Entry(key2, value2);
 
-        cleanKeys(getClient(clientName));
+        byte[] startKey = toByteArray("key00");
+        byte[] endKey = key1;
+
+        cleanData(startKey, key2, getClient(clientName));
 
         getClient(clientName).put(entry0, null);
         getClient(clientName).put(entry1, null);
         getClient(clientName).put(entry2, null);
-
-        byte[] startKey = toByteArray("key00");
-        byte[] endKey = key1;
 
         List<byte[]> keys = getClient(clientName).getKeyRangeReversed(startKey,
                 false, endKey, true, 10);
@@ -593,7 +596,7 @@ public class AdvancedAPIBoundaryTest extends IntegrationTestCase {
         assertArrayEquals(key1, keys.get(0));
         assertArrayEquals(key0, keys.get(1));
 
-        cleanKeys(getClient(clientName));
+        cleanData(startKey, key2, getClient(clientName));
 
         logger.info(this.testEndInfo());
     }
@@ -622,14 +625,14 @@ public class AdvancedAPIBoundaryTest extends IntegrationTestCase {
         byte[] value2 = toByteArray("value007");
         Entry entry2 = new Entry(key2, value2);
 
-        cleanKeys(getClient(clientName));
+        byte[] startKey = toByteArray("key00");
+        byte[] endKey = key1;
+
+        cleanData(startKey, key2, getClient(clientName));
 
         getClient(clientName).put(entry0, null);
         getClient(clientName).put(entry1, null);
         getClient(clientName).put(entry2, null);
-
-        byte[] startKey = toByteArray("key00");
-        byte[] endKey = key1;
 
         List<byte[]> keys = getClient(clientName).getKeyRangeReversed(startKey,
                 true, endKey, true, 10);
@@ -637,7 +640,7 @@ public class AdvancedAPIBoundaryTest extends IntegrationTestCase {
         assertArrayEquals(key1, keys.get(0));
         assertArrayEquals(key0, keys.get(1));
 
-        cleanKeys(getClient(clientName));
+        cleanData(startKey, key2, getClient(clientName));
 
         logger.info(this.testEndInfo());
     }
@@ -666,14 +669,14 @@ public class AdvancedAPIBoundaryTest extends IntegrationTestCase {
         byte[] value2 = toByteArray("value007");
         Entry entry2 = new Entry(key2, value2);
 
-        cleanKeys(getClient(clientName));
+        byte[] startKey = toByteArray("key00");
+        byte[] endKey = key2;
+
+        cleanData(startKey, key2, getClient(clientName));
 
         getClient(clientName).put(entry0, null);
         getClient(clientName).put(entry1, null);
         getClient(clientName).put(entry2, null);
-
-        byte[] startKey = toByteArray("key00");
-        byte[] endKey = key2;
 
         List<byte[]> keys = getClient(clientName).getKeyRangeReversed(startKey,
                 false, endKey, false, 10);
@@ -681,7 +684,7 @@ public class AdvancedAPIBoundaryTest extends IntegrationTestCase {
         assertArrayEquals(key1, keys.get(0));
         assertArrayEquals(key0, keys.get(1));
 
-        cleanKeys(getClient(clientName));
+        cleanData(startKey, key2, getClient(clientName));
 
         logger.info(this.testEndInfo());
     }
@@ -710,14 +713,14 @@ public class AdvancedAPIBoundaryTest extends IntegrationTestCase {
         byte[] value2 = toByteArray("value007");
         Entry entry2 = new Entry(key2, value2);
 
-        cleanKeys(getClient(clientName));
+        byte[] startKey = toByteArray("key00");
+        byte[] endKey = key2;
+
+        cleanData(startKey, key2, getClient(clientName));
 
         getClient(clientName).put(entry0, null);
         getClient(clientName).put(entry1, null);
         getClient(clientName).put(entry2, null);
-
-        byte[] startKey = toByteArray("key00");
-        byte[] endKey = key2;
 
         List<byte[]> keys = getClient(clientName).getKeyRangeReversed(startKey,
                 true, endKey, false, 10);
@@ -725,7 +728,7 @@ public class AdvancedAPIBoundaryTest extends IntegrationTestCase {
         assertArrayEquals(key1, keys.get(0));
         assertArrayEquals(key0, keys.get(1));
 
-        cleanKeys(getClient(clientName));
+        cleanData(startKey, key2, getClient(clientName));
 
         logger.info(this.testEndInfo());
     }
@@ -754,14 +757,14 @@ public class AdvancedAPIBoundaryTest extends IntegrationTestCase {
         byte[] value2 = toByteArray("value007");
         Entry entry2 = new Entry(key2, value2);
 
-        cleanKeys(getClient(clientName));
+        byte[] startKey = toByteArray("key00");
+        byte[] endKey = key2;
+
+        cleanData(startKey, key2, getClient(clientName));
 
         getClient(clientName).put(entry0, null);
         getClient(clientName).put(entry1, null);
         getClient(clientName).put(entry2, null);
-
-        byte[] startKey = toByteArray("key00");
-        byte[] endKey = key2;
 
         List<byte[]> keys = getClient(clientName).getKeyRangeReversed(startKey,
                 false, endKey, true, 10);
@@ -770,7 +773,7 @@ public class AdvancedAPIBoundaryTest extends IntegrationTestCase {
         assertArrayEquals(key1, keys.get(1));
         assertArrayEquals(key0, keys.get(2));
 
-        cleanKeys(getClient(clientName));
+        cleanData(startKey, key2, getClient(clientName));
 
         logger.info(this.testEndInfo());
     }
@@ -799,14 +802,14 @@ public class AdvancedAPIBoundaryTest extends IntegrationTestCase {
         byte[] value2 = toByteArray("value007");
         Entry entry2 = new Entry(key2, value2);
 
-        cleanKeys(getClient(clientName));
+        byte[] startKey = toByteArray("key00");
+        byte[] endKey = key2;
+
+        cleanData(startKey, key2, getClient(clientName));
 
         getClient(clientName).put(entry0, null);
         getClient(clientName).put(entry1, null);
         getClient(clientName).put(entry2, null);
-
-        byte[] startKey = toByteArray("key00");
-        byte[] endKey = key2;
 
         List<byte[]> keys = getClient(clientName).getKeyRangeReversed(startKey,
                 true, endKey, true, 10);
@@ -815,7 +818,7 @@ public class AdvancedAPIBoundaryTest extends IntegrationTestCase {
         assertArrayEquals(key1, keys.get(1));
         assertArrayEquals(key0, keys.get(2));
 
-        cleanKeys(getClient(clientName));
+        cleanData(startKey, key2, getClient(clientName));
 
         logger.info(this.testEndInfo());
     }
@@ -844,7 +847,7 @@ public class AdvancedAPIBoundaryTest extends IntegrationTestCase {
         byte[] value2 = toByteArray("value007");
         Entry entry2 = new Entry(key2, value2);
 
-        cleanKeys(getClient(clientName));
+        cleanData(key0, key2, getClient(clientName));
 
         getClient(clientName).put(entry0, null);
         getClient(clientName).put(entry1, null);
@@ -857,7 +860,7 @@ public class AdvancedAPIBoundaryTest extends IntegrationTestCase {
                 false, endKey, false, 10);
         assertEquals(0, keys.size());
 
-        cleanKeys(getClient(clientName));
+        cleanData(key0, key2, getClient(clientName));
 
         logger.info(this.testEndInfo());
     }
@@ -886,7 +889,7 @@ public class AdvancedAPIBoundaryTest extends IntegrationTestCase {
         byte[] value2 = toByteArray("value007");
         Entry entry2 = new Entry(key2, value2);
 
-        cleanKeys(getClient(clientName));
+        cleanData(key0, key2, getClient(clientName));
 
         getClient(clientName).put(entry0, null);
         getClient(clientName).put(entry1, null);
@@ -900,7 +903,7 @@ public class AdvancedAPIBoundaryTest extends IntegrationTestCase {
         assertEquals(1, keys.size());
         assertArrayEquals(key0, keys.get(0));
 
-        cleanKeys(getClient(clientName));
+        cleanData(key0, key2, getClient(clientName));
 
         logger.info(this.testEndInfo());
     }
@@ -930,7 +933,7 @@ public class AdvancedAPIBoundaryTest extends IntegrationTestCase {
         byte[] value2 = toByteArray("value007");
         Entry entry2 = new Entry(key2, value2);
 
-        cleanKeys(getClient(clientName));
+        cleanData(key0, key2, getClient(clientName));
 
         getClient(clientName).put(entry0, null);
         getClient(clientName).put(entry1, null);
@@ -944,7 +947,7 @@ public class AdvancedAPIBoundaryTest extends IntegrationTestCase {
         assertEquals(1, keys.size());
         assertArrayEquals(key1, keys.get(0));
 
-        cleanKeys(getClient(clientName));
+        cleanData(key0, key2, getClient(clientName));
 
         logger.info(this.testEndInfo());
     }
@@ -974,7 +977,7 @@ public class AdvancedAPIBoundaryTest extends IntegrationTestCase {
         byte[] value2 = toByteArray("value007");
         Entry entry2 = new Entry(key2, value2);
 
-        cleanKeys(getClient(clientName));
+        cleanData(key0, key2, getClient(clientName));
 
         getClient(clientName).put(entry0, null);
         getClient(clientName).put(entry1, null);
@@ -989,7 +992,7 @@ public class AdvancedAPIBoundaryTest extends IntegrationTestCase {
         assertArrayEquals(key1, keys.get(0));
         assertArrayEquals(key0, keys.get(1));
 
-        cleanKeys(getClient(clientName));
+        cleanData(key0, key2, getClient(clientName));
 
         logger.info(this.testEndInfo());
     }
@@ -1019,7 +1022,7 @@ public class AdvancedAPIBoundaryTest extends IntegrationTestCase {
         byte[] value2 = toByteArray("value007");
         Entry entry2 = new Entry(key2, value2);
 
-        cleanKeys(getClient(clientName));
+        cleanData(key0, key2, getClient(clientName));
 
         getClient(clientName).put(entry0, null);
         getClient(clientName).put(entry1, null);
@@ -1033,7 +1036,7 @@ public class AdvancedAPIBoundaryTest extends IntegrationTestCase {
         assertEquals(1, keys.size());
         assertArrayEquals(key1, keys.get(0));
 
-        cleanKeys(getClient(clientName));
+        cleanData(key0, key2, getClient(clientName));
 
         logger.info(this.testEndInfo());
     }
@@ -1063,7 +1066,7 @@ public class AdvancedAPIBoundaryTest extends IntegrationTestCase {
         byte[] value2 = toByteArray("value007");
         Entry entry2 = new Entry(key2, value2);
 
-        cleanKeys(getClient(clientName));
+        cleanData(key0, key2, getClient(clientName));
 
         getClient(clientName).put(entry0, null);
         getClient(clientName).put(entry1, null);
@@ -1078,7 +1081,7 @@ public class AdvancedAPIBoundaryTest extends IntegrationTestCase {
         assertArrayEquals(key1, keys.get(0));
         assertArrayEquals(key0, keys.get(1));
 
-        cleanKeys(getClient(clientName));
+        cleanData(key0, key2, getClient(clientName));
 
         logger.info(this.testEndInfo());
     }
@@ -1108,7 +1111,7 @@ public class AdvancedAPIBoundaryTest extends IntegrationTestCase {
         byte[] value2 = toByteArray("value007");
         Entry entry2 = new Entry(key2, value2);
 
-        cleanKeys(getClient(clientName));
+        cleanData(key0, key2, getClient(clientName));
 
         getClient(clientName).put(entry0, null);
         getClient(clientName).put(entry1, null);
@@ -1123,7 +1126,7 @@ public class AdvancedAPIBoundaryTest extends IntegrationTestCase {
         assertArrayEquals(key2, keys.get(0));
         assertArrayEquals(key1, keys.get(1));
 
-        cleanKeys(getClient(clientName));
+        cleanData(key0, key2, getClient(clientName));
 
         logger.info(this.testEndInfo());
     }
@@ -1152,7 +1155,7 @@ public class AdvancedAPIBoundaryTest extends IntegrationTestCase {
         byte[] value2 = toByteArray("value007");
         Entry entry2 = new Entry(key2, value2);
 
-        cleanKeys(getClient(clientName));
+        cleanData(key0, key2, getClient(clientName));
 
         getClient(clientName).put(entry0, null);
         getClient(clientName).put(entry1, null);
@@ -1168,7 +1171,7 @@ public class AdvancedAPIBoundaryTest extends IntegrationTestCase {
         assertArrayEquals(key1, keys.get(1));
         assertArrayEquals(key0, keys.get(2));
 
-        cleanKeys(getClient(clientName));
+        cleanData(key0, key2, getClient(clientName));
 
         logger.info(this.testEndInfo());
     }
@@ -1197,7 +1200,7 @@ public class AdvancedAPIBoundaryTest extends IntegrationTestCase {
         byte[] value2 = toByteArray("value007");
         Entry entry2 = new Entry(key2, value2);
 
-        cleanKeys(getClient(clientName));
+        cleanData(key0, key2, getClient(clientName));
 
         getClient(clientName).put(entry0, null);
         getClient(clientName).put(entry1, null);
@@ -1210,7 +1213,7 @@ public class AdvancedAPIBoundaryTest extends IntegrationTestCase {
                 false, endKey, false, 10);
         assertEquals(0, keys.size());
 
-        cleanKeys(getClient(clientName));
+        cleanData(key0, key2, getClient(clientName));
 
         logger.info(this.testEndInfo());
     }
@@ -1239,7 +1242,7 @@ public class AdvancedAPIBoundaryTest extends IntegrationTestCase {
         byte[] value2 = toByteArray("value007");
         Entry entry2 = new Entry(key2, value2);
 
-        cleanKeys(getClient(clientName));
+        cleanData(key0, key2, getClient(clientName));
 
         getClient(clientName).put(entry0, null);
         getClient(clientName).put(entry1, null);
@@ -1253,7 +1256,7 @@ public class AdvancedAPIBoundaryTest extends IntegrationTestCase {
         assertEquals(1, keys.size());
         assertArrayEquals(key1, keys.get(0));
 
-        cleanKeys(getClient(clientName));
+        cleanData(key0, key2, getClient(clientName));
 
         logger.info(this.testEndInfo());
     }
@@ -1282,7 +1285,7 @@ public class AdvancedAPIBoundaryTest extends IntegrationTestCase {
         byte[] value2 = toByteArray("value007");
         Entry entry2 = new Entry(key2, value2);
 
-        cleanKeys(getClient(clientName));
+        cleanData(key0, key2, getClient(clientName));
 
         getClient(clientName).put(entry0, null);
         getClient(clientName).put(entry1, null);
@@ -1296,7 +1299,7 @@ public class AdvancedAPIBoundaryTest extends IntegrationTestCase {
         assertEquals(1, keys.size());
         assertArrayEquals(key2, keys.get(0));
 
-        cleanKeys(getClient(clientName));
+        cleanData(key0, key2, getClient(clientName));
 
         logger.info(this.testEndInfo());
     }
@@ -1325,7 +1328,7 @@ public class AdvancedAPIBoundaryTest extends IntegrationTestCase {
         byte[] value2 = toByteArray("value007");
         Entry entry2 = new Entry(key2, value2);
 
-        cleanKeys(getClient(clientName));
+        cleanData(key0, key2, getClient(clientName));
 
         getClient(clientName).put(entry0, null);
         getClient(clientName).put(entry1, null);
@@ -1340,7 +1343,7 @@ public class AdvancedAPIBoundaryTest extends IntegrationTestCase {
         assertArrayEquals(key2, keys.get(0));
         assertArrayEquals(key1, keys.get(1));
 
-        cleanKeys(getClient(clientName));
+        cleanData(key0, key2, getClient(clientName));
 
         logger.info(this.testEndInfo());
     }
@@ -1369,20 +1372,20 @@ public class AdvancedAPIBoundaryTest extends IntegrationTestCase {
         byte[] value2 = toByteArray("value007");
         Entry entry2 = new Entry(key2, value2);
 
-        cleanKeys(getClient(clientName));
+        byte[] startKey = key2;
+        byte[] endKey = toByteArray("key09");
+
+        cleanData(key0, endKey, getClient(clientName));
 
         getClient(clientName).put(entry0, null);
         getClient(clientName).put(entry1, null);
         getClient(clientName).put(entry2, null);
 
-        byte[] startKey = key2;
-        byte[] endKey = toByteArray("key09");
-
         List<byte[]> keys = getClient(clientName).getKeyRangeReversed(startKey,
                 false, endKey, false, 10);
         assertEquals(0, keys.size());
 
-        cleanKeys(getClient(clientName));
+        cleanData(key0, endKey, getClient(clientName));
 
         logger.info(this.testEndInfo());
     }
@@ -1411,21 +1414,21 @@ public class AdvancedAPIBoundaryTest extends IntegrationTestCase {
         byte[] value2 = toByteArray("value007");
         Entry entry2 = new Entry(key2, value2);
 
-        cleanKeys(getClient(clientName));
+        byte[] startKey = key2;
+        byte[] endKey = toByteArray("key09");
+
+        cleanData(key0, endKey, getClient(clientName));
 
         getClient(clientName).put(entry0, null);
         getClient(clientName).put(entry1, null);
         getClient(clientName).put(entry2, null);
-
-        byte[] startKey = key2;
-        byte[] endKey = toByteArray("key09");
 
         List<byte[]> keys = getClient(clientName).getKeyRangeReversed(startKey,
                 true, endKey, false, 10);
         assertEquals(1, keys.size());
         assertArrayEquals(key2, keys.get(0));
 
-        cleanKeys(getClient(clientName));
+        cleanData(key0, endKey, getClient(clientName));
 
         logger.info(this.testEndInfo());
     }
@@ -1454,20 +1457,20 @@ public class AdvancedAPIBoundaryTest extends IntegrationTestCase {
         byte[] value2 = toByteArray("value007");
         Entry entry2 = new Entry(key2, value2);
 
-        cleanKeys(getClient(clientName));
+        byte[] startKey = key2;
+        byte[] endKey = toByteArray("key09");
+
+        cleanData(key0, endKey, getClient(clientName));
 
         getClient(clientName).put(entry0, null);
         getClient(clientName).put(entry1, null);
         getClient(clientName).put(entry2, null);
 
-        byte[] startKey = key2;
-        byte[] endKey = toByteArray("key09");
-
         List<byte[]> keys = getClient(clientName).getKeyRangeReversed(startKey,
                 false, endKey, true, 10);
         assertEquals(0, keys.size());
 
-        cleanKeys(getClient(clientName));
+        cleanData(key0, endKey, getClient(clientName));
 
         logger.info(this.testEndInfo());
     }
@@ -1496,21 +1499,21 @@ public class AdvancedAPIBoundaryTest extends IntegrationTestCase {
         byte[] value2 = toByteArray("value007");
         Entry entry2 = new Entry(key2, value2);
 
-        cleanKeys(getClient(clientName));
+        byte[] startKey = key2;
+        byte[] endKey = toByteArray("key09");
+
+        cleanData(key0, endKey, getClient(clientName));
 
         getClient(clientName).put(entry0, null);
         getClient(clientName).put(entry1, null);
         getClient(clientName).put(entry2, null);
-
-        byte[] startKey = key2;
-        byte[] endKey = toByteArray("key09");
 
         List<byte[]> keys = getClient(clientName).getKeyRangeReversed(startKey,
                 true, endKey, true, 10);
         assertEquals(1, keys.size());
         assertArrayEquals(key2, keys.get(0));
 
-        cleanKeys(getClient(clientName));
+        cleanData(key0, endKey, getClient(clientName));
 
         logger.info(this.testEndInfo());
     }
@@ -1538,20 +1541,20 @@ public class AdvancedAPIBoundaryTest extends IntegrationTestCase {
         byte[] value2 = toByteArray("value007");
         Entry entry2 = new Entry(key2, value2);
 
-        cleanKeys(getClient(clientName));
+        byte[] startKey = toByteArray("key09");
+        byte[] endKey = toByteArray("key11");
+
+        cleanData(key0, endKey, getClient(clientName));
 
         getClient(clientName).put(entry0, null);
         getClient(clientName).put(entry1, null);
         getClient(clientName).put(entry2, null);
 
-        byte[] startKey = toByteArray("key09");
-        byte[] endKey = toByteArray("key11");
-
         List<byte[]> keys = getClient(clientName).getKeyRangeReversed(startKey,
                 false, endKey, false, 10);
         assertEquals(0, keys.size());
 
-        cleanKeys(getClient(clientName));
+        cleanData(key0, endKey, getClient(clientName));
 
         logger.info(this.testEndInfo());
     }
@@ -1580,20 +1583,20 @@ public class AdvancedAPIBoundaryTest extends IntegrationTestCase {
         byte[] value2 = toByteArray("value007");
         Entry entry2 = new Entry(key2, value2);
 
-        cleanKeys(getClient(clientName));
+        byte[] startKey = toByteArray("key09");
+        byte[] endKey = toByteArray("key11");
+
+        cleanData(key0, endKey, getClient(clientName));
 
         getClient(clientName).put(entry0, null);
         getClient(clientName).put(entry1, null);
         getClient(clientName).put(entry2, null);
 
-        byte[] startKey = toByteArray("key09");
-        byte[] endKey = toByteArray("key11");
-
         List<byte[]> keys = getClient(clientName).getKeyRangeReversed(startKey,
                 true, endKey, false, 10);
         assertEquals(0, keys.size());
 
-        cleanKeys(getClient(clientName));
+        cleanData(key0, endKey, getClient(clientName));
 
         logger.info(this.testEndInfo());
     }
@@ -1622,20 +1625,20 @@ public class AdvancedAPIBoundaryTest extends IntegrationTestCase {
         byte[] value2 = toByteArray("value007");
         Entry entry2 = new Entry(key2, value2);
 
-        cleanKeys(getClient(clientName));
+        byte[] startKey = toByteArray("key09");
+        byte[] endKey = toByteArray("key11");
+
+        cleanData(key0, endKey, getClient(clientName));
 
         getClient(clientName).put(entry0, null);
         getClient(clientName).put(entry1, null);
         getClient(clientName).put(entry2, null);
 
-        byte[] startKey = toByteArray("key09");
-        byte[] endKey = toByteArray("key11");
-
         List<byte[]> keys = getClient(clientName).getKeyRangeReversed(startKey,
                 false, endKey, true, 10);
         assertEquals(0, keys.size());
 
-        cleanKeys(getClient(clientName));
+        cleanData(key0, endKey, getClient(clientName));
 
         logger.info(this.testEndInfo());
     }
@@ -1664,20 +1667,20 @@ public class AdvancedAPIBoundaryTest extends IntegrationTestCase {
         byte[] value2 = toByteArray("value007");
         Entry entry2 = new Entry(key2, value2);
 
-        cleanKeys(getClient(clientName));
+        byte[] startKey = toByteArray("key09");
+        byte[] endKey = toByteArray("key11");
+
+        cleanData(key0, endKey, getClient(clientName));
 
         getClient(clientName).put(entry0, null);
         getClient(clientName).put(entry1, null);
         getClient(clientName).put(entry2, null);
 
-        byte[] startKey = toByteArray("key09");
-        byte[] endKey = toByteArray("key11");
-
         List<byte[]> keys = getClient(clientName).getKeyRangeReversed(startKey,
                 true, endKey, true, 10);
         assertEquals(0, keys.size());
 
-        cleanKeys(getClient(clientName));
+        cleanData(key0, endKey, getClient(clientName));
 
         logger.info(this.testEndInfo());
     }
@@ -1700,7 +1703,7 @@ public class AdvancedAPIBoundaryTest extends IntegrationTestCase {
                 toByteArray("11"), toByteArray("12"), toByteArray("13"),
                 toByteArray("14"));
 
-        cleanListKey(getClient(clientName), keys);
+        cleanData(toByteArray("00"), toByteArray("14"), getClient(clientName));
 
         for (byte[] key : keys) {
             getClient(clientName).putForced(new Entry(key, key));
@@ -1713,7 +1716,7 @@ public class AdvancedAPIBoundaryTest extends IntegrationTestCase {
         assertEquals(1, returnedKeys.size());
         assertArrayEquals(keys.get(0), returnedKeys.get(0));
 
-        cleanListKey(getClient(clientName), keys);
+        cleanData(toByteArray("00"), toByteArray("14"), getClient(clientName));
 
         logger.info(this.testEndInfo());
     }
@@ -1736,7 +1739,7 @@ public class AdvancedAPIBoundaryTest extends IntegrationTestCase {
                 toByteArray("11"), toByteArray("12"), toByteArray("13"),
                 toByteArray("14"));
 
-        cleanListKey(getClient(clientName), keys);
+        cleanData(toByteArray("00"), toByteArray("14"), getClient(clientName));
 
         for (byte[] key : keys) {
             getClient(clientName).putForced(new Entry(key, key));
@@ -1748,7 +1751,7 @@ public class AdvancedAPIBoundaryTest extends IntegrationTestCase {
 
         assertEquals(0, returnedKeys.size());
 
-        cleanListKey(getClient(clientName), keys);
+        cleanData(toByteArray("00"), toByteArray("14"), getClient(clientName));
 
         logger.info(this.testEndInfo());
     }
@@ -1771,7 +1774,7 @@ public class AdvancedAPIBoundaryTest extends IntegrationTestCase {
                 toByteArray("11"), toByteArray("12"), toByteArray("13"),
                 toByteArray("14"));
 
-        cleanListKey(getClient(clientName), keys);
+        cleanData(toByteArray("00"), toByteArray("14"), getClient(clientName));
 
         for (byte[] key : keys) {
             getClient(clientName).putForced(new Entry(key, key));
@@ -1783,7 +1786,7 @@ public class AdvancedAPIBoundaryTest extends IntegrationTestCase {
 
         assertEquals(0, returnedKeys.size());
 
-        cleanListKey(getClient(clientName), keys);
+        cleanData(toByteArray("00"), toByteArray("14"), getClient(clientName));
 
         logger.info(this.testEndInfo());
     }
@@ -1806,7 +1809,7 @@ public class AdvancedAPIBoundaryTest extends IntegrationTestCase {
                 toByteArray("11"), toByteArray("12"), toByteArray("13"),
                 toByteArray("14"));
 
-        cleanListKey(getClient(clientName), keys);
+        cleanData(toByteArray("00"), toByteArray("14"), getClient(clientName));
 
         for (byte[] key : keys) {
             getClient(clientName).putForced(new Entry(key, key));
@@ -1818,7 +1821,7 @@ public class AdvancedAPIBoundaryTest extends IntegrationTestCase {
 
         assertEquals(0, returnedKeys.size());
 
-        cleanListKey(getClient(clientName), keys);
+        cleanData(toByteArray("00"), toByteArray("14"), getClient(clientName));
 
         logger.info(this.testEndInfo());
     }
@@ -1837,7 +1840,7 @@ public class AdvancedAPIBoundaryTest extends IntegrationTestCase {
         byte[] startKey = toByteArray("key005");
         byte[] endKey = toByteArray("key006");
 
-        cleanKeys(getClient(clientName));
+        cleanData(startKey, endKey, getClient(clientName));
 
         List<byte[]> keys = getClient(clientName).getKeyRangeReversed(startKey,
                 true, endKey, true, 10);
@@ -1845,23 +1848,5 @@ public class AdvancedAPIBoundaryTest extends IntegrationTestCase {
         assertTrue(keys.isEmpty());
 
         logger.info(this.testEndInfo());
-    }
-
-    private void cleanKeys(KineticClient client) throws KineticException {
-        byte[] key0 = toByteArray("key005");
-        client.deleteForced(key0);
-
-        byte[] key1 = toByteArray("key006");
-        client.deleteForced(key1);
-
-        byte[] key2 = toByteArray("key007");
-        client.deleteForced(key2);
-    }
-
-    private void cleanListKey(KineticClient client, List<byte[]> keys)
-            throws KineticException {
-        for (byte[] key : keys) {
-            client.deleteForced(key);
-        }
     }
 }
