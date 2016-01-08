@@ -39,6 +39,7 @@ import kinetic.client.p2p.KineticP2pClient;
 
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeSuite;
 import org.testng.annotations.DataProvider;
 
 import com.google.protobuf.ByteString;
@@ -59,353 +60,367 @@ import com.seagate.kinetic.proto.Kinetic.Command.Security.ACL.Permission;
  *
  */
 public class IntegrationTestCase {
-	protected static final String NONNIO_NONSSL_CLIENT = "nonNio_nonSsl";
-	protected static final String NIO_NONSSL_CLIENT = "nio_nonSsl";
-	protected static final String NONNIO_SSL_CLIENT = "nonNio_ssl";
+    protected static final String NONNIO_NONSSL_CLIENT = "nonNio_nonSsl";
+    protected static final String NIO_NONSSL_CLIENT = "nio_nonSsl";
+    protected static final String NONNIO_SSL_CLIENT = "nonNio_ssl";
 
-	protected Map<String, KineticP2pClient> kineticClients = new HashMap<String, KineticP2pClient>();
-	protected Map<String, ClientConfiguration> kineticClientConfigutations = new HashMap<String, ClientConfiguration>();
-	private KineticAdminClient adminClient;
-	private AbstractIntegrationTestTarget testTarget;
+    protected Map<String, KineticP2pClient> kineticClients = new HashMap<String, KineticP2pClient>();
+    protected Map<String, ClientConfiguration> kineticClientConfigutations = new HashMap<String, ClientConfiguration>();
+    private KineticAdminClient adminClient;
+    private AbstractIntegrationTestTarget testTarget;
 
-	/**
-	 * Initialize a test server and a Kinetic client.
-	 * <p>
-	 *
-	 * @throws KineticException
-	 *             if any internal error occurred.
-	 * @throws IOException
-	 *             if any IO error occurred
-	 * @throws InterruptedException
-	 *             if any Interrupt error occurred
-	 */
-	@BeforeClass(alwaysRun = true)
-	public void startTestServer() throws InterruptedException,
-			KineticException, IOException, JSchException, ExecutionException {
-		createKineticClientConfigurations();
-		testTarget = IntegrationTestTargetFactory.createTestTarget(true);
-		kineticClients.clear();
-		for (String clientName : kineticClientConfigutations.keySet()) {
-			kineticClients.put(clientName, KineticP2PClientFactory
-					.createP2pClient(kineticClientConfigutations
-							.get(clientName)));
-		}
-		adminClient = KineticAdminClientFactory
-				.createInstance(getAdminClientConfig());
-	}
+    /**
+     * Initialize a test server and a Kinetic client.
+     * <p>
+     *
+     * @throws KineticException
+     *             if any internal error occurred.
+     * @throws IOException
+     *             if any IO error occurred
+     * @throws InterruptedException
+     *             if any Interrupt error occurred
+     */
+    @BeforeClass(alwaysRun = true)
+    public void startTestServer() throws InterruptedException,
+            KineticException, IOException, JSchException, ExecutionException {
+        createKineticClientConfigurations();
+        testTarget = IntegrationTestTargetFactory.createTestTarget(true);
+        kineticClients.clear();
+        for (String clientName : kineticClientConfigutations.keySet()) {
+            kineticClients.put(clientName, KineticP2PClientFactory
+                    .createP2pClient(kineticClientConfigutations
+                            .get(clientName)));
+        }
+        adminClient = KineticAdminClientFactory
+                .createInstance(getAdminClientConfig());
+    }
 
-	/**
-	 * Stop a test server and a Kinetic client.
-	 * <p>
-	 *
-	 * @throws KineticException
-	 *             if any internal error occurred.
-	 * @throws IOException
-	 *             if any IO error occurred.
-	 */
-	@AfterClass(alwaysRun = true)
-	public void stopTestServer() throws Exception {
-		closeKineticClients();
-		if (null != adminClient){
-		    adminClient.close();
-		}
-		testTarget.shutdown();
-	}
+    /**
+     * Stop a test server and a Kinetic client.
+     * <p>
+     *
+     * @throws KineticException
+     *             if any internal error occurred.
+     * @throws IOException
+     *             if any IO error occurred.
+     */
+    @AfterClass(alwaysRun = true)
+    public void stopTestServer() throws Exception {
+        closeKineticClients();
+        if (null != adminClient) {
+            adminClient.close();
+        }
+        testTarget.shutdown();
+    }
 
-//	@BeforeMethod(alwaysRun = true)
-//	protected void securityEraseTarget() throws KineticException {
-//		getAdminClient().secureErase(
-//				"NULL".getBytes(Charset.forName("UTF-8")));
-//	}
+    @BeforeSuite(alwaysRun = true)
+    protected void securityEraseTarget() throws KineticException {
+        if (Boolean.parseBoolean(System.getProperty("RUN_AGAINST_EXTERNAL"))) {
+            AdminClientConfiguration acc = new AdminClientConfiguration();
+            acc.setHost(System.getProperty("KINETIC_HOST", "127.0.0.1"));
+            acc.setPort(Integer.parseInt(System.getProperty("KINETIC_SSL_PORT",
+                    "8443")));
 
-	/**
-	 * Get a Kinetic client.
-	 * <p>
-	 */
-	protected KineticP2pClient getClient(String clientName) {
-		return kineticClients.get(clientName);
-	}
+            KineticAdminClient kac = KineticAdminClientFactory
+                    .createInstance(acc);
+            String oldErasePin = System.getProperty("OLD_PIN", "");
+            String newErasePin = System.getProperty("NEW_PIN", "123");
 
-	protected KineticAdminClient getAdminClient() {
-		return adminClient;
-	}
+            kac.setErasePin(toByteArray(oldErasePin), toByteArray(newErasePin));
+            kac.instantErase(toByteArray(newErasePin));
 
-	/**
-	 * Get a Kinetic client configuration with default setting.
-	 * <p>
-	 */
-	protected ClientConfiguration getClientConfig() {
-		ClientConfiguration clientConfiguration = IntegrationTestTargetFactory
-				.createDefaultClientConfig();
-		return clientConfiguration;
-	}
+            kac.close();
+        }
+    }
 
-	/**
-	 * Get a Kinetic client configuration with setting userId and key flexible.
-	 * <p>
-	 */
-	protected ClientConfiguration getClientConfig(int userId, String key) {
-		ClientConfiguration clientConfiguration = getClientConfig();
-		clientConfiguration.setUserId(userId);
-		clientConfiguration.setKey(key);
-		return clientConfiguration;
-	}
+    /**
+     * Get a Kinetic client.
+     * <p>
+     */
+    protected KineticP2pClient getClient(String clientName) {
+        return kineticClients.get(clientName);
+    }
 
-	/**
-	 * Get a Kinetic client configuration with setting cluster version flexible.
-	 * <p>
-	 */
-	protected ClientConfiguration getClientConfig(long clusterVersion) {
-		ClientConfiguration clientConfiguration = getClientConfig();
-		clientConfiguration.setClusterVersion(clusterVersion);
-		return clientConfiguration;
-	}
+    protected KineticAdminClient getAdminClient() {
+        return adminClient;
+    }
 
-	/**
-	 * Get a Kinetic client configuration with default setting.
-	 * <p>
-	 */
-	protected AdminClientConfiguration getAdminClientConfig() {
-		AdminClientConfiguration adminClientConfiguration = testTarget
-				.getAdminClientConfig();
-		return adminClientConfiguration;
-	}
+    /**
+     * Get a Kinetic client configuration with default setting.
+     * <p>
+     */
+    protected ClientConfiguration getClientConfig() {
+        ClientConfiguration clientConfiguration = IntegrationTestTargetFactory
+                .createDefaultClientConfig();
+        return clientConfiguration;
+    }
 
-	/**
-	 * Get a Kinetic client configuration with setting cluster version flexible.
-	 * <p>
-	 */
-	protected AdminClientConfiguration getAdminClientConfig(long clusterVersion) {
-		AdminClientConfiguration adminClientConfiguration = testTarget
-				.getAdminClientConfig();
-		adminClientConfiguration.setClusterVersion(clusterVersion);
-		return adminClientConfiguration;
-	}
+    /**
+     * Get a Kinetic client configuration with setting userId and key flexible.
+     * <p>
+     */
+    protected ClientConfiguration getClientConfig(int userId, String key) {
+        ClientConfiguration clientConfiguration = getClientConfig();
+        clientConfiguration.setUserId(userId);
+        clientConfiguration.setKey(key);
+        return clientConfiguration;
+    }
 
-	/**
-	 * Get a Kinetic admin client configuration with setting userId and key
-	 * flexible.
-	 * <p>
-	 */
-	protected AdminClientConfiguration getAdminClientConfig(int userId,
-			String key) {
-		AdminClientConfiguration adminClientConfiguration = getAdminClientConfig();
-		adminClientConfiguration.setUserId(userId);
-		adminClientConfiguration.setKey(key);
-		return adminClientConfiguration;
-	}
+    /**
+     * Get a Kinetic client configuration with setting cluster version flexible.
+     * <p>
+     */
+    protected ClientConfiguration getClientConfig(long clusterVersion) {
+        ClientConfiguration clientConfiguration = getClientConfig();
+        clientConfiguration.setClusterVersion(clusterVersion);
+        return clientConfiguration;
+    }
 
-	/**
-	 * Restart the server and the Kinetic client.
-	 * <p>
-	 */
-	protected void restartServer() throws Exception {
-		closeKineticClients();
-		adminClient.close();
-		testTarget.shutdown();
+    /**
+     * Get a Kinetic client configuration with default setting.
+     * <p>
+     */
+    protected AdminClientConfiguration getAdminClientConfig() {
+        AdminClientConfiguration adminClientConfiguration = testTarget
+                .getAdminClientConfig();
+        return adminClientConfiguration;
+    }
 
-		testTarget = IntegrationTestTargetFactory.createTestTarget(false);
-		kineticClients.clear();
-		for (String clientName : kineticClientConfigutations.keySet()) {
-			kineticClients.put(clientName, KineticP2PClientFactory
-					.createP2pClient(kineticClientConfigutations
-							.get(clientName)));
-		}
-		adminClient = KineticAdminClientFactory
-				.createInstance(getAdminClientConfig());
-	}
+    /**
+     * Get a Kinetic client configuration with setting cluster version flexible.
+     * <p>
+     */
+    protected AdminClientConfiguration getAdminClientConfig(long clusterVersion) {
+        AdminClientConfiguration adminClientConfiguration = testTarget
+                .getAdminClientConfig();
+        adminClientConfiguration.setClusterVersion(clusterVersion);
+        return adminClientConfiguration;
+    }
 
-	/**
-	 * Test case begin log info.
-	 * <p>
-	 */
-	protected String testBeginInfo() {
-		String className = Thread.currentThread().getStackTrace()[2]
-				.getClassName();
-		String methodName = Thread.currentThread().getStackTrace()[2]
-				.getMethodName();
-		return (className + "#" + methodName + " test starting...");
-	}
+    /**
+     * Get a Kinetic admin client configuration with setting userId and key
+     * flexible.
+     * <p>
+     */
+    protected AdminClientConfiguration getAdminClientConfig(int userId,
+            String key) {
+        AdminClientConfiguration adminClientConfiguration = getAdminClientConfig();
+        adminClientConfiguration.setUserId(userId);
+        adminClientConfiguration.setKey(key);
+        return adminClientConfiguration;
+    }
 
-	/**
-	 * Test case end log info.
-	 * <p>
-	 */
-	protected String testEndInfo() {
-		return ("status=success");
-	}
+    /**
+     * Restart the server and the Kinetic client.
+     * <p>
+     */
+    protected void restartServer() throws Exception {
+        closeKineticClients();
+        adminClient.close();
+        testTarget.shutdown();
 
-	/**
-	 * Useful for writing tests which exercise permissions corner cases. Creates
-	 * a new client and adds the given roles to the client's ACL
-	 *
-	 * @param clientId
-	 * @param clientKeyString
-	 * @param roles
-	 * @throws KineticException
-	 */
-	public void createClientAclWithRoles(String clientName, int clientId,
-			String clientKeyString,
-			List<Kinetic.Command.Security.ACL.Permission> roles)
-			throws KineticException {
+        testTarget = IntegrationTestTargetFactory.createTestTarget(false);
+        kineticClients.clear();
+        for (String clientName : kineticClientConfigutations.keySet()) {
+            kineticClients.put(clientName, KineticP2PClientFactory
+                    .createP2pClient(kineticClientConfigutations
+                            .get(clientName)));
+        }
+        adminClient = KineticAdminClientFactory
+                .createInstance(getAdminClientConfig());
+    }
 
-		Kinetic.Command.Security.ACL.Scope.Builder domain = Kinetic.Command.Security.ACL.Scope
-				.newBuilder();
-		for (Kinetic.Command.Security.ACL.Permission role : roles) {
-			domain.addPermission(role);
-		}
+    /**
+     * Test case begin log info.
+     * <p>
+     */
+    protected String testBeginInfo() {
+        String className = Thread.currentThread().getStackTrace()[2]
+                .getClassName();
+        String methodName = Thread.currentThread().getStackTrace()[2]
+                .getMethodName();
+        return (className + "#" + methodName + " test starting...");
+    }
 
-		createClientAclWithDomains(clientName, clientId, clientKeyString,
-				Collections.singletonList(domain.build()));
+    /**
+     * Test case end log info.
+     * <p>
+     */
+    protected String testEndInfo() {
+        return ("status=success");
+    }
 
-		// create a admin clientId with all permission to avoid user nor found.
-		List<Kinetic.Command.Security.ACL.Permission> rolesAll = new ArrayList<Kinetic.Command.Security.ACL.Permission>();
-		rolesAll.add(Permission.DELETE);
-		rolesAll.add(Permission.GETLOG);
-		rolesAll.add(Permission.P2POP);
-		rolesAll.add(Permission.RANGE);
-		rolesAll.add(Permission.READ);
-		rolesAll.add(Permission.SECURITY);
-		rolesAll.add(Permission.SETUP);
-		rolesAll.add(Permission.WRITE);
+    /**
+     * Useful for writing tests which exercise permissions corner cases. Creates
+     * a new client and adds the given roles to the client's ACL
+     *
+     * @param clientId
+     * @param clientKeyString
+     * @param roles
+     * @throws KineticException
+     */
+    public void createClientAclWithRoles(String clientName, int clientId,
+            String clientKeyString,
+            List<Kinetic.Command.Security.ACL.Permission> roles)
+            throws KineticException {
 
-		int clientIdAdmin = 1;
-		String clientIdAdminKey = "asdfasdf";
-		Kinetic.Command.Security.ACL.Scope.Builder domainAll = Kinetic.Command.Security.ACL.Scope
-				.newBuilder();
-		for (Kinetic.Command.Security.ACL.Permission role : rolesAll) {
-			domainAll.addPermission(role);
-		}
-		createClientAclWithDomains(clientName, clientIdAdmin, clientIdAdminKey,
-				Collections.singletonList(domainAll.build()));
+        Kinetic.Command.Security.ACL.Scope.Builder domain = Kinetic.Command.Security.ACL.Scope
+                .newBuilder();
+        for (Kinetic.Command.Security.ACL.Permission role : roles) {
+            domain.addPermission(role);
+        }
 
-	}
+        createClientAclWithDomains(clientName, clientId, clientKeyString,
+                Collections.singletonList(domain.build()));
 
-	/**
-	 * Useful for writing tests which exercise permissions corner cases. Creates
-	 * a new client and adds the given domains to the client's ACL
-	 *
-	 * @param clientId
-	 * @param clientKeyString
-	 * @param domains
-	 * @throws KineticException
-	 */
-	public void createClientAclWithDomains(String clientName, int clientId,
-			String clientKeyString,
-			List<Kinetic.Command.Security.ACL.Scope> domains)
-			throws KineticException {
+        // create a admin clientId with all permission to avoid user nor found.
+        List<Kinetic.Command.Security.ACL.Permission> rolesAll = new ArrayList<Kinetic.Command.Security.ACL.Permission>();
+        rolesAll.add(Permission.DELETE);
+        rolesAll.add(Permission.GETLOG);
+        rolesAll.add(Permission.P2POP);
+        rolesAll.add(Permission.RANGE);
+        rolesAll.add(Permission.READ);
+        rolesAll.add(Permission.SECURITY);
+        rolesAll.add(Permission.SETUP);
+        rolesAll.add(Permission.WRITE);
 
-		KineticMessage km = MessageFactory.createKineticMessageWithBuilder();
+        int clientIdAdmin = 1;
+        String clientIdAdminKey = "asdfasdf";
+        Kinetic.Command.Security.ACL.Scope.Builder domainAll = Kinetic.Command.Security.ACL.Scope
+                .newBuilder();
+        for (Kinetic.Command.Security.ACL.Permission role : rolesAll) {
+            domainAll.addPermission(role);
+        }
+        createClientAclWithDomains(clientName, clientIdAdmin, clientIdAdminKey,
+                Collections.singletonList(domainAll.build()));
 
-		// Kinetic.Message.Builder request = (Kinetic.Message.Builder)
-		// km.getMessage();
+    }
 
-		Kinetic.Command.Builder commandBuilder = (Kinetic.Command.Builder) km
-				.getCommand();
-		Header.Builder header = commandBuilder.getHeaderBuilder();
+    /**
+     * Useful for writing tests which exercise permissions corner cases. Creates
+     * a new client and adds the given domains to the client's ACL
+     *
+     * @param clientId
+     * @param clientKeyString
+     * @param domains
+     * @throws KineticException
+     */
+    public void createClientAclWithDomains(String clientName, int clientId,
+            String clientKeyString,
+            List<Kinetic.Command.Security.ACL.Scope> domains)
+            throws KineticException {
 
-		header.setMessageType(Command.MessageType.SECURITY);
+        KineticMessage km = MessageFactory.createKineticMessageWithBuilder();
 
-		Kinetic.Command.Security.Builder security = commandBuilder
-				.getBodyBuilder().getSecurityBuilder();
+        // Kinetic.Message.Builder request = (Kinetic.Message.Builder)
+        // km.getMessage();
 
-		Kinetic.Command.Security.ACL.Builder acl = Kinetic.Command.Security.ACL
-				.newBuilder();
-		acl.setIdentity(clientId);
-		acl.setKey(ByteString.copyFromUtf8(clientKeyString));
-		acl.setHmacAlgorithm(Kinetic.Command.Security.ACL.HMACAlgorithm.HmacSHA1);
+        Kinetic.Command.Builder commandBuilder = (Kinetic.Command.Builder) km
+                .getCommand();
+        Header.Builder header = commandBuilder.getHeaderBuilder();
 
-		for (Kinetic.Command.Security.ACL.Scope domain : domains) {
-			acl.addScope(domain);
-		}
-		security.addAcl(acl);
+        header.setMessageType(Command.MessageType.SECURITY);
 
-//		KineticMessage response = getClient(clientName).request(km);
-		KineticMessage response = getAdminClient().request(km);
-		// Ensure setup succeeded, or else fail the calling test.
-		assertEquals(Kinetic.Command.Status.StatusCode.SUCCESS, response
-				.getCommand().getStatus().getCode());
+        Kinetic.Command.Security.Builder security = commandBuilder
+                .getBodyBuilder().getSecurityBuilder();
 
-	}
+        Kinetic.Command.Security.ACL.Builder acl = Kinetic.Command.Security.ACL
+                .newBuilder();
+        acl.setIdentity(clientId);
+        acl.setKey(ByteString.copyFromUtf8(clientKeyString));
+        acl.setHmacAlgorithm(Kinetic.Command.Security.ACL.HMACAlgorithm.HmacSHA1);
 
-	/**
-	 * Utility method to reduce duplicated test code. Creates a new entry for
-	 * the given key/value pair, and executes a PUT using the given client.
-	 *
-	 * @param key
-	 *            The string representation of the key to put
-	 * @param value
-	 *            The string representation of the value to put
-	 * @param client
-	 *            The client used to put
-	 * @return The entry created from the key/value pair
-	 * @throws kinetic.client.KineticException
-	 */
-	protected Entry buildAndPutEntry(String key, String value,
-			KineticClient client) throws KineticException {
-		Entry entry = new Entry(toByteArray(key), toByteArray(value));
-		client.put(entry, null);
-		return entry;
-	}
+        for (Kinetic.Command.Security.ACL.Scope domain : domains) {
+            acl.addScope(domain);
+        }
+        security.addAcl(acl);
 
-	@DataProvider(name = "transportProtocolOptions")
-	public Object[][] createObjectsBasedOnProtocolOptions()
-			throws KineticException {
+        // KineticMessage response = getClient(clientName).request(km);
+        KineticMessage response = getAdminClient().request(km);
+        // Ensure setup succeeded, or else fail the calling test.
+        assertEquals(Kinetic.Command.Status.StatusCode.SUCCESS, response
+                .getCommand().getStatus().getCode());
 
-		Object[][] objects = new Object[kineticClientConfigutations.size()][];
-		int i = 0;
-		for (String clientName : kineticClientConfigutations.keySet()) {
-			objects[i++] = new Object[] { clientName };
-		}
+    }
 
-		return objects;
-	}
+    /**
+     * Utility method to reduce duplicated test code. Creates a new entry for
+     * the given key/value pair, and executes a PUT using the given client.
+     *
+     * @param key
+     *            The string representation of the key to put
+     * @param value
+     *            The string representation of the value to put
+     * @param client
+     *            The client used to put
+     * @return The entry created from the key/value pair
+     * @throws kinetic.client.KineticException
+     */
+    protected Entry buildAndPutEntry(String key, String value,
+            KineticClient client) throws KineticException {
+        Entry entry = new Entry(toByteArray(key), toByteArray(value));
+        client.put(entry, null);
+        return entry;
+    }
 
-	private void createKineticClientConfigurations() throws KineticException {
-		kineticClientConfigutations.clear();
-		ClientConfiguration clientConfiguration;
+    @DataProvider(name = "transportProtocolOptions")
+    public Object[][] createObjectsBasedOnProtocolOptions()
+            throws KineticException {
 
-		if (Boolean.parseBoolean(System.getProperty("RUN_TCP_TEST"))) {
-			clientConfiguration = getClientConfig();
-			clientConfiguration.setUseSsl(false);
-			clientConfiguration.setUseNio(false);
-			kineticClientConfigutations.put(NONNIO_NONSSL_CLIENT,
-					clientConfiguration);
-		}
+        Object[][] objects = new Object[kineticClientConfigutations.size()][];
+        int i = 0;
+        for (String clientName : kineticClientConfigutations.keySet()) {
+            objects[i++] = new Object[] { clientName };
+        }
 
-		if (Boolean.parseBoolean(System.getProperty("RUN_NIO_TEST"))) {
-			clientConfiguration = getClientConfig();
-			clientConfiguration.setUseSsl(false);
-			clientConfiguration.setUseNio(true);
-			kineticClientConfigutations.put(NIO_NONSSL_CLIENT,
-					clientConfiguration);
-		}
+        return objects;
+    }
 
-		if (Boolean.parseBoolean(System.getProperty("RUN_SSL_TEST"))) {
-			clientConfiguration = getClientConfig();
-			clientConfiguration.setUseSsl(true);
-			clientConfiguration.setUseNio(false);
-			clientConfiguration
-					.setPort(clientConfiguration.getSSLDefaultPort());
-			kineticClientConfigutations.put(NONNIO_SSL_CLIENT,
-					clientConfiguration);
-		}
+    private void createKineticClientConfigurations() throws KineticException {
+        kineticClientConfigutations.clear();
+        ClientConfiguration clientConfiguration;
 
-		if (kineticClientConfigutations.size() == 0) {
-			clientConfiguration = getClientConfig();
-			clientConfiguration.setUseSsl(false);
-			clientConfiguration.setUseNio(true);
-			kineticClientConfigutations.put(NIO_NONSSL_CLIENT,
-					clientConfiguration);
-		}
-	}
+        if (Boolean.parseBoolean(System.getProperty("RUN_TCP_TEST"))) {
+            clientConfiguration = getClientConfig();
+            clientConfiguration.setUseSsl(false);
+            clientConfiguration.setUseNio(false);
+            kineticClientConfigutations.put(NONNIO_NONSSL_CLIENT,
+                    clientConfiguration);
+        }
 
-	private void closeKineticClients() throws KineticException {
+        if (Boolean.parseBoolean(System.getProperty("RUN_NIO_TEST"))) {
+            clientConfiguration = getClientConfig();
+            clientConfiguration.setUseSsl(false);
+            clientConfiguration.setUseNio(true);
+            kineticClientConfigutations.put(NIO_NONSSL_CLIENT,
+                    clientConfiguration);
+        }
 
-		for (KineticP2pClient client : kineticClients.values()) {
-		    if (null != client) {
-		        client.close();
-		    }
-		}
-	}
+        if (Boolean.parseBoolean(System.getProperty("RUN_SSL_TEST"))) {
+            clientConfiguration = getClientConfig();
+            clientConfiguration.setUseSsl(true);
+            clientConfiguration.setUseNio(false);
+            clientConfiguration
+                    .setPort(clientConfiguration.getSSLDefaultPort());
+            kineticClientConfigutations.put(NONNIO_SSL_CLIENT,
+                    clientConfiguration);
+        }
+
+        if (kineticClientConfigutations.size() == 0) {
+            clientConfiguration = getClientConfig();
+            clientConfiguration.setUseSsl(false);
+            clientConfiguration.setUseNio(true);
+            kineticClientConfigutations.put(NIO_NONSSL_CLIENT,
+                    clientConfiguration);
+        }
+    }
+
+    private void closeKineticClients() throws KineticException {
+
+        for (KineticP2pClient client : kineticClients.values()) {
+            if (null != client) {
+                client.close();
+            }
+        }
+    }
 }

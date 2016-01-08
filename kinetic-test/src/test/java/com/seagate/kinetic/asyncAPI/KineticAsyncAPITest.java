@@ -19,10 +19,13 @@ package com.seagate.kinetic.asyncAPI;
 import static com.seagate.kinetic.KineticAssertions.assertKeyNotFound;
 import static com.seagate.kinetic.KineticAssertions.assertListOfArraysEqual;
 import static com.seagate.kinetic.KineticTestHelpers.buildSuccessOnlyCallbackHandler;
+import static com.seagate.kinetic.KineticTestHelpers.cleanData;
 import static com.seagate.kinetic.KineticTestHelpers.int32;
 import static com.seagate.kinetic.KineticTestHelpers.toByteArray;
 import static com.seagate.kinetic.KineticTestHelpers.waitForLatch;
 import static com.seagate.kinetic.KineticTestHelpers.cleanKVGenData;
+import static com.seagate.kinetic.KineticTestHelpers.cleanPreviousData;
+import static com.seagate.kinetic.KineticTestHelpers.cleanNextData;
 import static org.testng.AssertJUnit.assertEquals;
 import static org.testng.AssertJUnit.assertFalse;
 import static org.testng.AssertJUnit.assertNull;
@@ -622,7 +625,7 @@ public class KineticAsyncAPITest extends IntegrationTestCase {
         final CountDownLatch getNextSignal = new CountDownLatch(1);
 
         byte[] lastKey = toByteArray("lastkey");
-        getClient(clientName).deleteForced(lastKey);
+        cleanNextData(lastKey, getClient(clientName));
         getClient(clientName).putForced(
                 new Entry(lastKey, toByteArray("lastvalue")));
 
@@ -749,7 +752,7 @@ public class KineticAsyncAPITest extends IntegrationTestCase {
         final CountDownLatch getPreviousSignal = new CountDownLatch(1);
 
         byte[] firstKey = toByteArray("firstkey");
-        getClient(clientName).deleteForced(firstKey);
+        cleanPreviousData(firstKey, getClient(clientName));
         getClient(clientName).putForced(
                 new Entry(firstKey, toByteArray("firstvalue")));
 
@@ -928,9 +931,7 @@ public class KineticAsyncAPITest extends IntegrationTestCase {
         final CountDownLatch putSignal = new CountDownLatch(keys.size());
         final CountDownLatch getKeyRangeSignal = new CountDownLatch(1);
         
-        for (byte[] key: keys){
-            getClient(clientName).deleteForced(key);
-        }
+        cleanData(toByteArray("00"), toByteArray("14"), getClient(clientName));
 
         for (byte[] key : keys) {
             CallbackHandler<Entry> handler = buildSuccessOnlyCallbackHandler(new SuccessAsyncHandler<Entry>() {
@@ -965,9 +966,7 @@ public class KineticAsyncAPITest extends IntegrationTestCase {
 
         assertListOfArraysEqual(keys, keyRangeList);
         
-        for (byte[] key: keys){
-            getClient(clientName).deleteForced(key);
-        }
+        cleanData(toByteArray("00"), toByteArray("14"), getClient(clientName));
 
         logger.info(this.testEndInfo());
     }
@@ -995,9 +994,7 @@ public class KineticAsyncAPITest extends IntegrationTestCase {
                 toByteArray("11"), toByteArray("12"), toByteArray("13"),
                 toByteArray("14"));
 
-        for (byte[] key: keys){
-            getClient(clientName).deleteForced(key);
-        }
+        cleanData(toByteArray("00"), toByteArray("14"), getClient(clientName));
         
         byte[] newVersion = int32(0);
         final List<Entry> putList = new ArrayList<Entry>();
@@ -1039,9 +1036,7 @@ public class KineticAsyncAPITest extends IntegrationTestCase {
         assertEquals(keys.size() - 2, keyRangeList.size());
         assertListOfArraysEqual(keys.subList(1, keys.size() - 1), keyRangeList);
         
-        for (byte[] key: keys){
-            getClient(clientName).deleteForced(key);
-        }
+        cleanData(toByteArray("00"), toByteArray("14"), getClient(clientName));
 
         logger.info(this.testEndInfo());
     }
@@ -1069,9 +1064,7 @@ public class KineticAsyncAPITest extends IntegrationTestCase {
                 toByteArray("11"), toByteArray("12"), toByteArray("13"),
                 toByteArray("14"));
         
-        for (byte[] key: keys){
-            getClient(clientName).deleteForced(key);
-        }
+        cleanData(toByteArray("00"), toByteArray("14"), getClient(clientName));
 
         byte[] newVersion = int32(0);
         final List<Entry> putList = new ArrayList<Entry>();
@@ -1113,9 +1106,7 @@ public class KineticAsyncAPITest extends IntegrationTestCase {
         assertEquals(keys.size() - 1, keyRangeList.size());
         assertListOfArraysEqual(keys.subList(0, keys.size() - 1), keyRangeList);
         
-        for (byte[] key: keys){
-            getClient(clientName).deleteForced(key);
-        }
+        cleanData(toByteArray("00"), toByteArray("14"), getClient(clientName));
 
         logger.info(this.testEndInfo());
     }
@@ -1143,9 +1134,7 @@ public class KineticAsyncAPITest extends IntegrationTestCase {
                 toByteArray("11"), toByteArray("12"), toByteArray("13"),
                 toByteArray("14"));
 
-        for (byte[] key: keys){
-            getClient(clientName).deleteForced(key);
-        }
+        cleanData(toByteArray("00"), toByteArray("14"), getClient(clientName));
         
         byte[] newVersion = int32(0);
         final List<Entry> putList = new ArrayList<Entry>();
@@ -1187,9 +1176,7 @@ public class KineticAsyncAPITest extends IntegrationTestCase {
         assertEquals(keys.size() - 1, keyRangeList.size());
         assertListOfArraysEqual(keys.subList(1, keys.size()), keyRangeList);
         
-        for (byte[] key: keys){
-            getClient(clientName).deleteForced(key);
-        }
+        cleanData(toByteArray("00"), toByteArray("14"), getClient(clientName));
 
         logger.info(this.testEndInfo());
     }

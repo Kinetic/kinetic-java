@@ -109,9 +109,11 @@ public abstract class AbstractIntegrationTestTarget {
 	protected void performISE() throws KineticException {
 		KineticAdminClient kineticAdminClient = KineticAdminClientFactory
 				.createInstance(getAdminClientConfig());
-		byte[] newErasePin = toByteArray("123");
-		kineticAdminClient.setErasePin(toByteArray(""), newErasePin);
-		kineticAdminClient.instantErase(newErasePin);
+		String oldErasePin = System.getProperty("OLD_PIN", "");
+		String newErasePin = System.getProperty("NEW_PIN", "123");
+		
+		kineticAdminClient.setErasePin(toByteArray(oldErasePin), toByteArray(newErasePin));
+		kineticAdminClient.instantErase(toByteArray(newErasePin));
 		kineticAdminClient.close();
 	}
 }

@@ -23,6 +23,8 @@ import static com.seagate.kinetic.KineticTestHelpers.int32;
 import static com.seagate.kinetic.KineticTestHelpers.toByteArray;
 import static com.seagate.kinetic.KineticTestHelpers.cleanData;
 import static com.seagate.kinetic.KineticTestHelpers.cleanKVGenData;
+import static com.seagate.kinetic.KineticTestHelpers.cleanNextData;
+import static com.seagate.kinetic.KineticTestHelpers.cleanPreviousData;
 import static org.testng.AssertJUnit.assertEquals;
 import static org.testng.AssertJUnit.assertFalse;
 import static org.testng.AssertJUnit.assertNull;
@@ -371,7 +373,7 @@ public class KineticBasicAPITest extends IntegrationTestCase {
     public void testGetNext_ReturnsNull_IfLastValue(String clientName)
             throws KineticException {
         byte[] key = toByteArray("key");
-        getClient(clientName).deleteForced(key);
+        cleanNextData(key, getClient(clientName));
         getClient(clientName).putForced(new Entry(key, toByteArray("value")));
         assertNull(getClient(clientName).getNext(key));
 
@@ -431,7 +433,7 @@ public class KineticBasicAPITest extends IntegrationTestCase {
             throws KineticException {
         byte[] key = toByteArray("key");
 
-        getClient(clientName).deleteForced(key);
+        cleanPreviousData(key, getClient(clientName));
 
         getClient(clientName).putForced(new Entry(key, toByteArray("value")));
         Entry v = getClient(clientName).getPrevious(key);
@@ -522,9 +524,7 @@ public class KineticBasicAPITest extends IntegrationTestCase {
                 toByteArray("11"), toByteArray("12"), toByteArray("13"),
                 toByteArray("14"));
 
-        for (byte[] key : keys) {
-            getClient(clientName).deleteForced(key);
-        }
+        cleanData(toByteArray("00"), toByteArray("14"), getClient(clientName));
 
         for (byte[] key : keys) {
             getClient(clientName).putForced(new Entry(key, key));
@@ -536,9 +536,7 @@ public class KineticBasicAPITest extends IntegrationTestCase {
 
         assertListOfArraysEqual(keys, returnedKeys);
 
-        for (byte[] key : keys) {
-            getClient(clientName).deleteForced(key);
-        }
+        cleanData(toByteArray("00"), toByteArray("14"), getClient(clientName));
 
         logger.info(this.testEndInfo());
     }
@@ -562,9 +560,7 @@ public class KineticBasicAPITest extends IntegrationTestCase {
                 toByteArray("11"), toByteArray("12"), toByteArray("13"),
                 toByteArray("14"));
 
-        for (byte[] key : keys) {
-            getClient(clientName).deleteForced(key);
-        }
+        cleanData(toByteArray("00"), toByteArray("14"), getClient(clientName));
 
         for (byte[] key : keys) {
             getClient(clientName).putForced(new Entry(key, key));
@@ -576,9 +572,7 @@ public class KineticBasicAPITest extends IntegrationTestCase {
 
         assertListOfArraysEqual(keys.subList(1, keys.size()), returnedKeys);
 
-        for (byte[] key : keys) {
-            getClient(clientName).deleteForced(key);
-        }
+        cleanData(toByteArray("00"), toByteArray("14"), getClient(clientName));
 
         logger.info(this.testEndInfo());
     }
@@ -602,9 +596,7 @@ public class KineticBasicAPITest extends IntegrationTestCase {
                 toByteArray("11"), toByteArray("12"), toByteArray("13"),
                 toByteArray("14"));
 
-        for (byte[] key : keys) {
-            getClient(clientName).deleteForced(key);
-        }
+        cleanData(toByteArray("00"), toByteArray("14"), getClient(clientName));
 
         for (byte[] key : keys) {
             getClient(clientName).putForced(new Entry(key, key));
@@ -616,9 +608,7 @@ public class KineticBasicAPITest extends IntegrationTestCase {
 
         assertListOfArraysEqual(keys.subList(0, keys.size() - 1), returnedKeys);
 
-        for (byte[] key : keys) {
-            getClient(clientName).deleteForced(key);
-        }
+        cleanData(toByteArray("00"), toByteArray("14"), getClient(clientName));
 
         logger.info(this.testEndInfo());
     }
@@ -642,9 +632,7 @@ public class KineticBasicAPITest extends IntegrationTestCase {
                 toByteArray("11"), toByteArray("12"), toByteArray("13"),
                 toByteArray("14"));
 
-        for (byte[] key : keys) {
-            getClient(clientName).deleteForced(key);
-        }
+        cleanData(toByteArray("00"), toByteArray("14"), getClient(clientName));
 
         for (byte[] key : keys) {
             getClient(clientName).putForced(new Entry(key, key));
@@ -656,9 +644,7 @@ public class KineticBasicAPITest extends IntegrationTestCase {
 
         assertListOfArraysEqual(keys.subList(1, keys.size() - 1), returnedKeys);
 
-        for (byte[] key : keys) {
-            getClient(clientName).deleteForced(key);
-        }
+        cleanData(toByteArray("00"), toByteArray("14"), getClient(clientName));
 
         logger.info(this.testEndInfo());
     }

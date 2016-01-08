@@ -18,6 +18,9 @@ package com.seagate.kinetic.boundary;
 
 import static com.seagate.kinetic.KineticAssertions.assertEntryEquals;
 import static com.seagate.kinetic.KineticAssertions.assertKeyNotFound;
+import static com.seagate.kinetic.KineticTestHelpers.cleanData;
+import static com.seagate.kinetic.KineticTestHelpers.cleanNextData;
+import static com.seagate.kinetic.KineticTestHelpers.cleanPreviousData;
 import static com.seagate.kinetic.KineticTestHelpers.int32;
 import static com.seagate.kinetic.KineticTestHelpers.toByteArray;
 import static org.testng.AssertJUnit.assertEquals;
@@ -375,7 +378,7 @@ public class KineticBoundaryTest extends IntegrationTestCase {
      * @throws KineticException
      *             if any internal error occurred.
      */
-    //TODO open
+    // TODO open
     @Test(dataProvider = "transportProtocolOptions", enabled = false)
     public void testPut_Throws_ForValueTooLong(String clientName) {
         byte[] key = toByteArray("key00000000000");
@@ -821,6 +824,14 @@ public class KineticBoundaryTest extends IntegrationTestCase {
     @Test(dataProvider = "transportProtocolOptions")
     public void testGetNext_ForKeySmallerThanTheFirstKeyInDB(String clientName) {
         Entry entry0 = null;
+        byte[] key = toByteArray("key00");
+
+        try {
+            cleanData(key, toByteArray("key007"), getClient(clientName));
+        } catch (KineticException e2) {
+            Assert.fail("clean data throw exception. " + e2.getMessage());
+        }
+
         try {
             entry0 = buildAndPutEntry("key005", "value005",
                     getClient(clientName));
@@ -830,8 +841,6 @@ public class KineticBoundaryTest extends IntegrationTestCase {
             Assert.fail("build and put entry throw exception. "
                     + e.getMessage());
         }
-
-        byte[] key = toByteArray("key00");
 
         Entry entryNext = null;
         try {
@@ -843,7 +852,7 @@ public class KineticBoundaryTest extends IntegrationTestCase {
         assertEntryEquals(entry0, entryNext);
 
         try {
-            cleanKeys(getClient(clientName));
+            cleanData(key, toByteArray("key007"), getClient(clientName));
         } catch (KineticException e) {
             Assert.fail("clean key throw exception. " + e.getMessage());
         }
@@ -861,6 +870,14 @@ public class KineticBoundaryTest extends IntegrationTestCase {
      */
     @Test(dataProvider = "transportProtocolOptions")
     public void testGetNext_ForKeyIsTheFirstKeyInDB(String clientName) {
+
+        try {
+            cleanData(toByteArray("key005"), toByteArray("key007"),
+                    getClient(clientName));
+        } catch (KineticException e) {
+            Assert.fail("clean key throw exception. " + e.getMessage());
+        }
+
         Entry entry0 = null;
         Entry entry1 = null;
         try {
@@ -885,9 +902,10 @@ public class KineticBoundaryTest extends IntegrationTestCase {
         }
 
         try {
-            cleanKeys(getClient(clientName));
+            cleanData(toByteArray("key005"), toByteArray("key007"),
+                    getClient(clientName));
         } catch (KineticException e) {
-            Assert.fail("clean keys throw exception! " + e.getMessage());
+            Assert.fail("clean key throw exception. " + e.getMessage());
         }
 
         logger.info(this.testEndInfo());
@@ -903,6 +921,13 @@ public class KineticBoundaryTest extends IntegrationTestCase {
      */
     @Test(dataProvider = "transportProtocolOptions")
     public void testGetNext_ForKeyIsTheSecondKeyInDB(String clientName) {
+        try {
+            cleanData(toByteArray("key005"), toByteArray("key007"),
+                    getClient(clientName));
+        } catch (KineticException e) {
+            Assert.fail("clean key throw exception. " + e.getMessage());
+        }
+
         Entry entry1 = null;
         Entry entry2 = null;
         try {
@@ -927,9 +952,10 @@ public class KineticBoundaryTest extends IntegrationTestCase {
         }
 
         try {
-            cleanKeys(getClient(clientName));
+            cleanData(toByteArray("key005"), toByteArray("key007"),
+                    getClient(clientName));
         } catch (KineticException e) {
-            Assert.fail("clean keys throw exception! " + e.getMessage());
+            Assert.fail("clean key throw exception. " + e.getMessage());
         }
 
         logger.info(this.testEndInfo());
@@ -945,6 +971,12 @@ public class KineticBoundaryTest extends IntegrationTestCase {
      */
     @Test(dataProvider = "transportProtocolOptions")
     public void testGetNext_ReturnNull_ForKeyIsTheLastKeyInDB(String clientName) {
+        try {
+            cleanNextData(toByteArray("key007"), getClient(clientName));
+        } catch (KineticException e) {
+            Assert.fail("clean key throw exception. " + e.getMessage());
+        }
+
         Entry entry2 = null;
         try {
             buildAndPutEntry("key005", "value005", getClient(clientName));
@@ -966,7 +998,8 @@ public class KineticBoundaryTest extends IntegrationTestCase {
         }
 
         try {
-            cleanKeys(getClient(clientName));
+            cleanData(toByteArray("key005"), toByteArray("key007"),
+                    getClient(clientName));
         } catch (KineticException e) {
             Assert.fail("clean keys throw exception! " + e.getMessage());
         }
@@ -984,6 +1017,14 @@ public class KineticBoundaryTest extends IntegrationTestCase {
     @Test(dataProvider = "transportProtocolOptions")
     public void testGetNext_ReturnNull_ForKeyBiggerThanTheLastKeyInDB(
             String clientName) {
+        byte[] key = toByteArray("key09");
+
+        try {
+            cleanNextData(key, getClient(clientName));
+        } catch (KineticException e) {
+            Assert.fail("clean keys throw exception! " + e.getMessage());
+        }
+
         try {
             buildAndPutEntry("key005", "value005", getClient(clientName));
             buildAndPutEntry("key006", "value006", getClient(clientName));
@@ -992,7 +1033,6 @@ public class KineticBoundaryTest extends IntegrationTestCase {
             Assert.fail("build and put entry throw exception! "
                     + e.getMessage());
         }
-        byte[] key = toByteArray("key09");
 
         try {
             Entry entryNext = getClient(clientName).getNext(key);
@@ -1002,7 +1042,8 @@ public class KineticBoundaryTest extends IntegrationTestCase {
         }
 
         try {
-            cleanKeys(getClient(clientName));
+            cleanData(toByteArray("key005"), toByteArray("key007"),
+                    getClient(clientName));
         } catch (KineticException e) {
             Assert.fail("clean keys throw exception! " + e.getMessage());
         }
@@ -1021,6 +1062,12 @@ public class KineticBoundaryTest extends IntegrationTestCase {
     public void testGetNext_ReturnUnauthorizedStatus_ForNextKeyNotVisible(
             String clientName) throws UnsupportedEncodingException,
             KineticException {
+        try {
+            cleanData(toByteArray("a"), toByteArray("c"), getClient(clientName));
+        } catch (KineticException e) {
+            Assert.fail("clean keys throw exception! " + e.getMessage());
+        }
+
         List<Entry> visibleEntries = Lists.newArrayList();
         visibleEntries.add(new Entry(toByteArray("a"), toByteArray("valuea")));
         visibleEntries.add(new Entry(toByteArray("c"), toByteArray("valuec")));
@@ -1072,6 +1119,12 @@ public class KineticBoundaryTest extends IntegrationTestCase {
     @Test(dataProvider = "transportProtocolOptions")
     public void testGetNext_Succeeds_ForGivenKeyNotVisible(String clientName)
             throws UnsupportedEncodingException, KineticException {
+        try {
+            cleanData(toByteArray("a"), toByteArray("c"), getClient(clientName));
+        } catch (KineticException e) {
+            Assert.fail("clean keys throw exception! " + e.getMessage());
+        }
+
         List<Entry> visibleEntries = Lists.newArrayList();
         visibleEntries.add(new Entry(toByteArray("a"), toByteArray("valuea")));
         visibleEntries.add(new Entry(toByteArray("c"), toByteArray("valuec")));
@@ -1176,7 +1229,7 @@ public class KineticBoundaryTest extends IntegrationTestCase {
         Entry versioned0 = new Entry(key0, value0, entryMetadata);
 
         try {
-            getClient(clientName).deleteForced(key0);
+            cleanPreviousData(key0, getClient(clientName));
         } catch (KineticException e) {
             Assert.fail("clean key throw exception! " + e.getMessage());
         }
@@ -1228,6 +1281,15 @@ public class KineticBoundaryTest extends IntegrationTestCase {
     @Test(dataProvider = "transportProtocolOptions")
     public void testGetPrevious_ReturnNull_ForKeySmallerThanTheFirstKeyInDB(
             String clientName) {
+        byte[] key = toByteArray("key00");
+
+        try {
+            cleanPreviousData(key, getClient(clientName));
+        } catch (KineticException e2) {
+            Assert.fail("clean previous data throw exception! "
+                    + e2.getMessage());
+        }
+
         try {
             buildAndPutEntry("key005", "value005", getClient(clientName));
             buildAndPutEntry("key006", "value006", getClient(clientName));
@@ -1236,7 +1298,6 @@ public class KineticBoundaryTest extends IntegrationTestCase {
             Assert.fail("build and put entry throw exception! "
                     + e.getMessage());
         }
-        byte[] key = toByteArray("key00");
 
         try {
             Entry entryPrevious = getClient(clientName).getPrevious(key);
@@ -1246,7 +1307,8 @@ public class KineticBoundaryTest extends IntegrationTestCase {
         }
 
         try {
-            cleanKeys(getClient(clientName));
+            cleanData(toByteArray("key005"), toByteArray("key007"),
+                    getClient(clientName));
         } catch (KineticException e) {
             Assert.fail("clean keys throw exception! " + e.getMessage());
         }
@@ -1264,6 +1326,13 @@ public class KineticBoundaryTest extends IntegrationTestCase {
      */
     @Test(dataProvider = "transportProtocolOptions")
     public void testGetPrevious_ForKeyIsTheFirstKeyInDB(String clientName) {
+        try {
+            cleanPreviousData(toByteArray("key005"), getClient(clientName));
+        } catch (KineticException e2) {
+            Assert.fail("clean previous data throw exception! "
+                    + e2.getMessage());
+        }
+
         Entry entry0 = null;
         try {
             entry0 = buildAndPutEntry("key005", "value005",
@@ -1285,7 +1354,8 @@ public class KineticBoundaryTest extends IntegrationTestCase {
         }
 
         try {
-            cleanKeys(getClient(clientName));
+            cleanData(toByteArray("key005"), toByteArray("key007"),
+                    getClient(clientName));
         } catch (KineticException e) {
             Assert.fail("clean keys throw exception! " + e.getMessage());
         }
@@ -1302,6 +1372,13 @@ public class KineticBoundaryTest extends IntegrationTestCase {
      */
     @Test(dataProvider = "transportProtocolOptions")
     public void testGetPrevious_ForKeyIsTheSecondKeyInDB(String clientName) {
+        try {
+            cleanPreviousData(toByteArray("key006"), getClient(clientName));
+        } catch (KineticException e2) {
+            Assert.fail("clean previous data throw exception! "
+                    + e2.getMessage());
+        }
+
         Entry entry0 = null;
         Entry entry1 = null;
         try {
@@ -1326,7 +1403,8 @@ public class KineticBoundaryTest extends IntegrationTestCase {
         }
 
         try {
-            cleanKeys(getClient(clientName));
+            cleanData(toByteArray("key005"), toByteArray("key007"),
+                    getClient(clientName));
         } catch (KineticException e) {
             Assert.fail("clean keys throw exception! " + e.getMessage());
         }
@@ -1344,6 +1422,13 @@ public class KineticBoundaryTest extends IntegrationTestCase {
      */
     @Test(dataProvider = "transportProtocolOptions")
     public void testGetPrevious_ForKeyIsTheThirdKeyInDB(String clientName) {
+        try {
+            cleanPreviousData(toByteArray("key007"), getClient(clientName));
+        } catch (KineticException e2) {
+            Assert.fail("clean previous data throw exception! "
+                    + e2.getMessage());
+        }
+
         Entry entry1 = null;
         Entry entry2 = null;
         try {
@@ -1368,7 +1453,8 @@ public class KineticBoundaryTest extends IntegrationTestCase {
         }
 
         try {
-            cleanKeys(getClient(clientName));
+            cleanData(toByteArray("key005"), toByteArray("key007"),
+                    getClient(clientName));
         } catch (KineticException e) {
             Assert.fail("clean keys throw exception! " + e.getMessage());
         }
@@ -1385,6 +1471,15 @@ public class KineticBoundaryTest extends IntegrationTestCase {
      */
     @Test(dataProvider = "transportProtocolOptions")
     public void testGetPrevious_ForKeyBiggerThanTheLastKeyInDB(String clientName) {
+        byte[] key = toByteArray("key09");
+
+        try {
+            cleanPreviousData(toByteArray("key09"), getClient(clientName));
+        } catch (KineticException e2) {
+            Assert.fail("clean previous data throw exception! "
+                    + e2.getMessage());
+        }
+
         Entry entry2 = null;
         try {
             buildAndPutEntry("key005", "value005", getClient(clientName));
@@ -1396,8 +1491,6 @@ public class KineticBoundaryTest extends IntegrationTestCase {
                     + e.getMessage());
         }
 
-        byte[] key = toByteArray("key09");
-
         Entry entryPrevious;
         try {
             entryPrevious = getClient(clientName).getPrevious(key);
@@ -1407,7 +1500,8 @@ public class KineticBoundaryTest extends IntegrationTestCase {
         }
 
         try {
-            cleanKeys(getClient(clientName));
+            cleanData(toByteArray("key005"), toByteArray("key007"),
+                    getClient(clientName));
         } catch (KineticException e) {
             Assert.fail("clean keys throw exception! " + e.getMessage());
         }
@@ -1428,9 +1522,10 @@ public class KineticBoundaryTest extends IntegrationTestCase {
         byte[] key = toByteArray("key09");
 
         try {
-            getClient(clientName).deleteForced(key);
-        } catch (KineticException e) {
-            Assert.fail("clean key throw exception! " + e.getMessage());
+            cleanPreviousData(toByteArray("key09"), getClient(clientName));
+        } catch (KineticException e2) {
+            Assert.fail("clean previous data throw exception! "
+                    + e2.getMessage());
         }
 
         try {
@@ -1454,6 +1549,12 @@ public class KineticBoundaryTest extends IntegrationTestCase {
     @Test(dataProvider = "transportProtocolOptions")
     public void testGetPrevious_ReturnUnauthorizedStatus_ForNextKeyNotVisible(
             String clientName) throws KineticException {
+        try {
+            cleanPreviousData(toByteArray("a"), getClient(clientName));
+        } catch (KineticException e2) {
+            Assert.fail("clean previous data throw exception! "
+                    + e2.getMessage());
+        }
 
         List<Entry> visibleEntries = Lists.newArrayList();
         visibleEntries.add(new Entry(toByteArray("a"), toByteArray("valuea")));
@@ -1507,6 +1608,13 @@ public class KineticBoundaryTest extends IntegrationTestCase {
     @Test(dataProvider = "transportProtocolOptions")
     public void testGetPrevious_Succeeds_ForGivenKeyNotVisible(String clientName)
             throws KineticException {
+        try {
+            cleanPreviousData(toByteArray("b"), getClient(clientName));
+        } catch (KineticException e2) {
+            Assert.fail("clean previous data throw exception! "
+                    + e2.getMessage());
+        }
+
         List<Entry> visibleEntries = Lists.newArrayList();
         visibleEntries.add(new Entry(toByteArray("a"), toByteArray("valuea")));
         visibleEntries.add(new Entry(toByteArray("c"), toByteArray("valuec")));
@@ -1661,6 +1769,17 @@ public class KineticBoundaryTest extends IntegrationTestCase {
     @Test(dataProvider = "transportProtocolOptions")
     public void testGetKeyRange_ReturnsKeysInRange_ForStartKeyInclusiveEndKeyInclusiveWithStartAndEndKeyNotExistInDB(
             String clientName) {
+        // Not present, before first key
+        byte[] startKey = toByteArray("key00");
+        // Not present, in between two keys
+        byte[] endKey = toByteArray("key007");
+
+        try {
+            cleanData(startKey, endKey, getClient(clientName));
+        } catch (KineticException e2) {
+            Assert.fail("Clean data throw exception! " + e2.getMessage());
+        }
+
         Entry entry0 = null;
         Entry entry1 = null;
         try {
@@ -1672,11 +1791,6 @@ public class KineticBoundaryTest extends IntegrationTestCase {
         } catch (KineticException e) {
             Assert.fail("build and put keys throw exception! " + e.getMessage());
         }
-
-        // Not present, before first key
-        byte[] startKey = toByteArray("key00");
-        // Not present, in between two keys
-        byte[] endKey = toByteArray("key007");
 
         List<byte[]> keys;
         try {
@@ -1712,6 +1826,17 @@ public class KineticBoundaryTest extends IntegrationTestCase {
     @Test(dataProvider = "transportProtocolOptions")
     public void testGetetKeyRange_ReturnsKeysInRange_ForStartKeyExclusiveEndKeyExclusiveWithStartAndEndKeyNotExistInDB(
             String clientName) {
+        // Not present, before first key
+        byte[] startKey = toByteArray("key00");
+        // Not present, in between two keys
+        byte[] endKey = toByteArray("key007");
+
+        try {
+            cleanData(startKey, endKey, getClient(clientName));
+        } catch (KineticException e2) {
+            Assert.fail("Clean data throw exception! " + e2.getMessage());
+        }
+
         try {
             getClient(clientName).deleteForced(toByteArray("key005"));
             getClient(clientName).deleteForced(toByteArray("key006"));
@@ -1728,11 +1853,6 @@ public class KineticBoundaryTest extends IntegrationTestCase {
             Assert.fail("build and put Entry throw exception. "
                     + e.getMessage());
         }
-
-        // Not present, before first key
-        byte[] startKey = toByteArray("key00");
-        // Not present, in between two keys
-        byte[] endKey = toByteArray("key007");
 
         List<byte[]> keys = new ArrayList<byte[]>();
         try {
@@ -1767,6 +1887,15 @@ public class KineticBoundaryTest extends IntegrationTestCase {
     @Test(dataProvider = "transportProtocolOptions")
     public void testGetKeyRange_ForStartKeyInclusiveEndKeyExclusive_WithStartAndEndKeyNotExistInDB(
             String clientName) {
+        byte[] startKey = toByteArray("key00");
+        byte[] endKey = toByteArray("key002");
+
+        try {
+            cleanData(startKey, endKey, getClient(clientName));
+        } catch (KineticException e2) {
+            Assert.fail("Clean data throw exception! " + e2.getMessage());
+        }
+
         try {
             cleanKeys(getClient(clientName));
         } catch (KineticException e) {
@@ -1781,9 +1910,6 @@ public class KineticBoundaryTest extends IntegrationTestCase {
             Assert.fail("build and put Entry throw exception. "
                     + e.getMessage());
         }
-
-        byte[] startKey = toByteArray("key00");
-        byte[] endKey = toByteArray("key002");
 
         List<byte[]> keys = new ArrayList<byte[]>();
         try {
@@ -1815,6 +1941,15 @@ public class KineticBoundaryTest extends IntegrationTestCase {
     @Test(dataProvider = "transportProtocolOptions")
     public void testGetKeyRange_ForStartKeyExclusiveEndKeyInclusive_WithStartAndEndKeyNotExistInDB(
             String clientName) {
+        byte[] startKey = toByteArray("key00");
+        byte[] endKey = toByteArray("key002");
+
+        try {
+            cleanData(startKey, endKey, getClient(clientName));
+        } catch (KineticException e2) {
+            Assert.fail("Clean data throw exception! " + e2.getMessage());
+        }
+
         try {
             cleanKeys(getClient(clientName));
         } catch (KineticException e) {
@@ -1829,9 +1964,6 @@ public class KineticBoundaryTest extends IntegrationTestCase {
             Assert.fail("build and put Entry throw exception. "
                     + e.getMessage());
         }
-
-        byte[] startKey = toByteArray("key00");
-        byte[] endKey = toByteArray("key002");
 
         List<byte[]> keys = new ArrayList<byte[]>();
         try {
@@ -1862,6 +1994,15 @@ public class KineticBoundaryTest extends IntegrationTestCase {
     @Test(dataProvider = "transportProtocolOptions")
     public void testGetKeyRange_ForStartKeyExclusiveEndKeyExclusive_WithEndKeyExistsInDB(
             String clientName) {
+        byte[] startKey = toByteArray("key00");
+        byte[] endKey = toByteArray("key005");
+
+        try {
+            cleanData(startKey, endKey, getClient(clientName));
+        } catch (KineticException e2) {
+            Assert.fail("Clean data throw exception! " + e2.getMessage());
+        }
+
         try {
             cleanKeys(getClient(clientName));
         } catch (KineticException e) {
@@ -1876,9 +2017,6 @@ public class KineticBoundaryTest extends IntegrationTestCase {
             Assert.fail("build and put Entry throw exception. "
                     + e.getMessage());
         }
-
-        byte[] startKey = toByteArray("key00");
-        byte[] endKey = toByteArray("key005");
 
         List<byte[]> keys = null;
         try {
@@ -1909,6 +2047,15 @@ public class KineticBoundaryTest extends IntegrationTestCase {
     @Test(dataProvider = "transportProtocolOptions")
     public void testGetKeyRange_ForStartKeyInclusiveEndKeyExclusive_WithEndKeyExistsInDB(
             String clientName) {
+        byte[] startKey = toByteArray("key00");
+        byte[] endKey = toByteArray("key005");
+
+        try {
+            cleanData(startKey, endKey, getClient(clientName));
+        } catch (KineticException e2) {
+            Assert.fail("Clean data throw exception! " + e2.getMessage());
+        }
+
         try {
             cleanKeys(getClient(clientName));
         } catch (KineticException e) {
@@ -1923,9 +2070,6 @@ public class KineticBoundaryTest extends IntegrationTestCase {
             Assert.fail("build and put Entry throw exception. "
                     + e.getMessage());
         }
-
-        byte[] startKey = toByteArray("key00");
-        byte[] endKey = toByteArray("key005");
 
         List<byte[]> keys = null;
         try {
@@ -1955,13 +2099,19 @@ public class KineticBoundaryTest extends IntegrationTestCase {
     @Test(dataProvider = "transportProtocolOptions")
     public void testGetKeyRange_ForStartKeyExclusiveEndKeyInclusive_WithEndKeyExistsInDB(
             String clientName) throws KineticException {
+        byte[] startKey = toByteArray("key00");
+        byte[] endKey = toByteArray("key005");
+
+        try {
+            cleanData(startKey, endKey, getClient(clientName));
+        } catch (KineticException e2) {
+            Assert.fail("Clean data throw exception! " + e2.getMessage());
+        }
+
         Entry entry0 = buildAndPutEntry("key005", "value005",
                 getClient(clientName));
         buildAndPutEntry("key006", "value006", getClient(clientName));
         buildAndPutEntry("key007", "value007", getClient(clientName));
-
-        byte[] startKey = toByteArray("key00");
-        byte[] endKey = entry0.getKey();
 
         List<byte[]> keys = getClient(clientName).getKeyRange(startKey, false,
                 endKey, true, 10);
@@ -1984,13 +2134,19 @@ public class KineticBoundaryTest extends IntegrationTestCase {
     @Test(dataProvider = "transportProtocolOptions")
     public void testGetKeyRange_ForStartKeyInclusiveEndKeyInclusive_WithEndKeyExistsInDB(
             String clientName) throws KineticException {
+        byte[] startKey = toByteArray("key00");
+        byte[] endKey = toByteArray("key005");
+
+        try {
+            cleanData(startKey, endKey, getClient(clientName));
+        } catch (KineticException e2) {
+            Assert.fail("Clean data throw exception! " + e2.getMessage());
+        }
+
         Entry entry0 = buildAndPutEntry("key005", "value005",
                 getClient(clientName));
         buildAndPutEntry("key006", "value006", getClient(clientName));
         buildAndPutEntry("key007", "value007", getClient(clientName));
-
-        byte[] startKey = toByteArray("key00");
-        byte[] endKey = entry0.getKey();
 
         List<byte[]> keys = getClient(clientName).getKeyRange(startKey, true,
                 endKey, true, 10);
@@ -2014,14 +2170,19 @@ public class KineticBoundaryTest extends IntegrationTestCase {
     @Test(dataProvider = "transportProtocolOptions")
     public void testGetKeyRange_ForStartKeyExclusiveEndKeyExclusive_WithEndKeyIsTheSecondKeyExistsInDB(
             String clientName) throws KineticException {
+        byte[] startKey = toByteArray("key00");
+        byte[] endKey = toByteArray("key006");
+
+        try {
+            cleanData(startKey, endKey, getClient(clientName));
+        } catch (KineticException e2) {
+            Assert.fail("Clean data throw exception! " + e2.getMessage());
+        }
+
         Entry entry0 = buildAndPutEntry("key005", "value005",
                 getClient(clientName));
-        Entry entry1 = buildAndPutEntry("key006", "value006",
-                getClient(clientName));
+        buildAndPutEntry("key006", "value006", getClient(clientName));
         buildAndPutEntry("key007", "value007", getClient(clientName));
-
-        byte[] startKey = toByteArray("key00");
-        byte[] endKey = entry1.getKey();
 
         List<byte[]> keys = getClient(clientName).getKeyRange(startKey, false,
                 endKey, false, 10);
@@ -2045,14 +2206,19 @@ public class KineticBoundaryTest extends IntegrationTestCase {
     @Test(dataProvider = "transportProtocolOptions")
     public void testGetKeyRange_ForStartKeyInclusiveEndKeyExclusive_WithEndKeyIsTheSecondKeyExistsInDB(
             String clientName) throws KineticException {
+        byte[] startKey = toByteArray("key00");
+        byte[] endKey = toByteArray("key006");
+
+        try {
+            cleanData(startKey, endKey, getClient(clientName));
+        } catch (KineticException e2) {
+            Assert.fail("Clean data throw exception! " + e2.getMessage());
+        }
+
         Entry entry0 = buildAndPutEntry("key005", "value005",
                 getClient(clientName));
-        Entry entry1 = buildAndPutEntry("key006", "value006",
-                getClient(clientName));
+        buildAndPutEntry("key006", "value006", getClient(clientName));
         buildAndPutEntry("key007", "value007", getClient(clientName));
-
-        byte[] startKey = toByteArray("key00");
-        byte[] endKey = entry1.getKey();
 
         List<byte[]> keys = getClient(clientName).getKeyRange(startKey, true,
                 endKey, false, 10);
@@ -2077,14 +2243,20 @@ public class KineticBoundaryTest extends IntegrationTestCase {
     public void testGetKeyRange_ForStartKeyExclusiveEndKeyInclusive_WithEndKeyIsTheSecondKeyExistsInDB(
             String clientName) throws UnsupportedEncodingException,
             KineticException {
+        byte[] startKey = toByteArray("key00");
+        byte[] endKey = toByteArray("key006");
+
+        try {
+            cleanData(startKey, endKey, getClient(clientName));
+        } catch (KineticException e2) {
+            Assert.fail("Clean data throw exception! " + e2.getMessage());
+        }
+
         Entry entry0 = buildAndPutEntry("key005", "value005",
                 getClient(clientName));
         Entry entry1 = buildAndPutEntry("key006", "value006",
                 getClient(clientName));
         buildAndPutEntry("key007", "value007", getClient(clientName));
-
-        byte[] startKey = toByteArray("key00");
-        byte[] endKey = entry1.getKey();
 
         try {
             List<byte[]> keys = getClient(clientName).getKeyRange(startKey,
@@ -2113,14 +2285,20 @@ public class KineticBoundaryTest extends IntegrationTestCase {
     @Test(dataProvider = "transportProtocolOptions")
     public void testGetKeyRange_ForStartKeyInclusiveEndKeyInclusive_WithEndKeyIsTheSecondKeyExistsInDB(
             String clientName) throws KineticException {
+        byte[] startKey = toByteArray("key00");
+        byte[] endKey = toByteArray("key006");
+
+        try {
+            cleanData(startKey, endKey, getClient(clientName));
+        } catch (KineticException e2) {
+            Assert.fail("Clean data throw exception! " + e2.getMessage());
+        }
+
         Entry entry0 = buildAndPutEntry("key005", "value005",
                 getClient(clientName));
         Entry entry1 = buildAndPutEntry("key006", "value006",
                 getClient(clientName));
         buildAndPutEntry("key007", "value007", getClient(clientName));
-
-        byte[] startKey = toByteArray("key00");
-        byte[] endKey = entry1.getKey();
 
         List<byte[]> keys = getClient(clientName).getKeyRange(startKey, true,
                 endKey, true, 10);
@@ -2145,15 +2323,20 @@ public class KineticBoundaryTest extends IntegrationTestCase {
     @Test(dataProvider = "transportProtocolOptions")
     public void testGetKeyRange_ForStartKeyExclusiveEndKeyExclusive_WithEndKeyIsTheLastKeyExistsInDB(
             String clientName) throws KineticException {
+        byte[] startKey = toByteArray("key00");
+        byte[] endKey = toByteArray("key007");
+
+        try {
+            cleanData(startKey, endKey, getClient(clientName));
+        } catch (KineticException e2) {
+            Assert.fail("Clean data throw exception! " + e2.getMessage());
+        }
+
         Entry entry0 = buildAndPutEntry("key005", "value005",
                 getClient(clientName));
         Entry entry1 = buildAndPutEntry("key006", "value006",
                 getClient(clientName));
-        Entry entry2 = buildAndPutEntry("key007", "value007",
-                getClient(clientName));
-
-        byte[] startKey = toByteArray("key00");
-        byte[] endKey = entry2.getKey();
+        buildAndPutEntry("key007", "value007", getClient(clientName));
 
         List<byte[]> keys = getClient(clientName).getKeyRange(startKey, false,
                 endKey, false, 10);
@@ -2178,15 +2361,20 @@ public class KineticBoundaryTest extends IntegrationTestCase {
     @Test(dataProvider = "transportProtocolOptions")
     public void testGetKeyRange_ForStartKeyInclusiveEndKeyExclusive_WithEndKeyIsTheLastKeyExistsInDB(
             String clientName) throws KineticException {
+        byte[] startKey = toByteArray("key00");
+        byte[] endKey = toByteArray("key007");
+
+        try {
+            cleanData(startKey, endKey, getClient(clientName));
+        } catch (KineticException e2) {
+            Assert.fail("Clean data throw exception! " + e2.getMessage());
+        }
+
         Entry entry0 = buildAndPutEntry("key005", "value005",
                 getClient(clientName));
         Entry entry1 = buildAndPutEntry("key006", "value006",
                 getClient(clientName));
-        Entry entry2 = buildAndPutEntry("key007", "value007",
-                getClient(clientName));
-
-        byte[] startKey = toByteArray("key00");
-        byte[] endKey = entry2.getKey();
+        buildAndPutEntry("key007", "value007", getClient(clientName));
 
         List<byte[]> keys = getClient(clientName).getKeyRange(startKey, true,
                 endKey, false, 10);
@@ -2211,15 +2399,21 @@ public class KineticBoundaryTest extends IntegrationTestCase {
     @Test(dataProvider = "transportProtocolOptions")
     public void testGetKeyRange_ForStartKeyExclusiveEndKeyInclusive_WithEndKeyIsTheLastKeyExistsInDB(
             String clientName) throws KineticException {
+        byte[] startKey = toByteArray("key00");
+        byte[] endKey = toByteArray("key007");
+
+        try {
+            cleanData(startKey, endKey, getClient(clientName));
+        } catch (KineticException e2) {
+            Assert.fail("Clean data throw exception! " + e2.getMessage());
+        }
+
         Entry entry0 = buildAndPutEntry("key005", "value005",
                 getClient(clientName));
         Entry entry1 = buildAndPutEntry("key006", "value006",
                 getClient(clientName));
         Entry entry2 = buildAndPutEntry("key007", "value007",
                 getClient(clientName));
-
-        byte[] startKey = toByteArray("key00");
-        byte[] endKey = entry2.getKey();
 
         List<byte[]> keys = getClient(clientName).getKeyRange(startKey, false,
                 endKey, true, 10);
@@ -2245,15 +2439,21 @@ public class KineticBoundaryTest extends IntegrationTestCase {
     @Test(dataProvider = "transportProtocolOptions")
     public void testGetKeyRange_ForStartKeyInclusiveEndKeyInclusive_WithEndKeyIsTheLastKeyExistsInDB(
             String clientName) throws KineticException {
+        byte[] startKey = toByteArray("key00");
+        byte[] endKey = toByteArray("key007");
+
+        try {
+            cleanData(startKey, endKey, getClient(clientName));
+        } catch (KineticException e2) {
+            Assert.fail("Clean data throw exception! " + e2.getMessage());
+        }
+
         Entry entry0 = buildAndPutEntry("key005", "value005",
                 getClient(clientName));
         Entry entry1 = buildAndPutEntry("key006", "value006",
                 getClient(clientName));
         Entry entry2 = buildAndPutEntry("key007", "value007",
                 getClient(clientName));
-
-        byte[] startKey = toByteArray("key00");
-        byte[] endKey = entry2.getKey();
 
         List<byte[]> keys = getClient(clientName).getKeyRange(startKey, true,
                 endKey, true, 10);
@@ -2279,14 +2479,18 @@ public class KineticBoundaryTest extends IntegrationTestCase {
     @Test(dataProvider = "transportProtocolOptions")
     public void testGetKeyRange_ForStartKeyExclusiveEndKeyExclusive_WithStartKeyIsTheFirstKeyAndEndKeyIsTheSecondKeyInDB(
             String clientName) throws KineticException {
-        Entry entry0 = buildAndPutEntry("key005", "value005",
-                getClient(clientName));
-        Entry entry1 = buildAndPutEntry("key006", "value006",
-                getClient(clientName));
-        buildAndPutEntry("key007", "value007", getClient(clientName));
+        byte[] startKey = toByteArray("key005");
+        byte[] endKey = toByteArray("key006");
 
-        byte[] startKey = entry0.getKey();
-        byte[] endKey = entry1.getKey();
+        try {
+            cleanData(startKey, endKey, getClient(clientName));
+        } catch (KineticException e2) {
+            Assert.fail("Clean data throw exception! " + e2.getMessage());
+        }
+
+        buildAndPutEntry("key005", "value005", getClient(clientName));
+        buildAndPutEntry("key006", "value006", getClient(clientName));
+        buildAndPutEntry("key007", "value007", getClient(clientName));
 
         List<byte[]> keys = getClient(clientName).getKeyRange(startKey, false,
                 endKey, false, 10);
@@ -2309,14 +2513,19 @@ public class KineticBoundaryTest extends IntegrationTestCase {
     @Test(dataProvider = "transportProtocolOptions")
     public void testGetKeyRange_ForStartKeyInclusiveEndKeyExclusive_WithStartKeyIsTheFirstKeyAndEndKeyIsTheSecondKeyInDB(
             String clientName) throws KineticException {
+        byte[] startKey = toByteArray("key005");
+        byte[] endKey = toByteArray("key006");
+
+        try {
+            cleanData(startKey, endKey, getClient(clientName));
+        } catch (KineticException e2) {
+            Assert.fail("Clean data throw exception! " + e2.getMessage());
+        }
+
         Entry entry0 = buildAndPutEntry("key005", "value005",
                 getClient(clientName));
-        Entry entry1 = buildAndPutEntry("key006", "value006",
-                getClient(clientName));
+        buildAndPutEntry("key006", "value006", getClient(clientName));
         buildAndPutEntry("key007", "value007", getClient(clientName));
-
-        byte[] startKey = entry0.getKey();
-        byte[] endKey = entry1.getKey();
 
         List<byte[]> keys = getClient(clientName).getKeyRange(startKey, true,
                 endKey, false, 10);
@@ -2340,14 +2549,19 @@ public class KineticBoundaryTest extends IntegrationTestCase {
     @Test(dataProvider = "transportProtocolOptions")
     public void testGetKeyRange_ForStartKeyExclusiveEndKeyInclusive_WithStartKeyIsTheFirstKeyAndEndKeyIsTheSecondKeyInDB(
             String clientName) throws KineticException {
-        Entry entry0 = buildAndPutEntry("key005", "value005",
-                getClient(clientName));
+        byte[] startKey = toByteArray("key005");
+        byte[] endKey = toByteArray("key006");
+
+        try {
+            cleanData(startKey, endKey, getClient(clientName));
+        } catch (KineticException e2) {
+            Assert.fail("Clean data throw exception! " + e2.getMessage());
+        }
+
+        buildAndPutEntry("key005", "value005", getClient(clientName));
         Entry entry1 = buildAndPutEntry("key006", "value006",
                 getClient(clientName));
         buildAndPutEntry("key007", "value007", getClient(clientName));
-
-        byte[] startKey = entry0.getKey();
-        byte[] endKey = entry1.getKey();
 
         List<byte[]> keys = getClient(clientName).getKeyRange(startKey, false,
                 endKey, true, 10);
@@ -2371,14 +2585,20 @@ public class KineticBoundaryTest extends IntegrationTestCase {
     @Test(dataProvider = "transportProtocolOptions")
     public void testGetKeyRange_ForStartKeyInclusiveEndKeyInclusive_WithStartKeyIsTheFirstKeyAndEndKeyIsTheSecondKeyInDB(
             String clientName) throws KineticException {
+        byte[] startKey = toByteArray("key005");
+        byte[] endKey = toByteArray("key006");
+
+        try {
+            cleanData(startKey, endKey, getClient(clientName));
+        } catch (KineticException e2) {
+            Assert.fail("Clean data throw exception! " + e2.getMessage());
+        }
+
         Entry entry0 = buildAndPutEntry("key005", "value005",
                 getClient(clientName));
         Entry entry1 = buildAndPutEntry("key006", "value006",
                 getClient(clientName));
         buildAndPutEntry("key007", "value007", getClient(clientName));
-
-        byte[] startKey = entry0.getKey();
-        byte[] endKey = entry1.getKey();
 
         List<byte[]> keys = getClient(clientName).getKeyRange(startKey, true,
                 endKey, true, 10);
@@ -2404,15 +2624,19 @@ public class KineticBoundaryTest extends IntegrationTestCase {
     @Test(dataProvider = "transportProtocolOptions")
     public void testGetKeyRange_ForStartKeyExclusiveEndKeyExclusive_WithStartKeyIsTheFirstKeyAndEndKeyIsTheLastKeyInDB(
             String clientName) throws KineticException {
-        Entry entry0 = buildAndPutEntry("key005", "value005",
-                getClient(clientName));
+        byte[] startKey = toByteArray("key005");
+        byte[] endKey = toByteArray("key007");
+
+        try {
+            cleanData(startKey, endKey, getClient(clientName));
+        } catch (KineticException e2) {
+            Assert.fail("Clean data throw exception! " + e2.getMessage());
+        }
+
+        buildAndPutEntry("key005", "value005", getClient(clientName));
         Entry entry1 = buildAndPutEntry("key006", "value006",
                 getClient(clientName));
-        Entry entry2 = buildAndPutEntry("key007", "value007",
-                getClient(clientName));
-
-        byte[] startKey = entry0.getKey();
-        byte[] endKey = entry2.getKey();
+        buildAndPutEntry("key007", "value007", getClient(clientName));
 
         List<byte[]> keys = getClient(clientName).getKeyRange(startKey, false,
                 endKey, false, 10);
@@ -2437,15 +2661,20 @@ public class KineticBoundaryTest extends IntegrationTestCase {
     @Test(dataProvider = "transportProtocolOptions")
     public void tesGetKeyRange_ForStartKeyInclusiveEndKeyExclusive_WithStartKeyIsTheFirstKeyAndEndKeyIsTheLastKeyInDB(
             String clientName) throws KineticException {
+        byte[] startKey = toByteArray("key005");
+        byte[] endKey = toByteArray("key007");
+
+        try {
+            cleanData(startKey, endKey, getClient(clientName));
+        } catch (KineticException e2) {
+            Assert.fail("Clean data throw exception! " + e2.getMessage());
+        }
+
         Entry entry0 = buildAndPutEntry("key005", "value005",
                 getClient(clientName));
         Entry entry1 = buildAndPutEntry("key006", "value006",
                 getClient(clientName));
-        Entry entry2 = buildAndPutEntry("key007", "value007",
-                getClient(clientName));
-
-        byte[] startKey = entry0.getKey();
-        byte[] endKey = entry2.getKey();
+        buildAndPutEntry("key007", "value007", getClient(clientName));
 
         List<byte[]> keys = getClient(clientName).getKeyRange(startKey, true,
                 endKey, false, 10);
@@ -2471,15 +2700,20 @@ public class KineticBoundaryTest extends IntegrationTestCase {
     @Test(dataProvider = "transportProtocolOptions")
     public void testGetKeyRange_ForStartKeyExclusiveEndKeyInclusive_WithStartKeyIsTheFirstKeyAndEndKeyIsTheLastKeyInDB(
             String clientName) throws KineticException {
-        Entry entry0 = buildAndPutEntry("key005", "value005",
-                getClient(clientName));
+        byte[] startKey = toByteArray("key005");
+        byte[] endKey = toByteArray("key007");
+
+        try {
+            cleanData(startKey, endKey, getClient(clientName));
+        } catch (KineticException e2) {
+            Assert.fail("Clean data throw exception! " + e2.getMessage());
+        }
+
+        buildAndPutEntry("key005", "value005", getClient(clientName));
         Entry entry1 = buildAndPutEntry("key006", "value006",
                 getClient(clientName));
         Entry entry2 = buildAndPutEntry("key007", "value007",
                 getClient(clientName));
-
-        byte[] startKey = entry0.getKey();
-        byte[] endKey = entry2.getKey();
 
         List<byte[]> keys = getClient(clientName).getKeyRange(startKey, false,
                 endKey, true, 10);
@@ -2504,15 +2738,21 @@ public class KineticBoundaryTest extends IntegrationTestCase {
     @Test(dataProvider = "transportProtocolOptions")
     public void testGetKeyRange_ForStartKeyInclusiveEndKeyInclusive_WithStartKeyIsTheFirstKeyAndEndKeyIsTheLastKeyInDB(
             String clientName) throws KineticException {
+        byte[] startKey = toByteArray("key005");
+        byte[] endKey = toByteArray("key007");
+
+        try {
+            cleanData(startKey, endKey, getClient(clientName));
+        } catch (KineticException e2) {
+            Assert.fail("Clean data throw exception! " + e2.getMessage());
+        }
+
         Entry entry0 = buildAndPutEntry("key005", "value005",
                 getClient(clientName));
         Entry entry1 = buildAndPutEntry("key006", "value006",
                 getClient(clientName));
         Entry entry2 = buildAndPutEntry("key007", "value007",
                 getClient(clientName));
-
-        byte[] startKey = entry0.getKey();
-        byte[] endKey = entry2.getKey();
 
         List<byte[]> keys = getClient(clientName).getKeyRange(startKey, true,
                 endKey, true, 10);
@@ -2538,14 +2778,18 @@ public class KineticBoundaryTest extends IntegrationTestCase {
     @Test(dataProvider = "transportProtocolOptions")
     public void testGetKeyRange_ForStartKeyExclusiveEndKeyExclusive_WithStartKeyIsTheSecondKeyAndEndKeyIsTheLastKeyInDB(
             String clientName) throws KineticException {
-        buildAndPutEntry("key005", "value005", getClient(clientName));
-        Entry entry1 = buildAndPutEntry("key006", "value006",
-                getClient(clientName));
-        Entry entry2 = buildAndPutEntry("key007", "value007",
-                getClient(clientName));
+        byte[] startKey = toByteArray("key006");
+        byte[] endKey = toByteArray("key007");
 
-        byte[] startKey = entry1.getKey();
-        byte[] endKey = entry2.getKey();
+        try {
+            cleanData(startKey, endKey, getClient(clientName));
+        } catch (KineticException e2) {
+            Assert.fail("Clean data throw exception! " + e2.getMessage());
+        }
+
+        buildAndPutEntry("key005", "value005", getClient(clientName));
+        buildAndPutEntry("key006", "value006", getClient(clientName));
+        buildAndPutEntry("key007", "value007", getClient(clientName));
 
         List<byte[]> keys = getClient(clientName).getKeyRange(startKey, false,
                 endKey, false, 10);
@@ -2568,14 +2812,19 @@ public class KineticBoundaryTest extends IntegrationTestCase {
     @Test(dataProvider = "transportProtocolOptions")
     public void testGetKeyRange_ForStartKeyInclusiveEndKeyExclusive_WithStartKeyIsTheSecondKeyAndEndKeyIsTheLastKeyInDB(
             String clientName) throws KineticException {
+        byte[] startKey = toByteArray("key006");
+        byte[] endKey = toByteArray("key007");
+
+        try {
+            cleanData(startKey, endKey, getClient(clientName));
+        } catch (KineticException e2) {
+            Assert.fail("Clean data throw exception! " + e2.getMessage());
+        }
+
         buildAndPutEntry("key005", "value005", getClient(clientName));
         Entry entry1 = buildAndPutEntry("key006", "value006",
                 getClient(clientName));
-        Entry entry2 = buildAndPutEntry("key007", "value007",
-                getClient(clientName));
-
-        byte[] startKey = entry1.getKey();
-        byte[] endKey = entry2.getKey();
+        buildAndPutEntry("key007", "value007", getClient(clientName));
 
         List<byte[]> keys = getClient(clientName).getKeyRange(startKey, true,
                 endKey, false, 10);
@@ -2599,14 +2848,19 @@ public class KineticBoundaryTest extends IntegrationTestCase {
     @Test(dataProvider = "transportProtocolOptions")
     public void testGetKeyRange_ForStartKeyExclusiveEndKeyInclusive_WithStartKeyIsTheSecondKeyAndEndKeyIsTheLastKeyInDB(
             String clientName) throws KineticException {
+        byte[] startKey = toByteArray("key006");
+        byte[] endKey = toByteArray("key007");
+
+        try {
+            cleanData(startKey, endKey, getClient(clientName));
+        } catch (KineticException e2) {
+            Assert.fail("Clean data throw exception! " + e2.getMessage());
+        }
+
         buildAndPutEntry("key005", "value005", getClient(clientName));
-        Entry entry1 = buildAndPutEntry("key006", "value006",
-                getClient(clientName));
+        buildAndPutEntry("key006", "value006", getClient(clientName));
         Entry entry2 = buildAndPutEntry("key007", "value007",
                 getClient(clientName));
-
-        byte[] startKey = entry1.getKey();
-        byte[] endKey = entry2.getKey();
 
         List<byte[]> keys = getClient(clientName).getKeyRange(startKey, false,
                 endKey, true, 10);
@@ -2630,14 +2884,20 @@ public class KineticBoundaryTest extends IntegrationTestCase {
     @Test(dataProvider = "transportProtocolOptions")
     public void testGetKeyRange_ForStartKeyInclusiveEndKeyInclusive_WithStartKeyIsTheSecondKeyAndEndKeyIsTheLastKeyInDB(
             String clientName) throws KineticException {
+        byte[] startKey = toByteArray("key006");
+        byte[] endKey = toByteArray("key007");
+
+        try {
+            cleanData(startKey, endKey, getClient(clientName));
+        } catch (KineticException e2) {
+            Assert.fail("Clean data throw exception! " + e2.getMessage());
+        }
+
         buildAndPutEntry("key005", "value005", getClient(clientName));
         Entry entry1 = buildAndPutEntry("key006", "value006",
                 getClient(clientName));
         Entry entry2 = buildAndPutEntry("key007", "value007",
                 getClient(clientName));
-
-        byte[] startKey = entry1.getKey();
-        byte[] endKey = entry2.getKey();
 
         List<byte[]> keys = getClient(clientName).getKeyRange(startKey, true,
                 endKey, true, 10);
@@ -2661,13 +2921,18 @@ public class KineticBoundaryTest extends IntegrationTestCase {
     @Test(dataProvider = "transportProtocolOptions")
     public void testGetKeyRange_ForStartKeyExclusiveEndKeyExclusive_WithStartKeyIsTheLastKeyInDB(
             String clientName) throws KineticException {
+        byte[] startKey = toByteArray("key007");
+        byte[] endKey = toByteArray("key09");
+
+        try {
+            cleanData(startKey, endKey, getClient(clientName));
+        } catch (KineticException e2) {
+            Assert.fail("Clean data throw exception! " + e2.getMessage());
+        }
+
         buildAndPutEntry("key005", "value005", getClient(clientName));
         buildAndPutEntry("key006", "value006", getClient(clientName));
-        Entry entry2 = buildAndPutEntry("key007", "value007",
-                getClient(clientName));
-
-        byte[] startKey = entry2.getKey();
-        byte[] endKey = toByteArray("key09");
+        buildAndPutEntry("key007", "value007", getClient(clientName));
 
         List<byte[]> keys = getClient(clientName).getKeyRange(startKey, false,
                 endKey, false, 10);
@@ -2690,13 +2955,19 @@ public class KineticBoundaryTest extends IntegrationTestCase {
     @Test(dataProvider = "transportProtocolOptions")
     public void testGetKeyRange_ForStartKeyInclusiveEndKeyExclusive_WithStartKeyIsTheLastKeyInDB(
             String clientName) throws KineticException {
+        byte[] startKey = toByteArray("key007");
+        byte[] endKey = toByteArray("key09");
+
+        try {
+            cleanData(startKey, endKey, getClient(clientName));
+        } catch (KineticException e2) {
+            Assert.fail("Clean data throw exception! " + e2.getMessage());
+        }
+
         buildAndPutEntry("key005", "value005", getClient(clientName));
         buildAndPutEntry("key006", "value006", getClient(clientName));
         Entry entry2 = buildAndPutEntry("key007", "value007",
                 getClient(clientName));
-
-        byte[] startKey = entry2.getKey();
-        byte[] endKey = toByteArray("key09");
 
         List<byte[]> keys = getClient(clientName).getKeyRange(startKey, true,
                 endKey, false, 10);
@@ -2719,13 +2990,18 @@ public class KineticBoundaryTest extends IntegrationTestCase {
     @Test(dataProvider = "transportProtocolOptions")
     public void testGetKeyRange_ForStartKeyExclusiveEndKeyInclusive_WithStartKeyIsTheLastKeyInDB(
             String clientName) throws KineticException {
+        byte[] startKey = toByteArray("key007");
+        byte[] endKey = toByteArray("key09");
+
+        try {
+            cleanData(startKey, endKey, getClient(clientName));
+        } catch (KineticException e2) {
+            Assert.fail("Clean data throw exception! " + e2.getMessage());
+        }
+
         buildAndPutEntry("key005", "value005", getClient(clientName));
         buildAndPutEntry("key006", "value006", getClient(clientName));
-        Entry entry2 = buildAndPutEntry("key007", "value007",
-                getClient(clientName));
-
-        byte[] startKey = entry2.getKey();
-        byte[] endKey = toByteArray("key09");
+        buildAndPutEntry("key007", "value007", getClient(clientName));
 
         List<byte[]> keys = getClient(clientName).getKeyRange(startKey, false,
                 endKey, true, 10);
@@ -2747,13 +3023,19 @@ public class KineticBoundaryTest extends IntegrationTestCase {
     @Test(dataProvider = "transportProtocolOptions")
     public void testGetKeyRange_ForStartKeyInclusiveEndKeyInclusive_WithStartKeyIsTheLastKeyInDB(
             String clientName) throws KineticException {
+        byte[] startKey = toByteArray("key007");
+        byte[] endKey = toByteArray("key09");
+
+        try {
+            cleanData(startKey, endKey, getClient(clientName));
+        } catch (KineticException e2) {
+            Assert.fail("Clean data throw exception! " + e2.getMessage());
+        }
+
         buildAndPutEntry("key005", "value005", getClient(clientName));
         buildAndPutEntry("key006", "value006", getClient(clientName));
         Entry entry2 = buildAndPutEntry("key007", "value007",
                 getClient(clientName));
-
-        byte[] startKey = entry2.getKey();
-        byte[] endKey = toByteArray("key09");
 
         List<byte[]> keys = getClient(clientName).getKeyRange(startKey, true,
                 endKey, true, 10);
@@ -2776,12 +3058,18 @@ public class KineticBoundaryTest extends IntegrationTestCase {
     @Test(dataProvider = "transportProtocolOptions")
     public void testGetKeyRange_ForStartKeyExclusiveEndKeyExclusive_WithStartKeyBiggerThanTheLastKeyInDB(
             String clientName) throws KineticException {
+        byte[] startKey = toByteArray("key09");
+        byte[] endKey = toByteArray("key11");
+
+        try {
+            cleanData(startKey, endKey, getClient(clientName));
+        } catch (KineticException e2) {
+            Assert.fail("Clean data throw exception! " + e2.getMessage());
+        }
+
         buildAndPutEntry("key005", "value005", getClient(clientName));
         buildAndPutEntry("key006", "value006", getClient(clientName));
         buildAndPutEntry("key007", "value007", getClient(clientName));
-
-        byte[] startKey = toByteArray("key09");
-        byte[] endKey = toByteArray("key11");
 
         List<byte[]> keys = getClient(clientName).getKeyRange(startKey, false,
                 endKey, false, 10);
@@ -2804,12 +3092,18 @@ public class KineticBoundaryTest extends IntegrationTestCase {
     @Test(dataProvider = "transportProtocolOptions")
     public void testGetKeyRange_ForStartKeyInclusiveEndKeyExclusive_WithStartKeyBiggerThanTheLastKeyInDB(
             String clientName) throws KineticException {
+        byte[] startKey = toByteArray("key09");
+        byte[] endKey = toByteArray("key11");
+
+        try {
+            cleanData(startKey, endKey, getClient(clientName));
+        } catch (KineticException e2) {
+            Assert.fail("Clean data throw exception! " + e2.getMessage());
+        }
+
         buildAndPutEntry("key005", "value005", getClient(clientName));
         buildAndPutEntry("key006", "value006", getClient(clientName));
         buildAndPutEntry("key007", "value007", getClient(clientName));
-
-        byte[] startKey = toByteArray("key09");
-        byte[] endKey = toByteArray("key11");
 
         List<byte[]> keys = getClient(clientName).getKeyRange(startKey, true,
                 endKey, false, 10);
@@ -2832,12 +3126,18 @@ public class KineticBoundaryTest extends IntegrationTestCase {
     @Test(dataProvider = "transportProtocolOptions")
     public void testGetKeyRange_ForStartKeyExclusiveEndKeyInclusive_WithStartKeyBiggerThanTheLastKeyInDB(
             String clientName) throws KineticException {
+        byte[] startKey = toByteArray("key09");
+        byte[] endKey = toByteArray("key11");
+
+        try {
+            cleanData(startKey, endKey, getClient(clientName));
+        } catch (KineticException e2) {
+            Assert.fail("Clean data throw exception! " + e2.getMessage());
+        }
+
         buildAndPutEntry("key005", "value005", getClient(clientName));
         buildAndPutEntry("key006", "value006", getClient(clientName));
         buildAndPutEntry("key007", "value007", getClient(clientName));
-
-        byte[] startKey = toByteArray("key09");
-        byte[] endKey = toByteArray("key11");
 
         List<byte[]> keys = getClient(clientName).getKeyRange(startKey, false,
                 endKey, true, 10);
@@ -2859,12 +3159,18 @@ public class KineticBoundaryTest extends IntegrationTestCase {
     @Test(dataProvider = "transportProtocolOptions")
     public void testGetKeyRange_ForStartKeyInclusiveEndKeyInclusive_WithStartKeyBiggerThanTheLastKeyInDB(
             String clientName) throws KineticException {
+        byte[] startKey = toByteArray("key09");
+        byte[] endKey = toByteArray("key11");
+
+        try {
+            cleanData(startKey, endKey, getClient(clientName));
+        } catch (KineticException e2) {
+            Assert.fail("Clean data throw exception! " + e2.getMessage());
+        }
+
         buildAndPutEntry("key005", "value005", getClient(clientName));
         buildAndPutEntry("key006", "value006", getClient(clientName));
         buildAndPutEntry("key007", "value007", getClient(clientName));
-
-        byte[] startKey = toByteArray("key09");
-        byte[] endKey = toByteArray("key11");
 
         List<byte[]> keys = getClient(clientName).getKeyRange(startKey, true,
                 endKey, true, 10);
@@ -2889,8 +3195,11 @@ public class KineticBoundaryTest extends IntegrationTestCase {
         byte[] startKey = toByteArray("key09");
         byte[] endKey = toByteArray("key11");
 
-        getClient(clientName).deleteForced(toByteArray("key09"));
-        getClient(clientName).deleteForced(toByteArray("key11"));
+        try {
+            cleanData(startKey, endKey, getClient(clientName));
+        } catch (KineticException e2) {
+            Assert.fail("Clean data throw exception! " + e2.getMessage());
+        }
 
         List<byte[]> keys = getClient(clientName).getKeyRange(startKey, true,
                 endKey, true, 10);
@@ -2911,14 +3220,18 @@ public class KineticBoundaryTest extends IntegrationTestCase {
     @Test(dataProvider = "transportProtocolOptions")
     public void testGetKeyRange_ForStartKeyInclusiveEndKeyInclusive_WithStartKeyAfterEndKey(
             String clientName) throws KineticException {
-        Entry entry0 = buildAndPutEntry("key005", "value005",
-                getClient(clientName));
-        buildAndPutEntry("key006", "value006", getClient(clientName));
-        Entry entry2 = buildAndPutEntry("key007", "value007",
-                getClient(clientName));
+        byte[] startKey = toByteArray("key006");
+        byte[] endKey = toByteArray("key005");
 
-        byte[] startKey = entry2.getKey();
-        byte[] endKey = entry0.getKey();
+        try {
+            cleanData(startKey, endKey, getClient(clientName));
+        } catch (KineticException e2) {
+            Assert.fail("Clean data throw exception! " + e2.getMessage());
+        }
+
+        buildAndPutEntry("key005", "value005", getClient(clientName));
+        buildAndPutEntry("key006", "value006", getClient(clientName));
+        buildAndPutEntry("key007", "value007", getClient(clientName));
 
         List<byte[]> keys = getClient(clientName).getKeyRange(startKey, true,
                 endKey, true, 10);
@@ -2947,7 +3260,7 @@ public class KineticBoundaryTest extends IntegrationTestCase {
                 toByteArray("11"), toByteArray("12"), toByteArray("13"),
                 toByteArray("14"));
 
-        cleanListKey(getClient(clientName), keys);
+        cleanData(toByteArray("00"), toByteArray("14"), getClient(clientName));
 
         for (byte[] key : keys) {
             getClient(clientName).putForced(new Entry(key, key));
@@ -2960,7 +3273,7 @@ public class KineticBoundaryTest extends IntegrationTestCase {
         assertEquals(1, returnedKeys.size());
         assertArrayEquals(keys.get(0), returnedKeys.get(0));
 
-        cleanListKey(getClient(clientName), keys);
+        cleanData(toByteArray("00"), toByteArray("14"), getClient(clientName));
 
         logger.info(this.testEndInfo());
     }
@@ -2976,6 +3289,7 @@ public class KineticBoundaryTest extends IntegrationTestCase {
     @Test(dataProvider = "transportProtocolOptions")
     public void testGetKeyRange_StartKeyEqualsEndKey_StartKeyExclusiveEndKeyInclusive(
             String clientName) throws KineticException {
+
         List<byte[]> keys = Arrays.asList(toByteArray("00"), toByteArray("01"),
                 toByteArray("02"), toByteArray("03"), toByteArray("04"),
                 toByteArray("05"), toByteArray("06"), toByteArray("07"),
@@ -2983,7 +3297,7 @@ public class KineticBoundaryTest extends IntegrationTestCase {
                 toByteArray("11"), toByteArray("12"), toByteArray("13"),
                 toByteArray("14"));
 
-        cleanListKey(getClient(clientName), keys);
+        cleanData(toByteArray("00"), toByteArray("14"), getClient(clientName));
 
         for (byte[] key : keys) {
             getClient(clientName).putForced(new Entry(key, key));
@@ -2995,7 +3309,7 @@ public class KineticBoundaryTest extends IntegrationTestCase {
 
         assertEquals(0, returnedKeys.size());
 
-        cleanListKey(getClient(clientName), keys);
+        cleanData(toByteArray("00"), toByteArray("14"), getClient(clientName));
 
         logger.info(this.testEndInfo());
     }
@@ -3018,7 +3332,7 @@ public class KineticBoundaryTest extends IntegrationTestCase {
                 toByteArray("11"), toByteArray("12"), toByteArray("13"),
                 toByteArray("14"));
 
-        cleanListKey(getClient(clientName), keys);
+        cleanData(toByteArray("00"), toByteArray("14"), getClient(clientName));
 
         for (byte[] key : keys) {
             getClient(clientName).putForced(new Entry(key, key));
@@ -3030,7 +3344,7 @@ public class KineticBoundaryTest extends IntegrationTestCase {
 
         assertEquals(0, returnedKeys.size());
 
-        cleanListKey(getClient(clientName), keys);
+        cleanData(toByteArray("00"), toByteArray("14"), getClient(clientName));
 
         logger.info(this.testEndInfo());
     }
@@ -3053,7 +3367,7 @@ public class KineticBoundaryTest extends IntegrationTestCase {
                 toByteArray("11"), toByteArray("12"), toByteArray("13"),
                 toByteArray("14"));
 
-        cleanListKey(getClient(clientName), keys);
+        cleanData(toByteArray("00"), toByteArray("14"), getClient(clientName));
 
         for (byte[] key : keys) {
             getClient(clientName).putForced(new Entry(key, key));
@@ -3065,7 +3379,7 @@ public class KineticBoundaryTest extends IntegrationTestCase {
 
         assertEquals(0, returnedKeys.size());
 
-        cleanListKey(getClient(clientName), keys);
+        cleanData(toByteArray("00"), toByteArray("14"), getClient(clientName));
 
         logger.info(this.testEndInfo());
     }
@@ -3125,9 +3439,7 @@ public class KineticBoundaryTest extends IntegrationTestCase {
         entryToRoleMap.put(Arrays.asList(entry06, entry08), Collections
                 .singletonList(Kinetic.Command.Security.ACL.Permission.RANGE));
 
-        for (Entry entry : listEntry) {
-            getClient(clientName).deleteForced(entry.getKey());
-        }
+        cleanData(toByteArray("k01"), toByteArray("k09"), getClient(clientName));
 
         KineticClient clientWithVisibilityGap = createClientWithSpecifiedRolesForEntries(
                 clientName, entryToRoleMap);
@@ -3142,9 +3454,7 @@ public class KineticBoundaryTest extends IntegrationTestCase {
         assertArrayEquals(entry02.getKey(), keyRange.get(0));
         assertArrayEquals(entry03.getKey(), keyRange.get(1));
 
-        for (Entry entry : listEntry) {
-            getClient(clientName).deleteForced(entry.getKey());
-        }
+        cleanData(toByteArray("k01"), toByteArray("k09"), getClient(clientName));
 
         logger.info(this.testEndInfo());
     }
@@ -3207,9 +3517,7 @@ public class KineticBoundaryTest extends IntegrationTestCase {
                         Collections
                                 .singletonList(Kinetic.Command.Security.ACL.Permission.RANGE));
 
-        for (Entry entry : listEntry) {
-            getClient(clientName).deleteForced(entry.getKey());
-        }
+        cleanData(toByteArray("k01"), toByteArray("k09"), getClient(clientName));
 
         AdvancedKineticClient clientWithVisibilityGap = createClientWithSpecifiedRolesForEntries(
                 clientName, entryToRoleMap);
@@ -3223,9 +3531,7 @@ public class KineticBoundaryTest extends IntegrationTestCase {
         assertArrayEquals(entry07.getKey(), keyRange.get(1));
         assertArrayEquals(entry06.getKey(), keyRange.get(2));
 
-        for (Entry entry : listEntry) {
-            getClient(clientName).deleteForced(entry.getKey());
-        }
+        cleanData(toByteArray("k01"), toByteArray("k09"), getClient(clientName));
 
         logger.info(this.testEndInfo());
     }
@@ -3341,7 +3647,7 @@ public class KineticBoundaryTest extends IntegrationTestCase {
     /**
      * Test max key range request size cannot exceed max supported size (1024).
      */
-    //TODO open
+    // TODO open
     @Test(dataProvider = "transportProtocolOptions", enabled = false)
     public void testGetRangeExceedMaxSize(String clientName) {
 
@@ -3364,8 +3670,8 @@ public class KineticBoundaryTest extends IntegrationTestCase {
     /**
      * Test max key request size cannot exceed max supported size (4096).
      */
-    //TODO open
-    @Test(dataProvider = "transportProtocolOptions", enabled =false)
+    // TODO open
+    @Test(dataProvider = "transportProtocolOptions", enabled = false)
     public void testMaxKeyLength(String clientName) {
         int size = SimulatorConfiguration.getMaxSupportedKeySize();
         byte[] key0 = new byte[size];
@@ -3393,7 +3699,7 @@ public class KineticBoundaryTest extends IntegrationTestCase {
      * 
      * @throws KineticException
      */
-    //TODO
+    // TODO
     @Test(dataProvider = "transportProtocolOptions", enabled = false)
     public void testPutExceedMaxVersionLength(String clientName) {
         byte[] key = toByteArray("key00000000000");
@@ -3434,7 +3740,7 @@ public class KineticBoundaryTest extends IntegrationTestCase {
     /**
      * Test delete max version length cannot exceed max supported size (2048).
      */
-    //TODO
+    // TODO
     @Test(dataProvider = "transportProtocolOptions", enabled = false)
     public void testDeleteExceedMaxVersionLength(String clientName) {
 
@@ -3522,12 +3828,5 @@ public class KineticBoundaryTest extends IntegrationTestCase {
 
         byte[] key2 = toByteArray("key007");
         client.deleteForced(key2);
-    }
-
-    private void cleanListKey(KineticClient client, List<byte[]> keys)
-            throws KineticException {
-        for (byte[] key : keys) {
-            client.deleteForced(key);
-        }
     }
 }
