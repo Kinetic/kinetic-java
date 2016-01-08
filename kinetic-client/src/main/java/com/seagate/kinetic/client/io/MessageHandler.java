@@ -321,15 +321,12 @@ public class MessageHandler implements ClientMessageService, Runnable {
 		Long seq = Long.valueOf(message.getCommand().getHeader()
 				.getSequence());
 
-        // synchronized (this) {
-			while (this.ackmap.size() >= this.asyncQueuedSize && this.isRunning) {
-				this.wait();
-            // }
+		while (ackmap.size() >= asyncQueuedSize && (isClosed == false)) {
+			this.wait();
 		}
 
 		this.ackmap.put(seq, context);
-
-		// this.iohandler.write(message);
+		
 		this.doWrite(message);
 	}
 
