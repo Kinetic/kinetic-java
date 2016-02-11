@@ -19,15 +19,15 @@ Project components
 ===================================
 The kinetic-java project contains:
 
-- kinetic-client      (kinetic java client API and implementation)
+- `kinetic-client`      (kinetic java client API and implementation)
 
-- kinetic-simulator   (kinetic simulator API and implementation)
+- `kinetic-simulator`   (kinetic simulator API and implementation)
 
-- kinetic-common      (common library for kinetic-client and kinetic-simulator)
+- `kinetic-common`      (common library for kinetic-client and kinetic-simulator)
 
-- kinetic-test        (test suite for the kinetic-java and kinetic drive implementation) 
+- `kinetic-test`        (test suite for the kinetic-java and kinetic drive implementation) 
 
-kinetic-java provides the Java API and Simulator for the Kinetic Open Storage Platform:
+`kinetic-java` provides the Java API and Simulator for the Kinetic Open Storage Platform:
 [https://developers.seagate.com/display/KV/Kinetic+Open+Storage+Documentation+Wiki] (https://developers.seagate.com/display/KV/Kinetic+Open+Storage+Documentation+Wiki)  
  
 Client bootstrap class: 
@@ -48,19 +48,19 @@ Getting Started With Development
 1. Clone the code: `git clone https://github.com/Kinetic/kinetic-java.git`
 1. Build the runtime jar files as stated in Getting Started with Simulator below
 1. Run the integration tests against the Java Simulator: `mvn test -DargLine="-Xmx500M"`
-1. Run the integration tests but exclude specific files: `mvn test -Dmaven.test.excludes="**/File.java,**/OtherFile.java"
+1. Run the integration tests but exclude specific files: `mvn test -Dmaven.test.excludes="**/File.java,**/OtherFile.java"`
 1. Run the integration tests against the remote instance at a particular path: `mvn test -DRUN_AGAINST_EXTERNAL=true -DKINETIC_PATH=/path/to/kinetic_home`
 1. Run the integration tests against the remote instance at a particular host: `mvn test -DRUN_AGAINST_EXTERNAL=true -DKINETIC_HOST=1.2.3.4`
 1. Run the integration tests against the remote instance at a particular host using SSH to reset state before runs: `mvn test -DRUN_AGAINST_EXTERNAL=true -DKINETIC_HOST=1.2.3.4 -DFAST_CLEAN_UP=true`
 
 Getting Started With Simulator
 ================================
-1. Run "mvn clean package" in "Kinetic-Folder"
-2. Start with java CLI: 
-       java -jar in "Kinetic-Folder"/kinetic-simulator/target/kinetic-simulator-"Version"-SNAPSHOT-jar-with-dependencies.jar
+1. Run `mvn clean package` in "Kinetic-Folder"
+2. Start with java CLI:     
+       `java -jar` in "Kinetic-Folder"/kinetic-simulator/target/kinetic-simulator-"Version"-SNAPSHOT-jar-with-dependencies.jar
             where "Version" above is the build version number.  Such as 0.8.0.1 .
    
-   or Start with script (If configuration tcp_port, tls_port and Kinetic_home, use script -help):
+   or Start with script (If configuring tcp_port, tls_port and Kinetic_home, use `script -help`):
 
   Windows: 
 ```
@@ -117,9 +117,9 @@ To browse Javadoc: [http://kinetic.github.io/kinetic-java/] (http://kinetic.gith
 
 To generate Javadoc:
 
-1. Run "mvn clean package" in "Kinetic-Folder". 
+1. Run `mvn clean package` in "Kinetic-Folder". 
 
-1. Or run "mvn clean package" in "Kinetic-Folder"/kinetic-client, "Kinetic-Folder"/kinetic-simulator and "Kinetic-Folder"/kinetic-test.
+1. Or run `mvn clean package` in "Kinetic-Folder"/kinetic-client, "Kinetic-Folder"/kinetic-simulator and "Kinetic-Folder"/kinetic-test.
 
 2. Javadoc will be generated for modules in directory of "Kinetic-Folder"/kinetic-client/doc, "Kinetic-Folder"/kinetic-simulator/doc and "Kinetic-Folder"/kinetic-test/doc.
 
@@ -131,15 +131,15 @@ Run smoke test against simulator or kinetic drive
 ==================================
 Make sure one instance of simulator or kinetic drive is running.
 
-1.  Run "mvn clean package" in "Kinetic-Folder" or "Kinetic-Folder"/kinetic-test, verify that
+1.  Run `mvn clean package` in "Kinetic-Folder" or "Kinetic-Folder"/kinetic-test, verify that
    "Kinetic-Folder"/kinetic-test/target/kinetic-test-0.8.0.1-SNAPSHOT-jar-with-dependencies.jar 
    "Kinetic-Folder"/kinetic-test/target/smoke-tests.jar
    exist.
 
-2. cd "Kinetic-Folder"/bin
+2. `cd "Kinetic-Folder"/bin`
 
-3. sh runSmokeTests.sh [-host host_ip] [-port port] [-tlsport tlsport] [-home kinetic_home]
+3. `sh runSmokeTests.sh [-host host_ip] [-port port] [-tlsport tlsport] [-home kinetic_home]`
    or
-   python runSmokeTests.py [-host host_ip] [-port port] [-tlsport tlsport] [-home kinetic_home]
+   `python runSmokeTests.py [-host host_ip] [-port port] [-tlsport tlsport] [-home kinetic_home]`
             
             
