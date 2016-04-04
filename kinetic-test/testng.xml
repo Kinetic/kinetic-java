@@ -4,7 +4,7 @@
 	<test verbose="2" name="GRP-simulator">
 		<groups>
 			<run>
-				<include name="simulator" />
+				<!-- <include name="simulator" /> -->
 				<include name="drive" />
 			</run>
 		</groups>

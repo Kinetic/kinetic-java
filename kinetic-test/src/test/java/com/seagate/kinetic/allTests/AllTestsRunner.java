@@ -53,7 +53,7 @@ import com.seagate.kinetic.performance.microPerfTest;
  * Make sure you have access for /Seagate/LC2 in Github. <br>
  * Make sure one instance of simulator or kinetic drive is running.
  * <p>
- * 1, $git clone https://github.com/Seagate/kinetic-java.git
+ * 1, $git clone https://github.com/Kinetic/kinetic-java.git
  * <p>
  * 2, $cd ~/git/kinetic-java
  * <p>
@@ -92,7 +92,7 @@ import com.seagate.kinetic.performance.microPerfTest;
  * To run a single smoke test class, perform the following steps. <br>
  * ===========================================================
  * <p>
- * 1, $cd ~/git/kinetic-java
+ * 1, $cd ~/git/kinetic-java/kinetic-test
  * <p>
  * 2, $mvn -Dtest="your test class name" test
  * <p>
@@ -110,7 +110,7 @@ import com.seagate.kinetic.performance.microPerfTest;
  * Run log socket server locally. <br>
  * ============================================================
  * <p>
- * 1, $git clone https://github.com/Seagate/kinetic-java.git
+ * 1, $git clone https://github.com/Kinetic/kinetic-java.git
  * <p>
  * 2, $cd ~/git/kinetic-java
  * <p>
@@ -132,7 +132,7 @@ import com.seagate.kinetic.performance.microPerfTest;
  * Run all smoke test and send test log result to log socket server. <br>
  * =============================================================
  * <p>
- * 1, $git clone https://github.com/Seagate/Kinetic-java.git
+ * 1, $git clone https://github.com/Kinetic/Kinetic-java.git
  * <p>
  * 2, $cd ~/git/kinetic-java
  * <p>
