@@ -71,5 +71,11 @@ public enum Role {
 	 * can set up the security roles of the device
 	 * </pre>
 	 */
-	SECURITY;
+	SECURITY,
+	/**
+	 * <pre>
+	 * can set up the power level of the device
+	 * </pre>
+	 */
+	POWER_MANAGEMENT;
 }
