@@ -221,7 +221,7 @@ public class Hmac {
 	 * @param bytes
 	 * @param key
 	 * @param expectedHmac
-	 * @return
+	 * @return true or false
 	 * @throws HmacException
 	 */
 	public static boolean check(byte[] bytes, Key key, ByteString expectedHmac)

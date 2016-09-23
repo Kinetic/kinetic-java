@@ -18,9 +18,9 @@ package com.seagate.kinetic.simulator.client.sanity;
 
 import static org.testng.AssertJUnit.assertEquals;
 import static org.testng.AssertJUnit.assertTrue;
+import static com.seagate.kinetic.KineticTestHelpers.toByteArray;
 
 import java.io.StringWriter;
-import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -670,10 +670,4 @@ public class KineticSanityTest extends IntegrationTestCase {
 		logger.info("getRangeTest passed ...");
 
 	}
-
-	public static byte[] toByteArray(String s)
-			throws UnsupportedEncodingException {
-		return s.getBytes("utf8");
-	}
-
 }
