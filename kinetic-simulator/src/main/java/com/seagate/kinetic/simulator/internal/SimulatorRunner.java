@@ -17,8 +17,6 @@
 package com.seagate.kinetic.simulator.internal;
 
 import java.util.logging.Logger;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import kinetic.client.KineticException;
 import kinetic.simulator.KineticSimulator;
@@ -27,6 +25,8 @@ import kinetic.simulator.SimulatorConfiguration;
 public class SimulatorRunner {
 	private static final int OK = 0;
 	private static final int ERROR = 1;
+	private static final int MAX_PORT = 65535;
+	private static final int MIN_PORT = 0;
 	private static Logger logger = Logger.getLogger(SimulatorRunner.class
 			.getName());
 
@@ -93,12 +93,17 @@ public class SimulatorRunner {
 			throw new IllegalArgumentException("Port can not be empty");
 		}
 
-		Pattern pattern = Pattern
-				.compile("^([1-9]|[1-9]\\d{3}|[1-6][0-5][0-5][0-3][0-5])$");
-		Matcher matcher = pattern.matcher(port);
-		if (!matcher.find()) {
-			throw new IllegalArgumentException("Illegal port");
+		int portIn;
+		try {
+            portIn = Integer.parseInt(port);
+		} catch (NumberFormatException e) {
+		    throw new IllegalArgumentException("Illegal port: " + port);
 		}
+		    
+		if (portIn < MIN_PORT || portIn > MAX_PORT) {
+		    throw new IllegalArgumentException("Port out of range: " + port);
+		}
+
 	}
 
 	private void validateDbHome(String dbHome){
