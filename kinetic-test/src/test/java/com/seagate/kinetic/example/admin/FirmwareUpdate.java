@@ -42,6 +42,7 @@ public class FirmwareUpdate {
      * @param data firmware bytes
      * @throws KineticException if any internal error occur.
      */
+    @SuppressWarnings("deprecation")
     public static void updateFirmware(AdminClientConfiguration cc, byte[] data) throws KineticException {
         System.out.println ("updating firmware, size=" + data.length);
    

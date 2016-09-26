@@ -18,12 +18,14 @@ package com.seagate.kinetic.simulator.client.admin.impl;
 
 import org.testng.annotations.Test;
 import org.testng.Assert;
+
 import static com.seagate.kinetic.KineticTestHelpers.toByteArray;
 import kinetic.client.KineticException;
 
 import com.seagate.kinetic.IntegrationTestCase;
 
 @Test (groups = {"simulator"})
+@SuppressWarnings("deprecation")
 public class FirmwareDownloadTest extends IntegrationTestCase {
     @Test
     public void testFirmwareDownload_NoPin() {

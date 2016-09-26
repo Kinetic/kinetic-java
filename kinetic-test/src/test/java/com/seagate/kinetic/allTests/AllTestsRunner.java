@@ -25,6 +25,7 @@ import org.testng.xml.XmlClass;
 import org.testng.xml.XmlSuite;
 import org.testng.xml.XmlTest;
 
+import com.seagate.kinetic.adminAPI.KineticAdminTest;
 import com.seagate.kinetic.advancedAPI.AdvancedAPITest;
 import com.seagate.kinetic.asyncAPI.KineticAsyncAPITest;
 import com.seagate.kinetic.basicAPI.KineticBasicAPITest;

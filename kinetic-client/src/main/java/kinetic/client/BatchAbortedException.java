@@ -31,30 +31,18 @@ public class BatchAbortedException extends KineticException {
 
     private int index = -1;
 
-    /**
-     * {@inheritDoc}
-     */
     public BatchAbortedException() {
         ;
     }
     
-    /**
-     * {@inheritDoc}
-     */
     public BatchAbortedException(String message) {
         super(message);
     }
     
-    /**
-     * {@inheritDoc}
-     */
     public BatchAbortedException(Throwable cause) {
         super(cause);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public BatchAbortedException(String message, Throwable cause) {
         super(message, cause);
     }

@@ -33,12 +33,8 @@ public class ProtocolMessageUtil {
 	 * Translate a kinetic protocol message into a readable string format.
 	 * <p>
 	 * 
-	 * @param message
+	 * @param kineticMessage
 	 *            the protocol message to be translated.
-	 * 
-	 * @param vLength
-	 *            the attached value length.
-	 * 
 	 * @return a readable string format of a kinetic protocol message on the
 	 *         wire.
 	 */
