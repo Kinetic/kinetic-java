@@ -45,6 +45,9 @@ public class MessageDigestUtil {
 
     // CRC32 checksum instance
     private static KineticTagCalc crc32 = null;
+    
+    // CRC32C checksum instance
+    private static KineticTagCalc crc32c = null;
 
     public static ByteString calculateTag(Algorithm algo, byte[] value) {
 
@@ -69,6 +72,7 @@ public class MessageDigestUtil {
         case SHA1:
         case SHA2:
         case CRC32:
+        case CRC32C:
             return true;
         default:
             return false;
@@ -155,20 +159,20 @@ public class MessageDigestUtil {
     public static KineticTagCalc getCrc32cInstance() {
 
         // check if constructed
-        if (crc32 != null) {
-            return crc32;
+        if (crc32c != null) {
+            return crc32c;
         }
 
         // sync
         synchronized (MessageDigestUtil.class) {
 
             // check if already constructed
-            if (crc32 == null) {
-                crc32 = new Crc32cTagCalc2();
+            if (crc32c == null) {
+                crc32c = new Crc32cTagCalc2();
             }
         }
 
-        return crc32;
+        return crc32c;
     }
 
 
@@ -180,7 +184,9 @@ public class MessageDigestUtil {
         case SHA2:
             return getSha2Instance();
         case CRC32:
-            return getCrc32cInstance();
+            return getCrc32Instance();
+        case CRC32C:
+        	return getCrc32cInstance();
         default:
             throw new java.lang.UnsupportedOperationException(
                     "unsupported algorithm., name = " + algo.name());

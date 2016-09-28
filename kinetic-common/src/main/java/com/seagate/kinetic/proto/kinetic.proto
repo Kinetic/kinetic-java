@@ -1,19 +1,18 @@
 /**
- * Copyright (C) 2014 Seagate Technology.
+ * Copyright 2013-2015 Seagate Technology LLC.
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
+ * This Source Code Form is subject to the terms of the Mozilla
+ * Public License, v. 2.0. If a copy of the MPL was not
+ * distributed with this file, You can obtain one at
+ * https://mozilla.org/MP:/2.0/.
  *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but is provided AS-IS, WITHOUT ANY WARRANTY; including without
+ * the implied warranty of MERCHANTABILITY, NON-INFRINGEMENT or
+ * FITNESS FOR A PARTICULAR PURPOSE. See the Mozilla Public
+ * License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ * See www.openkinetic.org for more project information
  */
 package com.seagate.kinetic.proto;
 
@@ -23,7 +22,7 @@ option java_outer_classname = "Kinetic";
 // the protocol version number by building this message
 // and then reading the value.
 message Local {
-	optional string protocolVersion = 1 [default = "3.0.6"];
+	optional string protocolVersion = 1 [default = "3.0.7"];
 }
 
 // THe message is an authorization and command bytes.
@@ -679,8 +678,9 @@ message Command {
 		SHA1 = 1; // see NIST
 		SHA2 = 2; // see NIST
 		SHA3 = 3; // see NIST. The length of the tag determined the length of the hash
-		CRC32 = 4; // the CRC32 is the standard Ethernet CRC32. See IEEE
-		CRC64 = 5; // The CRC is ...
+		CRC32C = 4;
+		CRC64 = 5;
+		CRC32 = 6;
 		// 7-99 are reserved.
 		// 100-inf are private algorithms.
 	}
