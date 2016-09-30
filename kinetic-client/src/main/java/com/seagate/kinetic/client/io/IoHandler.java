@@ -26,6 +26,7 @@ import kinetic.client.KineticException;
 import com.seagate.kinetic.client.internal.ClientProxy;
 import com.seagate.kinetic.client.io.provider.spi.ClientTransportProvider;
 import com.seagate.kinetic.common.lib.KineticMessage;
+import com.seagate.kinetic.proto.Kinetic;
 
 /**
  *
@@ -115,6 +116,8 @@ public class IoHandler {
 
             // init transport
             this.transport.init(messageHandler);
+            
+            logger.info("connected to device., protocol version: " + Kinetic.Local.getDefaultInstance().getProtocolVersion());
         } catch (KineticException ke) {
             close();
             throw ke;
