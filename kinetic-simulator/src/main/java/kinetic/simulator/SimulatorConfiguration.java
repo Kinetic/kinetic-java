@@ -217,7 +217,7 @@ public class SimulatorConfiguration extends Properties {
     /**
      * current simulator version.
      */
-    public static final String SIMULATOR_VERSION = "0.8.0.4-SNAPSHOT";
+    public static final String SIMULATOR_VERSION = "3.0.7-SNAPSHOT";
 
     /**
      * simulator source commit hash.

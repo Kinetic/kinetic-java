@@ -41,7 +41,7 @@ public class TagUsageExample {
 	// kinetic client
 	private KineticClient client = null;
 
-	public void runExample() throws KineticException, InterruptedException {
+	public void runExample(Algorithm algorithm) throws KineticException, InterruptedException {
 
 		// Client configuration and initialization
 		ClientConfiguration clientConfig = new ClientConfiguration();
@@ -62,10 +62,10 @@ public class TagUsageExample {
 
         // set tag algorithm
         simpleEntry1.getEntryMetadata()
-                .setAlgorithm(Algorithm.CRC32.toString());
+                .setAlgorithm(algorithm.toString());
 
         // calculate tag with CRC32C algorithm
-        ByteString tag = MessageDigestUtil.calculateTag(Algorithm.CRC32, value);
+        ByteString tag = MessageDigestUtil.calculateTag(algorithm, value);
 
         // to byte[]
         byte[] crc32c = tag.toByteArray();
@@ -80,7 +80,7 @@ public class TagUsageExample {
         Entry entry2 = client.get(key);
 
         // calculate tag from value
-        byte[] calculatedTag = MessageDigestUtil.calculateTag(Algorithm.CRC32,
+        byte[] calculatedTag = MessageDigestUtil.calculateTag(algorithm,
                 entry2.getValue()).toByteArray();
 
         // get the tag field
@@ -124,9 +124,11 @@ public class TagUsageExample {
      */
 	public static void main(String[] args) throws KineticException,
 	InterruptedException {
+	    
+	    Algorithm algorithm = Algorithm.CRC32C;
 
         TagUsageExample tagUsage = new TagUsageExample();
 
-        tagUsage.runExample();
+        tagUsage.runExample(algorithm);
 	}
 }
