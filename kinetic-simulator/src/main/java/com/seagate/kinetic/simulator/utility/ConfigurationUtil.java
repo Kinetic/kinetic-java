@@ -84,7 +84,11 @@ public abstract class ConfigurationUtil {
                 NetworkInterface ni = netInterfaces.nextElement();
 
                 itf1 = Interface.newBuilder();
-                itf1.setName(ni.getDisplayName());
+                
+                // display name could be null returned from NetworkInterface API
+                if (ni.getDisplayName() != null) {
+                    itf1.setName(ni.getDisplayName());
+                }
 
                 // set mac addr
                 byte[] mac = ni.getHardwareAddress();
