@@ -14,9 +14,7 @@ Project components:
 ## Suggested development environment
 
 * Latest version of Git: [http://git-scm.com/downloads](http://git-scm.com/downloads)
-
 * JDK 1.7 or above: [http://www.oracle.com/technetwork/java/javase/downloads/index.html](http://www.oracle.com/technetwork/java/javase/downloads/index.html)
-
 * Maven 3.0.3 or later: [http://maven.apache.org/download.cgi](http://maven.apache.org/download.cgi)
 
 ## Quick start
