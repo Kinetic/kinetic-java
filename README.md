@@ -25,9 +25,10 @@ Project components:
   cd ~/workspace
   git clone https://github.com/Kinetic/kinetic-java.git
   mvn clean package
+  
+  # By default, simulator uses "USER-HOME/kinetic" as its data store folder.
+  # To build, the "workspace" must be located in a separate folder as the data store folder.
 ```
-
-**By default, simulator uses "USER-HOME/kinetic" as its data store folder. The "workspace" must be created in a separate folder as the data store folder.**
 
 ### Start the simulator
 
