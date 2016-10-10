@@ -1,4 +1,4 @@
-# Kinetic-Java implements Java API and Simulator for the Kinetic Open Storage Platform.
+# Java API and Simulator for the Kinetic Open Storage Platform.
 
 * Kinetic Protocol Definition: [https://github.com/Kinetic/kinetic-protocol] (https://github.com/Kinetic/kinetic-protocol)
 
@@ -31,9 +31,9 @@ Project components:
 
 **By default, simulator uses "USER-HOME/kinetic" as its data store folder. The "workspace" must be created in a separate folder as the data store folder.**
 
-### Start simulator
+### Start the simulator
 
-**Start with simulator jar**:    
+**Start with jar**:    
 
 ```bash
   cd ~/workspace
@@ -48,7 +48,7 @@ where "Version" above is the build version number (such as 3.0.7).
   ./bin/startSimulator.sh
 ```
 
-### Ping simulator
+### Ping the simulator
 
 ```bash
 cd ~/workspace
@@ -58,12 +58,12 @@ cd ~/workspace
 ./bin/ping.sh 127.0.0.1 
 ```
 
-### Test against remote instance
+### Test against a remote instance
 
 1. Run the integration tests against the simulator with specified max memory: `mvn test -DargLine="-Xmx500M"`
 1. Run the integration tests against the remote instance at a particular host: `mvn test -DRUN_AGAINST_EXTERNAL=true -DKINETIC_HOST=1.2.3.4`
 
-## Admin client command line usage
+## Admin client command usage
 
 1. Download, build, and start simulator as described in Quick Start section above
 1. Run admin CLI
@@ -73,7 +73,7 @@ cd ~/workspace
    ./bin/kineticadmin.sh -help
 ```
 
-### Erasing all data in the Simulator
+### Erase data in the Simulator
 
 * The simulator should be running, default port for TCP is 8123, SSL/TLS port is 8443
  
@@ -81,23 +81,21 @@ cd ~/workspace
   ./bin/kineticadmin.sh -instanterase
 ```
 
-## Simulator and Java API usage examples
-=================================
+## Simulator and Java API examples
 
 Examples are located at the following directory.
 
 "workspace"/kinetic-test/src/test/java/com/seagate/kinetic/example
 
-## Kinetic Java client API Javadoc location
-=================================
+## Kinetic Java API Javadoc location
+
 To browse Javadoc: [http://kinetic.github.io/kinetic-java/](http://kinetic.github.io/kinetic-java/)
 
 ## kinetic-java runtime on maven central
-=================================
+
 * kinetic-releases: [https://github.com/Kinetic/kinetic-java/releases](https://github.com/Kinetic/kinetic-java/releases)
 
-## Run smoke test against simulator or kinetic drive
-==================================
+## Run smoke test against a remore instance
 
 1.  Download, build, and start simulator as described in Quick Start section above 
 1. `cd "workspace"/bin`
