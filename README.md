@@ -32,7 +32,7 @@ Project components:
 
 ### Start the simulator
 
-**Start with jar**:    
+**Start with simulator jar**:    
 
 ```bash
   cd ~/workspace
@@ -57,7 +57,7 @@ cd ~/workspace
 ./bin/ping.sh 127.0.0.1 
 ```
 
-### Test against a remote instance
+### Run test suite against a remote instance
 
 1. Run the integration tests against the simulator with specified max memory: `mvn test -DargLine="-Xmx500M"`
 1. Run the integration tests against the remote instance at a particular host: `mvn test -DRUN_AGAINST_EXTERNAL=true -DKINETIC_HOST=1.2.3.4`
@@ -94,8 +94,14 @@ To browse Javadoc: [http://kinetic.github.io/kinetic-java/](http://kinetic.githu
 
 * kinetic-releases: [https://github.com/Kinetic/kinetic-java/releases](https://github.com/Kinetic/kinetic-java/releases)
 
-## Run smoke test against a remore instance
+## Run smoke tests against a remore instance
 
 1.  Download, build, and start simulator as described in Quick Start section above 
 1. `cd "workspace"/bin`
 1. `sh runSmokeTests.sh [-host host_ip] [-port port] [-tlsport tlsport] [-home kinetic_home]`
+
+## Kinetic tools and console
+
+The kinetic tools and console provide tools to discover, setup, configure, and monitor Kinetic devices.
+
+[https://github.com/Seagate/kinetic-java-tools] (https://github.com/Seagate/kinetic-java-tools)
