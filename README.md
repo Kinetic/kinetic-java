@@ -68,7 +68,7 @@ cd ~/workspace
 1. Run admin CLI
 
 ```bash
-   cd ~/wprkspace
+   cd ~/workspace
    ./bin/kineticadmin.sh -help
 ```
 
@@ -94,7 +94,7 @@ To browse Javadoc: [http://kinetic.github.io/kinetic-java/](http://kinetic.githu
 
 * kinetic-releases: [https://github.com/Kinetic/kinetic-java/releases](https://github.com/Kinetic/kinetic-java/releases)
 
-## Run smoke tests against a remore instance
+## Run smoke tests against a remote instance
 
 1.  Download, build, and start simulator as described in Quick Start section above 
 1. `cd "workspace"/bin`
