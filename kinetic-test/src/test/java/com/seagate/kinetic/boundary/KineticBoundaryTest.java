@@ -30,6 +30,7 @@ import static org.testng.AssertJUnit.assertTrue;
 import static org.testng.internal.junit.ArrayAsserts.assertArrayEquals;
 
 import java.io.UnsupportedEncodingException;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -55,7 +56,9 @@ import com.google.protobuf.ByteString;
 import com.seagate.kinetic.IntegrationTestCase;
 import com.seagate.kinetic.IntegrationTestLoggerFactory;
 import com.seagate.kinetic.client.internal.DefaultKineticClient;
+import com.seagate.kinetic.common.lib.MessageDigestUtil;
 import com.seagate.kinetic.proto.Kinetic;
+import com.seagate.kinetic.proto.Kinetic.Command.Algorithm;
 import com.seagate.kinetic.proto.Kinetic.Command.Security.ACL;
 import com.seagate.kinetic.proto.Kinetic.Command.Security.ACL.Permission;
 import com.seagate.kinetic.proto.Kinetic.Command.Status.StatusCode;
@@ -467,6 +470,134 @@ public class KineticBoundaryTest extends IntegrationTestCase {
             assertEquals(
                     "Kinetic Command Exception: NOT_AUTHORIZED: permission denied",
                     e.getMessage());
+        }
+
+        logger.info(this.testEndInfo());
+    }
+
+    /**
+     * Test put API with a serial of entries. Metadata with the value of
+     * algorithm CRC32 and tag. Compare the value got back and caculated by
+     * CRC32C, shouldn't equal each other.
+     * <p>
+     *
+     */
+    @Test(dataProvider = "transportProtocolOptions")
+    public void testPut_MetadataTagWithCRC32_CaculateWithCRC32C(
+            String clientName) {
+        Entry versionedPut;
+        Entry versionedPutReturn = null;
+        byte[] key;
+        byte[] value;
+        byte[] tag;
+        byte[] newVersion = int32(0);
+        String algorithm = "CRC32";
+        Long start = System.nanoTime();
+
+        key = toByteArray("key");
+        value = ByteBuffer.allocate(8).putLong(start).array();
+        tag = MessageDigestUtil.calculateTag(Algorithm.CRC32, value)
+                .toByteArray();
+        EntryMetadata entryMetadata = new EntryMetadata();
+        entryMetadata.setAlgorithm(algorithm);
+        entryMetadata.setTag(tag);
+        versionedPut = new Entry(key, value, entryMetadata);
+
+        try {
+            getClient(clientName).deleteForced(key);
+        } catch (KineticException e) {
+            Assert.fail("Clean key throw exceptions." + e.getMessage());
+        }
+
+        try {
+            versionedPutReturn = getClient(clientName).put(versionedPut,
+                    newVersion);
+        } catch (KineticException e) {
+            Assert.fail("Put data throw exception. " + e.getMessage());
+        }
+
+        if (null != versionedPutReturn) {
+            assertArrayEquals(key, versionedPutReturn.getKey());
+            assertArrayEquals(newVersion, versionedPutReturn.getEntryMetadata()
+                    .getVersion());
+            assertArrayEquals(value, versionedPutReturn.getValue());
+            assertArrayEquals(tag, versionedPutReturn.getEntryMetadata()
+                    .getTag());
+            assertEquals(algorithm, versionedPutReturn.getEntryMetadata()
+                    .getAlgorithm());
+            assertFalse(tag.equals(MessageDigestUtil.calculateTag(
+                    Algorithm.CRC32C, versionedPutReturn.getValue())
+                    .toByteArray()));
+        }
+
+        try {
+            getClient(clientName).deleteForced(key);
+        } catch (KineticException e) {
+            Assert.fail("Clean key throw exceptions." + e.getMessage());
+        }
+
+        logger.info(this.testEndInfo());
+    }
+
+    /**
+     * Test put API with a serial of entries. Metadata with the value of
+     * algorithm CRC32C and tag. Compare the value got back and caculated by
+     * CRC32, shouldn't equal each other.
+     * <p>
+     *
+     */
+    @Test(dataProvider = "transportProtocolOptions")
+    public void testPut_MetadataTagWithCRC32C_CaculateWithCRC32(
+            String clientName) {
+        Entry versionedPut;
+        Entry versionedPutReturn = null;
+        byte[] key;
+        byte[] value;
+        byte[] tag;
+        byte[] newVersion = int32(0);
+        String algorithm = "CRC32C";
+        Long start = System.nanoTime();
+
+        key = toByteArray("key");
+        value = ByteBuffer.allocate(8).putLong(start).array();
+        tag = MessageDigestUtil.calculateTag(Algorithm.CRC32C, value)
+                .toByteArray();
+        EntryMetadata entryMetadata = new EntryMetadata();
+        entryMetadata.setAlgorithm(algorithm);
+        entryMetadata.setTag(tag);
+        versionedPut = new Entry(key, value, entryMetadata);
+
+        try {
+            getClient(clientName).deleteForced(key);
+        } catch (KineticException e) {
+            Assert.fail("Clean key throw exceptions." + e.getMessage());
+        }
+
+        try {
+            versionedPutReturn = getClient(clientName).put(versionedPut,
+                    newVersion);
+        } catch (KineticException e) {
+            Assert.fail("Put data throw exception. " + e.getMessage());
+        }
+
+        if (null != versionedPutReturn) {
+            assertArrayEquals(key, versionedPutReturn.getKey());
+            assertArrayEquals(newVersion, versionedPutReturn.getEntryMetadata()
+                    .getVersion());
+            assertArrayEquals(value, versionedPutReturn.getValue());
+            assertArrayEquals(tag, versionedPutReturn.getEntryMetadata()
+                    .getTag());
+            assertEquals(algorithm, versionedPutReturn.getEntryMetadata()
+                    .getAlgorithm());
+            assertFalse(tag.equals(MessageDigestUtil.calculateTag(
+                    Algorithm.CRC32, versionedPutReturn.getValue())
+                    .toByteArray()));
+        }
+
+        try {
+            getClient(clientName).deleteForced(key);
+        } catch (KineticException e) {
+            Assert.fail("Clean key throw exceptions." + e.getMessage());
         }
 
         logger.info(this.testEndInfo());
