@@ -50,6 +50,12 @@ import kinetic.client.KineticException;
 
 import com.google.protobuf.ByteString;
 import com.seagate.kinetic.admin.impl.JsonUtil;
+import com.seagate.kinetic.client.internal.MessageFactory;
+import com.seagate.kinetic.common.lib.KineticMessage;
+import com.seagate.kinetic.common.lib.ProtocolMessageUtil;
+import com.seagate.kinetic.proto.Kinetic;
+import com.seagate.kinetic.proto.Kinetic.Command.Priority;
+import com.seagate.kinetic.proto.Kinetic.Command.Range;
 import com.seagate.kinetic.proto.Kinetic.Command.Security;
 import com.seagate.kinetic.proto.Kinetic.Command.Security.ACL.Permission;
 
@@ -75,6 +81,8 @@ public class KineticAdminCLI {
     private static final long CLUSTERVERSION = 0;
     private static final int OK = 0;
     private static final int ERROR = 1;
+    private static final String DEFAULT_INCLUSIVE_FOR_MEDIA_OPTIMIZE = "true";
+    private static final String DEFAULT_MAX_KEYS_RETURNED_FOR_MEDIA_OPTIMIZE = "200";
     private static KineticAdminClient kineticAdminClient = null;
     private final Map<String, List<String>> legalArguments = new HashMap<String, List<String>>();
 
@@ -152,6 +160,23 @@ public class KineticAdminCLI {
         rootArg = "-unlockdevice";
         subArgs = initSubArgs();
         subArgs.add("-pin");
+        legalArguments.put(rootArg, subArgs);
+
+        rootArg = "-mediascan";
+        subArgs = initSubArgs();
+        subArgs.add("-startkey");
+        subArgs.add("-endkey");
+        subArgs.add("-startkeyinclusive");
+        subArgs.add("-endkeyinclusive");
+        subArgs.add("-maxkeys");
+        subArgs.add("-priority");
+        legalArguments.put(rootArg, subArgs);
+
+        rootArg = "-mediaoptimize";
+        subArgs = initSubArgs();
+        subArgs.add("-startkey");
+        subArgs.add("-endkey");
+        subArgs.add("-priority");
         legalArguments.put(rootArg, subArgs);
     }
 
@@ -387,6 +412,31 @@ public class KineticAdminCLI {
         kineticAdminClient.unLockDevice(lockPinB);
     }
 
+    public KineticMessage mediaScan(String startKey, String endKey,
+            String startKeyInclusive, String endKeyInclusive, String maxKeys,
+            String priority) throws KineticException {
+        validateMediaScanParameters(startKey, endKey, startKeyInclusive,
+                endKeyInclusive, maxKeys, priority);
+
+        Range range = getRange(startKey, endKey, startKeyInclusive,
+                endKeyInclusive, maxKeys);
+        Priority p = getPriority(priority);
+
+        return kineticAdminClient.mediaScan(range, p);
+    }
+
+    private KineticMessage mediaOptimize(String startKey, String endKey,
+            String priority) throws KineticException {
+        validateMediaOptimizeParameters(startKey, endKey, priority);
+        Range range = getRange(startKey, endKey,
+                DEFAULT_INCLUSIVE_FOR_MEDIA_OPTIMIZE,
+                DEFAULT_INCLUSIVE_FOR_MEDIA_OPTIMIZE,
+                DEFAULT_MAX_KEYS_RETURNED_FOR_MEDIA_OPTIMIZE);
+        Priority p = getPriority(priority);
+
+        return kineticAdminClient.mediaOptimize(range, p);
+    }
+
     public static void printHelp() {
         StringBuffer sb = new StringBuffer();
         sb.append("Usage: kineticAdmin <-setclusterversion|-seterasepin|-setlockpin|-instanterase|-secureerase|-security|-getlog|-getvendorspecificdevicelog|-firmware|-lockdevice|-unlockdevice>\n");
@@ -401,7 +451,9 @@ public class KineticAdminCLI {
         sb.append("kineticAdmin -getvendorspecificdevicelog <-name <vendorspecificname>> [-host <ip|hostname>] [-usessl <true|false>] [-port <port>] [-clversion <clusterversion>]\n");
         sb.append("kineticAdmin -firmware <file> [-host <ip|hostname>] [-port <port>] [-clversion <clusterversion>]\n");
         sb.append("kineticAdmin -lockdevice <-pin <lockpin>> [-host <ip|hostname>] [-usessl <true|false>] [-port <port>] [-clversion <clusterversion>]\n");
-        sb.append("kineticAdmin -unlockdevice <-pin <lockpin>> [-host <ip|hostname>] [-usessl <true|false>] [-port <port>] [-clversion <clusterversion>]");
+        sb.append("kineticAdmin -unlockdevice <-pin <lockpin>> [-host <ip|hostname>] [-usessl <true|false>] [-port <port>] [-clversion <clusterversion>]\n");
+        sb.append("kineticAdmin -mediascan <-startkey <startKey>> <-endkey <endKey>> <-startkeyinclusive <true|false>> <-endkeyinclusive <true|false>> <-maxkeys <maxKeysReturned>> <-priority <priority>> [-host <ip|hostname>] [-usessl <true|false>] [-port <port>] [-clversion <clusterversion>]\n");
+        sb.append("kineticAdmin -mediaoptimize <-startkey <startKey>> <-endkey <endKey>> <-priority <priority>> [-host <ip|hostname>] [-usessl <true|false>] [-port <port>] [-clversion <clusterversion>]");
         System.out.println(sb.toString());
     }
 
@@ -598,7 +650,37 @@ public class KineticAdminCLI {
                 String unLockPin = kineticAdminCLI.getArgValue("-pin", args);
                 kineticAdminCLI.unLockDevice(unLockPin);
                 kineticAdminCLI.printSuccessResult();
-            } else {
+            } else if (args[0].equalsIgnoreCase("-mediascan")) {
+                initAdminClient(args, kineticAdminCLI);
+                String startKey = kineticAdminCLI
+                        .getArgValue("-startkey", args);
+                String endKey = kineticAdminCLI.getArgValue("-endkey", args);
+                String startKeyInclusive = kineticAdminCLI.getArgValue(
+                        "-startkeyinclusive", args);
+                String endKeyInclusive = kineticAdminCLI.getArgValue(
+                        "-endkeyinclusive", args);
+                String maxKeys = kineticAdminCLI.getArgValue("-maxkeys", args);
+                String priority = kineticAdminCLI
+                        .getArgValue("-priority", args);
+
+                KineticMessage krsp = kineticAdminCLI.mediaScan(startKey,
+                        endKey, startKeyInclusive, endKeyInclusive, maxKeys,
+                        priority);
+                kineticAdminCLI.printMediaOpResult(krsp);
+            } else if (args[0].equalsIgnoreCase("-mediaoptimize")) {
+                initAdminClient(args, kineticAdminCLI);
+                String startKey = kineticAdminCLI
+                        .getArgValue("-startkey", args);
+                String endKey = kineticAdminCLI.getArgValue("-endkey", args);
+                String priority = kineticAdminCLI
+                        .getArgValue("-priority", args);
+
+                KineticMessage krsp = kineticAdminCLI.mediaOptimize(startKey,
+                        endKey, priority);
+                kineticAdminCLI.printMediaOpResult(krsp);
+            }
+
+            else {
                 printHelp();
             }
         } catch (KineticException ke) {
@@ -850,4 +932,79 @@ public class KineticAdminCLI {
         }
     }
 
+    private void printMediaOpResult(KineticMessage krsp) {
+        System.out.println(ProtocolMessageUtil.toString(krsp));
+    }
+
+    private void validateMediaScanParameters(String startKey, String endKey,
+            String startKeyInclusive, String endKeyInclusive, String maxKeys,
+            String priority) {
+        validateMediaOptimizeParameters(startKey, endKey, maxKeys);
+
+        if (!(startKeyInclusive.equalsIgnoreCase("true") || startKeyInclusive
+                .equalsIgnoreCase("false"))
+                || !(endKeyInclusive.equalsIgnoreCase("true") || endKeyInclusive
+                        .equalsIgnoreCase("false"))) {
+            throw new IllegalArgumentException(
+                    "startKeyInclusive/endKeyInclusive need to set true or false");
+        }
+
+        if (maxKeys == null || startKey.isEmpty()) {
+            throw new IllegalArgumentException("maxkeys need to set");
+        }
+    }
+
+    private void validateMediaOptimizeParameters(String startKey,
+            String endKey, String priority) {
+        if (startKey == null || startKey.isEmpty() || endKey == null
+                || endKey.isEmpty()) {
+            throw new IllegalArgumentException("startkey/endkey need to set");
+        }
+
+        if (priority == null || priority.isEmpty()) {
+            throw new IllegalArgumentException("priority need to set");
+        }
+    }
+
+    private Range getRange(String startKey, String endKey,
+            String startKeyInclusive, String endKeyInclusive, String maxKeys) {
+        KineticMessage kmreq = MessageFactory.createKineticMessageWithBuilder();
+        Kinetic.Command.Builder commandBuilder = (Kinetic.Command.Builder) kmreq
+                .getCommand();
+        Kinetic.Command.Range.Builder rangeBuilder = commandBuilder
+                .getBodyBuilder().getRangeBuilder();
+        ByteString startKeyB = ByteString.copyFromUtf8(startKey);
+        ByteString endKeyB = ByteString.copyFromUtf8(endKey);
+        boolean startKeyInclusiveB = Boolean.valueOf(startKeyInclusive);
+        boolean endKeyInclusiveB = Boolean.valueOf(endKeyInclusive);
+        int maxKeysI = Integer.parseInt(maxKeys);
+
+        rangeBuilder.setStartKey(startKeyB);
+        rangeBuilder.setEndKey(endKeyB);
+        rangeBuilder.setStartKeyInclusive(startKeyInclusiveB);
+        rangeBuilder.setEndKeyInclusive(endKeyInclusiveB);
+        rangeBuilder.setMaxReturned(maxKeysI);
+        Range range = rangeBuilder.build();
+
+        return range;
+    }
+
+    private Priority getPriority(String priority) {
+        Kinetic.Command.Priority p = null;
+        if (priority.equalsIgnoreCase("normal")) {
+            p = Kinetic.Command.Priority.NORMAL;
+        } else if (priority.equalsIgnoreCase("lower")) {
+            p = Kinetic.Command.Priority.LOWER;
+        } else if (priority.equalsIgnoreCase("lowest")) {
+            p = Kinetic.Command.Priority.LOWEST;
+        } else if (priority.equalsIgnoreCase("higher")) {
+            p = Kinetic.Command.Priority.HIGHER;
+        } else if (priority.equalsIgnoreCase("highest")) {
+            p = Kinetic.Command.Priority.HIGHEST;
+        } else {
+            throw new IllegalArgumentException(
+                    "Priority should be normal/lower/lowest/higher/highest.");
+        }
+        return p;
+    }
 }
