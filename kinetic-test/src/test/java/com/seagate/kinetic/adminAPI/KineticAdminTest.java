@@ -16,6 +16,7 @@
  */
 package com.seagate.kinetic.adminAPI;
 
+import static com.seagate.kinetic.KineticTestHelpers.cleanNextData;
 import static com.seagate.kinetic.KineticTestHelpers.instantErase;
 import static com.seagate.kinetic.KineticTestHelpers.setDefaultAcls;
 import static com.seagate.kinetic.KineticTestHelpers.toByteArray;
@@ -51,6 +52,9 @@ import kinetic.client.EntryNotFoundException;
 import kinetic.client.KineticClient;
 import kinetic.client.KineticClientFactory;
 import kinetic.client.KineticException;
+import kinetic.client.advanced.PersistOption;
+import kinetic.client.p2p.KineticP2PClientFactory;
+import kinetic.client.p2p.KineticP2pClient;
 
 import org.testng.Assert;
 import org.testng.annotations.Test;
@@ -58,9 +62,12 @@ import org.testng.annotations.Test;
 import com.google.protobuf.ByteString;
 import com.seagate.kinetic.IntegrationTestCase;
 import com.seagate.kinetic.IntegrationTestLoggerFactory;
+import com.seagate.kinetic.KVGenerator;
 import com.seagate.kinetic.client.internal.MessageFactory;
 import com.seagate.kinetic.common.lib.KineticMessage;
+import com.seagate.kinetic.common.lib.MessageDigestUtil;
 import com.seagate.kinetic.proto.Kinetic.Command;
+import com.seagate.kinetic.proto.Kinetic.Command.Algorithm;
 import com.seagate.kinetic.proto.Kinetic.Command.MessageType;
 import com.seagate.kinetic.proto.Kinetic.Command.Priority;
 import com.seagate.kinetic.proto.Kinetic.Command.Range;
@@ -263,12 +270,13 @@ public class KineticAdminTest extends IntegrationTestCase {
         } catch (Exception e1) {
             Assert.fail("Throw wrong exception. " + e1.getMessage());
         }
-        
+
         // reset cluster version to default one.
         try {
             resetClusterVersionToDefault(newClusterVersion);
-        } catch (KineticException e){
-            Assert.fail("reset cluster version to default one throw exception! " + e.getMessage());
+        } catch (KineticException e) {
+            Assert.fail("reset cluster version to default one throw exception! "
+                    + e.getMessage());
         }
 
         logger.info(this.testEndInfo());
@@ -1419,7 +1427,7 @@ public class KineticAdminTest extends IntegrationTestCase {
         } catch (Exception e) {
             assertTrue(e.getMessage().indexOf("permission denied") != -1);
         }
-        
+
         try {
             EntryMetadata entryMetadata = new EntryMetadata();
             entryMetadata.setVersion(version);
@@ -1534,7 +1542,7 @@ public class KineticAdminTest extends IntegrationTestCase {
             Assert.fail("close kienticClient throw exception: "
                     + e.getMessage());
         }
-        
+
         // clean up data(key1 and key3)
         KineticClient kineticClientAd = null;
         try {
@@ -2729,42 +2737,277 @@ public class KineticAdminTest extends IntegrationTestCase {
     }
 
     /**
-     * Test back ground operation API: mediaScan. Check the response message
-     * field.
+     * Test back ground operation API: mediaScan with highest priority. Check
+     * the response message field.
      * <p>
      */
-    @Test(enabled = false)
+    @Test
     public void testMediaScan_withPriorityIsHighest_successOperation() {
-        // create request message
-        KineticMessage kmreq = MessageFactory.createKineticMessageWithBuilder();
+        try {
+            prepareDataWithWrongTagForMediaOp();
+        } catch (KineticException e1) {
+            Assert.fail("Prepare data for media operation failed! ");
+        }
 
-        Command.Builder commandBuilder = (Command.Builder) kmreq.getCommand();
+        String startKey = "key00000000000";
+        String endKey = "key00000000200";
+        boolean startKeyInclusive = true;
+        boolean endKeyInclusive = true;
+        int maxKeys = 10;
+        Range range = getRangeForMediaOp(startKey, endKey, startKeyInclusive,
+                endKeyInclusive, maxKeys);
 
-        Range.Builder rangeBuilder = commandBuilder.getBodyBuilder()
-                .getRangeBuilder();
-
-        ByteString startKey = ByteString.copyFromUtf8("start_key");
-        ByteString endKey = ByteString.copyFromUtf8("end_key");
-
-        rangeBuilder.setStartKey(startKey);
-        rangeBuilder.setEndKey(endKey);
-        rangeBuilder.setStartKeyInclusive(false);
-        rangeBuilder.setEndKeyInclusive(true);
-
-        Range range = rangeBuilder.build();
+        String expectEndKey = "key00000000010";
 
         try {
             KineticMessage kmrsp = getAdminClient().mediaScan(range,
                     Priority.HIGHEST);
+            if (kmrsp == null || kmrsp.getCommand() == null
+                    || kmrsp.getCommand().getHeader() == null
+                    || kmrsp.getCommand().getStatus() == null
+                    || kmrsp.getCommand().getBody() == null
+                    || kmrsp.getCommand().getBody().getRange() == null) {
+                Assert.fail("MediaScan response is null!");
+            }
             assertEquals(MessageType.MEDIASCAN_RESPONSE, kmrsp.getCommand()
                     .getHeader().getMessageType());
             assertEquals(StatusCode.SUCCESS, kmrsp.getCommand().getStatus()
                     .getCode());
+            assertEquals(maxKeys, kmrsp.getCommand().getBody().getRange()
+                    .getKeysCount());
+            assertEquals(toByteArray(expectEndKey), kmrsp.getCommand()
+                    .getBody().getRange().getEndKey().toByteArray());
+            KVGenerator kvGenerator = new KVGenerator();
+            for (int i = 0; i < maxKeys; i++) {
+                String expectKey = kvGenerator.getNextKey();
+                byte[] returnedKey = kmrsp.getCommand().getBody().getRange()
+                        .getKeys(i).toByteArray();
+                assertEquals(toByteArray(expectKey), returnedKey);
+            }
         } catch (KineticException e) {
             Assert.fail("media scan operation throw exception: "
                     + e.getMessage());
         }
+        logger.info(this.testEndInfo());
+    }
 
+    /**
+     * Test back ground operation API: mediaScan with higher priority. Check the
+     * response message field.
+     * <p>
+     */
+    @Test
+    public void testMediaScan_withPriorityIsHigher_successOperation() {
+        try {
+            prepareDataWithWrongTagForMediaOp();
+        } catch (KineticException e1) {
+            Assert.fail("Prepare data for media operation failed! ");
+        }
+
+        String startKey = "key00000000000";
+        String endKey = "key00000000200";
+        boolean startKeyInclusive = true;
+        boolean endKeyInclusive = true;
+        int maxKeys = 10;
+        Range range = getRangeForMediaOp(startKey, endKey, startKeyInclusive,
+                endKeyInclusive, maxKeys);
+
+        String expectEndKey = "key00000000010";
+
+        try {
+            KineticMessage kmrsp = getAdminClient().mediaScan(range,
+                    Priority.HIGHER);
+            if (kmrsp == null || kmrsp.getCommand() == null
+                    || kmrsp.getCommand().getHeader() == null
+                    || kmrsp.getCommand().getStatus() == null
+                    || kmrsp.getCommand().getBody() == null
+                    || kmrsp.getCommand().getBody().getRange() == null) {
+                Assert.fail("MediaScan response is null!");
+            }
+            assertEquals(MessageType.MEDIASCAN_RESPONSE, kmrsp.getCommand()
+                    .getHeader().getMessageType());
+            assertEquals(StatusCode.SUCCESS, kmrsp.getCommand().getStatus()
+                    .getCode());
+            assertEquals(maxKeys, kmrsp.getCommand().getBody().getRange()
+                    .getKeysCount());
+            assertEquals(toByteArray(expectEndKey), kmrsp.getCommand()
+                    .getBody().getRange().getEndKey().toByteArray());
+            KVGenerator kvGenerator = new KVGenerator();
+            for (int i = 0; i < maxKeys; i++) {
+                String expectKey = kvGenerator.getNextKey();
+                byte[] returnedKey = kmrsp.getCommand().getBody().getRange()
+                        .getKeys(i).toByteArray();
+                assertEquals(toByteArray(expectKey), returnedKey);
+            }
+        } catch (KineticException e) {
+            Assert.fail("media scan operation throw exception: "
+                    + e.getMessage());
+        }
+        logger.info(this.testEndInfo());
+    }
+
+    /**
+     * Test back ground operation API: mediaScan with lower priority. Check the
+     * response message field.
+     * <p>
+     */
+    @Test
+    public void testMediaScan_withPriorityIsLower_successOperation() {
+        try {
+            prepareDataWithWrongTagForMediaOp();
+        } catch (KineticException e1) {
+            Assert.fail("Prepare data for media operation failed! ");
+        }
+
+        String startKey = "key00000000000";
+        String endKey = "key00000000200";
+        boolean startKeyInclusive = true;
+        boolean endKeyInclusive = true;
+        int maxKeys = 10;
+        Range range = getRangeForMediaOp(startKey, endKey, startKeyInclusive,
+                endKeyInclusive, maxKeys);
+
+        String expectEndKey = "key00000000010";
+
+        try {
+            KineticMessage kmrsp = getAdminClient().mediaScan(range,
+                    Priority.LOWER);
+            if (kmrsp == null || kmrsp.getCommand() == null
+                    || kmrsp.getCommand().getHeader() == null
+                    || kmrsp.getCommand().getStatus() == null
+                    || kmrsp.getCommand().getBody() == null
+                    || kmrsp.getCommand().getBody().getRange() == null) {
+                Assert.fail("MediaScan response is null!");
+            }
+            assertEquals(MessageType.MEDIASCAN_RESPONSE, kmrsp.getCommand()
+                    .getHeader().getMessageType());
+            assertEquals(StatusCode.SUCCESS, kmrsp.getCommand().getStatus()
+                    .getCode());
+            assertEquals(maxKeys, kmrsp.getCommand().getBody().getRange()
+                    .getKeysCount());
+            assertEquals(toByteArray(expectEndKey), kmrsp.getCommand()
+                    .getBody().getRange().getEndKey().toByteArray());
+            KVGenerator kvGenerator = new KVGenerator();
+            for (int i = 0; i < maxKeys; i++) {
+                String expectKey = kvGenerator.getNextKey();
+                byte[] returnedKey = kmrsp.getCommand().getBody().getRange()
+                        .getKeys(i).toByteArray();
+                assertEquals(toByteArray(expectKey), returnedKey);
+            }
+        } catch (KineticException e) {
+            Assert.fail("media scan operation throw exception: "
+                    + e.getMessage());
+        }
+        logger.info(this.testEndInfo());
+    }
+
+    /**
+     * Test back ground operation API: mediaScan with lowest priority. Check the
+     * response message field.
+     * <p>
+     */
+    @Test
+    public void testMediaScan_withPriorityIsLowest_successOperation() {
+        try {
+            prepareDataWithWrongTagForMediaOp();
+        } catch (KineticException e1) {
+            Assert.fail("Prepare data for media operation failed! ");
+        }
+
+        String startKey = "key00000000000";
+        String endKey = "key00000000200";
+        boolean startKeyInclusive = true;
+        boolean endKeyInclusive = true;
+        int maxKeys = 10;
+        Range range = getRangeForMediaOp(startKey, endKey, startKeyInclusive,
+                endKeyInclusive, maxKeys);
+
+        String expectEndKey = "key00000000010";
+
+        try {
+            KineticMessage kmrsp = getAdminClient().mediaScan(range,
+                    Priority.LOWEST);
+            if (kmrsp == null || kmrsp.getCommand() == null
+                    || kmrsp.getCommand().getHeader() == null
+                    || kmrsp.getCommand().getStatus() == null
+                    || kmrsp.getCommand().getBody() == null
+                    || kmrsp.getCommand().getBody().getRange() == null) {
+                Assert.fail("MediaScan response is null!");
+            }
+            assertEquals(MessageType.MEDIASCAN_RESPONSE, kmrsp.getCommand()
+                    .getHeader().getMessageType());
+            assertEquals(StatusCode.SUCCESS, kmrsp.getCommand().getStatus()
+                    .getCode());
+            assertEquals(maxKeys, kmrsp.getCommand().getBody().getRange()
+                    .getKeysCount());
+            assertEquals(toByteArray(expectEndKey), kmrsp.getCommand()
+                    .getBody().getRange().getEndKey().toByteArray());
+            KVGenerator kvGenerator = new KVGenerator();
+            for (int i = 0; i < maxKeys; i++) {
+                String expectKey = kvGenerator.getNextKey();
+                byte[] returnedKey = kmrsp.getCommand().getBody().getRange()
+                        .getKeys(i).toByteArray();
+                assertEquals(toByteArray(expectKey), returnedKey);
+            }
+        } catch (KineticException e) {
+            Assert.fail("media scan operation throw exception: "
+                    + e.getMessage());
+        }
+        logger.info(this.testEndInfo());
+    }
+
+    /**
+     * Test back ground operation API: mediaScan with normal priority. Check the
+     * response message field.
+     * <p>
+     */
+    @Test
+    public void testMediaScan_withPriorityIsNormal_successOperation() {
+        try {
+            prepareDataWithWrongTagForMediaOp();
+        } catch (KineticException e1) {
+            Assert.fail("Prepare data for media operation failed! ");
+        }
+
+        String startKey = "key00000000000";
+        String endKey = "key00000000200";
+        boolean startKeyInclusive = true;
+        boolean endKeyInclusive = true;
+        int maxKeys = 10;
+        Range range = getRangeForMediaOp(startKey, endKey, startKeyInclusive,
+                endKeyInclusive, maxKeys);
+
+        String expectEndKey = "key00000000010";
+
+        try {
+            KineticMessage kmrsp = getAdminClient().mediaScan(range,
+                    Priority.NORMAL);
+            if (kmrsp == null || kmrsp.getCommand() == null
+                    || kmrsp.getCommand().getHeader() == null
+                    || kmrsp.getCommand().getStatus() == null
+                    || kmrsp.getCommand().getBody() == null
+                    || kmrsp.getCommand().getBody().getRange() == null) {
+                Assert.fail("MediaScan response is null!");
+            }
+            assertEquals(MessageType.MEDIASCAN_RESPONSE, kmrsp.getCommand()
+                    .getHeader().getMessageType());
+            assertEquals(StatusCode.SUCCESS, kmrsp.getCommand().getStatus()
+                    .getCode());
+            assertEquals(maxKeys, kmrsp.getCommand().getBody().getRange()
+                    .getKeysCount());
+            assertEquals(toByteArray(expectEndKey), kmrsp.getCommand()
+                    .getBody().getRange().getEndKey().toByteArray());
+            KVGenerator kvGenerator = new KVGenerator();
+            for (int i = 0; i < maxKeys; i++) {
+                String expectKey = kvGenerator.getNextKey();
+                byte[] returnedKey = kmrsp.getCommand().getBody().getRange()
+                        .getKeys(i).toByteArray();
+                assertEquals(toByteArray(expectKey), returnedKey);
+            }
+        } catch (KineticException e) {
+            Assert.fail("media scan operation throw exception: "
+                    + e.getMessage());
+        }
         logger.info(this.testEndInfo());
     }
 
@@ -2773,7 +3016,7 @@ public class KineticAdminTest extends IntegrationTestCase {
      * range permission, should throw exception.
      * <p>
      */
-    @Test(enabled = false)
+    @Test
     public void testMediaScan_withPriorityIsHighest_withNoRangePermission_throwException() {
         List<Role> roles = new ArrayList<Role>();
         roles.add(Role.DELETE);
@@ -2805,23 +3048,13 @@ public class KineticAdminTest extends IntegrationTestCase {
                     + e1.getMessage());
         }
 
-        // create request message
-        KineticMessage kmreq = MessageFactory.createKineticMessageWithBuilder();
-
-        Command.Builder commandBuilder = (Command.Builder) kmreq.getCommand();
-
-        Range.Builder rangeBuilder = commandBuilder.getBodyBuilder()
-                .getRangeBuilder();
-
-        ByteString startKey = ByteString.copyFromUtf8("start_key");
-        ByteString endKey = ByteString.copyFromUtf8("end_key");
-
-        rangeBuilder.setStartKey(startKey);
-        rangeBuilder.setEndKey(endKey);
-        rangeBuilder.setStartKeyInclusive(false);
-        rangeBuilder.setEndKeyInclusive(true);
-
-        Range range = rangeBuilder.build();
+        String startKey = "start_key";
+        String endKey = "end_key";
+        boolean startKeyInclusive = true;
+        boolean endKeyInclusive = false;
+        int maxKeys = 10;
+        Range range = getRangeForMediaOp(startKey, endKey, startKeyInclusive,
+                endKeyInclusive, maxKeys);
 
         try {
             getAdminClient().mediaScan(range, Priority.HIGHEST);
@@ -2831,7 +3064,6 @@ public class KineticAdminTest extends IntegrationTestCase {
                     .getCode().equals(StatusCode.NOT_AUTHORIZED));
         }
 
-        // clean up acls
         try {
             instantErase("", "123", getAdminClient());
         } catch (KineticException e) {
@@ -2841,6 +3073,1377 @@ public class KineticAdminTest extends IntegrationTestCase {
         logger.info(this.testEndInfo());
     }
 
+    @Test
+    public void testMediaScan_withMaxKeyReturnedSetLessThanZeroAndWrongTagPuts_withStartKeyAndEndKeyInclusive_ReturnedDefaultMaxKeyReturned() {
+        int defaultMaxKeyReturned = 200;
+        try {
+            prepareDataWithWrongTagForMediaOp();
+        } catch (KineticException e1) {
+            Assert.fail("Prepare data for media operation failed! ");
+        }
+
+        String startKey = "key00000000000";
+        String endKey = "key00000000200";
+        boolean startKeyInclusive = true;
+        boolean endKeyInclusive = true;
+        int maxKeys = -1;
+        Range range = getRangeForMediaOp(startKey, endKey, startKeyInclusive,
+                endKeyInclusive, maxKeys);
+
+        String expectEndKey = "key00000000200";
+
+        try {
+            KineticMessage kmrsp = getAdminClient().mediaScan(range,
+                    Priority.HIGHEST);
+            if (kmrsp == null || kmrsp.getCommand() == null
+                    || kmrsp.getCommand().getHeader() == null
+                    || kmrsp.getCommand().getStatus() == null
+                    || kmrsp.getCommand().getBody() == null
+                    || kmrsp.getCommand().getBody().getRange() == null) {
+                Assert.fail("MediaScan response is null!");
+            }
+            assertEquals(MessageType.MEDIASCAN_RESPONSE, kmrsp.getCommand()
+                    .getHeader().getMessageType());
+            assertEquals(StatusCode.SUCCESS, kmrsp.getCommand().getStatus()
+                    .getCode());
+            assertEquals(defaultMaxKeyReturned, kmrsp.getCommand().getBody()
+                    .getRange().getKeysCount());
+            assertEquals(toByteArray(expectEndKey), kmrsp.getCommand()
+                    .getBody().getRange().getEndKey().toByteArray());
+            KVGenerator kvGenerator = new KVGenerator();
+            for (int i = 0; i < defaultMaxKeyReturned; i++) {
+                String expectKey = kvGenerator.getNextKey();
+                byte[] returnedKey = kmrsp.getCommand().getBody().getRange()
+                        .getKeys(i).toByteArray();
+                assertEquals(toByteArray(expectKey), returnedKey);
+            }
+        } catch (KineticException e) {
+            Assert.fail("media scan operation throw exception: "
+                    + e.getMessage());
+        }
+    }
+
+    @Test
+    public void testMediaScan_withMaxKeyReturnedSetAsZeroAndWrongTagPuts_withStartKeyAndEndKeyInclusive_ReturnedDefaultMaxKeyReturned() {
+        int defaultMaxKeyReturned = 200;
+        try {
+            prepareDataWithWrongTagForMediaOp();
+        } catch (KineticException e1) {
+            Assert.fail("Prepare data for media operation failed! ");
+        }
+
+        String startKey = "key00000000000";
+        String endKey = "key00000000200";
+        boolean startKeyInclusive = true;
+        boolean endKeyInclusive = true;
+        int maxKeys = 0;
+        Range range = getRangeForMediaOp(startKey, endKey, startKeyInclusive,
+                endKeyInclusive, maxKeys);
+
+        String expectEndKey = "key00000000200";
+
+        try {
+            KineticMessage kmrsp = getAdminClient().mediaScan(range,
+                    Priority.HIGHEST);
+            if (kmrsp == null || kmrsp.getCommand() == null
+                    || kmrsp.getCommand().getHeader() == null
+                    || kmrsp.getCommand().getStatus() == null
+                    || kmrsp.getCommand().getBody() == null
+                    || kmrsp.getCommand().getBody().getRange() == null) {
+                Assert.fail("MediaScan response is null!");
+            }
+            assertEquals(MessageType.MEDIASCAN_RESPONSE, kmrsp.getCommand()
+                    .getHeader().getMessageType());
+            assertEquals(StatusCode.SUCCESS, kmrsp.getCommand().getStatus()
+                    .getCode());
+            assertEquals(defaultMaxKeyReturned, kmrsp.getCommand().getBody()
+                    .getRange().getKeysCount());
+            assertEquals(toByteArray(expectEndKey), kmrsp.getCommand()
+                    .getBody().getRange().getEndKey().toByteArray());
+            KVGenerator kvGenerator = new KVGenerator();
+            for (int i = 0; i < defaultMaxKeyReturned; i++) {
+                String expectKey = kvGenerator.getNextKey();
+                byte[] returnedKey = kmrsp.getCommand().getBody().getRange()
+                        .getKeys(i).toByteArray();
+                assertEquals(toByteArray(expectKey), returnedKey);
+            }
+        } catch (KineticException e) {
+            Assert.fail("media scan operation throw exception: "
+                    + e.getMessage());
+        }
+    }
+
+    @Test
+    public void testMediaScan_withMaxKeyReturnedLessThanZeroAndWrongTagPuts_withStartKeyAndEndKeyExclusive_ReturnedDefaultMaxKeyReturned() {
+        int defaultMaxKeyReturned = 200;
+        try {
+            prepareDataWithWrongTagForMediaOp();
+        } catch (KineticException e1) {
+            Assert.fail("Prepare data for media operation failed! ");
+        }
+
+        String startKey = "key00000000000";
+        String endKey = "key00000000200";
+        boolean startKeyInclusive = false;
+        boolean endKeyInclusive = false;
+        int maxKeys = -1;
+        Range range = getRangeForMediaOp(startKey, endKey, startKeyInclusive,
+                endKeyInclusive, maxKeys);
+
+        int expectMaxKeyReturned = defaultMaxKeyReturned;
+        String expectEndKey = "key00000000200";
+
+        try {
+            KineticMessage kmrsp = getAdminClient().mediaScan(range,
+                    Priority.HIGHEST);
+            if (kmrsp == null || kmrsp.getCommand() == null
+                    || kmrsp.getCommand().getHeader() == null
+                    || kmrsp.getCommand().getStatus() == null
+                    || kmrsp.getCommand().getBody() == null
+                    || kmrsp.getCommand().getBody().getRange() == null) {
+                Assert.fail("MediaScan response is null!");
+            }
+            assertEquals(MessageType.MEDIASCAN_RESPONSE, kmrsp.getCommand()
+                    .getHeader().getMessageType());
+            assertEquals(StatusCode.SUCCESS, kmrsp.getCommand().getStatus()
+                    .getCode());
+            assertEquals(expectMaxKeyReturned, kmrsp.getCommand().getBody()
+                    .getRange().getKeysCount());
+            assertEquals(toByteArray(expectEndKey), kmrsp.getCommand()
+                    .getBody().getRange().getEndKey().toByteArray());
+            KVGenerator kvGenerator = new KVGenerator();
+            kvGenerator.getNextKey();
+            for (int i = 0; i < defaultMaxKeyReturned - 1; i++) {
+                String expectKey = kvGenerator.getNextKey();
+                byte[] returnedKey = kmrsp.getCommand().getBody().getRange()
+                        .getKeys(i).toByteArray();
+                assertEquals(toByteArray(expectKey), returnedKey);
+            }
+        } catch (KineticException e) {
+            Assert.fail("media scan operation throw exception: "
+                    + e.getMessage());
+        }
+    }
+
+    @Test
+    public void testMediaScan_withMaxKeyReturnedLessThanZeroAndWrongTagPuts_withStartKeyInclusiveAndEndKeyExclusive_ReturnedDefaultMaxKeyReturned() {
+        int defaultMaxKeyReturned = 200;
+        try {
+            prepareDataWithWrongTagForMediaOp();
+        } catch (KineticException e1) {
+            Assert.fail("Prepare data for media operation failed! ");
+        }
+
+        String startKey = "key00000000000";
+        String endKey = "key00000000200";
+        boolean startKeyInclusive = true;
+        boolean endKeyInclusive = false;
+        int maxKeys = -1;
+        Range range = getRangeForMediaOp(startKey, endKey, startKeyInclusive,
+                endKeyInclusive, maxKeys);
+
+        String expectEndKey = "key00000000200";
+
+        try {
+            KineticMessage kmrsp = getAdminClient().mediaScan(range,
+                    Priority.HIGHEST);
+            if (kmrsp == null || kmrsp.getCommand() == null
+                    || kmrsp.getCommand().getHeader() == null
+                    || kmrsp.getCommand().getStatus() == null
+                    || kmrsp.getCommand().getBody() == null
+                    || kmrsp.getCommand().getBody().getRange() == null) {
+                Assert.fail("MediaScan response is null!");
+            }
+            assertEquals(MessageType.MEDIASCAN_RESPONSE, kmrsp.getCommand()
+                    .getHeader().getMessageType());
+            assertEquals(StatusCode.SUCCESS, kmrsp.getCommand().getStatus()
+                    .getCode());
+            assertEquals(defaultMaxKeyReturned, kmrsp.getCommand().getBody()
+                    .getRange().getKeysCount());
+            assertEquals(toByteArray(expectEndKey), kmrsp.getCommand()
+                    .getBody().getRange().getEndKey().toByteArray());
+            KVGenerator kvGenerator = new KVGenerator();
+            for (int i = 0; i < defaultMaxKeyReturned; i++) {
+                String expectKey = kvGenerator.getNextKey();
+                byte[] returnedKey = kmrsp.getCommand().getBody().getRange()
+                        .getKeys(i).toByteArray();
+                assertEquals(toByteArray(expectKey), returnedKey);
+            }
+        } catch (KineticException e) {
+            Assert.fail("media scan operation throw exception: "
+                    + e.getMessage());
+        }
+    }
+
+    @Test
+    public void testMediaScan_withMaxKeyReturnedLessThanZeroAndWrongTagPuts_withStartKeyExclusiveAndEndKeyInclusive_ReturnedDefaultMaxKeyReturned() {
+        int defaultMaxKeyReturned = 200;
+        try {
+            prepareDataWithWrongTagForMediaOp();
+        } catch (KineticException e1) {
+            Assert.fail("Prepare data for media operation failed! ");
+        }
+
+        String startKey = "key00000000000";
+        String endKey = "key00000000200";
+        boolean startKeyInclusive = false;
+        boolean endKeyInclusive = true;
+        int maxKeys = -1;
+        Range range = getRangeForMediaOp(startKey, endKey, startKeyInclusive,
+                endKeyInclusive, maxKeys);
+
+        String expectEndKey = "key00000000200";
+        int expectMaxReturnedKey = defaultMaxKeyReturned;
+
+        try {
+            KineticMessage kmrsp = getAdminClient().mediaScan(range,
+                    Priority.HIGHEST);
+            if (kmrsp == null || kmrsp.getCommand() == null
+                    || kmrsp.getCommand().getHeader() == null
+                    || kmrsp.getCommand().getStatus() == null
+                    || kmrsp.getCommand().getBody() == null
+                    || kmrsp.getCommand().getBody().getRange() == null) {
+                Assert.fail("MediaScan response is null!");
+            }
+            assertEquals(MessageType.MEDIASCAN_RESPONSE, kmrsp.getCommand()
+                    .getHeader().getMessageType());
+            assertEquals(StatusCode.SUCCESS, kmrsp.getCommand().getStatus()
+                    .getCode());
+            assertEquals(expectMaxReturnedKey, kmrsp.getCommand().getBody()
+                    .getRange().getKeysCount());
+            assertEquals(toByteArray(expectEndKey), kmrsp.getCommand()
+                    .getBody().getRange().getEndKey().toByteArray());
+            KVGenerator kvGenerator = new KVGenerator();
+            kvGenerator.getNextKey();
+            for (int i = 0; i < defaultMaxKeyReturned - 1; i++) {
+                String expectKey = kvGenerator.getNextKey();
+                byte[] returnedKey = kmrsp.getCommand().getBody().getRange()
+                        .getKeys(i).toByteArray();
+                assertEquals(toByteArray(expectKey), returnedKey);
+            }
+        } catch (KineticException e) {
+            Assert.fail("media scan operation throw exception: "
+                    + e.getMessage());
+        }
+    }
+
+    @Test
+    public void testMediaScan_withMaxKeyReturnedSettingAndWrongTagPuts_withStartKeyAndEndKeyInclusive_ReturnedDefaultMaxKeyReturned() {
+        try {
+            prepareDataWithWrongTagForMediaOp();
+        } catch (KineticException e1) {
+            Assert.fail("Prepare data for media operation failed! ");
+        }
+
+        String startKey = "key00000000000";
+        String endKey = "key00000000200";
+        boolean startKeyInclusive = true;
+        boolean endKeyInclusive = true;
+        int maxKeys = 20;
+        Range range = getRangeForMediaOp(startKey, endKey, startKeyInclusive,
+                endKeyInclusive, maxKeys);
+
+        String expectEndKey = "key00000000020";
+        try {
+            KineticMessage kmrsp = getAdminClient().mediaScan(range,
+                    Priority.HIGHEST);
+            if (kmrsp == null || kmrsp.getCommand() == null
+                    || kmrsp.getCommand().getHeader() == null
+                    || kmrsp.getCommand().getStatus() == null
+                    || kmrsp.getCommand().getBody() == null
+                    || kmrsp.getCommand().getBody().getRange() == null) {
+                Assert.fail("MediaScan response is null!");
+            }
+            assertEquals(MessageType.MEDIASCAN_RESPONSE, kmrsp.getCommand()
+                    .getHeader().getMessageType());
+            assertEquals(StatusCode.SUCCESS, kmrsp.getCommand().getStatus()
+                    .getCode());
+            assertEquals(maxKeys, kmrsp.getCommand().getBody().getRange()
+                    .getKeysCount());
+            assertEquals(toByteArray(expectEndKey), kmrsp.getCommand()
+                    .getBody().getRange().getEndKey().toByteArray());
+            KVGenerator kvGenerator = new KVGenerator();
+            for (int i = 0; i < maxKeys; i++) {
+                String expectKey = kvGenerator.getNextKey();
+                byte[] returnedKey = kmrsp.getCommand().getBody().getRange()
+                        .getKeys(i).toByteArray();
+                assertEquals(toByteArray(expectKey), returnedKey);
+            }
+        } catch (KineticException e) {
+            Assert.fail("media scan operation throw exception: "
+                    + e.getMessage());
+        }
+    }
+
+    @Test
+    public void testMediaScan_withMaxKeyReturnedSettingAndWrongTagPuts_withStartKeyAndEndKeyExclusive_ReturnedDefaultMaxKeyReturned() {
+        try {
+            prepareDataWithWrongTagForMediaOp();
+        } catch (KineticException e1) {
+            Assert.fail("Prepare data for media operation failed! ");
+        }
+
+        String startKey = "key00000000000";
+        String endKey = "key00000000200";
+        boolean startKeyInclusive = false;
+        boolean endKeyInclusive = false;
+        int maxKeys = 20;
+        Range range = getRangeForMediaOp(startKey, endKey, startKeyInclusive,
+                endKeyInclusive, maxKeys);
+
+        String expectEndKey = "key00000000021";
+        try {
+            KineticMessage kmrsp = getAdminClient().mediaScan(range,
+                    Priority.HIGHEST);
+            if (kmrsp == null || kmrsp.getCommand() == null
+                    || kmrsp.getCommand().getHeader() == null
+                    || kmrsp.getCommand().getStatus() == null
+                    || kmrsp.getCommand().getBody() == null
+                    || kmrsp.getCommand().getBody().getRange() == null) {
+                Assert.fail("MediaScan response is null!");
+            }
+            assertEquals(MessageType.MEDIASCAN_RESPONSE, kmrsp.getCommand()
+                    .getHeader().getMessageType());
+            assertEquals(StatusCode.SUCCESS, kmrsp.getCommand().getStatus()
+                    .getCode());
+            assertEquals(maxKeys, kmrsp.getCommand().getBody().getRange()
+                    .getKeysCount());
+            assertEquals(toByteArray(expectEndKey), kmrsp.getCommand()
+                    .getBody().getRange().getEndKey().toByteArray());
+            KVGenerator kvGenerator = new KVGenerator();
+            kvGenerator.getNextKey();
+            for (int i = 0; i < maxKeys; i++) {
+                String expectKey = kvGenerator.getNextKey();
+                byte[] returnedKey = kmrsp.getCommand().getBody().getRange()
+                        .getKeys(i).toByteArray();
+                assertEquals(toByteArray(expectKey), returnedKey);
+            }
+        } catch (KineticException e) {
+            Assert.fail("media scan operation throw exception: "
+                    + e.getMessage());
+        }
+    }
+
+    @Test
+    public void testMediaScan_withMaxKeyReturnedSettingAndWrongTagPuts_withStartKeyInclusiveAndEndKeyExclusive_ReturnedDefaultMaxKeyReturned() {
+        try {
+            prepareDataWithWrongTagForMediaOp();
+        } catch (KineticException e1) {
+            Assert.fail("Prepare data for media operation failed! ");
+        }
+
+        String startKey = "key00000000000";
+        String endKey = "key00000000200";
+        boolean startKeyInclusive = true;
+        boolean endKeyInclusive = false;
+        int maxKeys = 20;
+        Range range = getRangeForMediaOp(startKey, endKey, startKeyInclusive,
+                endKeyInclusive, maxKeys);
+
+        String expectEndKey = "key00000000020";
+        try {
+            KineticMessage kmrsp = getAdminClient().mediaScan(range,
+                    Priority.HIGHEST);
+            if (kmrsp == null || kmrsp.getCommand() == null
+                    || kmrsp.getCommand().getHeader() == null
+                    || kmrsp.getCommand().getStatus() == null
+                    || kmrsp.getCommand().getBody() == null
+                    || kmrsp.getCommand().getBody().getRange() == null) {
+                Assert.fail("MediaScan response is null!");
+            }
+            assertEquals(MessageType.MEDIASCAN_RESPONSE, kmrsp.getCommand()
+                    .getHeader().getMessageType());
+            assertEquals(StatusCode.SUCCESS, kmrsp.getCommand().getStatus()
+                    .getCode());
+            assertEquals(maxKeys, kmrsp.getCommand().getBody().getRange()
+                    .getKeysCount());
+            assertEquals(toByteArray(expectEndKey), kmrsp.getCommand()
+                    .getBody().getRange().getEndKey().toByteArray());
+            KVGenerator kvGenerator = new KVGenerator();
+            for (int i = 0; i < maxKeys; i++) {
+                String expectKey = kvGenerator.getNextKey();
+                byte[] returnedKey = kmrsp.getCommand().getBody().getRange()
+                        .getKeys(i).toByteArray();
+                assertEquals(toByteArray(expectKey), returnedKey);
+            }
+        } catch (KineticException e) {
+            Assert.fail("media scan operation throw exception: "
+                    + e.getMessage());
+        }
+    }
+
+    @Test
+    public void testMediaScan_withMaxKeyReturnedSettingAndWrongTagPuts_withStartKeyExclusiveAndEndKeyInclusive_ReturnedDefaultMaxKeyReturned() {
+        try {
+            prepareDataWithWrongTagForMediaOp();
+        } catch (KineticException e1) {
+            Assert.fail("Prepare data for media operation failed! ");
+        }
+
+        String startKey = "key00000000000";
+        String endKey = "key00000000200";
+        boolean startKeyInclusive = false;
+        boolean endKeyInclusive = true;
+        int maxKeys = 20;
+        Range range = getRangeForMediaOp(startKey, endKey, startKeyInclusive,
+                endKeyInclusive, maxKeys);
+
+        String expectEndKey = "key00000000021";
+        try {
+            KineticMessage kmrsp = getAdminClient().mediaScan(range,
+                    Priority.HIGHEST);
+            if (kmrsp == null || kmrsp.getCommand() == null
+                    || kmrsp.getCommand().getHeader() == null
+                    || kmrsp.getCommand().getStatus() == null
+                    || kmrsp.getCommand().getBody() == null
+                    || kmrsp.getCommand().getBody().getRange() == null) {
+                Assert.fail("MediaScan response is null!");
+            }
+            assertEquals(MessageType.MEDIASCAN_RESPONSE, kmrsp.getCommand()
+                    .getHeader().getMessageType());
+            assertEquals(StatusCode.SUCCESS, kmrsp.getCommand().getStatus()
+                    .getCode());
+            assertEquals(maxKeys, kmrsp.getCommand().getBody().getRange()
+                    .getKeysCount());
+            assertEquals(toByteArray(expectEndKey), kmrsp.getCommand()
+                    .getBody().getRange().getEndKey().toByteArray());
+            KVGenerator kvGenerator = new KVGenerator();
+            kvGenerator.getNextKey();
+            for (int i = 0; i < maxKeys; i++) {
+                String expectKey = kvGenerator.getNextKey();
+                byte[] returnedKey = kmrsp.getCommand().getBody().getRange()
+                        .getKeys(i).toByteArray();
+                assertEquals(toByteArray(expectKey), returnedKey);
+            }
+        } catch (KineticException e) {
+            Assert.fail("media scan operation throw exception: "
+                    + e.getMessage());
+        }
+    }
+
+    @Test(enabled = false)
+    public void testMediaScan_withMaxKeyReturnedSetLessThanZeroAndCorrectTagPuts_withStartKeyAndEndKeyInclusive_ReturnedDefaultMaxKeyReturned() {
+        try {
+            prepareDataWithCorrectTagForMediaOp();
+        } catch (KineticException e1) {
+            Assert.fail("Prepare data for media operation failed! ");
+        }
+
+        String startKey = "key00000000000";
+        String endKey = "key00000000300";
+        boolean startKeyInclusive = true;
+        boolean endKeyInclusive = true;
+        int maxKeys = -1;
+        Range range = getRangeForMediaOp(startKey, endKey, startKeyInclusive,
+                endKeyInclusive, maxKeys);
+
+        String expectedEndKey = "key00000000200";
+        int expectReturnedKeySize = 0;
+
+        try {
+            KineticMessage kmrsp = getAdminClient().mediaScan(range,
+                    Priority.HIGHEST);
+            if (kmrsp == null || kmrsp.getCommand() == null
+                    || kmrsp.getCommand().getHeader() == null
+                    || kmrsp.getCommand().getStatus() == null
+                    || kmrsp.getCommand().getBody() == null
+                    || kmrsp.getCommand().getBody().getRange() == null) {
+                Assert.fail("MediaScan response is null!");
+            }
+            assertEquals(MessageType.MEDIASCAN_RESPONSE, kmrsp.getCommand()
+                    .getHeader().getMessageType());
+            assertEquals(StatusCode.SUCCESS, kmrsp.getCommand().getStatus()
+                    .getCode());
+            assertEquals(expectReturnedKeySize, kmrsp.getCommand().getBody()
+                    .getRange().getKeysCount());
+            // need to discuss
+            assertEquals(toByteArray(expectedEndKey), kmrsp.getCommand()
+                    .getBody().getRange().getEndKey().toByteArray());
+            assertEquals(expectReturnedKeySize, kmrsp.getCommand().getBody()
+                    .getRange().getKeysList().size());
+        } catch (KineticException e) {
+            Assert.fail("media scan operation throw exception: "
+                    + e.getMessage());
+        }
+    }
+
+    @Test(enabled = false)
+    public void testMediaScan_withMaxKeyReturnedSetLessThanZeroAndCorrectTagPuts_withStartKeyAndEndKeyExclusive_ReturnedDefaultMaxKeyReturned() {
+        try {
+            prepareDataWithCorrectTagForMediaOp();
+        } catch (KineticException e1) {
+            Assert.fail("Prepare data for media operation failed! ");
+        }
+
+        String startKey = "key00000000000";
+        String endKey = "key00000000200";
+        boolean startKeyInclusive = false;
+        boolean endKeyInclusive = false;
+        int maxKeys = -1;
+        Range range = getRangeForMediaOp(startKey, endKey, startKeyInclusive,
+                endKeyInclusive, maxKeys);
+
+        String expectedEndKey = "key00000000201";
+        int expectKeySize = 0;
+
+        try {
+            KineticMessage kmrsp = getAdminClient().mediaScan(range,
+                    Priority.HIGHEST);
+            if (kmrsp == null || kmrsp.getCommand() == null
+                    || kmrsp.getCommand().getHeader() == null
+                    || kmrsp.getCommand().getStatus() == null
+                    || kmrsp.getCommand().getBody() == null
+                    || kmrsp.getCommand().getBody().getRange() == null) {
+                Assert.fail("MediaScan response is null!");
+            }
+            assertEquals(MessageType.MEDIASCAN_RESPONSE, kmrsp.getCommand()
+                    .getHeader().getMessageType());
+            assertEquals(StatusCode.SUCCESS, kmrsp.getCommand().getStatus()
+                    .getCode());
+            assertEquals(expectKeySize, kmrsp.getCommand().getBody().getRange()
+                    .getKeysCount());
+            assertEquals(toByteArray(expectedEndKey), kmrsp.getCommand()
+                    .getBody().getRange().getEndKey().toByteArray());
+            assertEquals(expectKeySize, kmrsp.getCommand().getBody().getRange()
+                    .getKeysList().size());
+        } catch (KineticException e) {
+            Assert.fail("media scan operation throw exception: "
+                    + e.getMessage());
+        }
+    }
+
+    @Test(enabled = false)
+    public void testMediaScan_withMaxKeyReturnedSetLessThanZeroAndCorrectTagPuts_withStartKeyInclusiveAndEndKeyExclusive_ReturnedDefaultMaxKeyReturned() {
+        try {
+            prepareDataWithCorrectTagForMediaOp();
+        } catch (KineticException e1) {
+            Assert.fail("Prepare data for media operation failed! ");
+        }
+
+        String startKey = "key00000000000";
+        String endKey = "key00000000300";
+        boolean startKeyInclusive = true;
+        boolean endKeyInclusive = false;
+        int maxKeys = -1;
+        Range range = getRangeForMediaOp(startKey, endKey, startKeyInclusive,
+                endKeyInclusive, maxKeys);
+
+        String expectedEndKey = "key00000000200";
+        int expectKeySize = 0;
+
+        try {
+            KineticMessage kmrsp = getAdminClient().mediaScan(range,
+                    Priority.HIGHEST);
+            if (kmrsp == null || kmrsp.getCommand() == null
+                    || kmrsp.getCommand().getHeader() == null
+                    || kmrsp.getCommand().getStatus() == null
+                    || kmrsp.getCommand().getBody() == null
+                    || kmrsp.getCommand().getBody().getRange() == null) {
+                Assert.fail("MediaScan response is null!");
+            }
+            assertEquals(MessageType.MEDIASCAN_RESPONSE, kmrsp.getCommand()
+                    .getHeader().getMessageType());
+            assertEquals(StatusCode.SUCCESS, kmrsp.getCommand().getStatus()
+                    .getCode());
+            assertEquals(expectKeySize, kmrsp.getCommand().getBody().getRange()
+                    .getKeysCount());
+            // need to discuss
+            assertEquals(toByteArray(expectedEndKey), kmrsp.getCommand()
+                    .getBody().getRange().getEndKey().toByteArray());
+            assertEquals(expectKeySize, kmrsp.getCommand().getBody().getRange()
+                    .getKeysList().size());
+        } catch (KineticException e) {
+            Assert.fail("media scan operation throw exception: "
+                    + e.getMessage());
+        }
+    }
+
+    @Test(enabled = false)
+    public void testMediaScan_withMaxKeyReturnedSetLessThanZeroAndCorrectTagPuts_withStartKeyExclusiveAndEndKeyInclusive_ReturnedDefaultMaxKeyReturned() {
+        try {
+            prepareDataWithCorrectTagForMediaOp();
+        } catch (KineticException e1) {
+            Assert.fail("Prepare data for media operation failed! ");
+        }
+
+        String startKey = "key00000000000";
+        String endKey = "key00000000300";
+        boolean startKeyInclusive = false;
+        boolean endKeyInclusive = true;
+        int maxKeys = -1;
+        Range range = getRangeForMediaOp(startKey, endKey, startKeyInclusive,
+                endKeyInclusive, maxKeys);
+
+        String expectedEndKey = "key00000000201";
+        int expectKeySize = 0;
+
+        try {
+            KineticMessage kmrsp = getAdminClient().mediaScan(range,
+                    Priority.HIGHEST);
+            if (kmrsp == null || kmrsp.getCommand() == null
+                    || kmrsp.getCommand().getHeader() == null
+                    || kmrsp.getCommand().getStatus() == null
+                    || kmrsp.getCommand().getBody() == null
+                    || kmrsp.getCommand().getBody().getRange() == null) {
+                Assert.fail("MediaScan response is null!");
+            }
+            assertEquals(MessageType.MEDIASCAN_RESPONSE, kmrsp.getCommand()
+                    .getHeader().getMessageType());
+            assertEquals(StatusCode.SUCCESS, kmrsp.getCommand().getStatus()
+                    .getCode());
+            assertEquals(expectKeySize, kmrsp.getCommand().getBody().getRange()
+                    .getKeysCount());
+            assertEquals(toByteArray(expectedEndKey), kmrsp.getCommand()
+                    .getBody().getRange().getEndKey().toByteArray());
+            assertEquals(expectKeySize, kmrsp.getCommand().getBody().getRange()
+                    .getKeysList().size());
+        } catch (KineticException e) {
+            Assert.fail("media scan operation throw exception: "
+                    + e.getMessage());
+        }
+    }
+
+    @Test(enabled = false)
+    public void testMediaScan_withMaxKeyReturnedSettingAndCorrectTagPuts_withStartKeyAndEndKeyInclusive_ReturnedDefaultMaxKeyReturned() {
+        try {
+            prepareDataWithCorrectTagForMediaOp();
+        } catch (KineticException e1) {
+            Assert.fail("Prepare data for media operation failed! ");
+        }
+
+        String startKey = "key00000000000";
+        String endKey = "key00000000200";
+        boolean startKeyInclusive = true;
+        boolean endKeyInclusive = true;
+        int maxKeys = 20;
+        Range range = getRangeForMediaOp(startKey, endKey, startKeyInclusive,
+                endKeyInclusive, maxKeys);
+
+        String expectEndKey = "key00000000020";
+        int expectKeySize = 0;
+        try {
+            KineticMessage kmrsp = getAdminClient().mediaScan(range,
+                    Priority.HIGHEST);
+            if (kmrsp == null || kmrsp.getCommand() == null
+                    || kmrsp.getCommand().getHeader() == null
+                    || kmrsp.getCommand().getStatus() == null
+                    || kmrsp.getCommand().getBody() == null
+                    || kmrsp.getCommand().getBody().getRange() == null) {
+                Assert.fail("MediaScan response is null!");
+            }
+            assertEquals(MessageType.MEDIASCAN_RESPONSE, kmrsp.getCommand()
+                    .getHeader().getMessageType());
+            assertEquals(StatusCode.SUCCESS, kmrsp.getCommand().getStatus()
+                    .getCode());
+            assertEquals(expectKeySize, kmrsp.getCommand().getBody().getRange()
+                    .getKeysCount());
+            // need to be discuss
+            assertEquals(toByteArray(expectEndKey), kmrsp.getCommand()
+                    .getBody().getRange().getEndKey().toByteArray());
+            assertEquals(expectKeySize, kmrsp.getCommand().getBody().getRange()
+                    .getKeysList().size());
+        } catch (KineticException e) {
+            Assert.fail("media scan operation throw exception: "
+                    + e.getMessage());
+        }
+    }
+
+    @Test(enabled = false)
+    public void testMediaScan_withMaxKeyReturnedSettingAndCorrectTagPuts_withStartKeyAndEndKeyExclusive_ReturnedDefaultMaxKeyReturned() {
+        try {
+            prepareDataWithCorrectTagForMediaOp();
+        } catch (KineticException e1) {
+            Assert.fail("Prepare data for media operation failed! ");
+        }
+
+        String startKey = "key00000000000";
+        String endKey = "key00000000200";
+        boolean startKeyInclusive = false;
+        boolean endKeyInclusive = false;
+        int maxKeys = 20;
+        Range range = getRangeForMediaOp(startKey, endKey, startKeyInclusive,
+                endKeyInclusive, maxKeys);
+
+        String expectEndKey = "key00000000021";
+        int expectKeySize = 0;
+        try {
+            KineticMessage kmrsp = getAdminClient().mediaScan(range,
+                    Priority.HIGHEST);
+            if (kmrsp == null || kmrsp.getCommand() == null
+                    || kmrsp.getCommand().getHeader() == null
+                    || kmrsp.getCommand().getStatus() == null
+                    || kmrsp.getCommand().getBody() == null
+                    || kmrsp.getCommand().getBody().getRange() == null) {
+                Assert.fail("MediaScan response is null!");
+            }
+            assertEquals(MessageType.MEDIASCAN_RESPONSE, kmrsp.getCommand()
+                    .getHeader().getMessageType());
+            assertEquals(StatusCode.SUCCESS, kmrsp.getCommand().getStatus()
+                    .getCode());
+            assertEquals(expectKeySize, kmrsp.getCommand().getBody().getRange()
+                    .getKeysCount());
+            // need to be discuss
+            assertEquals(toByteArray(expectEndKey), kmrsp.getCommand()
+                    .getBody().getRange().getEndKey().toByteArray());
+            assertEquals(expectKeySize, kmrsp.getCommand().getBody().getRange()
+                    .getKeysList().size());
+        } catch (KineticException e) {
+            Assert.fail("media scan operation throw exception: "
+                    + e.getMessage());
+        }
+    }
+
+    @Test(enabled = false)
+    public void testMediaScan_withMaxKeyReturnedSettingAndCorrectTagPuts_withStartKeyInclusiveAndEndKeyExclusive_ReturnedDefaultMaxKeyReturned() {
+        try {
+            prepareDataWithCorrectTagForMediaOp();
+        } catch (KineticException e1) {
+            Assert.fail("Prepare data for media operation failed! ");
+        }
+
+        String startKey = "key00000000000";
+        String endKey = "key00000000200";
+        boolean startKeyInclusive = true;
+        boolean endKeyInclusive = false;
+        int maxKeys = 20;
+        Range range = getRangeForMediaOp(startKey, endKey, startKeyInclusive,
+                endKeyInclusive, maxKeys);
+
+        String expectEndKey = "key00000000020";
+        int expectKeySize = 0;
+        try {
+            KineticMessage kmrsp = getAdminClient().mediaScan(range,
+                    Priority.HIGHEST);
+            if (kmrsp == null || kmrsp.getCommand() == null
+                    || kmrsp.getCommand().getHeader() == null
+                    || kmrsp.getCommand().getStatus() == null
+                    || kmrsp.getCommand().getBody() == null
+                    || kmrsp.getCommand().getBody().getRange() == null) {
+                Assert.fail("MediaScan response is null!");
+            }
+            assertEquals(MessageType.MEDIASCAN_RESPONSE, kmrsp.getCommand()
+                    .getHeader().getMessageType());
+            assertEquals(StatusCode.SUCCESS, kmrsp.getCommand().getStatus()
+                    .getCode());
+            assertEquals(expectKeySize, kmrsp.getCommand().getBody().getRange()
+                    .getKeysCount());
+            // need to be discuss
+            assertEquals(toByteArray(expectEndKey), kmrsp.getCommand()
+                    .getBody().getRange().getEndKey().toByteArray());
+            assertEquals(expectKeySize, kmrsp.getCommand().getBody().getRange()
+                    .getKeysList().size());
+        } catch (KineticException e) {
+            Assert.fail("media scan operation throw exception: "
+                    + e.getMessage());
+        }
+    }
+
+    @Test(enabled = false)
+    public void testMediaScan_withMaxKeyReturnedSettingAndCorrectTagPuts_withStartKeyExclusiveAndEndKeyInclusive_ReturnedDefaultMaxKeyReturned() {
+        try {
+            prepareDataWithCorrectTagForMediaOp();
+        } catch (KineticException e1) {
+            Assert.fail("Prepare data for media operation failed! ");
+        }
+
+        String startKey = "key00000000000";
+        String endKey = "key00000000200";
+        boolean startKeyInclusive = false;
+        boolean endKeyInclusive = true;
+        int maxKeys = 20;
+        Range range = getRangeForMediaOp(startKey, endKey, startKeyInclusive,
+                endKeyInclusive, maxKeys);
+
+        String expectEndKey = "key00000000021";
+        int expectKeySize = 0;
+        try {
+            KineticMessage kmrsp = getAdminClient().mediaScan(range,
+                    Priority.HIGHEST);
+            if (kmrsp == null || kmrsp.getCommand() == null
+                    || kmrsp.getCommand().getHeader() == null
+                    || kmrsp.getCommand().getStatus() == null
+                    || kmrsp.getCommand().getBody() == null
+                    || kmrsp.getCommand().getBody().getRange() == null) {
+                Assert.fail("MediaScan response is null!");
+            }
+            assertEquals(MessageType.MEDIASCAN_RESPONSE, kmrsp.getCommand()
+                    .getHeader().getMessageType());
+            assertEquals(StatusCode.SUCCESS, kmrsp.getCommand().getStatus()
+                    .getCode());
+            assertEquals(expectKeySize, kmrsp.getCommand().getBody().getRange()
+                    .getKeysCount());
+            // need to be discuss
+            assertEquals(toByteArray(expectEndKey), kmrsp.getCommand()
+                    .getBody().getRange().getEndKey().toByteArray());
+            assertEquals(expectKeySize, kmrsp.getCommand().getBody().getRange()
+                    .getKeysList().size());
+        } catch (KineticException e) {
+            Assert.fail("media scan operation throw exception: "
+                    + e.getMessage());
+        }
+    }
+
+    @Test(enabled = false)
+    public void testMediaScan_withMaxKeyReturnedSettingAndCorrectTagPuts_withStartKeyAndEndKeyInclusive_EndKeyNotExist_ReturnedDefaultMaxKeyReturned() {
+        try {
+            prepareDataWithCorrectTagForMediaOp();
+        } catch (KineticException e1) {
+            Assert.fail("Prepare data for media operation failed! ");
+        }
+
+        String startKey = "key00000000000";
+        String endKey = "key00000000500";
+        boolean startKeyInclusive = true;
+        boolean endKeyInclusive = true;
+        int maxKeys = 20;
+        Range range = getRangeForMediaOp(startKey, endKey, startKeyInclusive,
+                endKeyInclusive, maxKeys);
+
+        String expectEndKey = "key00000000020";
+        int expectKeySize = 0;
+        try {
+            KineticMessage kmrsp = getAdminClient().mediaScan(range,
+                    Priority.HIGHEST);
+            if (kmrsp == null || kmrsp.getCommand() == null
+                    || kmrsp.getCommand().getHeader() == null
+                    || kmrsp.getCommand().getStatus() == null
+                    || kmrsp.getCommand().getBody() == null
+                    || kmrsp.getCommand().getBody().getRange() == null) {
+                Assert.fail("MediaScan response is null!");
+            }
+            assertEquals(MessageType.MEDIASCAN_RESPONSE, kmrsp.getCommand()
+                    .getHeader().getMessageType());
+            assertEquals(StatusCode.SUCCESS, kmrsp.getCommand().getStatus()
+                    .getCode());
+            assertEquals(expectKeySize, kmrsp.getCommand().getBody().getRange()
+                    .getKeysCount());
+            // need to be discuss
+            assertEquals(toByteArray(expectEndKey), kmrsp.getCommand()
+                    .getBody().getRange().getEndKey().toByteArray());
+            assertEquals(expectKeySize, kmrsp.getCommand().getBody().getRange()
+                    .getKeysList().size());
+        } catch (KineticException e) {
+            Assert.fail("media scan operation throw exception: "
+                    + e.getMessage());
+        }
+    }
+
+    @Test(enabled = false)
+    public void testMediaScan_withMaxKeyReturnedSettingAndCorrectTagPuts_withStartKeyAndEndKeyExclusive_EndKeyNotExist_ReturnedDefaultMaxKeyReturned() {
+        try {
+            prepareDataWithCorrectTagForMediaOp();
+        } catch (KineticException e1) {
+            Assert.fail("Prepare data for media operation failed! ");
+        }
+
+        String startKey = "key00000000000";
+        String endKey = "key00000000500";
+        boolean startKeyInclusive = false;
+        boolean endKeyInclusive = false;
+        int maxKeys = 20;
+        Range range = getRangeForMediaOp(startKey, endKey, startKeyInclusive,
+                endKeyInclusive, maxKeys);
+
+        String expectEndKey = "key00000000021";
+        int expectKeySize = 0;
+        try {
+            KineticMessage kmrsp = getAdminClient().mediaScan(range,
+                    Priority.HIGHEST);
+            if (kmrsp == null || kmrsp.getCommand() == null
+                    || kmrsp.getCommand().getHeader() == null
+                    || kmrsp.getCommand().getStatus() == null
+                    || kmrsp.getCommand().getBody() == null
+                    || kmrsp.getCommand().getBody().getRange() == null) {
+                Assert.fail("MediaScan response is null!");
+            }
+            assertEquals(MessageType.MEDIASCAN_RESPONSE, kmrsp.getCommand()
+                    .getHeader().getMessageType());
+            assertEquals(StatusCode.SUCCESS, kmrsp.getCommand().getStatus()
+                    .getCode());
+            assertEquals(expectKeySize, kmrsp.getCommand().getBody().getRange()
+                    .getKeysCount());
+            // need to be discuss
+            assertEquals(toByteArray(expectEndKey), kmrsp.getCommand()
+                    .getBody().getRange().getEndKey().toByteArray());
+            assertEquals(expectKeySize, kmrsp.getCommand().getBody().getRange()
+                    .getKeysList().size());
+        } catch (KineticException e) {
+            Assert.fail("media scan operation throw exception: "
+                    + e.getMessage());
+        }
+    }
+
+    @Test(enabled = false)
+    public void testMediaScan_withMaxKeyReturnedSettingAndCorrectTagPuts_withStartKeyInclusiveAndEndKeyExclusive_EndKeyNotExist_ReturnedDefaultMaxKeyReturned() {
+        try {
+            prepareDataWithCorrectTagForMediaOp();
+        } catch (KineticException e1) {
+            Assert.fail("Prepare data for media operation failed! ");
+        }
+
+        String startKey = "key00000000000";
+        String endKey = "key00000000500";
+        boolean startKeyInclusive = true;
+        boolean endKeyInclusive = false;
+        int maxKeys = 20;
+        Range range = getRangeForMediaOp(startKey, endKey, startKeyInclusive,
+                endKeyInclusive, maxKeys);
+
+        String expectEndKey = "key00000000020";
+        int expectKeySize = 0;
+        try {
+            KineticMessage kmrsp = getAdminClient().mediaScan(range,
+                    Priority.HIGHEST);
+            if (kmrsp == null || kmrsp.getCommand() == null
+                    || kmrsp.getCommand().getHeader() == null
+                    || kmrsp.getCommand().getStatus() == null
+                    || kmrsp.getCommand().getBody() == null
+                    || kmrsp.getCommand().getBody().getRange() == null) {
+                Assert.fail("MediaScan response is null!");
+            }
+            assertEquals(MessageType.MEDIASCAN_RESPONSE, kmrsp.getCommand()
+                    .getHeader().getMessageType());
+            assertEquals(StatusCode.SUCCESS, kmrsp.getCommand().getStatus()
+                    .getCode());
+            assertEquals(expectKeySize, kmrsp.getCommand().getBody().getRange()
+                    .getKeysCount());
+            // need to be discuss
+            assertEquals(toByteArray(expectEndKey), kmrsp.getCommand()
+                    .getBody().getRange().getEndKey().toByteArray());
+            assertEquals(expectKeySize, kmrsp.getCommand().getBody().getRange()
+                    .getKeysList().size());
+        } catch (KineticException e) {
+            Assert.fail("media scan operation throw exception: "
+                    + e.getMessage());
+        }
+    }
+
+    @Test(enabled = false)
+    public void testMediaScan_withMaxKeyReturnedSettingAndCorrectTagPuts_withStartKeyExclusiveAndEndKeyInclusive_EndKeyNotExist_ReturnedDefaultMaxKeyReturned() {
+        try {
+            prepareDataWithCorrectTagForMediaOp();
+        } catch (KineticException e1) {
+            Assert.fail("Prepare data for media operation failed! ");
+        }
+
+        String startKey = "key00000000000";
+        String endKey = "key00000000500";
+        boolean startKeyInclusive = false;
+        boolean endKeyInclusive = true;
+        int maxKeys = 20;
+        Range range = getRangeForMediaOp(startKey, endKey, startKeyInclusive,
+                endKeyInclusive, maxKeys);
+
+        String expectEndKey = "key00000000021";
+        int expectKeySize = 0;
+        try {
+            KineticMessage kmrsp = getAdminClient().mediaScan(range,
+                    Priority.HIGHEST);
+            if (kmrsp == null || kmrsp.getCommand() == null
+                    || kmrsp.getCommand().getHeader() == null
+                    || kmrsp.getCommand().getStatus() == null
+                    || kmrsp.getCommand().getBody() == null
+                    || kmrsp.getCommand().getBody().getRange() == null) {
+                Assert.fail("MediaScan response is null!");
+            }
+            assertEquals(MessageType.MEDIASCAN_RESPONSE, kmrsp.getCommand()
+                    .getHeader().getMessageType());
+            assertEquals(StatusCode.SUCCESS, kmrsp.getCommand().getStatus()
+                    .getCode());
+            assertEquals(expectKeySize, kmrsp.getCommand().getBody().getRange()
+                    .getKeysCount());
+            // need to be discuss
+            assertEquals(toByteArray(expectEndKey), kmrsp.getCommand()
+                    .getBody().getRange().getEndKey().toByteArray());
+            assertEquals(expectKeySize, kmrsp.getCommand().getBody().getRange()
+                    .getKeysList().size());
+        } catch (KineticException e) {
+            Assert.fail("media scan operation throw exception: "
+                    + e.getMessage());
+        }
+    }
+
+    @Test
+    public void testMediaScan_withMaxKeyReturnedSettingAndWrongTagPuts_withStartKeyAndEndKeyInclusive_EndKeyNotExist_ReturnedDefaultMaxKeyReturned() {
+        try {
+            prepareDataWithWrongTagForMediaOp();
+        } catch (KineticException e1) {
+            Assert.fail("Prepare data for media operation failed! ");
+        }
+
+        String startKey = "key00000000000";
+        String endKey = "key00000000500";
+        boolean startKeyInclusive = true;
+        boolean endKeyInclusive = true;
+        int maxKeys = 20;
+        Range range = getRangeForMediaOp(startKey, endKey, startKeyInclusive,
+                endKeyInclusive, maxKeys);
+
+        String expectEndKey = "key00000000020";
+        int expectKeySize = 20;
+        try {
+            KineticMessage kmrsp = getAdminClient().mediaScan(range,
+                    Priority.HIGHEST);
+            if (kmrsp == null || kmrsp.getCommand() == null
+                    || kmrsp.getCommand().getHeader() == null
+                    || kmrsp.getCommand().getStatus() == null
+                    || kmrsp.getCommand().getBody() == null
+                    || kmrsp.getCommand().getBody().getRange() == null) {
+                Assert.fail("MediaScan response is null!");
+            }
+            assertEquals(MessageType.MEDIASCAN_RESPONSE, kmrsp.getCommand()
+                    .getHeader().getMessageType());
+            assertEquals(StatusCode.SUCCESS, kmrsp.getCommand().getStatus()
+                    .getCode());
+            assertEquals(expectKeySize, kmrsp.getCommand().getBody().getRange()
+                    .getKeysCount());
+            // need to be discuss
+            assertEquals(toByteArray(expectEndKey), kmrsp.getCommand()
+                    .getBody().getRange().getEndKey().toByteArray());
+            assertEquals(expectKeySize, kmrsp.getCommand().getBody().getRange()
+                    .getKeysList().size());
+        } catch (KineticException e) {
+            Assert.fail("media scan operation throw exception: "
+                    + e.getMessage());
+        }
+    }
+
+    @Test
+    public void testMediaScan_withMaxKeyReturnedSettingAndWrongTagPuts_withStartKeyInclusiveAndEndKeyExclusive_EndKeyNotExist_ReturnedDefaultMaxKeyReturned() {
+        try {
+            prepareDataWithWrongTagForMediaOp();
+        } catch (KineticException e1) {
+            Assert.fail("Prepare data for media operation failed! ");
+        }
+
+        String startKey = "key00000000000";
+        String endKey = "key00000000500";
+        boolean startKeyInclusive = true;
+        boolean endKeyInclusive = false;
+        int maxKeys = 20;
+        Range range = getRangeForMediaOp(startKey, endKey, startKeyInclusive,
+                endKeyInclusive, maxKeys);
+
+        String expectEndKey = "key00000000020";
+        int expectKeySize = 20;
+        try {
+            KineticMessage kmrsp = getAdminClient().mediaScan(range,
+                    Priority.HIGHEST);
+            if (kmrsp == null || kmrsp.getCommand() == null
+                    || kmrsp.getCommand().getHeader() == null
+                    || kmrsp.getCommand().getStatus() == null
+                    || kmrsp.getCommand().getBody() == null
+                    || kmrsp.getCommand().getBody().getRange() == null) {
+                Assert.fail("MediaScan response is null!");
+            }
+            assertEquals(MessageType.MEDIASCAN_RESPONSE, kmrsp.getCommand()
+                    .getHeader().getMessageType());
+            assertEquals(StatusCode.SUCCESS, kmrsp.getCommand().getStatus()
+                    .getCode());
+            assertEquals(expectKeySize, kmrsp.getCommand().getBody().getRange()
+                    .getKeysCount());
+            // need to be discuss
+            assertEquals(toByteArray(expectEndKey), kmrsp.getCommand()
+                    .getBody().getRange().getEndKey().toByteArray());
+            assertEquals(expectKeySize, kmrsp.getCommand().getBody().getRange()
+                    .getKeysList().size());
+        } catch (KineticException e) {
+            Assert.fail("media scan operation throw exception: "
+                    + e.getMessage());
+        }
+    }
+
+    @Test
+    public void testMediaScan_withMaxKeyReturnedSettingAndWrongTagPuts_withStartKeyExclusiveAndEndKeyInclusive_EndKeyNotExist_ReturnedDefaultMaxKeyReturned() {
+        try {
+            prepareDataWithWrongTagForMediaOp();
+        } catch (KineticException e1) {
+            Assert.fail("Prepare data for media operation failed! ");
+        }
+
+        String startKey = "key00000000000";
+        String endKey = "key00000000500";
+        boolean startKeyInclusive = false;
+        boolean endKeyInclusive = true;
+        int maxKeys = 20;
+        Range range = getRangeForMediaOp(startKey, endKey, startKeyInclusive,
+                endKeyInclusive, maxKeys);
+
+        String expectEndKey = "key00000000021";
+        int expectKeySize = 20;
+        try {
+            KineticMessage kmrsp = getAdminClient().mediaScan(range,
+                    Priority.HIGHEST);
+            if (kmrsp == null || kmrsp.getCommand() == null
+                    || kmrsp.getCommand().getHeader() == null
+                    || kmrsp.getCommand().getStatus() == null
+                    || kmrsp.getCommand().getBody() == null
+                    || kmrsp.getCommand().getBody().getRange() == null) {
+                Assert.fail("MediaScan response is null!");
+            }
+            assertEquals(MessageType.MEDIASCAN_RESPONSE, kmrsp.getCommand()
+                    .getHeader().getMessageType());
+            assertEquals(StatusCode.SUCCESS, kmrsp.getCommand().getStatus()
+                    .getCode());
+            assertEquals(expectKeySize, kmrsp.getCommand().getBody().getRange()
+                    .getKeysCount());
+            // need to be discuss
+            assertEquals(toByteArray(expectEndKey), kmrsp.getCommand()
+                    .getBody().getRange().getEndKey().toByteArray());
+            assertEquals(expectKeySize, kmrsp.getCommand().getBody().getRange()
+                    .getKeysList().size());
+        } catch (KineticException e) {
+            Assert.fail("media scan operation throw exception: "
+                    + e.getMessage());
+        }
+    }
+
+    @Test
+    public void testMediaScan_withMaxKeyReturnedSettingAndWrongTagPuts_withStartKeyAndEndKeyExclusive_EndKeyNotExist_ReturnedDefaultMaxKeyReturned() {
+        try {
+            prepareDataWithWrongTagForMediaOp();
+        } catch (KineticException e1) {
+            Assert.fail("Prepare data for media operation failed! ");
+        }
+
+        String startKey = "key00000000000";
+        String endKey = "key00000000500";
+        boolean startKeyInclusive = false;
+        boolean endKeyInclusive = false;
+        int maxKeys = 20;
+        Range range = getRangeForMediaOp(startKey, endKey, startKeyInclusive,
+                endKeyInclusive, maxKeys);
+
+        String expectEndKey = "key00000000021";
+        int expectKeySize = 20;
+        try {
+            KineticMessage kmrsp = getAdminClient().mediaScan(range,
+                    Priority.HIGHEST);
+            if (kmrsp == null || kmrsp.getCommand() == null
+                    || kmrsp.getCommand().getHeader() == null
+                    || kmrsp.getCommand().getStatus() == null
+                    || kmrsp.getCommand().getBody() == null
+                    || kmrsp.getCommand().getBody().getRange() == null) {
+                Assert.fail("MediaScan response is null!");
+            }
+            assertEquals(MessageType.MEDIASCAN_RESPONSE, kmrsp.getCommand()
+                    .getHeader().getMessageType());
+            assertEquals(StatusCode.SUCCESS, kmrsp.getCommand().getStatus()
+                    .getCode());
+            assertEquals(expectKeySize, kmrsp.getCommand().getBody().getRange()
+                    .getKeysCount());
+            // need to be discuss
+            assertEquals(toByteArray(expectEndKey), kmrsp.getCommand()
+                    .getBody().getRange().getEndKey().toByteArray());
+            assertEquals(expectKeySize, kmrsp.getCommand().getBody().getRange()
+                    .getKeysList().size());
+        } catch (KineticException e) {
+            Assert.fail("media scan operation throw exception: "
+                    + e.getMessage());
+        }
+    }
+
+    @Test
+    public void testMediaScan_withMaxKeyReturnedGreaterThanDefaultMaxKeyReturned_throwException() {
+        String startKey = "key00000000000";
+        String endKey = "key00000000200";
+        boolean startKeyInclusive = true;
+        boolean endKeyInclusive = true;
+        int maxKeys = 201;
+        Range range = getRangeForMediaOp(startKey, endKey, startKeyInclusive,
+                endKeyInclusive, maxKeys);
+
+        try {
+            getAdminClient().mediaScan(range, Priority.HIGHEST);
+            Assert.fail("Exceed max returned key range, should throw exception!");
+        } catch (KineticException e) {
+            if (e.getResponseMessage() == null
+                    || e.getResponseMessage().getCommand() == null
+                    || e.getResponseMessage().getCommand().getStatus() == null) {
+                Assert.fail("MediaScan exception response is null!");
+            }
+
+            assertTrue(e.getResponseMessage().getCommand().getStatus()
+                    .getCode().equals(StatusCode.INVALID_REQUEST));
+        }
+    }
+
+    @Test
+    public void testMediaScan_withEmptyEndKey_returnMaxKeys() {
+        try {
+            prepareDataWithWrongTagForMediaOp();
+        } catch (KineticException e1) {
+            Assert.fail("Prepare data for media operation failed! ");
+        }
+
+        String startKey = "key00000000000";
+        String endKey = "";
+        boolean startKeyInclusive = true;
+        boolean endKeyInclusive = true;
+        int maxKeys = 10;
+        Range range = getRangeForMediaOp(startKey, endKey, startKeyInclusive,
+                endKeyInclusive, maxKeys);
+
+        String expectedEndKey = "key00000000010";
+
+        try {
+            KineticMessage kmrsp = getAdminClient().mediaScan(range,
+                    Priority.HIGHEST);
+            if (kmrsp == null || kmrsp.getCommand() == null
+                    || kmrsp.getCommand().getHeader() == null
+                    || kmrsp.getCommand().getStatus() == null
+                    || kmrsp.getCommand().getBody() == null
+                    || kmrsp.getCommand().getBody().getRange() == null) {
+                Assert.fail("MediaScan response is null!");
+            }
+            assertEquals(MessageType.MEDIASCAN_RESPONSE, kmrsp.getCommand()
+                    .getHeader().getMessageType());
+            assertEquals(StatusCode.SUCCESS, kmrsp.getCommand().getStatus()
+                    .getCode());
+            assertEquals(maxKeys, kmrsp.getCommand().getBody().getRange()
+                    .getKeysCount());
+            assertEquals(toByteArray(expectedEndKey), kmrsp.getCommand()
+                    .getBody().getRange().getEndKey().toByteArray());
+            assertEquals(maxKeys, kmrsp.getCommand().getBody().getRange()
+                    .getKeysList().size());
+        } catch (KineticException e) {
+            Assert.fail("Exceed max returned key range, should throw exception!");
+        }
+    }
+
+    @Test
+    public void testMediaScan_withEmptyStartKey_returnMaxKeys() {
+        try {
+            prepareDataWithWrongTagForMediaOp();
+        } catch (KineticException e1) {
+            Assert.fail("Prepare data for media operation failed! ");
+        }
+
+        String startKey = "";
+        String endKey = "key000000000200";
+        boolean startKeyInclusive = true;
+        boolean endKeyInclusive = true;
+        int maxKeys = 10;
+        Range range = getRangeForMediaOp(startKey, endKey, startKeyInclusive,
+                endKeyInclusive, maxKeys);
+
+        String expectedEndKey = "key00000000010";
+
+        try {
+            KineticMessage kmrsp = getAdminClient().mediaScan(range,
+                    Priority.HIGHEST);
+            if (kmrsp == null || kmrsp.getCommand() == null
+                    || kmrsp.getCommand().getHeader() == null
+                    || kmrsp.getCommand().getStatus() == null
+                    || kmrsp.getCommand().getBody() == null
+                    || kmrsp.getCommand().getBody().getRange() == null) {
+                Assert.fail("MediaScan response is null!");
+            }
+            assertEquals(MessageType.MEDIASCAN_RESPONSE, kmrsp.getCommand()
+                    .getHeader().getMessageType());
+            assertEquals(StatusCode.SUCCESS, kmrsp.getCommand().getStatus()
+                    .getCode());
+            assertEquals(maxKeys, kmrsp.getCommand().getBody().getRange()
+                    .getKeysCount());
+            assertEquals(toByteArray(expectedEndKey), kmrsp.getCommand()
+                    .getBody().getRange().getEndKey().toByteArray());
+            assertEquals(maxKeys, kmrsp.getCommand().getBody().getRange()
+                    .getKeysList().size());
+        } catch (KineticException e) {
+            Assert.fail("Exceed max returned key range, should throw exception!");
+        }
+    }
+
+    @Test(enabled = false)
+    public void testMediaScan_tagSetAsNull_nothingToReturn() {
+        try {
+            prepareDataWithNullTagForMediaOp();
+        } catch (KineticException e) {
+            Assert.fail("Prepare data for media operation failed!");
+        }
+
+        String startKey = "key000000000000";
+        String endKey = "key000000000200";
+        boolean startKeyInclusive = true;
+        boolean endKeyInclusive = true;
+        int maxKeys = 10;
+        Range range = getRangeForMediaOp(startKey, endKey, startKeyInclusive,
+                endKeyInclusive, maxKeys);
+
+        String expectedEndKey = "key00000000010";
+        int expectedMaxKeysReturnedSize = 0;
+
+        try {
+            KineticMessage kmrsp = getAdminClient().mediaScan(range,
+                    Priority.HIGHEST);
+            if (kmrsp == null || kmrsp.getCommand() == null
+                    || kmrsp.getCommand().getHeader() == null
+                    || kmrsp.getCommand().getStatus() == null
+                    || kmrsp.getCommand().getBody() == null
+                    || kmrsp.getCommand().getBody().getRange() == null) {
+                Assert.fail("MediaScan response is null!");
+            }
+            assertEquals(MessageType.MEDIASCAN_RESPONSE, kmrsp.getCommand()
+                    .getHeader().getMessageType());
+            assertEquals(StatusCode.SUCCESS, kmrsp.getCommand().getStatus()
+                    .getCode());
+            assertEquals(expectedMaxKeysReturnedSize, kmrsp.getCommand()
+                    .getBody().getRange().getKeysCount());
+            // need to discuss
+            assertEquals(toByteArray(expectedEndKey), kmrsp.getCommand()
+                    .getBody().getRange().getEndKey().toByteArray());
+            assertEquals(expectedMaxKeysReturnedSize, kmrsp.getCommand()
+                    .getBody().getRange().getKeysList().size());
+        } catch (KineticException e) {
+            Assert.fail("Exceed max returned key range, should throw exception!");
+        }
+    }
+
+    @Test(enabled = false)
+    public void testMediaScan_tagSetAsEmpty_nothingToReturn() {
+        try {
+            prepareDataWithEmptyTagForMediaOp();
+        } catch (KineticException e) {
+            Assert.fail("Prepare data for media operation failed!");
+        }
+
+        String startKey = "key000000000000";
+        String endKey = "key000000000200";
+        boolean startKeyInclusive = true;
+        boolean endKeyInclusive = true;
+        int maxKeys = 10;
+        Range range = getRangeForMediaOp(startKey, endKey, startKeyInclusive,
+                endKeyInclusive, maxKeys);
+
+        String expectedEndKey = "key00000000010";
+        int expectedMaxKeysReturnedSize = 0;
+
+        try {
+            KineticMessage kmrsp = getAdminClient().mediaScan(range,
+                    Priority.HIGHEST);
+            if (kmrsp == null || kmrsp.getCommand() == null
+                    || kmrsp.getCommand().getHeader() == null
+                    || kmrsp.getCommand().getStatus() == null
+                    || kmrsp.getCommand().getBody() == null
+                    || kmrsp.getCommand().getBody().getRange() == null) {
+                Assert.fail("MediaScan response is null!");
+            }
+            assertEquals(MessageType.MEDIASCAN_RESPONSE, kmrsp.getCommand()
+                    .getHeader().getMessageType());
+            assertEquals(StatusCode.SUCCESS, kmrsp.getCommand().getStatus()
+                    .getCode());
+            assertEquals(expectedMaxKeysReturnedSize, kmrsp.getCommand()
+                    .getBody().getRange().getKeysCount());
+            // need to discuss
+            assertEquals(toByteArray(expectedEndKey), kmrsp.getCommand()
+                    .getBody().getRange().getEndKey().toByteArray());
+            assertEquals(expectedMaxKeysReturnedSize, kmrsp.getCommand()
+                    .getBody().getRange().getKeysList().size());
+        } catch (KineticException e) {
+            Assert.fail("Exceed max returned key range, should throw exception!");
+        }
+    }
+
     /**
      * Test back ground operation API: mediaOptimize. Check the response message
      * field.
@@ -2848,23 +4451,14 @@ public class KineticAdminTest extends IntegrationTestCase {
      */
     @Test(enabled = false)
     public void testMediaOptimize_withPriorityIsHighest_successOperation() {
-        // create request message
-        KineticMessage kmreq = MessageFactory.createKineticMessageWithBuilder();
-
-        Command.Builder commandBuilder = (Command.Builder) kmreq.getCommand();
-
-        Range.Builder rangeBuilder = commandBuilder.getBodyBuilder()
-                .getRangeBuilder();
-
-        ByteString startKey = ByteString.copyFromUtf8("start_key");
-        ByteString endKey = ByteString.copyFromUtf8("end_key");
-
-        rangeBuilder.setStartKey(startKey);
-        rangeBuilder.setEndKey(endKey);
-        rangeBuilder.setStartKeyInclusive(false);
-        rangeBuilder.setEndKeyInclusive(true);
-
-        Range range = rangeBuilder.build();
+        // TODO need to watch again
+        String startKey = "key000";
+        String endKey = "key00200";
+        boolean startKeyInclusive = true;
+        boolean endKeyInclusive = true;
+        int maxKeys = -1;
+        Range range = getRangeForMediaOp(startKey, endKey, startKeyInclusive,
+                endKeyInclusive, maxKeys);
 
         try {
             KineticMessage kmrsp = getAdminClient().mediaOptimize(range,
@@ -2918,24 +4512,14 @@ public class KineticAdminTest extends IntegrationTestCase {
                     + e1.getMessage());
         }
 
-        // create request message
-        KineticMessage kmreq = MessageFactory.createKineticMessageWithBuilder();
-
-        Command.Builder commandBuilder = (Command.Builder) kmreq.getCommand();
-
-        Range.Builder rangeBuilder = commandBuilder.getBodyBuilder()
-                .getRangeBuilder();
-
-        ByteString startKey = ByteString.copyFromUtf8("start_key");
-        ByteString endKey = ByteString.copyFromUtf8("end_key");
-
-        rangeBuilder.setStartKey(startKey);
-        rangeBuilder.setEndKey(endKey);
-        rangeBuilder.setStartKeyInclusive(false);
-        rangeBuilder.setEndKeyInclusive(true);
-
-        Range range = rangeBuilder.build();
-
+        // TODO need to watch again
+        String startKey = "key000";
+        String endKey = "key00200";
+        boolean startKeyInclusive = true;
+        boolean endKeyInclusive = true;
+        int maxKeys = -1;
+        Range range = getRangeForMediaOp(startKey, endKey, startKeyInclusive,
+                endKeyInclusive, maxKeys);
         try {
             getAdminClient().mediaOptimize(range, Priority.HIGHEST);
             Assert.fail("should throw exception");
@@ -2969,5 +4553,134 @@ public class KineticAdminTest extends IntegrationTestCase {
                 .createInstance(getAdminClientConfig(currentClusterVersion));
         client.setClusterVersion(DEFAULT_CLUSTER_VERSION);
         client.close();
+    }
+
+    private void prepareDataWithWrongTagForMediaOp() throws KineticException {
+        KineticP2pClient client = KineticP2PClientFactory
+                .createP2pClient(getClientConfig());
+        KVGenerator kvGeneratorClean = new KVGenerator();
+        String firstKey = kvGeneratorClean.getNextKey();
+        cleanNextData(toByteArray(firstKey), client);
+
+        int maxKeysPut = 300;
+        KVGenerator kvGenerator = new KVGenerator();
+        for (int i = 0; i < maxKeysPut; i++) {
+            String key = kvGenerator.getNextKey();
+            String value = kvGenerator.getValue(key);
+
+            EntryMetadata emd = new EntryMetadata();
+            String algo = "SHA1";
+            emd.setAlgorithm(algo);
+            byte[] tag = MessageDigestUtil.calculateTag(Algorithm.SHA2,
+                    toByteArray(value)).toByteArray();
+            emd.setTag(tag);
+
+            Entry entry = new Entry(toByteArray(key), toByteArray(value), emd);
+            client.putForced(entry, PersistOption.ASYNC);
+        }
+
+        client.close();
+    }
+
+    private void prepareDataWithCorrectTagForMediaOp() throws KineticException {
+        KineticP2pClient client = KineticP2PClientFactory
+                .createP2pClient(getClientConfig());
+        KVGenerator kvGeneratorClean = new KVGenerator();
+        String firstKey = kvGeneratorClean.getNextKey();
+        cleanNextData(toByteArray(firstKey), client);
+
+        int maxKeysPut = 300;
+        KVGenerator kvGenerator = new KVGenerator();
+        for (int i = 0; i < maxKeysPut; i++) {
+            String key = kvGenerator.getNextKey();
+            String value = kvGenerator.getValue(key);
+
+            EntryMetadata emd = new EntryMetadata();
+            String algo = "SHA1";
+            emd.setAlgorithm(algo);
+            byte[] tag = MessageDigestUtil.calculateTag(Algorithm.SHA1,
+                    toByteArray(value)).toByteArray();
+            emd.setTag(tag);
+
+            Entry entry = new Entry(toByteArray(key), toByteArray(value), emd);
+            client.putForced(entry, PersistOption.ASYNC);
+        }
+
+        client.close();
+    }
+
+    private void prepareDataWithNullTagForMediaOp() throws KineticException {
+        KineticP2pClient client = KineticP2PClientFactory
+                .createP2pClient(getClientConfig());
+        KVGenerator kvGeneratorClean = new KVGenerator();
+        String firstKey = kvGeneratorClean.getNextKey();
+        cleanNextData(toByteArray(firstKey), client);
+
+        int maxKeysPut = 300;
+        KVGenerator kvGenerator = new KVGenerator();
+        for (int i = 0; i < maxKeysPut; i++) {
+            String key = kvGenerator.getNextKey();
+            String value = kvGenerator.getValue(key);
+
+            EntryMetadata emd = new EntryMetadata();
+            String algo = "SHA1";
+            emd.setAlgorithm(algo);
+            byte[] tag = null;
+            emd.setTag(tag);
+
+            Entry entry = new Entry(toByteArray(key), toByteArray(value), emd);
+            client.putForced(entry, PersistOption.ASYNC);
+        }
+
+        client.close();
+    }
+
+    private void prepareDataWithEmptyTagForMediaOp() throws KineticException {
+        KineticP2pClient client = KineticP2PClientFactory
+                .createP2pClient(getClientConfig());
+        KVGenerator kvGeneratorClean = new KVGenerator();
+        String firstKey = kvGeneratorClean.getNextKey();
+        cleanNextData(toByteArray(firstKey), client);
+
+        int maxKeysPut = 200;
+        KVGenerator kvGenerator = new KVGenerator();
+        for (int i = 0; i < maxKeysPut; i++) {
+            String key = kvGenerator.getNextKey();
+            String value = kvGenerator.getValue(key);
+
+            EntryMetadata emd = new EntryMetadata();
+            String algo = "SHA1";
+            emd.setAlgorithm(algo);
+            byte[] tag = toByteArray("");
+            emd.setTag(tag);
+
+            Entry entry = new Entry(toByteArray(key), toByteArray(value), emd);
+            client.putForced(entry, PersistOption.ASYNC);
+        }
+
+        client.close();
+    }
+
+    private Range getRangeForMediaOp(String startKey, String endKey,
+            boolean startKeyInclusive, boolean endKeyInclusive,
+            int maxKeysReturned) {
+        KineticMessage kmreq = MessageFactory.createKineticMessageWithBuilder();
+
+        Command.Builder commandBuilder = (Command.Builder) kmreq.getCommand();
+
+        Range.Builder rangeBuilder = commandBuilder.getBodyBuilder()
+                .getRangeBuilder();
+
+        ByteString startKeyB = ByteString.copyFromUtf8(startKey);
+        ByteString endKeyB = ByteString.copyFromUtf8(endKey);
+
+        rangeBuilder.setStartKey(startKeyB);
+        rangeBuilder.setEndKey(endKeyB);
+        rangeBuilder.setStartKeyInclusive(startKeyInclusive);
+        rangeBuilder.setEndKeyInclusive(endKeyInclusive);
+        rangeBuilder.setMaxReturned(maxKeysReturned);
+
+        Range range = rangeBuilder.build();
+        return range;
     }
 }

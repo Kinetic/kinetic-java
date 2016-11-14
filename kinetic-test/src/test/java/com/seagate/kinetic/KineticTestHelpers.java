@@ -34,6 +34,8 @@ import kinetic.client.CallbackResult;
 import kinetic.client.Entry;
 import kinetic.client.KineticClient;
 import kinetic.client.KineticException;
+import kinetic.client.advanced.PersistOption;
+import kinetic.client.p2p.KineticP2pClient;
 
 import org.testng.AssertJUnit;
 
@@ -161,22 +163,22 @@ public class KineticTestHelpers {
         }
     }
 
-    public static void cleanNextData(byte[] key, KineticClient client)
+    public static void cleanNextData(byte[] key, KineticP2pClient client)
             throws KineticException {
         boolean flag = true;
         while (flag) {
             Entry enN = client.getNext(key);
             if (enN == null) {
                 flag = false;
-                client.deleteForced(key);
+                client.deleteForced(key, PersistOption.ASYNC);
             } else {
-                client.deleteForced(key);
+                client.deleteForced(key, PersistOption.ASYNC);
                 key = enN.getKey();
             }
         }
     }
 
-    public static void cleanPreviousData(byte[] key, KineticClient client)
+    public static void cleanPreviousData(byte[] key, KineticP2pClient client)
             throws KineticException {
         boolean flag = true;
         while (flag) {
@@ -184,15 +186,15 @@ public class KineticTestHelpers {
 
             if (enN == null) {
                 flag = false;
-                client.deleteForced(key);
+                client.deleteForced(key, PersistOption.ASYNC);
             } else {
-                client.deleteForced(key);
+                client.deleteForced(key, PersistOption.ASYNC);
                 key = enN.getKey();
             }
         }
     }
 
-    public static void cleanKVGenData(int keyCount, KineticClient client)
+    public static void cleanKVGenData(int keyCount, KineticP2pClient client)
             throws KineticException {
         KVGenerator kvGen = new KVGenerator();
         String lastKey = "";
@@ -204,7 +206,7 @@ public class KineticTestHelpers {
         KVGenerator kvGen1 = new KVGenerator();
         byte[] keyB = toByteArray(kvGen1.getNextKey());
         while (flag) {
-            client.deleteForced(keyB);
+            client.deleteForced(keyB, PersistOption.ASYNC);
 
             Entry enN = client.getNext(keyB);
 
@@ -213,7 +215,7 @@ public class KineticTestHelpers {
             } else if (new String(enN.getKey(), Charset.forName("UTF-8"))
                     .equals(lastKey)) {
                 flag = false;
-                client.deleteForced(enN.getKey());
+                client.deleteForced(enN.getKey(), PersistOption.ASYNC);
             } else {
                 keyB = enN.getKey();
             }
